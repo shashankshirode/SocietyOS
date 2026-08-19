@@ -1,0 +1,35 @@
+export const staffRegistrationMessages = {
+  title: 'Register New Staff',
+  subtitle: 'Add society workers, guards, office, accounts or facility staff',
+  labels: {
+    fullName: 'Full Name *', category: 'Staff Category *', staffCode: 'Staff Code / Employee ID *',
+    mobile: 'Mobile Number *', emergencyContact: 'Emergency Contact', assignedLocation: 'Assigned Location *',
+    vendorId: 'Vendor ID (Optional)', notes: 'Notes',
+  },
+  placeholders: {
+    fullName: 'e.g. Ramesh Patil', staffCode: 'e.g. STF-SEC-105', mobile: '10-digit mobile number',
+    emergencyContact: 'Emergency contact number', assignedLocation: 'e.g. Main Gate, A Wing',
+    vendorId: 'If vendor-managed, enter vendor ID', notes: 'Add any additional details…',
+  },
+  validation: {
+    nameRequired: 'Staff name is required', categoryRequired: 'Staff category is required',
+    codeRequired: 'Staff code is required', mobileInvalid: 'Mobile number must be 10 digits',
+    locationRequired: 'Assigned location is required',
+  },
+  categories: {
+    SECURITY_GUARD: 'Security Guard', SECURITY_SUPERVISOR: 'Security Supervisor', HOUSEKEEPING: 'Housekeeping',
+    FACILITY_STAFF: 'Facility Staff', GARDENER: 'Gardener', PLUMBER: 'Plumber', ELECTRICIAN: 'Electrician',
+    LIFT_OPERATOR: 'Lift Operator', CLUBHOUSE_STAFF: 'Clubhouse Staff', OFFICE_STAFF: 'Office Staff',
+    ACCOUNTS_STAFF: 'Accounts Staff', TREASURER: 'Treasurer', COMMITTEE_MEMBER: 'Committee Member',
+    SECRETARY: 'Secretary', CHAIRPERSON: 'Chairperson', SOCIETY_MANAGER: 'Society Manager',
+    VENDOR_WORKER: 'Vendor Worker', OTHER: 'Other',
+  },
+  submit: 'Register Staff',
+  submitting: 'Registering…',
+  successTitle: 'Registration complete',
+  successDescription: 'Staff member and channel access were registered successfully.',
+  failureTitle: 'Registration failed',
+  failureDescription: 'The staff member could not be registered. Review the details and try again.',
+  manageTitle: 'Staff & Channel Access',
+  manageDescription: 'Register staff and manage operational channel memberships.',
+} as const;

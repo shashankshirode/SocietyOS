@@ -1,0 +1,20 @@
+import type { AppRole } from './permission.types';
+
+export const appRoles: AppRole[] = [
+  'RESIDENT_OWNER',
+  'RESIDENT_TENANT',
+  'RESIDENT_FAMILY',
+  'SECURITY_GUARD',
+  'SECURITY_SUPERVISOR',
+  'FACILITY_MANAGER',
+  'COMMITTEE_MEMBER',
+  'SECRETARY',
+  'CHAIRPERSON',
+  'TREASURER',
+  'SOCIETY_ADMIN',
+  'SUPER_ADMIN',
+  'ELECTION_OFFICER',
+  'AUDITOR',
+  'VENDOR_USER',
+  'STAFF_USER',
+];

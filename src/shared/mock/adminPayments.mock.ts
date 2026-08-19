@@ -1,0 +1,7 @@
+import type { ManualPaymentRecord } from '../types/accounting.types';
+
+export const mockAdminPayments: ManualPaymentRecord[] = [
+  { id: 'pay-001', paymentNumber: 'PAY-2026-0089', unitId: 'unit-004', unitNumber: 'B-0404', wing: 'B Wing', residentName: 'Anil Deshmukh', amount: 3200, paymentMode: 'CASH', paymentDate: '2026-07-03', referenceNumber: 'CASH-001', notes: 'Cash collected at society office', receivedBy: 'Meena Kulkarni', status: 'RECEIPT_GENERATED', receiptId: 'rcpt-001', receiptNumber: 'RCP-2026-0089', createdAt: '2026-07-03T10:30:00Z', requiresApproval: false },
+  { id: 'pay-002', paymentNumber: 'PAY-2026-0090', unitId: 'unit-006', unitNumber: 'B-1101', wing: 'B Wing', residentName: 'Vijay Kulkarni', amount: 6800, paymentMode: 'CHEQUE', paymentDate: '2026-07-02', referenceNumber: 'CHQ-456789', bankName: 'HDFC Bank', chequeNumber: '456789', notes: 'Post-dated cheque for July. Date: 02-Jul-2026', receivedBy: 'Meena Kulkarni', status: 'PENDING_APPROVAL', createdAt: '2026-07-02T15:00:00Z', requiresApproval: true },
+  { id: 'pay-003', paymentNumber: 'PAY-2026-0091', unitId: 'unit-008', unitNumber: 'C-0601', wing: 'C Wing', residentName: 'Nalini Sharma', amount: 10000, paymentMode: 'BANK_TRANSFER', paymentDate: '2026-07-01', referenceNumber: 'NEFT-GVH-001', bankName: 'SBI', notes: 'Partial payment towards outstanding dues', receivedBy: 'Meena Kulkarni', status: 'RECEIPT_GENERATED', receiptId: 'rcpt-003', receiptNumber: 'RCP-2026-0091', createdAt: '2026-07-01T16:00:00Z', requiresApproval: false },
+];

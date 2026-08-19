@@ -1,0 +1,135 @@
+import type { ResidentCapabilityId } from '../models/ResidentCapability';
+import type { ResidentNavigatorReleasePolicy, ResidentScenarioEvidence } from '../models/ResidentRouteRelease';
+
+export const residentNavigatorReleasePolicies: readonly ResidentNavigatorReleasePolicy[] = [
+  { file: 'src/app/navigation/ResidentNavigator.tsx', defaultCapability: 'resident.homeContext' },
+  { file: 'src/app/navigation/ResidentConnectStack.tsx', defaultCapability: 'resident.residentConnect' },
+  { file: 'src/app/navigation/ParkingStack.tsx', defaultCapability: 'resident.parking' },
+  { file: 'src/app/navigation/FacilityStack.tsx', defaultCapability: 'resident.facilities' },
+  { file: 'src/app/navigation/GovernanceStack.tsx', defaultCapability: 'resident.governance' },
+  { file: 'src/app/navigation/EmergencySafetyStack.tsx', defaultCapability: 'resident.emergency' },
+  { file: 'src/modules/resident/emergency/navigation/SosResponsePlanStack.tsx', defaultCapability: 'resident.emergency' },
+  { file: 'src/app/navigation/InterFlatStack.tsx', defaultCapability: 'resident.interFlatIssues' },
+  { file: 'src/app/navigation/CommunityStack.tsx', defaultCapability: 'resident.community' },
+  { file: 'src/app/navigation/ProfileNavigator.tsx', defaultCapability: 'resident.settings' },
+  { file: 'src/app/navigation/DomesticHelpStack.tsx', defaultCapability: 'resident.domesticHelp' },
+];
+
+const homeRouteCapabilities: Readonly<Record<string, ResidentCapabilityId>> = {
+  CreateVisitorFromHome: 'resident.visitors',
+  VisitorDetailFromHome: 'resident.visitors',
+  CreateComplaintFromHome: 'resident.complaints',
+  ComplaintDetailFromHome: 'resident.complaints',
+  ComplaintReopen: 'resident.complaints',
+  ComplaintFeedback: 'resident.complaints',
+  Helpdesk: 'resident.complaints',
+  NoticeListFromHome: 'resident.notices',
+  NoticeDetailFromHome: 'resident.notices',
+  EmergencySos: 'resident.emergency',
+  DocumentVaultHome: 'resident.documents',
+  MyDocuments: 'resident.documents',
+  SocietyDocuments: 'resident.documents',
+  DocumentDetail: 'resident.documents',
+  UploadDocument: 'resident.documents',
+  DocumentAccessLog: 'resident.documents',
+  CurrentDocumentsSummary: 'resident.documents',
+  PreviousResidentDocuments: 'resident.documents',
+  NocRequestList: 'resident.nocAndMoveOut',
+  CreateNocRequest: 'resident.nocAndMoveOut',
+  NocRequestDetail: 'resident.nocAndMoveOut',
+  MoveOutRequest: 'resident.nocAndMoveOut',
+  MoveOutClearanceChecklist: 'resident.nocAndMoveOut',
+  NocCertificate: 'resident.nocAndMoveOut',
+  HouseholdOverview: 'resident.household',
+  FamilyMembers: 'resident.household',
+  FamilyMemberList: 'resident.household',
+  AddFamilyMember: 'resident.household',
+  EditFamilyMember: 'resident.household',
+  FamilyMemberDetail: 'resident.household',
+  FamilyAccessPermissions: 'resident.household',
+  FamilyPortability: 'resident.familyPortability',
+  RentalDeclaration: 'resident.rentalDeclaration',
+  ShortStayManagement: 'resident.shortStay',
+  TenantManagement: 'resident.tenantLifecycle',
+  AddTenantStart: 'resident.tenantLifecycle',
+  AddTenantPersonalInfo: 'resident.tenantLifecycle',
+  AddTenantAgreement: 'resident.tenantLifecycle',
+  AddTenantDocuments: 'resident.tenantLifecycle',
+  AddTenantAccessPermissions: 'resident.tenantLifecycle',
+  AddTenantReview: 'resident.tenantLifecycle',
+  TenantOnboardingSuccess: 'resident.tenantLifecycle',
+  TenantOnboardingStatus: 'resident.tenantLifecycle',
+  TenantDetail: 'resident.tenantLifecycle',
+  TenantRestrictedState: 'resident.tenantLifecycle',
+  OwnerTenantOverview: 'resident.tenantLifecycle',
+  CurrentOwnerProfile: 'resident.tenantLifecycle',
+  CurrentTenantProfile: 'resident.tenantLifecycle',
+  OwnerHistory: 'resident.tenantLifecycle',
+  TenantHistory: 'resident.tenantLifecycle',
+  OccupancyTimeline: 'resident.tenantLifecycle',
+  PreviousResidentDetail: 'resident.tenantLifecycle',
+  MoveInRequest: 'resident.tenantLifecycle',
+  UnitAccessStatus: 'resident.tenantLifecycle',
+  OwnershipTenancySummary: 'resident.tenantLifecycle',
+  UnitVehicles: 'resident.parking',
+  ResidentConnectStack: 'resident.residentConnect',
+  ParkingStack: 'resident.parking',
+  FacilityStack: 'resident.facilities',
+  GovernanceStack: 'resident.governance',
+  EmergencySafetyStack: 'resident.emergency',
+  SosResponsePlanStack: 'resident.emergency',
+  InterFlatStack: 'resident.interFlatIssues',
+  CommunityStack: 'resident.community',
+  DomesticHelpStack: 'resident.domesticHelp',
+  ProfileTab: 'resident.settings',
+};
+
+const navigatorTagCapabilities: Readonly<Record<string, ResidentCapabilityId>> = {
+  VisitorStack: 'resident.visitors',
+  ComplaintStack: 'resident.complaints',
+  BillStack: 'resident.billing',
+  ChatStack: 'resident.chat',
+};
+
+const residentConnectChatRoutes = new Set([
+  'ResidentDirectorySelection',
+  'NewResidentContactRequest',
+  'ResidentContactRequests',
+  'ResidentDirectConversation',
+]);
+
+export function resolveResidentNavigatorCapability(
+  navigatorFile: string,
+  navigatorTag: string,
+  routeName: string,
+  defaultCapability: ResidentCapabilityId
+): ResidentCapabilityId {
+  if (navigatorFile !== 'src/app/navigation/ResidentNavigator.tsx') return defaultCapability;
+  if (navigatorTag === 'HomeStack') return homeRouteCapabilities[routeName] ?? defaultCapability;
+  if (navigatorTag === 'ChatStack' && residentConnectChatRoutes.has(routeName)) return 'resident.residentConnect';
+  return navigatorTagCapabilities[navigatorTag] ?? defaultCapability;
+}
+
+export const residentScenarioEvidence: ResidentScenarioEvidence = {
+  happyPath: ['src/modules/resident/featureCoverage/__tests__/ResidentFeatureCoverage.test.ts'],
+  validationFailure: ['src/modules/resident/residentConnect/__tests__/residentContact.validation.test.ts'],
+  permissionFailure: ['src/features/residentCapabilities/tests/residentCapabilityCoverage.test.ts'],
+  featureDisabled: ['src/modules/resident/featureCoverage/__tests__/ResidentFeatureCoverage.test.ts'],
+  emptyState: ['src/modules/resident/complaints/__tests__/ComplaintListScreen.emptyStates.test.tsx'],
+  loadingState: ['src/modules/resident/dashboard/__tests__/ResidentDashboardLoading.test.tsx'],
+  networkFailure: ['src/modules/resident/dashboard/__tests__/ResidentDashboardPartialFailure.test.tsx'],
+  retry: ['src/modules/resident/dashboard/__tests__/ResidentDashboardPartialFailure.test.tsx'],
+  offlineState: ['src/modules/resident/dashboard/__tests__/ResidentDashboardPartialFailure.test.tsx'],
+  duplicateAction: ['src/modules/resident/dashboard/__tests__/AsyncArchitecture.test.tsx'],
+  rapidRepeatedTap: ['src/modules/resident/dashboard/__tests__/AsyncArchitecture.test.tsx'],
+  residenceSwitchDuringRequest: ['src/modules/resident/dashboard/__tests__/ResidentDashboardResidenceSwitch.test.tsx'],
+  staleResponse: ['src/modules/resident/dashboard/__tests__/AsyncArchitecture.test.tsx'],
+  longText: ['src/modules/resident/dashboard/__tests__/ResidentDashboardLongName.test.tsx'],
+  largeFont: ['src/shared/components/__tests__/AppButton.test.tsx'],
+  darkMode: ['src/modules/resident/dashboard/__tests__/ResidentDashboardDarkMode.test.tsx'],
+  smallPhone: ['src/modules/resident/dashboard/__tests__/ResidentDashboardCompactPhone.test.tsx'],
+  tabletPortrait: ['src/modules/resident/dashboard/__tests__/ResidentDashboardTablet.test.tsx'],
+  tabletLandscape: ['src/modules/resident/dashboard/__tests__/ResidentDashboardLandscape.test.tsx'],
+  android: ['src/modules/resident/dashboard/__tests__/ResidentDashboard.crossPlatform.test.ts'],
+  ios: ['src/modules/resident/dashboard/__tests__/ResidentDashboard.crossPlatform.test.ts'],
+};

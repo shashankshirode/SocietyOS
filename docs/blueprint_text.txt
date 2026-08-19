@@ -1,0 +1,1847 @@
+Society OS
+
+Enterprise Product Blueprint & Functional Specification
+
+For Indian Residential Communities, Standalone Buildings, Apartments, Villas, Complexes and Townships
+
+Version 2.0 Update
+
+This version includes the expanded modules for biometric/fingerprint attendance sync, owner and tenant history, previous resident document access, mandatory move-out NOC, and stronger data model/API guidance. The document is structured for product planning, design, development, stakeholder review and implementation handoff.
+
+Field
+
+Details
+
+Document type
+
+Product blueprint, functional specification, implementation guide and roadmap
+
+Product scope
+
+Resident mobile app, guard app, admin web dashboard, facility tools and super admin console
+
+Target market
+
+Indian residential societies, RWAs, CHS, gated apartments, villas and premium communities
+
+Commercial strategy
+
+Free launch publicly; subscription-ready privately through hidden backend architecture
+
+Version
+
+v2.0
+
+Prepared for
+
+Society Management Application
+
+Table of Contents
+
+1. Executive Summary
+
+2. Product Vision and Principles
+
+3. User Personas and Applications
+
+4. Complete Feature Catalogue
+
+5. Architecture and Data Flow Diagrams
+
+6. Role-based Permission Model
+
+7. Deep Functional Specification by Module
+
+8. Owner, Tenant and Occupancy History Management
+
+9. Biometric Attendance Integration
+
+10. Document Vault, NOC and Secure Access
+
+11. Workflows and User Journeys
+
+12. Data Model and API Design
+
+13. Feature Flags and Configuration
+
+14. Security, Privacy and Audit Logging
+
+15. Reports and Society Health Score
+
+16. Smart Automation and Future Integrations
+
+17. Roadmap and Delivery Priorities
+
+18. Acceptance Criteria and Implementation Backlog
+
+19. Appendix
+
+1. Executive Summary
+
+Society OS is a configurable society management platform designed for Indian residential communities. It supports small standalone buildings, cooperative housing societies, gated apartments, villa communities, mixed-use complexes and large townships through one flexible architecture. The product should behave like a modular operating system for a society rather than a fixed one-size-fits-all app.
+
+The platform must reduce manual work for committee members, facility teams, guards and residents by digitizing visitor management, maintenance billing, complaints, notices, staff attendance, documents, NOC workflows, governance and resident communication. It must also preserve privacy, support audit-ready records and remain simple enough for senior citizens and guards to use daily.
+
+Core product promise
+
+Every daily society task should be quick, traceable and permission-safe. Small societies should see only simple modules, while premium communities can enable advanced workflows, hardware integrations and smart automation without changing the core codebase.
+
+Promise
+
+Meaning in the product
+
+Easy to use
+
+Residents, guards and committee members should complete frequent tasks in seconds, not minutes.
+
+Configurable
+
+Every major module should be switchable and society-specific through feature flags and settings.
+
+India-first
+
+UPI, WhatsApp fallback, cash/cheque, regional languages, tenant verification and society workflows must be native.
+
+Privacy-first
+
+Phone numbers, private chats, resident documents and child/senior data must be protected by consent and role checks.
+
+Audit-ready
+
+Documents, payments, NOCs, approvals, attendance corrections and admin actions must have immutable logs.
+
+Future-proof
+
+Biometric devices, RFID, ANPR, CCTV, smart meters and smart automation should be possible through an integration layer.
+
+2. Product Vision and Principles
+
+2.1 Mission
+
+To simplify, digitize and improve daily life and operations for Indian residential communities through a configurable, easy-to-use and trustworthy platform.
+
+2.2 Vision
+
+To become the default operating system for Indian housing societies, from small buildings to premium townships, while remaining ready for smart automation, connected devices, marketplace services and enterprise operations.
+
+Principle
+
+Implementation meaning
+
+Convenience first
+
+The common actions like visitor approval, complaint creation, payment and notice reading should require minimal taps.
+
+Configurable, not forced
+
+A society should enable only the modules it actually needs.
+
+Transparency by default
+
+Payments, complaints, attendance, NOCs, approvals and committee decisions should be traceable.
+
+Privacy by design
+
+Sensitive data should be hidden by default and available only to authorized roles.
+
+Low-connectivity ready
+
+Guard and gate operations should support offline entry and later sync.
+
+Modular engineering
+
+Each module should have clear APIs, domain services, feature flags and audit events.
+
+3. User Personas and Applications
+
+The application should not show the same experience to everyone. A resident, guard, treasurer and super admin have very different jobs. Role-based UI and backend permissions are therefore mandatory.
+
+Persona
+
+Main goal
+
+Important features
+
+Resident Owner
+
+Security, transparency, maintenance payment, governance participation.
+
+Visitors, payments, complaints, NOC, notices, documents, resident connect.
+
+Tenant
+
+Smooth move-in, daily access, complaint support, move-out NOC.
+
+Visitor approval, complaints, facility booking, tenant documents, NOC request.
+
+Family Member
+
+Use daily services with controlled permissions.
+
+Visitor approval, emergency, notices, limited profile access.
+
+Security Guard
+
+Record entries quickly and respond to emergencies.
+
+Guard app, gate entries, staff check-in, visitor validation, emergency alerts.
+
+Facility Manager
+
+Run operations, vendors, staff, assets and complaints.
+
+Work orders, vendor tasks, staff attendance, asset logs, incident reports.
+
+Secretary/Chairperson
+
+Control society operations and governance.
+
+Approvals, notices, documents, NOC, meeting records, reports.
+
+Treasurer/Accountant
+
+Manage billing, collections, ledgers and audit readiness.
+
+Bills, receipts, defaulters, reconciliation, exports.
+
+Super Admin
+
+Operate the SaaS platform across societies.
+
+Onboarding, feature flags, support, hidden commercial controls.
+
+Application
+
+Primary users
+
+Purpose
+
+Resident Mobile App
+
+Owners, tenants, family
+
+Visitors, payments, complaints, notices, NOC, documents, chat, emergency.
+
+Guard Mobile App
+
+Security guards and supervisors
+
+Fast visitor entry, staff check-in, vehicle/material entries, emergencies, offline sync.
+
+Admin Web Dashboard
+
+Committee, treasurer, facility, accountant
+
+Operations, billing, reports, documents, attendance, approvals and configuration.
+
+Facility Manager App
+
+Facility managers/supervisors
+
+Complaints, vendors, assets, staff, checklists, incidents and shift activities.
+
+Super Admin Console
+
+Platform owner team
+
+Society onboarding, feature flags, support, subscription-ready controls and analytics.
+
+4. Complete Feature Catalogue
+
+The following feature catalogue consolidates everything decided so far. It is grouped as a delivery-ready list so product, UI/UX, backend and mobile teams can convert each row into epics and stories.
+
+Feature area
+
+Description
+
+Phase
+
+Society & Unit Setup
+
+Society hierarchy, unit master, towers, floors, areas, parking and occupancy status.
+
+MVP
+
+Owner & Tenant Management
+
+Current owner/tenant profiles, KYC, family, vehicles, agreements and approvals.
+
+MVP
+
+Owner/Tenant History
+
+Previous owners and tenants with timeline, documents, NOCs and occupancy archive.
+
+Phase 1A
+
+Document Vault
+
+Secure files, expiry reminders, versioning, signed access and audit logs.
+
+MVP
+
+Move-in / Move-out Logistics
+
+QR onboarding, document upload, approvals, lift/truck pass, access activation/revocation.
+
+Phase 1A
+
+Digital NOC & Certificates
+
+No dues, move-out NOC, tenant NOC, parking NOC, residence proof and QR-verifiable PDFs.
+
+Phase 2
+
+Visitor & Gate
+
+Guest, delivery, cab, vendor, material gate pass, OTP/QR, offline guard app.
+
+MVP
+
+Staff & Domestic Help
+
+Guards, housekeeping, maids, drivers, cooks, verification, shifts and attendance.
+
+MVP
+
+Biometric Attendance Sync
+
+Fingerprint attendance import for guards and workers, shift mapping and attendance reports.
+
+Phase 3
+
+Billing & Accounting
+
+Maintenance bills, receipts, ledger, penalties, UPI, cheque/cash, reports and exports.
+
+MVP
+
+Complaints & Helpdesk
+
+Issue creation, SLA, assignment, escalation, reopen and feedback.
+
+MVP
+
+Facility Booking
+
+Clubhouse, gym, pool, courts, party hall, guest rooms, deposits and QR check-in.
+
+Phase 2
+
+Parking & Vehicles
+
+Vehicle records, slot allocation, visitor parking, wrong parking and RFID readiness.
+
+Phase 2
+
+Resident Connect
+
+Privacy-first resident chat with first-contact approval and hidden phone numbers.
+
+Phase 1A
+
+Privacy Directory
+
+Flat/name visibility controls, opt-out and backend-enforced privacy.
+
+Phase 1A
+
+Inter-flat Issues
+
+Water leakage, noise, renovation disturbance, pet nuisance, damage claims and mediation.
+
+Phase 1A
+
+Governance
+
+AGM, SGM, agenda, MOM, proxy, resolutions, polls, e-voting and elections.
+
+Phase 2/4
+
+Safety & Emergency
+
+SOS, medical, fire, lift stuck, senior care, volunteers and incident timeline.
+
+Phase 2/3
+
+Vendors, AMC & Assets
+
+Vendor database, contracts, AMC reminders, asset register, inventory and scorecards.
+
+Phase 2
+
+Marketplace
+
+Society-approved vendors, service listings, concierge and verified partners later.
+
+Phase 3
+
+Hardware Integrations
+
+RFID, ANPR, CCTV, smart meters, EV charging and IoT-ready integration layer.
+
+Phase 4
+
+Smart Automation
+
+Notice drafting, document search, bill explanation, complaint routing and meeting summary.
+
+Phase 4
+
+Important product direction
+
+The app should be free at launch for selected societies, but the backend should remain subscription-ready. Any pricing, upgrade prompts, trial expiry warnings or locked feature labels must stay hidden until the business decides to enable monetization.
+
+5. Architecture and Data Flow Diagrams
+
+The following diagrams explain the system at different levels. They should be used by developers, architects and stakeholders to understand module boundaries, integration points and data movement.
+
+Figure 1: High-level architecture showing apps, backend services, data storage and integration layer.
+
+Figure 2: Context-level data flow diagram showing external actors, Society OS and major external systems.
+
+Figure 3: Level 1 data flow diagram showing core processes, data stores and integration points.
+
+Figure 4: Use case diagram showing primary actors and major platform capabilities.
+
+6. Role-based Permission Model
+
+Role-based access control must be implemented on both frontend and backend. The frontend may hide screens for a better experience, but the backend must still validate society ID, role, permission, feature flag and document sensitivity for every sensitive action.
+
+Action
+
+Owner
+
+Tenant
+
+Guard
+
+Committee
+
+Treasurer
+
+Facility
+
+Super
+
+Approve own visitor
+
+Yes
+
+Yes
+
+No
+
+No
+
+No
+
+No
+
+No
+
+Record gate entry
+
+No
+
+No
+
+Yes
+
+Optional
+
+No
+
+Optional
+
+No
+
+View own bills
+
+Yes
+
+Optional
+
+No
+
+No
+
+No
+
+No
+
+No
+
+Generate maintenance bills
+
+No
+
+No
+
+No
+
+Optional
+
+Yes
+
+No
+
+No
+
+Raise complaint
+
+Yes
+
+Yes
+
+No
+
+No
+
+No
+
+Optional
+
+No
+
+Assign complaint
+
+No
+
+No
+
+No
+
+Optional
+
+No
+
+Yes
+
+No
+
+View previous tenants/owners
+
+No
+
+No
+
+No
+
+Yes
+
+Optional
+
+Optional
+
+Yes
+
+Access tenant documents
+
+No
+
+Own only
+
+No
+
+Restricted
+
+Restricted
+
+Restricted
+
+Yes
+
+Approve move-out NOC
+
+No
+
+No
+
+No
+
+Yes
+
+Yes for dues
+
+Yes for operations
+
+No
+
+Correct attendance
+
+No
+
+No
+
+No
+
+Optional
+
+No
+
+Yes
+
+No
+
+Configure feature flags
+
+No
+
+No
+
+No
+
+Limited
+
+No
+
+Limited
+
+Yes
+
+Access hidden subscription controls
+
+No
+
+No
+
+No
+
+No
+
+No
+
+No
+
+Yes
+
+Figure 5: Runtime feature flag and permission control flow.
+
+7. Deep Functional Specification by Module
+
+Each module below includes business purpose, key capabilities and implementation guidance. The goal is to make the document directly useful for product owners, designers, developers and QA teams.
+
+7.1 Society, Unit and Resident Foundation
+
+This is the master-data backbone. All other modules such as bills, documents, visitors, complaints, parking, NOC and reports depend on clean society and unit records.
+
+Key capabilities
+
+Society hierarchy: society, phase, tower, block, floor, wing, flat, villa or shop.
+
+Unit master with area, occupancy, unit type, parking and billing attributes.
+
+Owner, tenant, family member and resident profile management.
+
+Vehicle, pet, parking, rule acknowledgement and KYC status.
+
+Bulk Excel import with preview, validation, duplicate detection and rollback.
+
+Implementation guidance
+
+Unit should be the central entity. Every important transaction should be linked to societyId and unitId so reports remain accurate and multi-tenant security is enforceable.
+
+7.2 Visitor and Gate Management
+
+This module replaces paper registers and fragmented gate apps with a fast guard workflow and resident-controlled visitor approval.
+
+Key capabilities
+
+Guest pre-approval with OTP/QR.
+
+Delivery, cab, vendor, staff and material gate pass entries.
+
+Gate-wise and guard-wise logs.
+
+Blacklist/watchlist and security alerts.
+
+Offline entry mode with later sync.
+
+Implementation guidance
+
+The guard app must work on low-end Android phones. The visitor entry path should require minimum taps and should gracefully handle network failure.
+
+7.3 Maintenance Billing, Payments and Accounting
+
+This module helps treasurers generate bills, collect payments, issue receipts and maintain audit-ready ledgers.
+
+Key capabilities
+
+Monthly maintenance bill generation.
+
+Fixed charges, area-based charges, meter charges, parking charges and penalties.
+
+UPI/payment gateway support with manual cash/cheque recording.
+
+Receipts, flat-wise ledger, defaulter report and collection report.
+
+Bank reconciliation and accounting export readiness.
+
+Implementation guidance
+
+Resident maintenance billing must remain separate from platform subscription billing. Do not delete financial records; use reversal or correction entries.
+
+7.4 Complaints and Helpdesk
+
+This module converts WhatsApp complaints into structured tickets with ownership, SLA and evidence.
+
+Key capabilities
+
+Complaint creation with category, priority, photo/video proof.
+
+Assignment to facility manager, vendor or staff.
+
+SLA tracking, escalation and reopen.
+
+Resident feedback after closure.
+
+Private/silent complaint option with misuse controls.
+
+Implementation guidance
+
+Every complaint should have status, SLA, assignee, audit trail and notification rules. Sensitive complaints must have restricted visibility.
+
+7.5 Facility and Amenity Booking
+
+This module manages common facilities such as clubhouse, gym, pool, sports courts, party hall and guest rooms.
+
+Key capabilities
+
+Slot availability and capacity rules.
+
+Free/paid booking and refundable deposit.
+
+Approval workflow and QR check-in.
+
+Cancellation and refund rules.
+
+Damage deposit and post-use inspection.
+
+Implementation guidance
+
+Avoid double booking using database-level checks. Booking status should control payment and refund behavior.
+
+7.6 Parking and Vehicle Management
+
+This module manages resident vehicles, parking allocation, visitor parking and wrong parking incidents.
+
+Key capabilities
+
+Vehicle registration and parking slot allocation.
+
+Visitor parking pass and temporary vehicle pass.
+
+Wrong parking and vehicle blocking workflow.
+
+Violation history and repeat-offence escalation.
+
+RFID/ANPR readiness for future automation.
+
+Implementation guidance
+
+Parking slot should be treated as an asset linked to unit and vehicle. Violation history must be visible only to authorized roles.
+
+7.7 Resident Connect and Controlled Communication
+
+This is a differentiating privacy-first messaging layer. It allows residents to communicate without exposing phone numbers or depending on admins.
+
+Key capabilities
+
+Resident-to-resident first-contact request with subject and reason.
+
+Recipient can accept, reject, block or report.
+
+Permanent chat thread after acceptance.
+
+Department chats for accounts, security, facility and helpdesk.
+
+Controlled group chats for tower, floor, owners, tenants or community groups.
+
+Implementation guidance
+
+Admin should not read private chats by default. Only reported messages and required metadata should become visible under a moderation workflow.
+
+7.8 Inter-flat Issues and Dispute Mediation
+
+This module handles sensitive neighbour problems through calm, trackable workflows instead of public arguments.
+
+Key capabilities
+
+Water leakage, noise, renovation disturbance, parking, pet nuisance and damage claims.
+
+Evidence upload and affected-flat tagging.
+
+Polite notification to involved flat.
+
+Facility inspection and mediation assignment.
+
+Resolution proposal, acceptance and closure proof.
+
+Implementation guidance
+
+Dispute cases should be separate from normal complaints because they involve multiple parties and stricter visibility rules.
+
+7.9 Governance, AGM and Elections
+
+This module helps societies run formal governance workflows in a transparent and auditable way.
+
+Key capabilities
+
+AGM/SGM notice, agenda, RSVP and attendance.
+
+Proxy authorization and question submission.
+
+Minutes of meeting and resolution tracker.
+
+Owner-only polls and e-voting when enabled.
+
+Election nomination, candidate profile and result publication.
+
+Implementation guidance
+
+E-voting should remain optional and disabled until society rules, eligibility and local compliance assumptions are configured.
+
+7.10 Safety, Emergency and Senior Citizen Care
+
+This module provides urgent support for residents, guards and families.
+
+Key capabilities
+
+SOS button, medical emergency, fire alert and lift stuck alert.
+
+Family connect and emergency volunteer alerts.
+
+Senior citizen simple mode, daily check-in and priority complaint.
+
+Incident timeline and post-incident review.
+
+Emergency notifications that bypass non-critical preferences.
+
+Implementation guidance
+
+Emergency flows must be fast, reliable and audited. Critical alerts should have acknowledgement and escalation.
+
+7.11 Vendor, AMC, Asset and Inventory Management
+
+This module helps facility teams manage common assets, vendors, contracts and preventive maintenance.
+
+Key capabilities
+
+Vendor database and contract tracking.
+
+AMC expiry reminders for lift, fire, pumps, generators and other assets.
+
+Asset register with location, warranty, documents and service schedule.
+
+Inventory issue/return and purchase requests.
+
+Vendor scorecard based on SLA, complaints and feedback.
+
+Implementation guidance
+
+Assets should store category, location, warranty, AMC, documents and service history. Vendor score should use objective operational data.
+
+7.12 Marketplace and External Services
+
+This module starts as a useful service directory and can later become a verified partner marketplace.
+
+Key capabilities
+
+Society-approved service listings.
+
+Cleaning, car wash, pest control, laundry, appliances, pet care, elder care and tutors.
+
+Packers/movers and interior designers for move-in/renovation.
+
+Vendor ratings and request workflow.
+
+Future verified partners and payments.
+
+Implementation guidance
+
+No intrusive ads during launch. Marketplace should feel like a community utility, not an advertising surface.
+
+8. Owner, Tenant and Occupancy History Management
+
+This is a high-value addition because societies often lose previous tenant and owner records in physical files, WhatsApp chats and email attachments. The system should maintain a clean historical timeline for every flat or unit, including previous residents, documents, NOC records, approval history and access deactivation.
+
+Business purpose
+
+For each flat, authorized admins should be able to answer: Who owns it now? Who owned it previously? Which tenants lived there? What documents were submitted? Was police verification completed? Was move-out NOC issued? Were dues cleared before exit?
+
+Capability
+
+Detailed behavior
+
+Access rule
+
+Current owner profile
+
+Shows active owner, co-owner, family, vehicles, documents and communication preferences.
+
+Owner and authorized admin.
+
+Current tenant profile
+
+Shows tenant details, rent agreement metadata, KYC, police verification, move-in date and owner approval.
+
+Tenant own profile; admin restricted access.
+
+Previous owner history
+
+Shows past owners of the unit with start/end dates, sale/transfer reference and related documents.
+
+Authorized admin only.
+
+Previous tenant history
+
+Shows past tenants, occupancy period, move-out status, NOC, documents and pending/cleared dues.
+
+Authorized admin only.
+
+Document archive
+
+Stores old agreements, KYC, police verification, NOC and handover documents without exposing them to new residents.
+
+Role-based and audited.
+
+Flat timeline
+
+Chronological view of owner change, tenant move-in, tenant move-out, NOC issuance, access activation and revocation.
+
+Admin/facility/secretary.
+
+Mandatory NOC before leaving
+
+Move-out cannot be completed until configured clearances are completed or overridden with reason.
+
+Secretary/treasurer/facility approval.
+
+Figure 6: Move-out and mandatory NOC workflow for owner/tenant lifecycle management.
+
+Data entity
+
+Purpose
+
+Important fields
+
+UnitOccupancyHistory
+
+Stores each occupancy period for a flat/unit.
+
+unitId, ownerId, tenantId, startDate, endDate, status, moveInRequestId, moveOutRequestId
+
+OwnerHistory
+
+Stores ownership timeline and transfer context.
+
+unitId, ownerProfileId, ownershipStart, ownershipEnd, transferReason, documentIds
+
+TenantHistory
+
+Stores tenant occupancy and exit context.
+
+unitId, tenantProfileId, agreementStart, agreementEnd, policeVerificationStatus, nocStatus
+
+MoveInRequest
+
+Tracks move-in approval and activation.
+
+unitId, requestedBy, ownerApproval, adminApproval, liftSlot, truckPass, accessStatus
+
+MoveOutRequest
+
+Tracks move-out clearance and closure.
+
+unitId, requestedBy, clearanceChecklist, approvalStatus, exitDate
+
+NocRecord
+
+Stores generated/uploaded NOC metadata.
+
+requestId, nocType, issuedBy, issuedAt, pdfDocumentId, qrVerificationCode
+
+DocumentAccessLog
+
+Tracks access to sensitive resident documents.
+
+documentId, actorUserId, action, timestamp, ipAddress, deviceId
+
+9. Biometric Attendance Integration
+
+The platform should support fingerprint or biometric attendance devices so the admin can see accurate attendance of security guards, housekeeping staff and other society workers. This is especially useful when security or housekeeping is outsourced and vendor bills need attendance verification.
+
+Important privacy rule
+
+The Society OS application should avoid storing raw fingerprint images or biometric templates. Ideally, fingerprint registration and matching remain inside the biometric device/vendor system. Society OS should receive only attendance logs such as employeeCode, deviceId, punchTime, punchType and sync status.
+
+Figure 7: Biometric attendance sync flow from fingerprint device to admin reports.
+
+Capability
+
+Detailed behavior
+
+Device registration
+
+Admin/super admin registers biometric devices with device code, location, society, gate/office and sync mode.
+
+Staff mapping
+
+Employee code from biometric device is mapped to staff profile, vendor, role and shift.
+
+Punch sync
+
+System imports check-in/check-out logs through API, file import, sync agent or vendor connector.
+
+Duplicate prevention
+
+Same employeeCode + deviceId + punchTime should not be imported twice.
+
+Shift calculation
+
+System compares punch time with roster to mark present, late, early checkout, half day or absent.
+
+Manual correction
+
+Facility manager can correct missed punches with reason, approval and audit log.
+
+Reports
+
+Daily, monthly, staff-wise, vendor-wise and location-wise attendance reports.
+
+Vendor billing support
+
+Attendance summaries can support invoice verification for security and housekeeping vendors.
+
+Entity
+
+Purpose
+
+Fields
+
+BiometricDevice
+
+Stores device metadata.
+
+id, societyId, locationId, deviceCode, vendorName, syncType, status
+
+BiometricStaffMapping
+
+Maps device employee code to staff profile.
+
+deviceId, employeeCode, staffProfileId, effectiveFrom, effectiveTo
+
+AttendancePunch
+
+Stores raw attendance event from device.
+
+staffId, deviceId, punchTime, punchType, source, syncJobId, duplicateKey
+
+AttendanceDailySummary
+
+Stores computed daily attendance.
+
+staffId, date, shiftId, status, firstIn, lastOut, lateMinutes, earlyMinutes
+
+AttendanceCorrectionRequest
+
+Tracks manual correction workflow.
+
+attendanceId, requestedBy, reason, oldValue, newValue, approvalStatus
+
+10. Document Vault, NOC and Secure Access
+
+Documents are one of the most sensitive and valuable parts of this product. The system should handle society documents, resident documents, tenant agreements, owner records, staff verification, vendor contracts and compliance certificates with strict access control.
+
+Figure 8: Secure document access flow with permission check, signed access and audit logging.
+
+Document category
+
+Examples
+
+Special handling
+
+Society documents
+
+Registration certificate, bylaws, AGM minutes, fire NOC, lift certificate.
+
+Visible to committee/admin; selected docs can be visible to residents.
+
+Owner documents
+
+Sale deed, share certificate, ID proof, address proof.
+
+Sensitive; restricted to owner and authorized admin.
+
+Tenant documents
+
+Rent agreement, KYC, police verification, owner approval.
+
+Sensitive; should not be visible to other residents or future tenants.
+
+Move-in documents
+
+Move-in form, vehicle details, rule acknowledgement, truck pass.
+
+Linked to move-in request and unit timeline.
+
+Move-out documents
+
+No dues, move-out NOC, handover confirmation, damage inspection.
+
+Required before closing move-out workflow.
+
+Staff/vendor documents
+
+Police verification, contract, AMC, license, insurance.
+
+Visible to facility/admin; expiry reminders required.
+
+Compliance documents
+
+Fire safety, lift, insurance, legal notices.
+
+Expiry reminders and compliance dashboard required.
+
+NOC type
+
+When used
+
+Clearance checks
+
+No dues certificate
+
+Owner/tenant needs financial clearance proof.
+
+Maintenance dues, penalties, facility charges, deposits.
+
+Move-out NOC
+
+Tenant or owner exits the society/unit.
+
+Dues, access cards, parking sticker, complaints, damage, documents.
+
+Tenant NOC
+
+Tenant onboarding or exit approval.
+
+Owner approval, KYC, agreement, police verification.
+
+Parking NOC
+
+Vehicle/parking clearance.
+
+Parking dues, sticker return, violations.
+
+Renovation NOC
+
+Interior work completion.
+
+Damage inspection, debris clearance, contractor pass closure.
+
+Residence certificate
+
+Resident needs society address proof.
+
+Occupancy active, admin approval, document verification.
+
+11. Workflows and User Journeys
+
+Workflows should be implemented using a configurable workflow engine wherever possible. A small society may need only one approval, while a premium community may need treasurer, facility manager and secretary approvals for the same action.
+
+Figure 9: Visitor pre-approval and gate validation workflow.
+
+Figure 10: Privacy-first Resident Connect approval workflow.
+
+Workflow
+
+Main steps
+
+Important edge cases
+
+Monthly maintenance billing
+
+Treasurer reviews charge heads, generates draft, approves, publishes bills, collects payments and issues receipts.
+
+Duplicate payment, partial payment, late penalty, manual cheque/cash entry, accounting lock.
+
+Complaint lifecycle
+
+Resident raises complaint, system assigns, SLA starts, vendor/staff resolves, resident confirms or reopens.
+
+Repeated complaint, private complaint, escalation, wrong category, unresolved vendor task.
+
+Move-in
+
+Owner/tenant submits details, documents uploaded, owner/admin approve, rules accepted, access activated.
+
+Incomplete KYC, missing police verification, tenant without owner approval, lift/truck slot conflict.
+
+Move-out
+
+Resident requests exit, dues/assets/access checked, approvals done, NOC generated, access revoked.
+
+Pending dues, lost access card, damage claim, admin override, missing NOC.
+
+Biometric attendance
+
+Device stores punch, connector syncs, system validates, maps shift, calculates summary and reports.
+
+Duplicate punch, missing checkout, device offline, wrong employee code, manual correction.
+
+Wrong parking
+
+Resident uploads photo, system maps vehicle, owner/security notified, resolution and violation tracked.
+
+Unregistered vehicle, emergency blocking, repeat violation, false complaint.
+
+12. Data Model and API Design
+
+The data model should be multi-tenant from day one. Every business table should include societyId directly or indirectly through a strongly scoped parent entity. Sensitive data should be separated from public profile data wherever possible.
+
+Figure 11: Simplified entity relationship model for core modules and new v2 additions.
+
+Core entity
+
+Purpose
+
+Society
+
+Tenant/account root containing hierarchy, configuration, feature flags and hidden commercial fields.
+
+Unit
+
+Flat/villa/shop/office entity linked to residents, bills, visitors, documents, parking and complaints.
+
+ResidentProfile
+
+Owner, tenant or family profile linked to user and unit.
+
+UnitOccupancyHistory
+
+Historical timeline of ownership and tenancy for each unit.
+
+Document
+
+File metadata, storage reference, visibility, verification and expiry metadata.
+
+NocRequest
+
+Approval workflow and PDF generation metadata for NOC/certificate requests.
+
+StaffProfile
+
+Guard, housekeeping, facility staff, domestic help or vendor worker profile.
+
+AttendancePunch
+
+Imported or manually recorded attendance punch event.
+
+Bill and Payment
+
+Maintenance billing, receipts and ledger transactions.
+
+Complaint
+
+Resident complaint or operational ticket with SLA and assignment.
+
+AuditLog
+
+Immutable action trail for sensitive operations.
+
+Endpoint
+
+Purpose
+
+POST /api/societies
+
+Create society record.
+
+PATCH /api/societies/{id}/features
+
+Update feature flags.
+
+POST /api/units/import
+
+Bulk import units and residents.
+
+GET /api/units/{id}/occupancy-history
+
+View owner/tenant history for a unit.
+
+POST /api/move-in-requests
+
+Create move-in workflow.
+
+POST /api/move-out-requests
+
+Create move-out workflow.
+
+POST /api/noc-requests
+
+Request NOC/certificate.
+
+POST /api/documents
+
+Upload secure document.
+
+GET /api/documents/{id}/download
+
+Controlled download after permission check.
+
+POST /api/visitors/preapprove
+
+Create visitor pass.
+
+POST /api/gate/entries
+
+Record gate entry.
+
+POST /api/bills/generate
+
+Generate bills.
+
+POST /api/payments/callback
+
+Payment gateway callback.
+
+POST /api/complaints
+
+Create complaint.
+
+POST /api/resident-connect/requests
+
+Create first-contact chat request.
+
+POST /api/integrations/biometric/devices
+
+Register biometric device.
+
+POST /api/integrations/biometric/punches/sync
+
+Import attendance punch logs.
+
+GET /api/staff-attendance/monthly
+
+Attendance report.
+
+PATCH /api/staff-attendance/{id}/correction
+
+Attendance correction workflow.
+
+13. Feature Flags and Configuration
+
+All major capabilities should be controlled through feature flags. This prevents feature clutter and allows the same backend to serve small buildings and large townships. Feature checks must happen in both frontend and backend.
+
+Feature flag
+
+Purpose
+
+Launch value
+
+visitorManagement
+
+Enable visitor pass, guard entry and gate logs.
+
+true
+
+maintenanceBilling
+
+Enable maintenance bill generation, payment and ledger.
+
+true
+
+complaints
+
+Enable complaint/helpdesk workflows.
+
+true
+
+documentVault
+
+Enable secure society/resident/vendor document storage.
+
+true
+
+ownerTenantHistory
+
+Enable previous owner/tenant timeline and document archive.
+
+true
+
+moveOutNocMandatory
+
+Require NOC before move-out closure.
+
+true
+
+residentMessenger
+
+Enable privacy-first resident-to-resident chat.
+
+true
+
+publicResidentDirectory
+
+Enable opt-in public directory if society policy allows.
+
+false
+
+biometricAttendanceIntegration
+
+Enable sync with fingerprint attendance devices.
+
+false at launch
+
+hardwareIntegration
+
+Enable device integration framework.
+
+false at launch
+
+subscriptionBillingUI
+
+Show SaaS pricing/subscription screens.
+
+false during free launch
+
+smartAutomation
+
+Enable future automation features.
+
+false until data maturity
+
+Configuration rule
+
+Disabled modules must not appear in the UI, and backend APIs must still block access. Hidden modules can exist in code and database, but should not confuse users. Every configuration change should write an audit log with previous value, new value, actor and timestamp.
+
+14. Security, Privacy and Audit Logging
+
+The platform will contain sensitive resident data, tenant documents, payment records, visitor logs, staff verification documents and private communication metadata. Security cannot be treated as an afterthought.
+
+Area
+
+Required control
+
+Tenant isolation
+
+Every request must be scoped by societyId and validated server-side.
+
+RBAC
+
+Role and permission checks must be enforced for every sensitive action.
+
+Document security
+
+Use object storage with signed URLs or controlled download APIs; never expose public document paths.
+
+Audit logs
+
+Log sensitive actions: document view/download, NOC approval, attendance correction, billing lock, role change.
+
+Privacy settings
+
+Resident directory visibility and phone number exposure must be consent-driven and server-enforced.
+
+Chat privacy
+
+Private chats are not readable by admin unless reported or legally escalated.
+
+Biometric privacy
+
+Do not store raw fingerprint data in Society OS; sync only attendance logs.
+
+Data retention
+
+Visitor, staff and resident lifecycle data should have configurable retention policies.
+
+Session security
+
+Support device session management, forced logout and secure token expiry.
+
+Financial integrity
+
+Do not delete bills, receipts or ledgers; use correction/reversal entries.
+
+15. Reports and Society Health Score
+
+Reports should help committees and facility managers make decisions quickly. The dashboard should not only display raw numbers; it should explain operational health through trends, alerts and scorecards.
+
+Report category
+
+Example reports
+
+Financial
+
+Collection report, defaulter list, expense report, budget vs actual, fund-wise balance.
+
+Operations
+
+Complaint SLA, vendor performance, housekeeping checklist, asset maintenance, repeated issues.
+
+Security
+
+Visitor trends, gate load, incident count, blacklist events, guard attendance.
+
+Staff attendance
+
+Daily attendance, monthly attendance, shift adherence, absent guards, vendor-wise summary.
+
+Owner/tenant lifecycle
+
+Move-in status, move-out pending NOC, expired agreements, police verification pending.
+
+Compliance
+
+Expired documents, fire/lift NOC renewal, meeting records, rule acknowledgement.
+
+Community
+
+Notice acknowledgement, event participation, poll response and complaint feedback.
+
+Society health component
+
+Example metric
+
+Collection efficiency
+
+Percentage of maintenance collected within due date.
+
+Complaint resolution
+
+SLA compliance, average resolution time and resident feedback.
+
+Security discipline
+
+Gate process compliance, incidents, guard attendance and unresolved security tasks.
+
+Compliance health
+
+Mandatory documents valid and up to date.
+
+Operational efficiency
+
+Vendor performance, asset uptime and repeated issue reduction.
+
+Resident satisfaction
+
+Feedback rating, complaint reopen rate, poll participation and response time.
+
+16. Smart Automation and Future Integrations
+
+Smart automation should be added after the core platform has clean, structured and permission-safe data. In UI and code, it is better to use names such as Smart, Automated or Assistant instead of prominently using the word AI everywhere.
+
+Smart capability
+
+User-facing name
+
+Use case
+
+Dependency
+
+Complaint routing
+
+Smart Complaint Routing
+
+Auto-categorize and route complaints to correct team/vendor.
+
+Complaint history and category rules.
+
+Notice drafting
+
+Automated Notice Drafting
+
+Draft multilingual society notices from admin intent.
+
+Communication module.
+
+Document search
+
+Smart Document Search
+
+Ask questions over permitted society documents.
+
+Document vault and RBAC.
+
+Billing explanation
+
+Bill Explanation Assistant
+
+Explain why maintenance bill changed.
+
+Structured bills and charge heads.
+
+Meeting summary
+
+Meeting Summary Generator
+
+Summarize AGM/committee notes.
+
+Meeting notes or transcript.
+
+Predictive maintenance
+
+Maintenance Risk Alerts
+
+Identify assets likely to fail.
+
+Asset and maintenance history.
+
+Integration
+
+Purpose
+
+Design note
+
+Biometric devices
+
+Guard and worker attendance sync.
+
+Use attendance logs, not raw biometric templates.
+
+RFID
+
+Vehicle and staff access automation.
+
+Map tags to vehicle/staff profiles.
+
+ANPR
+
+Automatic vehicle recognition.
+
+Treat as optional premium integration.
+
+CCTV
+
+Restricted camera access and incident evidence.
+
+Highly role-controlled and audited.
+
+Smart meters
+
+Water/electricity/gas data integration.
+
+Start manual, design sensor-ready schema.
+
+EV charging
+
+Slot booking, usage recording and billing.
+
+Can link facility booking and billing.
+
+17. Roadmap and Delivery Priorities
+
+The roadmap below balances fast launch value with long-term differentiation. It keeps MVP practical while clearly reserving advanced hardware and automation for later phases.
+
+Phase
+
+Feature set
+
+Outcome
+
+MVP
+
+Society setup, unit master, resident onboarding, visitor app, guard app, billing, complaints, notices, staff management, document vault, feature flags.
+
+Launch usable app for real societies without overwhelming UI.
+
+Phase 1A
+
+Resident Connect, privacy directory, smart move-in/move-out, owner/tenant history, resident document archive, parcel handover, inter-flat issues.
+
+Differentiate from basic society apps and solve daily resident problems.
+
+Phase 2
+
+Digital NOC, rules acknowledgement, parking, facility booking, vendor/AMC, assets, renovation, governance, advanced reports.
+
+Strengthen operational maturity and admin control.
+
+Phase 3
+
+Biometric attendance sync, staff shift automation, senior citizen care, emergency volunteers, marketplace, society health score.
+
+Add measurable operational intelligence and premium utility.
+
+Phase 4
+
+RFID, ANPR, boom barrier, CCTV, smart meters, EV charging, smart automation, e-voting, advanced hardware integrations.
+
+Make platform enterprise and premium-society ready.
+
+Recommended MVP discipline
+
+Do not build every advanced feature in the first release. Build core society setup, visitor management, billing, complaints, documents, staff management and basic attendance first. Keep advanced modules behind feature flags so they can be developed without cluttering the launch UI.
+
+18. Acceptance Criteria and Implementation Backlog
+
+Acceptance criteria should be specific enough for QA and developers. Every major feature should include positive cases, negative cases, permission checks, audit logs and edge cases.
+
+Epic
+
+User story
+
+Acceptance criteria
+
+Resident onboarding
+
+Admin can bulk import residents from Excel.
+
+System validates duplicates, previews data, imports records, links units and logs the import job.
+
+Visitor management
+
+Resident can pre-approve a guest.
+
+Guest receives QR/OTP, guard validates it, entry is logged and resident receives notification.
+
+Billing
+
+Treasurer can generate monthly bills.
+
+Bills are generated correctly, published, paid and receipted with ledger update.
+
+Complaints
+
+Resident can raise complaint with photo.
+
+Complaint gets ticket ID, SLA, category, assignment, notification and audit trail.
+
+Owner/tenant history
+
+Admin can view past owners and tenants of a unit.
+
+History includes occupancy dates, documents, NOC status and access is restricted/audited.
+
+Move-out NOC
+
+Tenant/owner cannot complete move-out without clearance.
+
+System checks dues, complaints, parking, access cards and documents before NOC generation.
+
+Document vault
+
+Admin can upload and control sensitive documents.
+
+Document has type, owner entity, visibility, expiry, version and access log.
+
+Biometric sync
+
+System imports attendance punches from biometric device.
+
+Duplicates are rejected, employee code maps to staff, shift summary is calculated and sync job is logged.
+
+Attendance correction
+
+Facility manager can correct missed punch.
+
+Correction requires reason, approval where configured and audit log.
+
+Resident Connect
+
+First message requires subject/reason.
+
+Recipient can accept, reject, block or report; phone number remains hidden.
+
+Private chat moderation
+
+Admin cannot read private chat by default.
+
+Only reported messages and permitted metadata are visible under audited moderation flow.
+
+Feature flags
+
+Super admin can enable/disable modules.
+
+Disabled modules disappear from UI and backend access is blocked.
+
+Emergency
+
+Resident can trigger SOS.
+
+Configured responders receive urgent alert and acknowledgement is tracked.
+
+19. Appendix
+
+19.1 Example feature flag structure
+
+features: {
+
+  visitorManagement: true,
+
+  maintenanceBilling: true,
+
+  complaints: true,
+
+  documentVault: true,
+
+  ownerTenantHistory: true,
+
+  occupancyHistory: true,
+
+  moveOutNocMandatory: true,
+
+  residentDocumentArchive: true,
+
+  residentMessenger: true,
+
+  residentDirectory: true,
+
+  publicResidentDirectory: false,
+
+  controlledGroupChat: true,
+
+  digitalNocRequests: true,
+
+  societyRulesAcknowledgement: true,
+
+  biometricAttendanceIntegration: false,
+
+  attendanceDeviceSync: false,
+
+  staffShiftRoster: true,
+
+  attendanceCorrectionWorkflow: true,
+
+  cctvAccess: false,
+
+  anprRfidIntegration: false,
+
+  smartMeters: false,
+
+  evCharging: false,
+
+  subscriptionBillingUI: false,
+
+  pricingPage: false,
+
+  upgradePrompts: false
+
+}
+
+19.2 Developer rules
+
+Never hardcode visible pricing in user-facing app during free launch.
+
+All modules must check feature flags on frontend and backend.
+
+Every sensitive admin action must create an audit log.
+
+Do not delete financial records; use reversal or correction entries.
+
+Documents must have access control, expiry metadata and access logs.
+
+Guard app must support low connectivity and low-end Android devices.
+
+Keep SaaS subscription billing separate from resident maintenance payments.
+
+Do not store raw fingerprint data in Society OS; sync only attendance punch logs.
+
+Previous owner/tenant documents must never be visible to new residents by default.
+
+Move-out closure must require NOC unless an authorized role overrides with reason.
+
+19.3 Final recommendation
+
+Society OS should launch as a clean, free and configurable society management platform while keeping its codebase enterprise-ready. The product should handle standard society needs such as visitors, billing, complaints and documents, but also solve deeper operational problems: privacy-first resident communication, owner/tenant lifecycle records, previous document access, mandatory move-out NOC, guard/worker attendance, hardware-ready integrations, governance and safety. These additions make the product more useful than a basic society app because they reduce manual files, WhatsApp dependency, attendance disputes and unclear move-out processes.

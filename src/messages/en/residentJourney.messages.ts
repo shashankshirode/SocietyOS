@@ -1,0 +1,15 @@
+export const residentJourneyMessages = {
+  currentStatusLabel: 'Current Status',
+  nextStepLabel: 'Next Step',
+  deadlineLabel: 'Deadline',
+  responsiblePartyLabel: 'Responsible',
+  visitorPassSummary: 'Visitor Pass Summary',
+  billPaymentSummary: 'Bill Payment Summary',
+  complaintStatusSummary: 'Complaint Status Summary',
+  nocClearanceSummary: 'NOC Clearance Summary',
+  moveOutSummary: 'Move-out Clearance Summary',
+  facilityBookingSummary: 'Facility Booking Summary',
+  parcelPickupSummary: 'Parcel Pickup Summary',
+  kycVerificationSummary: 'KYC Verification Summary',
+  emergencyAlertSummary: 'Emergency Incident Summary',
+} as const;

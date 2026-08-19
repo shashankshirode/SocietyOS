@@ -1,0 +1,32 @@
+export type LiftStatus =
+  | 'OPERATIONAL'
+  | 'UNDER_MAINTENANCE'
+  | 'OUT_OF_SERVICE'
+  | 'BREAKDOWN'
+  | 'INSPECTION_DUE'
+  | 'CERTIFICATE_EXPIRED';
+
+export type LiftBreakdownType =
+  | 'DOOR_ISSUE'
+  | 'POWER_ISSUE'
+  | 'BUTTON_PANEL_ISSUE'
+  | 'NOISE_OR_VIBRATION'
+  | 'STUCK_BETWEEN_FLOORS'
+  | 'NOT_RESPONDING'
+  | 'SENSOR_ISSUE'
+  | 'OTHER';
+
+export type LiftVisitType =
+  | 'PREVENTIVE_MAINTENANCE'
+  | 'BREAKDOWN_REPAIR'
+  | 'SAFETY_INSPECTION'
+  | 'CERTIFICATE_INSPECTION'
+  | 'CALLBACK_VISIT'
+  | 'OTHER';
+
+export type MaintenanceVisitStatus =
+  | 'SCHEDULED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FOLLOW_UP_REQUIRED'
+  | 'CANCELLED';

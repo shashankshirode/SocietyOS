@@ -1,0 +1,55 @@
+import { CommunityDashboard } from '../types/community.types';
+
+export const mockCommunityDashboard: CommunityDashboard = {
+  activeListingsCount: 18,
+  skillsRegisteredCount: 15,
+  activeBorrowsCount: 6,
+  lostItemsActiveCount: 4,
+  recentActivities: [
+    {
+      id: 'act-1',
+      type: 'MARKETPLACE',
+      title: 'New Listing: Philips Air Fryer',
+      description: 'Amit Sharma listed a Philips Air Fryer for ₹2,500',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), 
+      unitNumber: 'A-102',
+      userName: 'Amit Sharma',
+    },
+    {
+      id: 'act-2',
+      type: 'SKILL',
+      title: 'New Skill: Guitar Tutor',
+      description: 'Rahul Verma registered as a Guitar Tutor',
+      timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), 
+      unitNumber: 'B-604',
+      userName: 'Rahul Verma',
+    },
+    {
+      id: 'act-3',
+      type: 'BORROW',
+      title: 'Item Borrowed: Bosch Drill Machine',
+      description: 'Priya Patel borrowed Bosch Drill Machine from Rajesh Kumar',
+      timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), 
+      unitNumber: 'C-1502',
+      userName: 'Priya Patel',
+    },
+    {
+      id: 'act-4',
+      type: 'LOST_FOUND',
+      title: 'Lost Item Reported: Car Key Fob',
+      description: 'Suresh Menon reported a lost Honda car key fob in the Clubhouse',
+      timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), 
+      unitNumber: 'A-903',
+      userName: 'Suresh Menon',
+    },
+    {
+      id: 'act-5',
+      type: 'MARKETPLACE',
+      title: 'Listing Sold: Trek Hybrid Bicycle',
+      description: 'Vikram Malhotra marked Trek Hybrid Bicycle as Sold',
+      timestamp: new Date(Date.now() - 30 * 3600 * 1000).toISOString(), 
+      unitNumber: 'D-401',
+      userName: 'Vikram Malhotra',
+    },
+  ],
+};

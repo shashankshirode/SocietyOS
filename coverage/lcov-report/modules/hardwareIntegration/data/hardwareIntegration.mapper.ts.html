@@ -1,0 +1,250 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for modules/hardwareIntegration/data/hardwareIntegration.mapper.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">modules/hardwareIntegration/data</a> hardwareIntegration.mapper.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">62.5% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>40/64</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">25% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>8/32</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>32/32</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// Hardware Integration Mappers (Milestone 28)
+&nbsp;
+import type { HardwareDevice, DeviceLocationMapping, HardwareSyncJob, HardwareEvent, HardwareErrorRecord, IntegrationHealthRow, HardwareAuditLogEntry, HardwareSettingGroup, HardwareHomeData } from '../../../shared/types/hardware.types';
+import type { RfidEvent, RfidTagMapping, AnprEvent, AnprVehicleMatchReview, BoomBarrierDevice, GateHardwareDashboardData } from '../../../shared/types/gateHardware.types';
+import type { CctvCamera, CctvAccessRequest } from '../../../shared/types/cctv.types';
+import type { SmartMeter, SmartMeterReading, SmartMeterDashboardData } from '../../../shared/types/smartMeter.types';
+import type { EvCharger, EvChargingSession, EvChargingDashboardData } from '../../../shared/types/evCharging.types';
+&nbsp;
+export const mapDevice = (dto: HardwareDevice): HardwareDevice =&gt; dto;
+export const mapDevices = <span class="fstat-no" title="function not covered" >(d</span>tos: HardwareDevice[]): HardwareDevice[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapDevice);</span>
+&nbsp;
+export const mapLocationMapping = <span class="fstat-no" title="function not covered" >(d</span>to: DeviceLocationMapping): DeviceLocationMapping =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapLocationMappings = <span class="fstat-no" title="function not covered" >(d</span>tos: DeviceLocationMapping[]): DeviceLocationMapping[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapLocationMapping);</span>
+&nbsp;
+export const mapSyncJob = (dto: HardwareSyncJob): HardwareSyncJob =&gt; dto;
+export const mapSyncJobs = <span class="fstat-no" title="function not covered" >(d</span>tos: HardwareSyncJob[]): HardwareSyncJob[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapSyncJob);</span>
+&nbsp;
+export const mapEvent = (dto: HardwareEvent): HardwareEvent =&gt; dto;
+export const mapEvents = <span class="fstat-no" title="function not covered" >(d</span>tos: HardwareEvent[]): HardwareEvent[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapEvent);</span>
+&nbsp;
+export const mapErrorRecord = (dto: HardwareErrorRecord): HardwareErrorRecord =&gt; dto;
+export const mapErrorRecords = <span class="fstat-no" title="function not covered" >(d</span>tos: HardwareErrorRecord[]): HardwareErrorRecord[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapErrorRecord);</span>
+&nbsp;
+export const mapHealthRow = (dto: IntegrationHealthRow): IntegrationHealthRow =&gt; dto;
+export const mapHealthRows = <span class="fstat-no" title="function not covered" >(d</span>tos: IntegrationHealthRow[]): IntegrationHealthRow[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapHealthRow);</span>
+&nbsp;
+export const mapAuditLog = (dto: HardwareAuditLogEntry): HardwareAuditLogEntry =&gt; dto;
+export const mapAuditLogs = <span class="fstat-no" title="function not covered" >(d</span>tos: HardwareAuditLogEntry[]): HardwareAuditLogEntry[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapAuditLog);</span>
+&nbsp;
+export const mapRfidEvent = <span class="fstat-no" title="function not covered" >(d</span>to: RfidEvent): RfidEvent =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapRfidEvents = <span class="fstat-no" title="function not covered" >(d</span>tos: RfidEvent[]): RfidEvent[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapRfidEvent);</span>
+&nbsp;
+export const mapRfidTagMapping = <span class="fstat-no" title="function not covered" >(d</span>to: RfidTagMapping): RfidTagMapping =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapRfidTagMappings = <span class="fstat-no" title="function not covered" >(d</span>tos: RfidTagMapping[]): RfidTagMapping[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapRfidTagMapping);</span>
+&nbsp;
+export const mapAnprEvent = <span class="fstat-no" title="function not covered" >(d</span>to: AnprEvent): AnprEvent =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapAnprEvents = <span class="fstat-no" title="function not covered" >(d</span>tos: AnprEvent[]): AnprEvent[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapAnprEvent);</span>
+&nbsp;
+export const mapBoomBarrier = <span class="fstat-no" title="function not covered" >(d</span>to: BoomBarrierDevice): BoomBarrierDevice =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapBoomBarriers = <span class="fstat-no" title="function not covered" >(d</span>tos: BoomBarrierDevice[]): BoomBarrierDevice[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapBoomBarrier);</span>
+&nbsp;
+export const mapCctvCamera = <span class="fstat-no" title="function not covered" >(d</span>to: CctvCamera): CctvCamera =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapCctvCameras = <span class="fstat-no" title="function not covered" >(d</span>tos: CctvCamera[]): CctvCamera[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapCctvCamera);</span>
+&nbsp;
+export const mapSmartMeter = <span class="fstat-no" title="function not covered" >(d</span>to: SmartMeter): SmartMeter =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapSmartMeters = <span class="fstat-no" title="function not covered" >(d</span>tos: SmartMeter[]): SmartMeter[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapSmartMeter);</span>
+&nbsp;
+export const mapSmartMeterReading = (dto: SmartMeterReading): SmartMeterReading =&gt; dto;
+export const mapSmartMeterReadings = <span class="fstat-no" title="function not covered" >(d</span>tos: SmartMeterReading[]): SmartMeterReading[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapSmartMeterReading);</span>
+&nbsp;
+export const mapEvCharger = <span class="fstat-no" title="function not covered" >(d</span>to: EvCharger): EvCharger =&gt; <span class="cstat-no" title="statement not covered" >dto;</span>
+export const mapEvChargers = <span class="fstat-no" title="function not covered" >(d</span>tos: EvCharger[]): EvCharger[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapEvCharger);</span>
+&nbsp;
+export const mapEvChargingSession = (dto: EvChargingSession): EvChargingSession =&gt; dto;
+export const mapEvChargingSessions = <span class="fstat-no" title="function not covered" >(d</span>tos: EvChargingSession[]): EvChargingSession[] =&gt; <span class="cstat-no" title="statement not covered" >dtos.map(mapEvChargingSession);</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-07-04T09:33:18.729Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    

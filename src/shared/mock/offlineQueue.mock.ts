@@ -1,0 +1,50 @@
+import { OfflineQueueItem } from '../types/gate.types';
+
+export const mockOfflineQueue: OfflineQueueItem[] = [
+  {
+    id: 'off-001',
+    entryType: 'DELIVERY',
+    personName: 'Zomato Delivery (Rinku)',
+    flatNumber: 'C-304',
+    createdTime: '10:48 AM',
+    retryCount: 0,
+    syncStatus: 'PENDING_SYNC',
+  },
+  {
+    id: 'off-002',
+    entryType: 'CAB',
+    personName: 'Uber (Amit)',
+    flatNumber: 'A-1204',
+    createdTime: '10:45 AM',
+    retryCount: 1,
+    syncStatus: 'SYNCING',
+  },
+  {
+    id: 'off-003',
+    entryType: 'STAFF',
+    personName: 'Sunita Bai',
+    flatNumber: 'B-703',
+    createdTime: '07:30 AM',
+    retryCount: 0,
+    syncStatus: 'SYNCED',
+  },
+  {
+    id: 'off-004',
+    entryType: 'GUEST',
+    personName: 'Ramesh Sharma',
+    flatNumber: 'A-1204',
+    createdTime: '09:00 AM',
+    retryCount: 3,
+    syncStatus: 'FAILED',
+    errorMessage: 'Network timeout (Gateway error 504)',
+  },
+  {
+    id: 'off-005',
+    entryType: 'VENDOR',
+    personName: 'Tata Power Technician',
+    flatNumber: 'Substation Gate 2',
+    createdTime: '10:35 AM',
+    retryCount: 0,
+    syncStatus: 'PENDING_SYNC',
+  },
+];

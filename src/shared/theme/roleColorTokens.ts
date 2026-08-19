@@ -1,0 +1,92 @@
+export const roleColorTokens = {
+  RESIDENT_OWNER: {
+    label: 'Resident Owner',
+    background: ['#172554', '#4F46E5'],
+    accent: '#A5B4FC',
+    text: '#FFFFFF',
+  },
+  RESIDENT_TENANT: {
+    label: 'Resident Tenant',
+    background: ['#1E3A8A', '#0EA5E9'],
+    accent: '#BAE6FD',
+    text: '#FFFFFF',
+  },
+  RESIDENT_FAMILY: {
+    label: 'Family Member',
+    background: ['#312E81', '#7C3AED'],
+    accent: '#DDD6FE',
+    text: '#FFFFFF',
+  },
+  SECURITY_GUARD: {
+    label: 'Security Guard',
+    background: ['#064E3B', '#0F766E'],
+    accent: '#99F6E4',
+    text: '#FFFFFF',
+  },
+  SECURITY_SUPERVISOR: {
+    label: 'Security Supervisor',
+    background: ['#134E4A', '#14B8A6'],
+    accent: '#CCFBF1',
+    text: '#FFFFFF',
+  },
+  FACILITY_MANAGER: {
+    label: 'Facility Manager',
+    background: ['#312E81', '#7C3AED'],
+    accent: '#DDD6FE',
+    text: '#FFFFFF',
+  },
+  SECRETARY: {
+    label: 'Secretary',
+    background: ['#0F172A', '#2563EB'],
+    accent: '#BFDBFE',
+    text: '#FFFFFF',
+  },
+  CHAIRPERSON: {
+    label: 'Chairperson',
+    background: ['#111827', '#1D4ED8'],
+    accent: '#DBEAFE',
+    text: '#FFFFFF',
+  },
+  COMMITTEE_MEMBER: {
+    label: 'Committee Member',
+    background: ['#1E293B', '#0284C7'],
+    accent: '#BAE6FD',
+    text: '#FFFFFF',
+  },
+  TREASURER: {
+    label: 'Treasurer',
+    background: ['#78350F', '#B7791F'],
+    accent: '#FEF3C7',
+    text: '#FFFFFF',
+  },
+  ACCOUNTANT: {
+    label: 'Accountant',
+    background: ['#713F12', '#CA8A04'],
+    accent: '#FEF9C3',
+    text: '#FFFFFF',
+  },
+  SOCIETY_ADMIN: {
+    label: 'Society Admin',
+    background: ['#0F172A', '#1D4ED8'],
+    accent: '#DBEAFE',
+    text: '#FFFFFF',
+  },
+  SUPER_ADMIN: {
+    label: 'Super Admin',
+    background: ['#111827', '#BE123C'],
+    accent: '#FFE4E6',
+    text: '#FFFFFF',
+  },
+  STAFF_USER: {
+    label: 'Staff',
+    background: ['#374151', '#475569'],
+    accent: '#E5E7EB',
+    text: '#FFFFFF',
+  },
+  VENDOR_USER: {
+    label: 'Vendor',
+    background: ['#3F2A0A', '#B7791F'],
+    accent: '#FEF3C7',
+    text: '#FFFFFF',
+  },
+};

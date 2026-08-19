@@ -1,0 +1,55 @@
+import type { Asset, AssetDocument, PreventiveMaintenanceSchedule } from '../types/asset.types';
+import { getRequiredItem } from "../utils/requiredItem";
+const assetCategories = ['LIFT', 'FIRE_SYSTEM', 'WATER_PUMP', 'GENERATOR', 'CCTV_CAMERA', 'INTERCOM', 'STP', 'WTP', 'SOLAR_PANEL', 'SWIMMING_POOL_EQUIPMENT', 'GYM_EQUIPMENT', 'ELECTRICAL_PANEL', 'PLUMBING_SYSTEM', 'COMMON_AREA_LIGHTING', 'LIFT', 'WATER_PUMP', 'CCTV_CAMERA', 'GENERATOR'] as const;
+export const mockAssets: Asset[] = assetCategories.map((category, index) => ({
+    id: `asset-${index + 1}`,
+    assetName: `${category.replace(/_/g, ' ')} ${index + 1}`,
+    assetCode: `GVH-${category.slice(0, 3)}-${String(index + 1).padStart(3, '0')}`,
+    category,
+    location: getRequiredItem(['Main Gate', 'A Wing', 'B Wing', 'Clubhouse', 'Basement B2'], index % 5, "assets.mock.ts"),
+    installationDate: '2023-04-01',
+    purchaseDate: '2023-03-15',
+    vendorId: `vendor-${(index % 6) + 1}`,
+    vendorName: `${category.replace(/_/g, ' ')} Services Nashik`,
+    amcContractId: `amc-${(index % 8) + 1}`,
+    amcContractNumber: `AMC-GVH-2026-${String((index % 8) + 1).padStart(3, '0')}`,
+    amcStatus: index % 6 === 0 ? 'EXPIRING_SOON' : 'ACTIVE',
+    warrantyExpiry: '2027-03-31',
+    warrantyStatus: index % 5 === 0 ? 'Expiring in 90 days' : 'Valid',
+    status: index === 2 ? 'BREAKDOWN' : index === 3 ? 'UNDER_MAINTENANCE' : 'ACTIVE',
+    healthScore: 92 - index,
+    lastServiceDate: `2026-06-${String((index % 20) + 1).padStart(2, '0')}`,
+    nextServiceDate: `2026-07-${String((index % 20) + 1).padStart(2, '0')}`,
+    serviceFrequency: index % 2 === 0 ? 'MONTHLY' : 'QUARTERLY',
+    openWorkOrders: index % 3,
+    documents: ['Purchase invoice', 'Warranty certificate', 'Service report'],
+    serviceHistorySummary: 'Regular maintenance records available in mock history.',
+    breakdownCount: index % 4,
+    notes: 'Asset document access should be audited by backend later.',
+}));
+export const mockAssetDocuments: AssetDocument[] = Array.from({ length: 24 }, (_, index) => ({
+    id: `asset-doc-${index + 1}`,
+    assetId: `asset-${(index % 8) + 1}`,
+    documentName: getRequiredItem(['Purchase invoice', 'Warranty certificate', 'AMC document', 'Installation certificate', 'Compliance certificate', 'Service report'], index % 6, "assets.mock.ts"),
+    documentType: getRequiredItem(['INVOICE', 'WARRANTY', 'AMC', 'INSTALLATION', 'COMPLIANCE', 'SERVICE_REPORT'], index % 6, "assets.mock.ts"),
+    status: index % 8 === 0 ? 'EXPIRED' : 'VERIFIED',
+    expiryDate: `2026-${String((index % 6) + 7).padStart(2, '0')}-20`,
+    uploadedDate: '2026-01-12',
+    verifiedBy: 'Facility Manager',
+}));
+export const mockPreventiveMaintenanceSchedules: PreventiveMaintenanceSchedule[] = Array.from({ length: 12 }, (_, index) => ({
+    id: `pm-${index + 1}`,
+    scheduleNumber: `PM-GVH-2026-${String(index + 1).padStart(4, '0')}`,
+    assetId: `asset-${(index % 10) + 1}`,
+    assetName: getRequiredItem(mockAssets, index % mockAssets.length, "assets.mock.ts").assetName,
+    category: getRequiredItem(mockAssets, index % mockAssets.length, "assets.mock.ts").category,
+    vendorName: getRequiredItem(mockAssets, index % mockAssets.length, "assets.mock.ts").vendorName,
+    plannedDate: `2026-07-${String(index + 1).padStart(2, '0')}`,
+    plannedTime: index % 2 === 0 ? '10:00 AM' : '03:00 PM',
+    frequency: index % 2 === 0 ? 'MONTHLY' : 'QUARTERLY',
+    status: index === 1 ? 'OVERDUE' : index === 2 ? 'DUE' : 'SCHEDULED',
+    assignedTo: 'Facility Technician',
+    lastCompletedDate: '2026-06-01',
+    nextDueDate: `2026-07-${String(index + 1).padStart(2, '0')}`,
+}));
+

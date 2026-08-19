@@ -1,0 +1,238 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for modules/facilityOps/data/facilityOps.apiSource.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">modules/facilityOps/data</a> facilityOps.apiSource.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/64</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/5</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/61</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/34</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { apiClient } from '../../../core/api/apiClient';
+import { apiEndpoints } from '../../../core/api/apiEndpoints';
+import { createIdempotencyKey } from '../../../core/api/idempotency';
+import { repositoryErrorFromUnknown, repositoryFailure, repositorySuccess, type RepositoryResult } from '../../../core/repositories/repository.types';
+import type { AmcContract, AmcRenewalReminder } from '../../../shared/types/amc.types';
+import type { Asset, AssetDocument, PreventiveMaintenanceSchedule } from '../../../shared/types/asset.types';
+import type { ComplianceExpiryRecord, InventoryItem, InventoryTransaction, InventoryTransactionInput, PurchaseRequest, PurchaseRequestInput } from '../../../shared/types/inventory.types';
+import type { RegisterVendorInput, Vendor, VendorDocument, VendorScorecard } from '../../../shared/types/vendor.types';
+import type { AssetBreakdownInput, FacilityIncident, ServiceHistoryItem, WorkOrder, CreateWorkOrderInput } from '../../../shared/types/workOrder.types';
+import type { FacilityOpsHome, OpsListParams } from './facilityOps.dto';
+&nbsp;
+async function <span class="fstat-no" title="function not covered" >safe&lt;</span>T&gt;(loader: () =&gt; Promise&lt;T&gt;): Promise&lt;RepositoryResult&lt;T&gt;&gt; {
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    return repositorySuccess(await loader());</span>
+  } catch (error) {
+<span class="cstat-no" title="statement not covered" >    return repositoryFailure(repositoryErrorFromUnknown(error));</span>
+  }
+}
+&nbsp;
+export const facilityOpsApiSource = <span class="cstat-no" title="statement not covered" >{</span>
+  getFacilityOpsHome: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;FacilityOpsHome&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.dashboard))</span>,</span>
+  getVendors: <span class="fstat-no" title="function not covered" >(p</span>arams: OpsListParams = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;Vendor[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.vendors, { query: params }))</span>,</span>
+  getVendorDetail: <span class="fstat-no" title="function not covered" >(v</span>endorId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;Vendor | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.vendorDetail(vendorId)))</span>,</span>
+  registerVendor: <span class="fstat-no" title="function not covered" >(i</span>nput: RegisterVendorInput) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;Vendor&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.vendors, input, { idempotencyKey: createIdempotencyKey('register-vendor') }))</span>,</span>
+  getVendorDocuments: <span class="fstat-no" title="function not covered" >(v</span>endorId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;VendorDocument[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.vendorDocuments(vendorId)))</span>,</span>
+  getAmcContracts: <span class="fstat-no" title="function not covered" >(p</span>arams: OpsListParams = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AmcContract[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.amcContracts, { query: params }))</span>,</span>
+  getAmcContractDetail: <span class="fstat-no" title="function not covered" >(c</span>ontractId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AmcContract | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.amcContractDetail(contractId)))</span>,</span>
+  getAmcRenewalReminders: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AmcRenewalReminder[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.amcRenewalReminders('all')))</span>,</span>
+  markAmcRenewalStarted: <span class="fstat-no" title="function not covered" >(c</span>ontractId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AmcRenewalReminder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.amcMarkRenewalStarted(contractId), {}, { idempotencyKey: createIdempotencyKey('amc-renewal-started') }))</span>,</span>
+  markAmcRenewed: <span class="fstat-no" title="function not covered" >(c</span>ontractId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AmcRenewalReminder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.amcMarkRenewed(contractId), {}, { idempotencyKey: createIdempotencyKey('amc-renewed') }))</span>,</span>
+  getAssets: <span class="fstat-no" title="function not covered" >(p</span>arams: OpsListParams = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;Asset[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.assets, { query: params }))</span>,</span>
+  getAssetDetail: <span class="fstat-no" title="function not covered" >(a</span>ssetId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;Asset | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.assetDetail(assetId)))</span>,</span>
+  getAssetDocuments: <span class="fstat-no" title="function not covered" >(a</span>ssetId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;AssetDocument[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.assetDocuments(assetId)))</span>,</span>
+  getPreventiveMaintenanceSchedule: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;PreventiveMaintenanceSchedule[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.preventiveSchedules))</span>,</span>
+  createWorkOrder: <span class="fstat-no" title="function not covered" >(i</span>nput: CreateWorkOrderInput) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrders, input, { idempotencyKey: createIdempotencyKey('work-order') }))</span>,</span>
+  getWorkOrders: <span class="fstat-no" title="function not covered" >(p</span>arams: OpsListParams = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.workOrders, { query: params }))</span>,</span>
+  getWorkOrderDetail: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.workOrderDetail(workOrderId)))</span>,</span>
+  assignVendor: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderAssignVendor(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-assign') }))</span>,</span>
+  startWorkOrder: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderStart(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-start') }))</span>,</span>
+  completeWorkOrder: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderComplete(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-complete') }))</span>,</span>
+  verifyWorkOrder: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderVerify(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-verify') }))</span>,</span>
+  closeWorkOrder: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderClose(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-close') }))</span>,</span>
+  reopenWorkOrder: <span class="fstat-no" title="function not covered" >(w</span>orkOrderId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;WorkOrder | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.workOrderReopen(workOrderId), {}, { idempotencyKey: createIdempotencyKey('work-order-reopen') }))</span>,</span>
+  getServiceHistory: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;ServiceHistoryItem[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.serviceHistory))</span>,</span>
+  getInventoryItems: <span class="fstat-no" title="function not covered" >(p</span>arams: OpsListParams = <span class="branch-0 cbranch-no" title="branch not covered" >{})</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;InventoryItem[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.inventoryItems, { query: params }))</span>,</span>
+  createInventoryTransaction: <span class="fstat-no" title="function not covered" >(i</span>nput: InventoryTransactionInput) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;InventoryTransaction&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.inventoryTransactions, input, { idempotencyKey: createIdempotencyKey('inventory-transaction') }))</span>,</span>
+  createPurchaseRequest: <span class="fstat-no" title="function not covered" >(i</span>nput: PurchaseRequestInput) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;PurchaseRequest&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.purchaseRequests, input, { idempotencyKey: createIdempotencyKey('purchase-request') }))</span>,</span>
+  getVendorScorecard: <span class="fstat-no" title="function not covered" >(v</span>endorId: string) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;VendorScorecard | undefined&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.vendorScorecard(vendorId)))</span>,</span>
+  getComplianceExpiry: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;ComplianceExpiryRecord[]&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.get(apiEndpoints.facilityOps.complianceExpiry))</span>,</span>
+  reportAssetBreakdown: <span class="fstat-no" title="function not covered" >(i</span>nput: AssetBreakdownInput) =&gt; <span class="cstat-no" title="statement not covered" >safe&lt;FacilityIncident&gt;(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >apiClient.post(apiEndpoints.facilityOps.facilityIncidents, input, { idempotencyKey: createIdempotencyKey('asset-breakdown') }))</span>,</span>
+};
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-07-04T09:33:18.729Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    

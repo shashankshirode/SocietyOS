@@ -1,0 +1,10 @@
+import type { AdminComplaint } from '../types/admin.types';
+
+export const mockAdminComplaints: AdminComplaint[] = [
+  { id: 'comp-001', ticketNumber: 'CMP-2026-0145', category: 'Maintenance', subcategory: 'Plumbing', unitNumber: 'C-1501', wing: 'C Wing', priority: 'HIGH', slaStatus: 'AT_RISK', slaDeadline: '2026-06-30T18:00:00Z', assigneeName: 'Rajesh Kumar', assigneeRole: 'FACILITY_MANAGER', status: 'IN_PROGRESS', isVendorLinked: false, createdAt: '2026-06-29T08:00:00Z', updatedAt: '2026-06-29T10:00:00Z' },
+  { id: 'comp-002', ticketNumber: 'CMP-2026-0144', category: 'Security', unitNumber: 'Common Area', wing: 'B Wing', priority: 'CRITICAL', slaStatus: 'BREACHED', status: 'ESCALATED', isVendorLinked: false, createdAt: '2026-06-28T20:00:00Z', updatedAt: '2026-06-29T09:00:00Z' },
+  { id: 'comp-003', ticketNumber: 'CMP-2026-0143', category: 'Maintenance', subcategory: 'Electricals', unitNumber: 'A-0801', wing: 'A Wing', priority: 'MEDIUM', slaStatus: 'ON_TIME', assigneeName: 'ShriGanesh Electricals', assigneeRole: 'VENDOR_USER', status: 'VENDOR_LINKED', isVendorLinked: true, vendorName: 'ShriGanesh Electricals', createdAt: '2026-06-28T11:00:00Z', updatedAt: '2026-06-29T09:30:00Z' },
+  { id: 'comp-004', ticketNumber: 'CMP-2026-0142', category: 'Cleanliness', unitNumber: 'Common Area', wing: 'A Wing', priority: 'LOW', slaStatus: 'ON_TIME', assigneeName: 'Suresh (Housekeeping)', assigneeRole: 'STAFF_USER', status: 'ASSIGNED', isVendorLinked: false, createdAt: '2026-06-28T07:00:00Z', updatedAt: '2026-06-28T08:00:00Z' },
+  { id: 'comp-005', ticketNumber: 'CMP-2026-0141', category: 'Maintenance', subcategory: 'Lift', unitNumber: 'Common Area', wing: 'C Wing', priority: 'CRITICAL', slaStatus: 'BREACHED', status: 'SLA_BREACHED', isVendorLinked: true, vendorName: 'OtisLift Services', createdAt: '2026-06-27T08:00:00Z', updatedAt: '2026-06-29T11:00:00Z' },
+  { id: 'comp-006', ticketNumber: 'CMP-2026-0138', category: 'Noise', unitNumber: 'B-1101', wing: 'B Wing', priority: 'MEDIUM', slaStatus: 'ON_TIME', status: 'RESOLVED', isVendorLinked: false, createdAt: '2026-06-25T21:00:00Z', updatedAt: '2026-06-26T10:00:00Z' },
+];

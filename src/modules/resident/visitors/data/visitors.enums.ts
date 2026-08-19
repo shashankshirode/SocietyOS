@@ -1,0 +1,16 @@
+export enum VisitorStatus {
+  EXPECTED = 'EXPECTED',
+  WAITING_APPROVAL = 'WAITING_APPROVAL',
+  APPROVED = 'APPROVED',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum VisitorType {
+  GUEST = 'GUEST',
+  DELIVERY = 'DELIVERY',
+  CAB = 'CAB',
+  VENDOR = 'VENDOR',
+}

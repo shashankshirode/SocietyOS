@@ -1,0 +1,126 @@
+import type { AdminUnit, AdminUnitDetail, AdminResident, AdminApproval, AdminNotice, AdminComplaint, AdminAuditLog, AdminDashboardData, } from '../../../shared/types/admin.types';
+import type { AdminDashboardDTO, AdminUnitDTO, AdminResidentDTO, AdminApprovalDTO, AdminNoticeDTO, AdminComplaintDTO, AdminAuditLogDTO, } from './admin.dto';
+import { includeWhenPresent } from "../../../shared/utils/presentProperty";
+import type { Absent } from "../../../shared/types/absence.types";
+export const adminMappers = {
+    toDashboard: (_dto: AdminDashboardDTO): Omit<AdminDashboardData, 'recentApprovals' | 'recentComplaints' | 'recentAuditLogs'> => ({
+        totalUnits: _dto.total_units,
+        occupiedUnits: _dto.occupied_units,
+        vacantUnits: _dto.vacant_units,
+        ownerCount: _dto.owner_count,
+        tenantCount: _dto.tenant_count,
+        pendingApprovalsCount: _dto.pending_approvals_count,
+        openComplaintsCount: _dto.open_complaints_count,
+        pendingNocsCount: _dto.pending_nocs_count,
+        unreadNoticesCount: _dto.unread_notices_count,
+        thisMonthCollection: _dto.this_month_collection,
+        defaulterCount: _dto.defaulter_count,
+        complianceAlerts: _dto.compliance_alerts,
+        lastUpdatedAt: _dto.last_updated_at
+    }),
+    toUnit: (_dto: AdminUnitDTO): AdminUnit => ({
+        id: _dto.id,
+        unitNumber: _dto.unit_number,
+        wing: _dto.wing,
+        floor: _dto.floor,
+        unitType: _dto.unit_type,
+        areaSqFt: _dto.area_sq_ft,
+        occupancyStatus: _dto.occupancy_status as AdminUnit['occupancyStatus'],
+        ...includeWhenPresent("ownerName", _dto.owner_name),
+        ...includeWhenPresent("tenantName", _dto.tenant_name),
+        duesStatus: _dto.dues_status as AdminUnit['duesStatus'],
+        outstandingAmount: _dto.outstanding_amount,
+        parkingCount: _dto.parking_count,
+        documentStatus: _dto.document_status as AdminUnit['documentStatus'],
+        kycStatus: _dto.kyc_status as AdminUnit['kycStatus'],
+        ...includeWhenPresent("lastActivityAt", _dto.last_activity_at)
+    }),
+    toUnitDetail: (_dto: AdminUnitDTO & JsonObject): AdminUnitDetail => ({
+        ...adminMappers.toUnit(_dto),
+        ...includeWhenPresent("ownerMobileMasked", _dto.owner_mobile_masked as string | Absent),
+        ...includeWhenPresent("tenantMobileMasked", _dto.tenant_mobile_masked as string | Absent),
+        familyMemberCount: (_dto.family_member_count as number) ?? 0,
+        vehicleCount: (_dto.vehicle_count as number) ?? 0,
+        pendingBillsCount: (_dto.pending_bills_count as number) ?? 0,
+        openComplaintsCount: (_dto.open_complaints_count as number) ?? 0,
+        ...includeWhenPresent("lastPaymentDate", _dto.last_payment_date as string | Absent),
+        ...includeWhenPresent("lastPaymentAmount", _dto.last_payment_amount as number | Absent),
+        ...includeWhenPresent("notes", _dto.notes as string | Absent)
+    }),
+    toResident: (_dto: AdminResidentDTO): AdminResident => ({
+        id: _dto.id,
+        name: _dto.name,
+        role: _dto.role as AdminResident['role'],
+        unitNumber: _dto.unit_number,
+        wing: _dto.wing,
+        occupancyStatus: _dto.occupancy_status,
+        kycStatus: _dto.kyc_status as AdminResident['kycStatus'],
+        documentStatus: _dto.document_status as AdminResident['documentStatus'],
+        accessStatus: _dto.access_status as AdminResident['accessStatus'],
+        mobileMasked: _dto.mobile_masked,
+        emailMasked: _dto.email_masked,
+        ...includeWhenPresent("registeredAt", _dto.registered_at)
+    }),
+    toApproval: (_dto: AdminApprovalDTO): AdminApproval => ({
+        id: _dto.id,
+        approvalNumber: _dto.approval_number,
+        type: _dto.type as AdminApproval['type'],
+        requestedBy: _dto.requested_by,
+        requestedByRole: _dto.requested_by_role,
+        unitNumber: _dto.unit_number,
+        wing: _dto.wing,
+        createdAt: _dto.created_at,
+        priority: _dto.priority as AdminApproval['priority'],
+        status: _dto.status as AdminApproval['status'],
+        ...includeWhenPresent("assignedRole", _dto.assigned_role),
+        summary: _dto.summary,
+        ...includeWhenPresent("notes", _dto.notes),
+        ...includeWhenPresent("slaDeadline", _dto.sla_deadline)
+    }),
+    toNotice: (_dto: AdminNoticeDTO): AdminNotice => ({
+        id: _dto.id,
+        title: _dto.title,
+        content: _dto.content,
+        category: _dto.category,
+        target: _dto.target as AdminNotice['target'],
+        ...includeWhenPresent("targetWing", _dto.target_wing),
+        status: _dto.status as AdminNotice['status'],
+        ...includeWhenPresent("publishedAt", _dto.published_at),
+        ...includeWhenPresent("scheduledAt", _dto.scheduled_at),
+        createdBy: _dto.created_by,
+        acknowledgementCount: _dto.acknowledgement_count,
+        totalTargetCount: _dto.total_target_count,
+        createdAt: _dto.created_at
+    }),
+    toComplaint: (_dto: AdminComplaintDTO): AdminComplaint => ({
+        id: _dto.id,
+        ticketNumber: _dto.ticket_number,
+        category: _dto.category,
+        ...includeWhenPresent("subcategory", _dto.subcategory),
+        unitNumber: _dto.unit_number,
+        wing: _dto.wing,
+        priority: _dto.priority as AdminComplaint['priority'],
+        slaStatus: _dto.sla_status as AdminComplaint['slaStatus'],
+        ...includeWhenPresent("slaDeadline", _dto.sla_deadline),
+        ...includeWhenPresent("assigneeName", _dto.assignee_name),
+        ...includeWhenPresent("assigneeRole", _dto.assignee_role),
+        status: _dto.status as AdminComplaint['status'],
+        isVendorLinked: _dto.is_vendor_linked,
+        ...includeWhenPresent("vendorName", _dto.vendor_name),
+        createdAt: _dto.created_at,
+        updatedAt: _dto.updated_at
+    }),
+    toAuditLog: (_dto: AdminAuditLogDTO): AdminAuditLog => ({
+        id: _dto.id,
+        timestamp: _dto.timestamp,
+        actorName: _dto.actor_name,
+        actorRole: _dto.actor_role,
+        eventType: _dto.event_type as AdminAuditLog['eventType'],
+        entityType: _dto.entity_type,
+        entityReference: _dto.entity_reference,
+        summary: _dto.summary,
+        ...includeWhenPresent("correlationId", _dto.correlation_id),
+        ...includeWhenPresent("deviceSource", _dto.device_source)
+    })
+};
+

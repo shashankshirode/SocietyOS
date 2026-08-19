@@ -1,0 +1,56 @@
+import type { Vendor, VendorDocument, VendorScorecard } from '../types/vendor.types';
+import { getRequiredItem } from "../utils/requiredItem";
+const vendorCategories = ['SECURITY', 'HOUSEKEEPING', 'LIFT_MAINTENANCE', 'FIRE_SAFETY', 'ELECTRICAL', 'PLUMBING', 'PEST_CONTROL', 'GARDENING', 'CCTV', 'GENERATOR', 'WATER_TANK_CLEANING', 'CIVIL_WORK'] as const;
+export const mockVendors: Vendor[] = vendorCategories.map((category, index) => ({
+    id: `vendor-${index + 1}`,
+    name: `${category.replace(/_/g, ' ')} Services Nashik`,
+    category,
+    contactPerson: getRequiredItem(['Suresh Patil', 'Amit Jadhav', 'Rahul Kale', 'Neha Deshmukh'], index % 4, "vendors.mock.ts"),
+    maskedPhone: `******43${String(index + 10).slice(-2)}`,
+    maskedEmail: `su****${index + 1}@vendor.com`,
+    officeAddress: `${index + 11}, MIDC Ambad, Nashik`,
+    gstMasked: '27ABCDE****1Z5',
+    panMasked: 'ABCD*****F',
+    contractStatus: index % 6 === 0 ? 'CONTRACT_EXPIRED' : 'ACTIVE',
+    complianceStatus: index % 5 === 0 ? 'EXPIRING_SOON' : 'COMPLIANT',
+    activeAmcCount: (index % 3) + 1,
+    openWorkOrders: index % 4,
+    rating: 3.8 + (index % 3) * 0.3,
+    lastServiceDate: `2026-06-${String(index + 1).padStart(2, '0')}`,
+    servicesOffered: [category.replace(/_/g, ' ')],
+    assignedAssets: [`asset-${(index % 8) + 1}`],
+    completedWorkOrders: index + 4,
+    slaScore: 78 + index,
+    residentFeedbackScore: 4 + (index % 2) * 0.3,
+    notes: 'Mock vendor record with sensitive tax/contact data masked.',
+}));
+export const mockVendorDocuments: VendorDocument[] = Array.from({ length: 18 }, (_, index) => ({
+    id: `vendor-doc-${index + 1}`,
+    vendorId: `vendor-${(index % 6) + 1}`,
+    documentName: getRequiredItem(['Contract agreement', 'GST certificate', 'PAN copy', 'Insurance', 'Safety certificate', 'Work permit'], index % 6, "vendors.mock.ts"),
+    documentType: getRequiredItem(['CONTRACT', 'TAX', 'KYC', 'INSURANCE', 'SAFETY', 'PERMIT'], index % 6, "vendors.mock.ts"),
+    status: index % 7 === 0 ? 'EXPIRED' : index % 5 === 0 ? 'PENDING_VERIFICATION' : 'VERIFIED',
+    expiryDate: `2026-${String((index % 6) + 7).padStart(2, '0')}-15`,
+    uploadedDate: '2026-01-10',
+    verifiedBy: 'Facility Manager',
+    sensitivity: index % 2 === 0 ? 'ADMIN_ONLY' : 'COMMITTEE_ONLY',
+}));
+export const mockVendorScorecards: VendorScorecard[] = mockVendors.slice(0, 6).map((vendor, index) => ({
+    vendorId: vendor.id,
+    vendorName: vendor.name,
+    category: vendor.category,
+    overallRating: vendor.rating,
+    slaCompliance: 82 + index,
+    averageResponseTime: `${30 + index * 5} minutes`,
+    completionRate: 88 - index,
+    reopenRate: 3 + index,
+    complaintLinkedPerformance: 80 + index,
+    residentFeedbackAverage: vendor.residentFeedbackScore ?? 4,
+    amcRenewalDiscipline: 85 - index,
+    complianceValidity: vendor.complianceStatus === 'COMPLIANT' ? 100 : 60,
+    safetyIncidents: index % 3,
+    strengths: ['On-time visits', 'Clear service reports'],
+    improvementAreas: ['Faster document renewal', 'Better weekend coverage'],
+    recentWorkOrders: [`WO-GVH-2026-${String(index + 1).padStart(4, '0')}`],
+}));
+

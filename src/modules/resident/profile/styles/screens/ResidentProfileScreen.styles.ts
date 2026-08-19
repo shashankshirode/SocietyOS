@@ -1,0 +1,169 @@
+import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingVertical: 20,
+        paddingBottom: 40,
+    },
+    contentGrid: {
+        gap: 24,
+    },
+    tabletContentGrid: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    profileCard: {
+        padding: 24,
+        borderRadius: 16,
+        borderWidth: 1,
+        alignItems: 'center',
+        gap: 6,
+    },
+    tabletProfileCard: {
+        flex: 1,
+        minHeight: 260,
+        justifyContent: 'center',
+    },
+    sidePanel: {
+        gap: 24,
+    },
+    tabletSidePanel: {
+        flex: 1.35,
+    },
+    avatarWrap: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    list: {
+        gap: 12,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 14,
+        borderRadius: 14,
+        borderWidth: 1,
+        gap: 12,
+    },
+    iconWrap: {
+        width: 38,
+        height: 38,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    info: {
+        flex: 1,
+        gap: 2,
+    },
+    logout: {
+        marginTop: 8,
+    },
+    statusRail: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 14,
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+    },
+    statusRailItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+});
+export function createSafeTextColorStyle(colorValue: "#4E46E5" | "#9DA5FF") {
+    return {
+        color: colorValue,
+        fontSize: 24
+    } as const;
+}
+export function createResidentDisplayNameColorStyle(colorValue: "#101828" | "#F8FAFC") {
+    return {
+        color: colorValue,
+        fontSize: 18
+    } as const;
+}
+export function createSafeTextColorStyle2(colorValue: "#198A59" | "#5BD39A") {
+    return {
+        color: colorValue,
+        fontWeight: '700',
+        fontSize: 10
+    } as const;
+}
+export function createSafeTextColorStyle3(colorValue: "#4E46E5" | "#9DA5FF") {
+    return {
+        color: colorValue,
+        fontWeight: '700',
+        fontSize: 10
+    } as const;
+}
+export function createSafeTextColorStyle4(colorValue: "#B97818" | "#F0B85A") {
+    return {
+        color: colorValue,
+        fontWeight: '700',
+        fontSize: 10
+    } as const;
+}
+export function createSafeTextColorStyle5(colorValue: "#101828" | "#F8FAFC") {
+    return {
+        color: colorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle2(backgroundColorValue: "#F4F6FB" | "#080D18") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+    return {
+        backgroundColor: backgroundColorValue,
+        borderColor: borderColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle3(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle4(backgroundColorValue: "#052E16" | "#DCFCE7") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle5(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle6(backgroundColorValue: "#FEF3C7" | "#451A03") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+    return {
+        backgroundColor: backgroundColorValue,
+        borderColor: borderColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle7(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+

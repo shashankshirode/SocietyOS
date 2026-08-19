@@ -1,0 +1,28 @@
+import type { AppModuleKey, ModuleDataSourceMode } from './dataSource.types';
+
+export const moduleDataSourceOverrides: Partial<Record<AppModuleKey, ModuleDataSourceMode>> = {
+  residenceAccess: 'inherit',
+  residentDashboard: 'inherit',
+  residentProfile: 'inherit',
+  residentFamily: 'inherit',
+  residentVisitors: 'inherit',
+  residentBilling: 'inherit',
+  residentComplaints: 'inherit',
+  residentNotices: 'inherit',
+  residentDocuments: 'inherit',
+  residentNoc: 'inherit',
+  residentMoveInMoveOut: 'inherit',
+  residentConnect: 'inherit',
+  residentInterFlatIssues: 'inherit',
+  residentFacilityBooking: 'inherit',
+  residentParking: 'inherit',
+  residentParcelHandover: 'inherit',
+  residentGovernance: 'inherit',
+  residentEmergency: 'inherit',
+  residentMarketplace: 'inherit',
+  residentSettings: 'inherit',
+  residentSmartAssistance: 'inherit',
+  residentContextualInsights: 'inherit',
+  residentNotifications: 'inherit',
+  chat: 'inherit',
+};

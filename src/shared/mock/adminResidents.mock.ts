@@ -1,0 +1,12 @@
+import type { AdminResident } from '../types/admin.types';
+
+export const mockAdminResidents: AdminResident[] = [
+  { id: 'res-001', name: 'Shashank Shirode', role: 'OWNER', unitNumber: 'A-1204', wing: 'A Wing', occupancyStatus: 'OWNER_OCCUPIED', kycStatus: 'VERIFIED', documentStatus: 'COMPLETE', accessStatus: 'ACTIVE', mobileMasked: '98765*****', emailMasked: 'sh****@gmail.com', registeredAt: '2022-01-15' },
+  { id: 'res-002', name: 'Meena Shirode', role: 'FAMILY', unitNumber: 'A-1204', wing: 'A Wing', occupancyStatus: 'OWNER_OCCUPIED', kycStatus: 'VERIFIED', documentStatus: 'COMPLETE', accessStatus: 'ACTIVE', mobileMasked: '90123*****', emailMasked: 'me****@gmail.com', registeredAt: '2022-01-15' },
+  { id: 'res-003', name: 'Deepak Sharma', role: 'TENANT', unitNumber: 'A-0801', wing: 'A Wing', occupancyStatus: 'TENANT_OCCUPIED', kycStatus: 'PENDING', documentStatus: 'INCOMPLETE', accessStatus: 'ACTIVE', mobileMasked: '88234*****', emailMasked: 'de****@yahoo.com', registeredAt: '2025-04-01' },
+  { id: 'res-004', name: 'Anil Deshmukh', role: 'OWNER', unitNumber: 'B-0404', wing: 'B Wing', occupancyStatus: 'OWNER_OCCUPIED', kycStatus: 'VERIFIED', documentStatus: 'COMPLETE', accessStatus: 'ACTIVE', mobileMasked: '97811*****', emailMasked: 'an****@hotmail.com', registeredAt: '2021-08-20' },
+  { id: 'res-005', name: 'Priya Joshi', role: 'OWNER', unitNumber: 'B-0802', wing: 'B Wing', occupancyStatus: 'OWNER_OCCUPIED', kycStatus: 'VERIFIED', documentStatus: 'COMPLETE', accessStatus: 'ACTIVE', mobileMasked: '96724*****', emailMasked: 'pr****@gmail.com', registeredAt: '2020-11-01' },
+  { id: 'res-006', name: 'Snehal Rao', role: 'TENANT', unitNumber: 'B-1101', wing: 'B Wing', occupancyStatus: 'TENANT_OCCUPIED', kycStatus: 'PENDING', documentStatus: 'PENDING_VERIFICATION', accessStatus: 'ACTIVE', mobileMasked: '91234*****', emailMasked: 'sn****@gmail.com', registeredAt: '2026-03-15' },
+  { id: 'res-007', name: 'Ramesh Agarwal', role: 'OWNER', unitNumber: 'C-1501', wing: 'C Wing', occupancyStatus: 'OWNER_OCCUPIED', kycStatus: 'VERIFIED', documentStatus: 'COMPLETE', accessStatus: 'ACTIVE', mobileMasked: '87956*****', emailMasked: 'ra****@agarwal.com', registeredAt: '2019-06-10' },
+  { id: 'res-008', name: 'Nalini Sharma', role: 'OWNER', unitNumber: 'C-0601', wing: 'C Wing', occupancyStatus: 'VACANT', kycStatus: 'NOT_STARTED', documentStatus: 'INCOMPLETE', accessStatus: 'SUSPENDED', mobileMasked: '79012*****', emailMasked: 'na****@rediffmail.com', registeredAt: '2018-03-05' },
+];

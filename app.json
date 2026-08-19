@@ -3,9 +3,9 @@
     "name": "society-os-mobile",
     "slug": "society-os-mobile",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Camera access is used to capture complaint proof, visitor photos, staff photos and document images.",
+        "NSPhotoLibraryUsageDescription": "Photo library access is used to attach files from your gallery."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +25,33 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "RECEIVE_BOOT_COMPLETED",
+        "WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Camera access is used to capture complaint proof, visitor photos, staff photos and document images."
+        }
+      ],
+      "expo-notifications",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Calendar access is used only when you choose to add a confirmed facility reservation."
+        }
+      ]
+    ]
   }
 }

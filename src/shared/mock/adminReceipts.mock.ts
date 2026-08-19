@@ -1,0 +1,7 @@
+import type { AdminReceipt } from '../types/accounting.types';
+
+export const mockAdminReceipts: AdminReceipt[] = [
+  { id: 'rcpt-001', receiptNumber: 'RCP-2026-0089', paymentId: 'pay-001', paymentNumber: 'PAY-2026-0089', unitId: 'unit-004', unitNumber: 'B-0404', wing: 'B Wing', residentName: 'Anil Deshmukh', amount: 3200, paymentMode: 'CASH', paymentDate: '2026-07-03', referenceNumberMasked: 'CASH-***', receivedBy: 'Meena Kulkarni', createdAt: '2026-07-03T10:35:00Z', status: 'GENERATED', ledgerImpact: 'Credited to B-0404 outstanding ledger' },
+  { id: 'rcpt-002', receiptNumber: 'RCP-2026-0088', paymentId: 'pay-legacy-001', paymentNumber: 'PAY-2026-0088', unitId: 'unit-001', unitNumber: 'A-1204', wing: 'A Wing', residentName: 'Shashank Shirode', amount: 8025, paymentMode: 'UPI', paymentDate: '2026-07-05', referenceNumberMasked: 'UPI12*****', receivedBy: 'SYSTEM', createdAt: '2026-07-05T09:00:00Z', status: 'GENERATED', ledgerImpact: 'Credited to A-1204 ledger — bill BILL-2026-07-A1204 fully paid' },
+  { id: 'rcpt-003', receiptNumber: 'RCP-2026-0091', paymentId: 'pay-003', paymentNumber: 'PAY-2026-0091', unitId: 'unit-008', unitNumber: 'C-0601', wing: 'C Wing', residentName: 'Nalini Sharma', amount: 10000, paymentMode: 'BANK_TRANSFER', paymentDate: '2026-07-01', referenceNumberMasked: 'NEFT-***-001', receivedBy: 'Meena Kulkarni', createdAt: '2026-07-01T16:05:00Z', status: 'GENERATED', ledgerImpact: 'Credited to C-0601 ledger — partial dues cleared' },
+];

@@ -1,0 +1,207 @@
+import type { StaffProfile, ShiftDefinition, ShiftAssignment, } from '../../../shared/types/staff.types';
+import type { DomesticHelp, } from '../../../shared/types/domesticHelp.types';
+import type { AttendancePunch, DailyAttendanceSummary, CorrectionRequest, MonthlyAttendanceRow, VendorAttendanceRow, } from '../../../shared/types/attendance.types';
+import type { BiometricDevice, BiometricMapping, BiometricSyncJob, BiometricSyncError, DuplicatePunchCandidate, MissingCheckoutRecord, } from '../../../shared/types/biometric.types';
+import type { StaffProfileDTO, ShiftDefinitionDTO, ShiftAssignmentDTO, DomesticHelpDTO, AttendancePunchDTO, DailyAttendanceSummaryDTO, CorrectionRequestDTO, MonthlyAttendanceRowDTO, VendorAttendanceRowDTO, BiometricDeviceDTO, BiometricMappingDTO, BiometricSyncJobDTO, BiometricSyncErrorDTO, DuplicatePunchCandidateDTO, MissingCheckoutRecordDTO, } from './staffAttendance.dto';
+import { includeWhenPresent } from "../../../shared/utils/presentProperty";
+export const staffAttendanceMappers = {
+    toStaff: (dto: StaffProfileDTO): StaffProfile => ({
+        id: dto.id, staffCode: dto.staff_code, name: dto.name,
+        category: dto.category as StaffProfile['category'],
+        employmentStatus: dto.employment_status as StaffProfile['employmentStatus'],
+        verificationStatus: dto.verification_status as StaffProfile['verificationStatus'],
+        policeVerificationStatus: dto.police_verification_status as StaffProfile['policeVerificationStatus'],
+        idDocumentStatus: dto.id_document_status as StaffProfile['idDocumentStatus'],
+        ...includeWhenPresent("vendorId", dto.vendor_id),
+        ...includeWhenPresent("vendorName", dto.vendor_name),
+        isVendorWorker: dto.is_vendor_worker,
+        assignedLocation: dto.assigned_location, assignedAreas: dto.assigned_areas,
+        ...includeWhenPresent("shiftId", dto.shift_id),
+        ...includeWhenPresent("shiftName", dto.shift_name),
+        mobileMasked: dto.mobile_masked,
+        ...includeWhenPresent("emergencyContactMasked", dto.emergency_contact_masked),
+        ...includeWhenPresent("biometricEmployeeCode", dto.biometric_employee_code),
+        ...includeWhenPresent("biometricDeviceId", dto.biometric_device_id),
+        joiningDate: dto.joining_date,
+        ...includeWhenPresent("exitDate", dto.exit_date),
+        ...includeWhenPresent("verificationExpiryDate", dto.verification_expiry_date),
+        ...includeWhenPresent("todayStatus", dto.today_status),
+        ...includeWhenPresent("lastPunchTime", dto.last_punch_time),
+        ...includeWhenPresent("lastPunchType", dto.last_punch_type),
+        ...includeWhenPresent("photoPlaceholder", dto.photo_placeholder),
+        ...includeWhenPresent("notes", dto.notes),
+        createdAt: dto.created_at, updatedAt: dto.updated_at
+    }),
+    toDomesticHelp: (dto: DomesticHelpDTO): DomesticHelp => ({
+        id: dto.id, name: dto.name,
+        helpType: dto.help_type as DomesticHelp['helpType'],
+        linkedFlatIds: dto.linked_flat_ids, linkedFlatNumbers: dto.linked_flat_numbers, linkedFlatCount: dto.linked_flat_count,
+        accessStatus: dto.access_status as DomesticHelp['accessStatus'],
+        allowedEntryDays: dto.allowed_entry_days,
+        ...includeWhenPresent("allowedEntryTimeFrom", dto.allowed_entry_time_from),
+        ...includeWhenPresent("allowedEntryTimeTo", dto.allowed_entry_time_to),
+        verificationStatus: dto.verification_status as DomesticHelp['verificationStatus'],
+        policeVerificationStatus: dto.police_verification_status as DomesticHelp['policeVerificationStatus'],
+        idDocumentStatus: dto.id_document_status as DomesticHelp['idDocumentStatus'],
+        mobileMasked: dto.mobile_masked,
+        ...includeWhenPresent("emergencyContactMasked", dto.emergency_contact_masked),
+        ...includeWhenPresent("addressSummary", dto.address_summary),
+        ...includeWhenPresent("lastGateEntryDate", dto.last_gate_entry_date),
+        ...includeWhenPresent("lastGateEntryTime", dto.last_gate_entry_time),
+        ...includeWhenPresent("entryFrequencyLast30Days", dto.entry_frequency_last_30_days),
+        approvedByResidents: dto.approved_by_residents, incidentCount: dto.incident_count,
+        societyApprovalStatus: dto.society_approval_status as DomesticHelp['societyApprovalStatus'],
+        registeredAt: dto.registered_at, updatedAt: dto.updated_at,
+        ...includeWhenPresent("notes", dto.notes)
+    }),
+    toShift: (dto: ShiftDefinitionDTO): ShiftDefinition => ({
+        id: dto.id, shiftName: dto.shift_name, startTime: dto.start_time, endTime: dto.end_time,
+        gracePeriodMinutes: dto.grace_period_minutes, location: dto.location,
+        assignedStaffCount: dto.assigned_staff_count, weeklyOffDays: dto.weekly_off_days,
+        status: dto.status as ShiftDefinition['status'],
+        ...includeWhenPresent("notes", dto.notes),
+        createdAt: dto.created_at
+    }),
+    toShiftAssignment: (dto: ShiftAssignmentDTO): ShiftAssignment => ({
+        id: dto.id, staffId: dto.staff_id, staffName: dto.staff_name, staffCode: dto.staff_code,
+        shiftId: dto.shift_id, shiftName: dto.shift_name, location: dto.location,
+        effectiveFrom: dto.effective_from,
+        ...includeWhenPresent("effectiveTo", dto.effective_to),
+        weeklyOffDays: dto.weekly_off_days,
+        ...includeWhenPresent("notes", dto.notes),
+        createdAt: dto.created_at, isActive: dto.is_active
+    }),
+    toPunch: (dto: AttendancePunchDTO): AttendancePunch => ({
+        id: dto.id, staffId: dto.staff_id, staffName: dto.staff_name, staffCode: dto.staff_code,
+        ...includeWhenPresent("biometricEmployeeCode", dto.biometric_employee_code),
+        punchTime: dto.punch_time,
+        punchType: dto.punch_type as AttendancePunch['punchType'],
+        source: dto.source as AttendancePunch['source'],
+        ...includeWhenPresent("deviceId", dto.device_id),
+        ...includeWhenPresent("deviceName", dto.device_name),
+        location: dto.location,
+        ...includeWhenPresent("syncJobId", dto.sync_job_id),
+        isDuplicate: dto.is_duplicate,
+        ...includeWhenPresent("duplicateKey", dto.duplicate_key),
+        isMapped: dto.is_mapped,
+        ...includeWhenPresent("mappingStatus", dto.mapping_status),
+        ...includeWhenPresent("notes", dto.notes),
+        createdAt: dto.created_at
+    }),
+    toDailySummary: (dto: DailyAttendanceSummaryDTO): DailyAttendanceSummary => ({
+        date: dto.date, totalExpected: dto.total_expected, present: dto.present, absent: dto.absent,
+        late: dto.late, halfDay: dto.half_day, onLeave: dto.on_leave, weeklyOff: dto.weekly_off,
+        missingCheckout: dto.missing_checkout, manualEntries: dto.manual_entries,
+        biometricEntries: dto.biometric_entries, correctionsPending: dto.corrections_pending,
+        attendancePercentage: dto.attendance_percentage
+    }),
+    toCorrectionRequest: (dto: CorrectionRequestDTO): CorrectionRequest => ({
+        id: dto.id, requestNumber: dto.request_number, staffId: dto.staff_id, staffName: dto.staff_name, staffCode: dto.staff_code,
+        attendanceDate: dto.attendance_date,
+        correctionType: dto.correction_type as CorrectionRequest['correctionType'],
+        ...includeWhenPresent("existingValue", dto.existing_value),
+        requestedCorrection: dto.requested_correction, reason: dto.reason,
+        requestedBy: dto.requested_by, requestedByRole: dto.requested_by_role,
+        status: dto.status as CorrectionRequest['status'],
+        ...includeWhenPresent("reviewedBy", dto.reviewed_by),
+        ...includeWhenPresent("reviewedAt", dto.reviewed_at),
+        ...includeWhenPresent("rejectionReason", dto.rejection_reason),
+        ...includeWhenPresent("auditNote", dto.audit_note),
+        createdAt: dto.created_at, updatedAt: dto.updated_at
+    }),
+    toMonthlyAttendanceRow: (dto: MonthlyAttendanceRowDTO): MonthlyAttendanceRow => ({
+        staffId: dto.staff_id, staffName: dto.staff_name, staffCode: dto.staff_code,
+        category: dto.category,
+        ...includeWhenPresent("vendorName", dto.vendor_name),
+        expectedDays: dto.expected_days,
+        presentDays: dto.present_days, absentDays: dto.absent_days, lateDays: dto.late_days,
+        halfDays: dto.half_days, missingCheckoutCount: dto.missing_checkout_count,
+        correctionsCount: dto.corrections_count, attendancePercentage: dto.attendance_percentage
+    }),
+    toVendorAttendanceRow: (dto: VendorAttendanceRowDTO): VendorAttendanceRow => ({
+        vendorId: dto.vendor_id, vendorName: dto.vendor_name, staffCount: dto.staff_count,
+        expectedManDays: dto.expected_man_days, presentManDays: dto.present_man_days, absentDays: dto.absent_days,
+        lateCount: dto.late_count, correctionsCount: dto.corrections_count,
+        verificationStatus: dto.verification_status as VendorAttendanceRow['verificationStatus'],
+        invoiceMonth: dto.invoice_month,
+        ...includeWhenPresent("lockedAt", dto.locked_at)
+    }),
+    toBiometricDevice: (dto: BiometricDeviceDTO): BiometricDevice => ({
+        id: dto.id, deviceCode: dto.device_code, deviceName: dto.device_name,
+        vendorName: dto.vendor_name,
+        ...includeWhenPresent("vendorModel", dto.vendor_model),
+        location: dto.location,
+        ...includeWhenPresent("gate", dto.gate),
+        syncType: dto.sync_type as BiometricDevice['syncType'],
+        status: dto.status as BiometricDevice['status'],
+        ...includeWhenPresent("lastSyncTime", dto.last_sync_time),
+        ...includeWhenPresent("lastSyncJobId", dto.last_sync_job_id),
+        ...includeWhenPresent("lastSyncStatus", dto.last_sync_status as BiometricDevice['lastSyncStatus']),
+        ...includeWhenPresent("lastSyncPunchCount", dto.last_sync_punch_count),
+        mappedStaffCount: dto.mapped_staff_count, unmappedEmployeeCodes: dto.unmapped_employee_codes,
+        recentErrorCount: dto.recent_error_count,
+        ...includeWhenPresent("ipAddressMasked", dto.ip_address_masked),
+        ...includeWhenPresent("notes", dto.notes),
+        ...includeWhenPresent("installedAt", dto.installed_at),
+        ...includeWhenPresent("lastMaintenanceAt", dto.last_maintenance_at)
+    }),
+    toBiometricMapping: (dto: BiometricMappingDTO): BiometricMapping => ({
+        id: dto.id, deviceId: dto.device_id, deviceName: dto.device_name, deviceCode: dto.device_code,
+        biometricEmployeeCode: dto.biometric_employee_code,
+        ...includeWhenPresent("staffId", dto.staff_id),
+        ...includeWhenPresent("staffName", dto.staff_name),
+        ...includeWhenPresent("staffCode", dto.staff_code),
+        status: dto.status as BiometricMapping['status'],
+        ...includeWhenPresent("conflictNote", dto.conflict_note),
+        effectiveFrom: dto.effective_from,
+        ...includeWhenPresent("effectiveTo", dto.effective_to),
+        createdBy: dto.created_by, createdAt: dto.created_at, updatedAt: dto.updated_at,
+        ...includeWhenPresent("notes", dto.notes)
+    }),
+    toBiometricSyncJob: (dto: BiometricSyncJobDTO): BiometricSyncJob => ({
+        id: dto.id, deviceId: dto.device_id, deviceName: dto.device_name, deviceCode: dto.device_code,
+        startedAt: dto.started_at,
+        ...includeWhenPresent("completedAt", dto.completed_at),
+        status: dto.status as BiometricSyncJob['status'],
+        totalPunchesFromDevice: dto.total_punches_from_device, importedPunches: dto.imported_punches,
+        duplicatePunches: dto.duplicate_punches, failedPunches: dto.failed_punches,
+        unmappedEmployeeCodes: dto.unmapped_employee_codes, errorCount: dto.error_count,
+        triggeredBy: dto.triggered_by, syncType: dto.sync_type as BiometricSyncJob['syncType'],
+        ...includeWhenPresent("notes", dto.notes)
+    }),
+    toBiometricSyncError: (dto: BiometricSyncErrorDTO): BiometricSyncError => ({
+        id: dto.id, syncJobId: dto.sync_job_id, deviceId: dto.device_id, deviceCode: dto.device_code,
+        errorType: dto.error_type as BiometricSyncError['errorType'],
+        ...includeWhenPresent("biometricEmployeeCode", dto.biometric_employee_code),
+        ...includeWhenPresent("punchTime", dto.punch_time),
+        ...includeWhenPresent("punchType", dto.punch_type),
+        errorMessage: dto.error_message, suggestedAction: dto.suggested_action,
+        status: dto.status as BiometricSyncError['status'],
+        ...includeWhenPresent("resolvedBy", dto.resolved_by),
+        ...includeWhenPresent("resolvedAt", dto.resolved_at),
+        ...includeWhenPresent("resolutionNote", dto.resolution_note),
+        createdAt: dto.created_at
+    }),
+    toDuplicatePunch: (dto: DuplicatePunchCandidateDTO): DuplicatePunchCandidate => ({
+        id: dto.id,
+        ...includeWhenPresent("staffId", dto.staff_id),
+        ...includeWhenPresent("staffName", dto.staff_name),
+        ...includeWhenPresent("staffCode", dto.staff_code),
+        ...includeWhenPresent("biometricEmployeeCode", dto.biometric_employee_code),
+        deviceId: dto.device_id, deviceCode: dto.device_code,
+        punchTime: dto.punch_time, punchType: dto.punch_type, duplicateKey: dto.duplicate_key,
+        existingPunchId: dto.existing_punch_id, newPunchId: dto.new_punch_id,
+        suggestedAction: dto.suggested_action as DuplicatePunchCandidate['suggestedAction'],
+        status: dto.status as DuplicatePunchCandidate['status'], createdAt: dto.created_at
+    }),
+    toMissingCheckout: (dto: MissingCheckoutRecordDTO): MissingCheckoutRecord => ({
+        id: dto.id, staffId: dto.staff_id, staffName: dto.staff_name, staffCode: dto.staff_code,
+        date: dto.date, firstCheckInTime: dto.first_check_in_time, shiftEndTime: dto.shift_end_time,
+        shiftName: dto.shift_name,
+        ...includeWhenPresent("hoursWorkedEstimate", dto.hours_worked_estimate),
+        correctionStatus: dto.correction_status as MissingCheckoutRecord['correctionStatus'],
+        ...includeWhenPresent("correctionRequestId", dto.correction_request_id),
+        createdAt: dto.created_at
+    })
+};
+

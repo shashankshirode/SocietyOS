@@ -1,0 +1,11 @@
+import type { ChargeHead } from '../types/accounting.types';
+
+export const mockChargeHeads: ChargeHead[] = [
+  { id: 'ch-001', name: 'Monthly Maintenance', type: 'MAINTENANCE', calculationMethod: 'AREA_BASED', defaultRate: 4.50, taxApplicable: false, isActive: true, usedInBillingCycle: true, description: 'Base maintenance charge calculated at ₹4.50 per sq.ft. per month', createdAt: '2020-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-002', name: 'Parking Charge (Reserved)', type: 'PARKING', calculationMethod: 'FIXED', defaultAmount: 800, taxApplicable: false, isActive: true, usedInBillingCycle: true, description: 'Monthly charge for each reserved parking slot', createdAt: '2020-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-003', name: 'Water Usage Charge', type: 'WATER', calculationMethod: 'FIXED', defaultAmount: 300, taxApplicable: false, isActive: true, usedInBillingCycle: true, description: 'Flat monthly water charge', createdAt: '2021-04-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-004', name: 'Sinking Fund', type: 'FUND', calculationMethod: 'FIXED', defaultAmount: 500, taxApplicable: false, isActive: true, usedInBillingCycle: false, description: 'Long-term capital expenditure reserve', createdAt: '2020-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-005', name: 'Late Payment Penalty', type: 'PENALTY', calculationMethod: 'PERCENTAGE', defaultRate: 2.0, taxApplicable: false, isActive: true, usedInBillingCycle: true, description: '2% per month penalty on outstanding amount after due date', createdAt: '2020-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-006', name: 'Common Amenity Usage', type: 'FACILITY', calculationMethod: 'FIXED', defaultAmount: 200, taxApplicable: false, isActive: true, usedInBillingCycle: false, description: 'Optional charge for gymkhana and swimming pool usage', createdAt: '2022-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' },
+  { id: 'ch-007', name: 'Tree Plantation Drive', type: 'OTHER', calculationMethod: 'FIXED', defaultAmount: 100, taxApplicable: false, isActive: false, usedInBillingCycle: false, description: 'One-time collection for 2024 plantation drive — discontinued', createdAt: '2024-06-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+];

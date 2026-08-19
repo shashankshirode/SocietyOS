@@ -1,0 +1,11 @@
+import type { FinancialReport } from '../types/reports.types';
+
+export const mockFinancialReports: FinancialReport[] = [
+  { id: 'rpt-001', reportType: 'COLLECTION_REPORT', displayName: 'Collection Report', description: 'Month-wise breakdown of all collections received, by payment mode and wing.', availableFilters: ['fromDate', 'toDate', 'wing', 'paymentMode', 'billingCycleId'], lastGeneratedAt: '2026-06-30T16:00:00Z', lastGeneratedBy: 'Meena Kulkarni', supportsExcel: true, supportsPdf: true, supportscsv: true },
+  { id: 'rpt-002', reportType: 'DEFAULTER_REPORT', displayName: 'Defaulter Report', description: 'List of units with outstanding dues, sorted by ageing bucket.', availableFilters: ['wing', 'ageingBucket', 'minAmount'], lastGeneratedAt: '2026-06-29T10:00:00Z', lastGeneratedBy: 'Meena Kulkarni', supportsExcel: true, supportsPdf: true, supportscsv: false },
+  { id: 'rpt-003', reportType: 'OUTSTANDING_REPORT', displayName: 'Outstanding Dues Report', description: 'Unit-wise summary of outstanding balances across all charge heads.', availableFilters: ['wing', 'status'], supportsExcel: true, supportsPdf: true, supportscsv: true },
+  { id: 'rpt-004', reportType: 'BILL_REGISTER', displayName: 'Bill Register', description: 'Complete register of all bills generated in a billing cycle.', availableFilters: ['billingCycleId', 'wing', 'status'], supportsExcel: true, supportsPdf: true, supportscsv: true },
+  { id: 'rpt-005', reportType: 'RECEIPT_REGISTER', displayName: 'Receipt Register', description: 'Complete register of all receipts issued in a date range.', availableFilters: ['fromDate', 'toDate', 'paymentMode', 'wing'], supportsExcel: true, supportsPdf: true, supportscsv: false },
+  { id: 'rpt-006', reportType: 'LEDGER_REPORT', displayName: 'Ledger Summary Report', description: 'Summary ledger for all units, or detailed ledger for a specific unit.', availableFilters: ['unitId', 'wing', 'fromDate', 'toDate'], supportsExcel: true, supportsPdf: false, supportscsv: false },
+  { id: 'rpt-007', reportType: 'WING_WISE_COLLECTION', displayName: 'Wing-wise Collection Report', description: 'Side-by-side comparison of collection performance across wings.', availableFilters: ['billingCycleId', 'fromDate', 'toDate'], supportsExcel: true, supportsPdf: true, supportscsv: false },
+];

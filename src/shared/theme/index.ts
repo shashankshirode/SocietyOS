@@ -27,12 +27,36 @@ export { darkTheme } from './darkTheme';
 export { residentColors } from './residentColors';
 export type { ResidentColorToken } from './residentColors';
 export { appTheme } from './appTheme';
+export {
+  societySemanticLight,
+  societySemanticDark,
+  societyBorderWidths,
+  societyTouch,
+  societyNavigation,
+  societyContent,
+  societyIcons,
+  societyMotion,
+  societySkeletonTokens,
+} from './societyTheme';
+export type {
+  SocietySemanticColors,
+  SocietyBorderWidths,
+  SocietyTouch,
+  SocietyNavigation,
+  SocietyContent,
+  SocietySkeletonTokens,
+} from './societyTheme';
 export { gradients } from './gradients';
 export type { Gradients, GradientToken } from './gradients';
-export { Motion, motionTokens } from './motion';
+export { Motion, motionTokens, MotionIntent } from './motion';
 export type { MotionTokens, MotionDurationToken, MotionStaggerToken } from './motion';
+
 export { ImageTokens, imageTokens } from './imageTokens';
 export type { ImageTokenScale } from './imageTokens';
+export { imageAssets } from './imageAssets';
+export type { ImageAssets } from './imageAssets';
+export { ambientGradients, getTimeOfDay } from './ambientGradients';
+export type { AmbientGradientScheme, TimeOfDay } from './ambientGradients';
 export { IconTokens, iconTokens } from './iconTokens';
 export type { IconTokenScale } from './iconTokens';
 export { roleTheme, getRoleTheme } from './roleTheme';

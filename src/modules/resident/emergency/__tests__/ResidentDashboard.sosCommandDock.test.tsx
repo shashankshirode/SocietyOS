@@ -4,6 +4,7 @@ import { renderWithProviders } from '../../../../test/testUtils';
 import { ResidentHomeScreen } from '../../dashboard/screens/ResidentHomeScreen';
 import { MockStoreProvider } from '../../../../core/mockStore/mockStoreProvider';
 import { residentDashboardMockData as mockResidentDashboardData } from '../../dashboard/data/dashboard.mockData';
+import { sosEventMockSource } from '../data/sosEvent.mockSource';
 
 jest.mock('@react-navigation/native', () => {
   const original = jest.requireActual('@react-navigation/native');
@@ -41,8 +42,9 @@ jest.mock('../../dashboard/hooks/useResidentDashboard', () => {
   };
 });
 
-describe('ResidentDashboard SOS Command Dock Integration', () => {
-  it('opens SOS command dock and allows safety confirmation triggers', async () => {
+describe('ResidentDashboard Crisis Mode integration', () => {
+  beforeEach(() => sosEventMockSource._resetAll());
+  it('enters Crisis Mode and requires a deliberate response confirmation', async () => {
     await renderWithProviders(
       <MockStoreProvider>
         <ResidentHomeScreen
@@ -67,26 +69,26 @@ describe('ResidentDashboard SOS Command Dock Integration', () => {
     fireEvent.press(sosBtn);
 
     
-    expect(await screen.findByText('Emergency Command Dock')).toBeTruthy();
-    expect(screen.getByText('Medical Assistance')).toBeTruthy();
+    expect(await screen.findByText('What do you need right now?')).toBeTruthy();
+    expect(screen.getByText('MEDICAL')).toBeTruthy();
 
     
-    const securityBtn = screen.getByLabelText('Call security gate intercom');
+    const securityBtn = screen.getByLabelText('SECURITY. I need security now');
     fireEvent.press(securityBtn);
 
     
-    expect(await screen.findByText('Trigger Call Security Gate alert?')).toBeTruthy();
-    expect(screen.getByText('Confirm')).toBeTruthy();
+    expect(await screen.findByText('I need security now')).toBeTruthy();
+    expect(screen.getByText('REQUEST SECURITY HELP')).toBeTruthy();
 
     
-    const confirmBtn = screen.getByLabelText(
-      'Confirm calling the security gate'
-    );
+    const confirmBtn = screen.getByText('REQUEST SECURITY HELP');
     fireEvent.press(confirmBtn);
 
-    
+    // 5. Emergency Lens transforms into Response Field constellation
     await waitFor(() => {
-      expect(screen.getByText('Emergency Dispatched')).toBeTruthy();
-    });
+      expect(screen.getByText('LIVE RESPONSE CONSTELLATION')).toBeTruthy();
+      expect(screen.getAllByText('Return to Society OS').length).toBeGreaterThan(0);
+      expect(screen.getByText('False alarm · cancel request')).toBeTruthy();
+    }, { timeout: 3000 });
   });
 });

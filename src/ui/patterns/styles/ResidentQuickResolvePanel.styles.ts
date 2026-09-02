@@ -29,7 +29,7 @@ export function createSafeTextColorStyle(colorValue: string) {
         color: colorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#1E293B" | "#F8FAFC", borderColorValue: string) {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

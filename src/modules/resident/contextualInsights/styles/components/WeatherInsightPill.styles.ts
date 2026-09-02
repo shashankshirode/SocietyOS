@@ -9,14 +9,14 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700',
         marginLeft: 4
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#1E1B4B" | "#E8E5FB", borderColorValue: "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

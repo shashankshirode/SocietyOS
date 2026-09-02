@@ -25,7 +25,7 @@ export function createSafeTextColorStyle(colorValue: string) {
         textAlign: 'center'
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#6B7280" | "#3B82F6") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'

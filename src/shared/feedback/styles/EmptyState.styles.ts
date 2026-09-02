@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { Spacing } from "../../theme/spacing";
+import { Radius, Spacing } from "../../theme";
 export const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
@@ -8,9 +8,9 @@ export const styles = StyleSheet.create({
         paddingHorizontal: Spacing.xl,
     },
     iconCircle: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
+        width: 64,
+        height: 64,
+        borderRadius: Radius.surface,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: Spacing.lg,
@@ -32,4 +32,3 @@ export function createViewBackgroundColorStyle(backgroundColorValue: string) {
         backgroundColor: backgroundColorValue
     } as const;
 }
-

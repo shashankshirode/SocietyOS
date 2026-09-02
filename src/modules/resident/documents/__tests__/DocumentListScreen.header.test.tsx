@@ -21,6 +21,7 @@ describe('DocumentVaultHomeScreen Header Integration', () => {
     );
 
     
-    expect(screen.getByText(enMessages.resident.navigation.documents.title)).toBeOnTheScreen();
+    expect(screen.getByText(enMessages.documents.archiveTitle)).toBeOnTheScreen();
+    expect(screen.getByText(enMessages.documents.archiveSubtitle)).toBeOnTheScreen();
   });
 });

@@ -1,127 +1,81 @@
-import { StyleSheet } from "react-native";
-import { Spacing } from "../../../../../shared/theme/spacing";
-import { Typography } from "../../../../../shared/theme/typography";
-export const styles = StyleSheet.create({
-    content: {
-        paddingHorizontal: Spacing.lg,
-        paddingTop: Spacing.lg,
-        gap: Spacing.lg,
-    },
-    card: {
-        padding: Spacing.md,
-        borderRadius: 14,
-        borderWidth: 1,
-    },
-    title: {
-        ...Typography.cardTitle,
-        marginBottom: Spacing.md,
-    },
-    statusRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: Spacing.md,
-    },
-    label: {
-        ...Typography.bodySmall,
-    },
-    statusVal: {
-        ...Typography.bodySmall,
-        fontWeight: '700',
-    },
-    btn: {
-        marginTop: Spacing.xs,
-    },
-    toggleRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: Spacing.md,
-    },
-    toggleText: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: Spacing.sm,
-    },
-    importantTag: {
-        fontSize: 10,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-    },
-    infoBox: {
-        gap: Spacing.sm,
-        paddingHorizontal: Spacing.sm,
-    },
-    infoText: {
-        ...Typography.caption,
-        lineHeight: 16,
-    },
-    syncText: {
-        ...Typography.caption,
-        lineHeight: 16,
-        fontStyle: 'italic',
-    },
-});
-export function createViewPaddingBottomStyle(paddingBottomValue: number) {
-    return {
-        paddingBottom: paddingBottomValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createTextColorStyle(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createTextColorStyle2(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createTextColorStyle3(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createTextColorStyle4(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBorderBottomColorStyle(borderBottomColorValue: string) {
-    return {
-        borderBottomWidth: 1,
-        borderBottomColor: borderBottomColorValue
-    } as const;
-}
-export function createTextColorStyle5(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createTextColorStyle6(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createTextColorStyle7(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createTextColorStyle8(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
+import { StyleSheet } from 'react-native';
+import { Radius, Spacing, Typography } from '../../../../../shared/theme';
 
+export const styles = StyleSheet.create({
+  root: { flex: 1 },
+  deviceSection: {
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    borderTopWidth: 1,
+    gap: Spacing.md,
+  },
+  sectionTitle: {
+    ...Typography.tiny,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  deviceBody: {
+    minHeight: 84,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  deviceCopy: { flex: 1, minWidth: 0, gap: Spacing.xs },
+  deviceCommand: {
+    minHeight: 44,
+    flexShrink: 0,
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  sections: { width: '100%' },
+  sectionsWide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    columnGap: Spacing.xxl,
+  },
+  section: {
+    width: '100%',
+    borderTopWidth: 1,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
+  },
+  sectionWide: {
+    width: '48%',
+    flexGrow: 1,
+    flexBasis: 320,
+  },
+  settingRow: {
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  settingCopy: { flex: 1, minWidth: 0, gap: 2 },
+  requiredState: {
+    minHeight: 34,
+    flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.pill,
+  },
+  helpSection: {
+    borderTopWidth: 1,
+    paddingTop: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  helpTrigger: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  helpCopy: { maxWidth: 620, paddingBottom: Spacing.lg },
+});
+
+export const createScrollInsetStyle = (bottomInset: number) => ({ paddingBottom: bottomInset + Spacing.xxxl });
+export const createBorderStyle = (borderColor: string) => ({ borderColor, borderBottomWidth: 1 });
+export const createMutedSurfaceStyle = (backgroundColor: string) => ({ backgroundColor });

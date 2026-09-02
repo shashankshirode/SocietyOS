@@ -11,6 +11,9 @@ export const radiusScale = {
   input: 14,
   sheet: 24,
   hero: 28,
+  control: 14,
+  surface: 20,
+  feature: 28,
 } as const;
 
 export type RadiusScale = typeof radiusScale;

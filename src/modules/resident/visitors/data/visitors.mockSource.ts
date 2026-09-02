@@ -1,4 +1,4 @@
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../../core/repositories/repository.types';
+import { repositorySuccess, repositoryFailure, withMockDelay, type RepositoryResult } from '../../../../core/repositories/repository.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
 import type { ConfirmVisitorLeftInput, ConfirmVisitorStillInsideInput, ContactSecurityForVisitorExitInput, CreateVisitorPayload, ExtendVisitorExpectedExitInput, Visitor, VisitorExitAlert, VisitorExitEscalationResult, VisitorExitStatus, VisitorStatus, CancelVisitorPassRequest, CancelVisitorPassResult } from '../../../../shared/types/visitor.types';
 import { createVisitorExitTracking, ensureVisitorExitTracking, resolveVisitorCategory } from '../utils/visitorExitPolicyResolver';
@@ -7,10 +7,16 @@ import { visitorExitAssuranceMockNowIso } from './visitorExitPolicy';
 import { resolveRequestContext } from '../../homeContext/utils/resolveRequestContext';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import { matchesResidentRepositoryContext } from '../../homeContext/utils/matchesResidentRepositoryContext';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
+import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
-function generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+function generateOtp(visitorPassId: string): string {
+    let hash = 17;
+    for (const character of visitorPassId) {
+        hash = (hash * 31 + character.charCodeAt(0)) % 900000;
+    }
+    return String(100000 + hash).slice(-6);
 }
 function appendExitTimeline(visitor: Visitor, status: VisitorExitStatus, titleKey: string, descriptionKey: string): Visitor {
     const tracking = ensureVisitorExitTracking(visitor);
@@ -74,8 +80,14 @@ export const visitorsMockSource = {
             actualContext = resolveRequestContext();
             actualPayload = context as CreateVisitorPayload;
         }
+
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Resident';
+        const actorId = session?.userId ?? 'usr-resident-01';
+
+        const visitorPassId = `vis-${actualContext.activeHome.homeContextId}-${Date.now()}`;
         const newVisitor: Visitor = {
-            id: `vis-${Date.now()}`,
+            id: visitorPassId,
             name: actualPayload.name.trim(),
             phone: actualPayload.phone.trim(),
             type: actualPayload.type,
@@ -86,8 +98,10 @@ export const visitorsMockSource = {
             societyName: actualContext.activeHome.societyName,
             purpose: actualPayload.purpose.trim(),
             ...includeWhenPresent("vehicleNumber", actualPayload.vehicleNumber?.trim() || undefined),
-            otp: generateOtp(),
+            otp: generateOtp(visitorPassId),
             createdAt: new Date().toISOString(),
+            createdByUserId: actorId,
+            createdByDisplayName: actorName,
             homeContextId: actualContext.activeHome.homeContextId,
             societyId: actualContext.activeHome.societyId,
             unitId: actualContext.activeHome.unitId,
@@ -96,6 +110,32 @@ export const visitorsMockSource = {
             exitTracking: createVisitorExitTracking({ payload: actualPayload })
         };
         mockStore.addVisitor(newVisitor);
+
+        void domainEventBus.emit({
+            eventId: `evt-vis-${newVisitor.id}`,
+            eventType: 'visitor.pass.issued',
+            societyId: newVisitor.societyId ?? 'soc-palm-grove-01',
+            unitId: newVisitor.unitId,
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'VisitorPass',
+                entityId: newVisitor.id,
+            },
+            severity: 'INFO',
+            createdAtIso: newVisitor.createdAt,
+            correlationId: `corr-${newVisitor.id}`,
+            payload: {
+                visitorName: newVisitor.name,
+                visitorType: newVisitor.type,
+                flatNumber: newVisitor.flatNumber,
+            },
+        });
+
         return repositorySuccess(newVisitor);
     },
     async updateStatus(context: ResidentRepositoryRequestContext | string, idOrStatus?: string, status?: VisitorStatus): Promise<RepositoryResult<Visitor>> {
@@ -219,7 +259,61 @@ export const visitorsMockSource = {
             cancelledAt,
             accessCredentialInvalidated: true
         });
+    },
+    validateCredential(visitorPassId: string, otp: string): 'VALID' | 'CANCELLED' | 'EXPIRED' | 'USED' {
+        const visitor = mockStore.getState().visitors.find((item) => item.id === visitorPassId);
+        if (!visitor || visitor.status === 'CANCELLED' || !visitor.otp) return 'CANCELLED';
+        if (visitor.status === 'EXPIRED') return 'EXPIRED';
+        if (visitor.status === 'COMPLETED' || visitor.status === 'CHECKED_OUT') return 'USED';
+        return visitor.otp === otp ? 'VALID' : 'CANCELLED';
+    },
+    async validatePassAtGate(visitorPassId: string, otp: string): Promise<RepositoryResult<{ visitor: Visitor; gateEventId: string }>> {
+        await withMockDelay(200);
+        const visitor = mockStore.getState().visitors.find((item) => item.id === visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({ code: 'VISITOR_NOT_FOUND', message: 'Visitor pass not found.' });
+        }
+        if (visitor.status === 'CANCELLED') {
+            return repositoryFailure({ code: 'PASS_CANCELLED', message: 'This visitor pass has been cancelled and cannot be used for entry.' });
+        }
+        if (visitor.otp && visitor.otp !== otp) {
+            return repositoryFailure({ code: 'INVALID_OTP', message: 'Invalid visitor entry code.' });
+        }
+
+        const gateEventId = `gate-evt-${Date.now()}`;
+        const updatedVisitor: Visitor = {
+            ...visitor,
+            status: 'CHECKED_IN',
+            actualEntryTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        persistVisitor(updatedVisitor);
+
+        void domainEventBus.emit({
+            eventId: gateEventId,
+            eventType: 'visitor.at.gate',
+            societyId: visitor.societyId ?? 'soc-palm-grove-01',
+            unitId: visitor.unitId,
+            actor: {
+                userId: 'usr-guard-05',
+                personId: 'usr-guard-05',
+                displayName: 'Gate 1 Security',
+                role: 'SECURITY_GUARD',
+            },
+            subject: {
+                entityType: 'VisitorPass',
+                entityId: visitor.id,
+            },
+            severity: 'INFO',
+            createdAtIso: new Date().toISOString(),
+            correlationId: `corr-${gateEventId}`,
+            payload: {
+                visitorName: visitor.name,
+                entryGate: 'Main Gate 1',
+                hostUserId: visitor.createdByUserId,
+            },
+        });
+
+        return repositorySuccess({ visitor: updatedVisitor, gateEventId });
     }
 };
 export default visitorsMockSource;
-

@@ -13,12 +13,12 @@ export const styles = StyleSheet.create({
         marginTop: 12
     }
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle2(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

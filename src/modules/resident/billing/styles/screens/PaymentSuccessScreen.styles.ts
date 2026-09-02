@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     title: { fontWeight: '800' },
     actions: { marginTop: 4 },
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
@@ -19,7 +19,7 @@ export function createScrollViewPaddingBottomStyle(paddingBottomValue: number) {
         paddingBottom: paddingBottomValue
     } as const;
 }
-export function createAnimatedViewBackgroundColorStyle(backgroundColorValue: "#052E16" | "#DCFCE7") {
+export function createAnimatedViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

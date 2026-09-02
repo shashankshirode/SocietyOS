@@ -12,6 +12,9 @@ export const accessibilityMessages = {
   },
   tabs: {
     home: 'Switch to Home tab',
+    activity: 'Switch to Activity tab',
+    community: 'Switch to Community tab',
+    services: 'Switch to Services tab',
     visitors: 'Switch to Visitors tab',
     complaints: 'Switch to Complaints tab',
     bills: 'Switch to Bills tab',

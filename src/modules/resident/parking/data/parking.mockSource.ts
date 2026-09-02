@@ -6,7 +6,7 @@ import { mockParkingIncidents } from '../../../../shared/mock/parkingIncidents.m
 import { mockParkingViolations } from '../../../../shared/mock/parkingViolations.mock';
 import { mockGuardVehicleLookupResults, mockVehicles } from '../../../../shared/mock/vehicles.mock';
 import type { AddVehicleInput, GuardVehicleLookupResult, Vehicle } from '../../../../shared/types/vehicle.types';
-import type { CreateParkingIncidentInput, CreateVisitorParkingPassInput, ExtendVisitorParkingPassInput, ParkingHardwareActionInput, ParkingHardwareReadiness, ParkingHome, ParkingIncident, ParkingRules, ParkingSlot, ParkingSlotChangeRequestInput, ParkingViolation, StickerRfidRecord, VisitorParkingPass, } from '../../../../shared/types/parking.types';
+import type { CreateParkingIncidentInput, CreateVisitorParkingPassInput, ExtendVisitorParkingPassInput, ParkingHardwareActionInput, ParkingHardwareReadiness, ParkingHome, ParkingIncident, ParkingRules, ParkingSlot, ParkingSlotChangeRequestInput, ParkingViolation, StickerRfidRecord, VisitorParkingPass, SocietyParkingAllocationPolicy } from '../../../../shared/types/parking.types';
 import type { ParkingIncidentListParams } from './parking.dto';
 import { residentScopedVehicles } from '../../mock/residentMockDomainBuilders';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
@@ -15,6 +15,7 @@ const vehicles: Vehicle[] = [...residentScopedVehicles, ...mockVehicles];
 const visitorPasses: VisitorParkingPass[] = [...mockVisitorParkingPasses];
 const incidents: ParkingIncident[] = [...mockParkingIncidents];
 const stickerRfidRecords: StickerRfidRecord[] = mockStickerRfidRecords.map((record) => ({ ...record }));
+let configuredAllocationPolicy: SocietyParkingAllocationPolicy = 'FIXED_ALLOTMENT';
 function normalizeSearch(value: string): string {
     return value.trim().toLowerCase();
 }
@@ -29,14 +30,23 @@ function filterByQuery(query: string, values: (string | Absent)[]): boolean {
     return values.some((value) => value?.toLowerCase().includes(normalized));
 }
 export const parkingMockSource = {
+    getSocietyAllocationPolicy(): SocietyParkingAllocationPolicy {
+        return configuredAllocationPolicy;
+    },
+    setSocietyAllocationPolicy(policy: SocietyParkingAllocationPolicy): void {
+        configuredAllocationPolicy = policy;
+    },
     async getParkingHome(unitId: string): Promise<RepositoryResult<ParkingHome>> {
         await withMockDelay();
         const ctx = resolveRequestContext();
         const active = ctx.activeHome;
         const unitVehicles = vehicles.filter((vehicle) => vehicle.unitId === unitId || vehicle.linkedFlat === active.flatNumber);
-        const unitSlots = mockParkingSlots.filter((slot) => slot.linkedUnitId === unitId || slot.linkedFlat === active.flatNumber);
+        const unitSlots = configuredAllocationPolicy === 'NO_PARKING_SOCIETY' || configuredAllocationPolicy === 'OPEN_COMMON_POOL'
+            ? []
+            : mockParkingSlots.filter((slot) => slot.linkedUnitId === unitId || slot.linkedFlat === active.flatNumber);
         const unitIncidents = incidents.filter((incident) => incident.unitId === unitId || incident.reportedFlat === active.flatNumber);
         return repositorySuccess({
+            allocationPolicy: configuredAllocationPolicy,
             resident: {
                 id: active.residentId,
                 name: active.residentRole === 'tenant' ? 'Amit' : 'Shashank',
@@ -360,6 +370,16 @@ export const parkingMockSource = {
                 name: 'Mock Item 1',
                 status: 'ACTIVE'
             }];
+    },
+    simulateVehicleGateEvent(vehicleId: string, eventType: 'ENTRY' | 'EXIT', gateLabel: string = 'Gate 2'): void {
+        const v = vehicles.find((item) => item.id === vehicleId || item.vehicleNumber === vehicleId || item.makeModel?.toLowerCase().includes('honda'));
+        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (v) {
+            v.lastGateEntry = eventType === 'ENTRY'
+                ? `Entered through ${gateLabel} today at ${nowStr}`
+                : `Exited through ${gateLabel} today at ${nowStr}`;
+            v.lastUpdatedAt = new Date().toISOString();
+        }
     }
 };
 

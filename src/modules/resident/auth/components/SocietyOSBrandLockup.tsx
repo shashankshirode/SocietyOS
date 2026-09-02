@@ -6,6 +6,8 @@ import { useAppTheme } from "../../../../shared/theme/useAppTheme";
 import { authMessages } from "../messages/auth.messages";
 import { styles, createAnimatedViewBorderColorStyle, createAnimatedViewBorderColorStyle2, createAnimatedViewBackgroundColorStyle, createAppTextColorStyle, createAppTextColorStyle2 } from "../styles/components/SocietyOSBrandLockup.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
+import { residentColors } from "../../../../shared/theme/residentColors";
+import { darkPalette } from "../../../../shared/theme/colors";
 export type SocietyOSBrandVariant = 'hero' | 'compact' | 'navigation' | 'loading' | 'monochrome';
 interface SocietyOSBrandLockupProps {
     variant: SocietyOSBrandVariant;
@@ -40,18 +42,18 @@ export function SocietyOSBrandLockup({ variant, showTagline = true, animated = t
     }, [doorwayOpacity, pulseOpacity, shieldOpacity, shieldScale, textOpacity, textTranslate]);
     useEffect(() => {
         if (animated && !reducedMotion) {
-            shieldScale.value = withTiming(1, { duration: 300 });
-            shieldOpacity.value = withTiming(1, { duration: 300 });
-            doorwayOpacity.value = withDelay(200, withTiming(1, { duration: 250 }));
-            textOpacity.value = withDelay(350, withTiming(1, { duration: 300 }));
-            textTranslate.value = withDelay(350, withTiming(0, { duration: 300 }));
-            pulseOpacity.value = withDelay(500, withTiming(1, { duration: 200 }));
+            shieldScale.value = withTiming(1, { duration: 220 });
+            shieldOpacity.value = withTiming(1, { duration: 220 });
+            doorwayOpacity.value = withDelay(100, withTiming(1, { duration: 180 }));
+            textOpacity.value = withDelay(140, withTiming(1, { duration: 220 }));
+            textTranslate.value = withDelay(140, withTiming(0, { duration: 220 }));
+            pulseOpacity.value = withDelay(180, withTiming(1, { duration: 160 }));
         }
     }, [animated, doorwayOpacity, pulseOpacity, reducedMotion, shieldOpacity, shieldScale, textOpacity, textTranslate]);
     useEffect(() => {
         if (isPhoneValid) {
             pulseScale.value = 1;
-            pulseScale.value = withTiming(2.2, { duration: 800 }, () => {
+            pulseScale.value = withTiming(1.8, { duration: 220 }, () => {
                 pulseScale.value = 1;
             });
         }
@@ -83,10 +85,10 @@ export function SocietyOSBrandLockup({ variant, showTagline = true, animated = t
     const sizeClass = isHero ? styles.heroSize : styles.compactSize;
     const wordmarkColor = variant === 'monochrome'
         ? colors.textPrimary
-        : '#ffffff';
+        : residentColors.onBrand;
     const osAccentColor = variant === 'monochrome'
         ? colors.primary
-        : '#00F0FF';
+        : darkPalette.primary;
     return (<View style={[styles.container, isHero ? styles.heroLayout : styles.compactLayout]} accessibilityLabel={accessibilityLabel} accessibilityRole="summary">
       <View style={styles.brandRow}>
         
@@ -106,7 +108,7 @@ export function SocietyOSBrandLockup({ variant, showTagline = true, animated = t
           <Animated.View style={[
             styles.accessDot,
             pulseAnimStyle,
-            createAnimatedViewBackgroundColorStyle(isPhoneValid ? '#10B981' : '#00F0FF'),
+            createAnimatedViewBackgroundColorStyle(isPhoneValid ? darkPalette.accentTeal : darkPalette.primary),
         ]}/>
         </Animated.View>
 
@@ -127,4 +129,3 @@ export function SocietyOSBrandLockup({ variant, showTagline = true, animated = t
         </Animated.View>)}
     </View>);
 }
-

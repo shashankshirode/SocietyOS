@@ -1,12 +1,13 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState } from "react";
-import { View, ScrollView, Pressable, Switch } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
 import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { AppButton } from "../../../../shared/components/AppButton";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { useResolutionDetail } from "../data/useResolutionDetail";
 import { useCastResolutionVote } from "../data/useCastResolutionVote";
 import type { CastResolutionVoteScreenProps } from "../../../../app/navigation/navigation.types";
@@ -96,7 +97,7 @@ export function CastResolutionVoteScreen({ navigation, route }: CastResolutionVo
             <SafeText variant="bodyStrong" style={createSafeTextColorStyle4(theme.textPrimary)}>{localizedUiText.m_bfcaf8038d60}</SafeText>
             <SafeText variant="tiny" style={createSafeTextColorStyle5(theme.textSecondary)}>{localizedUiText.m_15dc4bd62a1f}</SafeText>
           </View>
-          <Switch value={consented} onValueChange={setConsented} trackColor={{ false: theme.border, true: theme.accent }}/>
+          <SocietySwitch value={consented} onValueChange={setConsented}/>
         </View>
       </ScrollView>
 
@@ -107,4 +108,3 @@ export function CastResolutionVoteScreen({ navigation, route }: CastResolutionVo
     </View>);
 }
 export default CastResolutionVoteScreen;
-

@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: Radius.input,
-        minHeight: 54,
+        minHeight: 58,
         overflow: 'hidden',
     },
     countryTrigger: {
@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: Spacing.md,
         borderRightWidth: 1,
         height: '100%',
-        minWidth: 104,
+        minWidth: 108,
     },
     flag: {
         fontSize: 18,
@@ -50,14 +50,14 @@ export const styles = StyleSheet.create({
         fontSize: 11,
     },
 });
-export function createViewBorderColorBackgroundColorBorderWidthStyle(borderColorValue: string, backgroundColorValue: "#131926" | "#F1F3F5", borderWidthValue: 1 | 1.5) {
+export function createViewBorderColorBackgroundColorBorderWidthStyle(borderColorValue: string, backgroundColorValue: string, borderWidthValue: 1 | 1.5) {
     return {
         borderColor: borderColorValue,
         backgroundColor: backgroundColorValue,
         borderWidth: borderWidthValue
     } as const;
 }
-export function createPressableBorderRightColorStyle(borderRightColorValue: "rgba(255, 255, 255, 0.1)" | "rgba(15, 23, 42, 0.1)") {
+export function createPressableBorderRightColorStyle(borderRightColorValue: string) {
     return {
         borderRightColor: borderRightColorValue
     } as const;
@@ -77,4 +77,3 @@ export function createAppTextColorStyle2(colorValue: string) {
         color: colorValue
     } as const;
 }
-

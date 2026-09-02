@@ -72,7 +72,7 @@ export function ComplaintReopenScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={[styles.bottomBar, createViewPaddingBottomBorderTopColorStyle(insets.bottom + 12, theme.border)]}>
-        <AppButton title={messages.complaints.reopenButton} onPress={handleReopen} loading={isSubmitting} iconLeft={<Ionicons name="refresh-outline" size={18} color="#FFFFFF"/>}/>
+        <AppButton title={messages.complaints.reopenButton} onPress={handleReopen} loading={isSubmitting} iconLeft={<Ionicons name="refresh-outline" size={18} color={theme.selectedForeground}/>}/>
       </View>
     </View>);
 }

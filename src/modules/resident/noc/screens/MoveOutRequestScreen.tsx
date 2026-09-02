@@ -1,6 +1,6 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState } from "react";
-import { View, ScrollView, Switch } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
@@ -10,6 +10,7 @@ import { FormField } from "../../../../shared/forms/FormField";
 import { AppButton } from "../../../../shared/components/AppButton";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createSafeTextColorStyle4, createSafeTextColorStyle5, createSafeTextColorStyle6, createSafeTextColorStyle7, createSafeTextColorStyle8, createSafeTextColorStyle9, createSafeTextColorStyle10, createViewBackgroundColorStyle, createViewBorderColorStyle, createViewBorderColorStyle2, createViewBackgroundColorBorderColorStyle, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/MoveOutRequestScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
@@ -70,7 +71,7 @@ export function MoveOutRequestScreen({ navigation }: NavigationOnlyScreenProps) 
                 <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.textPrimary)}>{localizedUiText.m_cf6961ece16b}</SafeText>
                 <SafeText variant="tiny" style={createSafeTextColorStyle4(theme.textSecondary)}>{localizedUiText.m_1a0017ff5751}</SafeText>
               </View>
-              <Switch value={form.liftReserved} onValueChange={(val) => setForm({ ...form, liftReserved: val })} trackColor={{ false: theme.border, true: theme.accent }}/>
+              <SocietySwitch value={form.liftReserved} onValueChange={(val) => setForm({ ...form, liftReserved: val })}/>
             </View>
 
             <View style={[styles.switchRow, createViewBorderColorStyle2(theme.border)]}>
@@ -78,7 +79,7 @@ export function MoveOutRequestScreen({ navigation }: NavigationOnlyScreenProps) 
                 <SafeText variant="bodyStrong" style={createSafeTextColorStyle5(theme.textPrimary)}>{localizedUiText.m_ea8b530fddde}</SafeText>
                 <SafeText variant="tiny" style={createSafeTextColorStyle6(theme.textSecondary)}>{localizedUiText.m_a9f1c085c995}</SafeText>
               </View>
-              <Switch value={form.gatePassRequired} onValueChange={(val) => setForm({ ...form, gatePassRequired: val })} trackColor={{ false: theme.border, true: theme.accent }}/>
+              <SocietySwitch value={form.gatePassRequired} onValueChange={(val) => setForm({ ...form, gatePassRequired: val })}/>
             </View>
           </View>)}
 
@@ -106,4 +107,3 @@ export function MoveOutRequestScreen({ navigation }: NavigationOnlyScreenProps) 
     </View>);
 }
 export default MoveOutRequestScreen;
-

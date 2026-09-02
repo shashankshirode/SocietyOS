@@ -66,6 +66,10 @@ export type LocalAreaAdvisory = {
   reportedAtIso: string;
   validUntilIso: string;
   source: 'societyAdmin' | 'facilityTeam' | 'guardReport' | 'residentReports' | 'municipalFeed' | 'weatherRule' | 'mock';
+  customTitle?: string;
+  customDescription?: string;
+  reporterName?: string;
+  autoIconName?: AppIconName;
 };
 
 export type ResidentContextualSuggestion = {

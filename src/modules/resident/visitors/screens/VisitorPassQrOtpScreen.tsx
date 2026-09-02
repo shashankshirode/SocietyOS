@@ -18,7 +18,7 @@ export function VisitorPassQrOtpScreen({ navigation }: {
       <ResidentPageHeader title={localizedUiText.m_534036a70157}/>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <VisitorPassPanel visitorName="Guest Pass" visitorType="GUEST" purpose={String(localizedUiText.m_aade86fb93fa)} validFrom="Today, 6:00 PM" validTill="Today, 10:00 PM" gateName="Main Gate" otpCode="8901" onSharePress={() => { }} onRegenerateOtp={() => { }}/>
+        <VisitorPassPanel visitorName="Guest Pass" visitorType="GUEST" purpose={String(localizedUiText.m_aade86fb93fa)} validFrom="Today, 6:00 PM" validTill="Today, 10:00 PM" gateName="Main Gate"/>
 
         <View style={styles.noteContainer}>
           <PrivacyNoticePanel description={localizedUiText.m_73e05117b649} points={[
@@ -31,4 +31,3 @@ export function VisitorPassQrOtpScreen({ navigation }: {
     </View>);
 }
 export default VisitorPassQrOtpScreen;
-

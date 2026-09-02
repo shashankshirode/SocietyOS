@@ -1,4 +1,4 @@
-import { ScrollView, Switch, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppCard } from "../../../../shared/cards/AppCard";
 import { DataRow } from "../../../../shared/dataDisplay/DataRow";
@@ -9,6 +9,7 @@ import { usePrivacyDirectorySettings } from "../hooks/usePrivacyDirectorySetting
 import { styles, createTextColorStyle, createTextColorStyle2 } from "../styles/screens/PrivacyDirectorySettingsScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
 import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 const settingLabels = {
     showName: getActiveUiLiteral("m_0c3888dd229b"),
     showFlat: getActiveUiLiteral("m_667f6f077984"),
@@ -36,11 +37,10 @@ export function PrivacyDirectorySettingsScreen({ navigation }: NavigationOnlyScr
                     {settings[key] ? localizedUiText.m_ce29a5499b47 : localizedUiText.m_04b27dbf4e23}
                   </Text>
                 </View>
-                <Switch value={settings[key]} onValueChange={() => toggle(key)}/>
+                <SocietySwitch value={settings[key]} onValueChange={() => toggle(key)}/>
               </View>
             </AppCard>))}
         </ScrollView>
       </SafeAreaView>
     </ScreenContainer>);
 }
-

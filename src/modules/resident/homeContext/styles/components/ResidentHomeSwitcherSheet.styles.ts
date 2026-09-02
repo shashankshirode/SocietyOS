@@ -10,11 +10,11 @@ export const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: 34,
+        borderTopRightRadius: 34,
         paddingTop: Spacing.xs,
         paddingBottom: 40,
-        maxHeight: '80%',
+        maxHeight: '90%',
     },
     dragHandle: {
         width: 40,
@@ -28,11 +28,13 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: Spacing.lg,
-        paddingBottom: Spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.05)',
+        paddingHorizontal: Spacing.xl,
+        paddingTop: Spacing.sm,
+        paddingBottom: Spacing.lg,
     },
+    headerCopy: { flex: 1, gap: 4 },
+    eyebrow: { letterSpacing: 0.7 },
+    closeButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
     title: {
         fontSize: 18,
         fontWeight: '700',
@@ -41,12 +43,23 @@ export const styles = StyleSheet.create({
         padding: 4,
     },
     scroll: {
-        maxHeight: 450,
+        maxHeight: 560,
     },
     scrollContent: {
-        paddingHorizontal: Spacing.lg,
-        paddingTop: Spacing.md,
+        paddingHorizontal: Spacing.xl,
+        paddingTop: Spacing.sm,
     },
+    search: {
+        minHeight: 48,
+        borderWidth: 1,
+        borderRadius: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+        paddingHorizontal: Spacing.md,
+        marginBottom: Spacing.md,
+    },
+    searchInput: { flex: 1, minWidth: 0, minHeight: 44 },
     loadingContainer: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -54,3 +67,15 @@ export const styles = StyleSheet.create({
         gap: Spacing.md,
     },
 });
+
+export function createTextColorStyle(color: string) {
+    return { color } as const;
+}
+
+export function createBackgroundStyle(backgroundColor: string) {
+    return { backgroundColor } as const;
+}
+
+export function createSearchStyle(borderColor: string, backgroundColor: string) {
+    return { borderColor, backgroundColor } as const;
+}

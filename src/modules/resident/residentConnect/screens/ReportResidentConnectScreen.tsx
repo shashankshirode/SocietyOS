@@ -1,6 +1,6 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState } from "react";
-import { View, ScrollView, Switch } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useReportResidentConnect } from "../data/useReportResidentConnect";
@@ -12,6 +12,7 @@ import { AppButton } from "../../../../shared/components/AppButton";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { WrapRow } from "../../../../ui/layout/WrapRow";
 import { PressableScale } from "../../../../shared/motion/PressableScale";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import type { ReportResidentConnectScreenProps } from "../../../../app/navigation/navigation.types";
 import type { ReportCategory } from "../../../../shared/types/privacy.types";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
@@ -105,7 +106,7 @@ export function ReportResidentConnectScreen({ navigation, route }: ReportResiden
         
         <View style={[styles.switchRow, createViewBorderColorStyle(theme.border)]}>
           <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.textPrimary)}>{localizedUiText.m_31d1a295cf43}</SafeText>
-          <Switch value={consent} onValueChange={setConsent} trackColor={{ false: theme.border, true: theme.accent }}/>
+          <SocietySwitch value={consent} onValueChange={setConsent}/>
         </View>
       </ScrollView>
 
@@ -116,4 +117,3 @@ export function ReportResidentConnectScreen({ navigation, route }: ReportResiden
     </View>);
 }
 export default ReportResidentConnectScreen;
-

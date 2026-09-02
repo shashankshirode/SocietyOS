@@ -6,6 +6,7 @@ import { SafeText } from "../../../../shared/components/SafeText";
 import { AppButton } from "../../../../shared/components/AppButton";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { formatBillingPeriod, formatDate } from "../../../../shared/formatters/dateFormatter";
+import { formatCurrencyAmount } from "../../../../shared/formatters/currencyFormatter";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
 import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { ContentFrame } from "../../../../ui/layout/ContentFrame";
@@ -34,13 +35,12 @@ function MetadataRow({ label, value }: {
 export function BillDetailScreen({ navigation, route }: Props) {
     const theme = useResidentTheme();
     const messages = useMessages();
+    const focusCopy = messages.resident.experience.focus;
     const insets = useSafeAreaInsets();
     const billing = messages.resident.billing;
     const { bill: routeBill } = route.params;
     const { data: bill, isLoading, error, refetch } = useBillDetail(routeBill.id);
     const isPaid = bill?.status === 'PAID';
-    const titleKey = isPaid ? 'resident.billing.receipt.title' : 'resident.billing.invoice.title';
-    const title = isPaid ? billing.receipt.title : billing.invoice.title;
     const bottomPadding = getResidentScreenBottomPadding({
         safeAreaBottom: insets.bottom,
         hasBottomTabs: true,
@@ -101,7 +101,11 @@ export function BillDetailScreen({ navigation, route }: Props) {
     const canPay = bill.status === 'DUE' || bill.status === 'OVERDUE' || bill.status === 'PARTIALLY_PAID';
     const highlightedItems = bill.charges.filter((item) => item.amount > 0).slice(0, 4);
     return (<View style={[styles.root, createViewBackgroundColorStyle6(theme.background)]}> 
-      <ResidentPageHeader title={title} titleKey={titleKey}/>
+      <ResidentPageHeader
+        contextLabel={focusCopy.money}
+        title={isPaid ? focusCopy.moneySettled : focusCopy.moneyOutstanding(formatCurrencyAmount(Math.max(0, bill.amount - (bill.paidAmount ?? 0)), 'INR'))}
+        subtitle={`${formatBillingPeriod(bill.billingPeriod)} · ${status.label}`}
+      />
       <ScrollView contentContainerStyle={[styles.scrollContent, createScrollViewPaddingBottomStyle(bottomPadding)]} showsVerticalScrollIndicator={false}>
         <ContentFrame style={styles.contentStack}>
           <BillInvoiceHero bill={bill}/>
@@ -133,7 +137,7 @@ export function BillDetailScreen({ navigation, route }: Props) {
           </View>
 
           <View style={styles.actions}>
-            {canPay ? (<AppButton title={bill.status === 'PARTIALLY_PAID' ? billing.actions.payBalance : billing.actions.payNow} accessibilityLabel={messages.residentAccessibility.billing.payNow} onPress={handlePayNow} iconLeft={<Ionicons name="card-outline" size={18} color="#FFFFFF"/>}/>) : null}
+            {canPay ? (<AppButton title={bill.status === 'PARTIALLY_PAID' ? billing.actions.payBalance : billing.actions.payNow} accessibilityLabel={messages.residentAccessibility.billing.payNow} onPress={handlePayNow} iconLeft={<Ionicons name="card-outline" size={18} color={theme.selectedForeground}/>}/>) : null}
             <AppButton title={billing.actions.ledger} accessibilityLabel={messages.residentAccessibility.billing.ledger} variant="secondary" onPress={handleViewLedger} iconLeft={<Ionicons name="document-text-outline" size={18} color={theme.accent}/>}/>
           </View>
         </ContentFrame>
@@ -141,4 +145,3 @@ export function BillDetailScreen({ navigation, route }: Props) {
     </View>);
 }
 export default BillDetailScreen;
-

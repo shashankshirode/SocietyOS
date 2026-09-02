@@ -346,7 +346,7 @@ export type HomeStackParamList = {
     BillDetailFromHome: {
         bill: Bill;
     };
-    ProfileTab: Absent;
+    ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
     DocumentVaultHome: Absent;
     MyDocuments: Absent;
     SocietyDocuments: Absent;
@@ -686,6 +686,9 @@ export type ChatStackParamList = {
 };
 export type RootTabParamList = {
     HomeTab: NavigatorScreenParams<HomeStackParamList>;
+    ActivityTab: Absent;
+    CommunityTab: NavigatorScreenParams<CommunityStackParamList>;
+    ServicesTab: Absent;
     VisitorTab: NavigatorScreenParams<VisitorStackParamList>;
     ComplaintTab: NavigatorScreenParams<ComplaintStackParamList>;
     BillTab: NavigatorScreenParams<BillStackParamList>;

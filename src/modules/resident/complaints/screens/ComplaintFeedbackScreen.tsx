@@ -85,7 +85,7 @@ export function ComplaintFeedbackScreen({ navigation, route }: Props) {
 
       
       <View style={[styles.bottomBar, createViewPaddingBottomBorderTopColorStyle(insets.bottom + 12, theme.border)]}>
-        <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} loading={isSubmitting} iconLeft={<Ionicons name="star-outline" size={18} color="#FFFFFF"/>}/>
+        <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} loading={isSubmitting} iconLeft={<Ionicons name="star-outline" size={18} color={theme.selectedForeground}/>}/>
       </View>
     </View>);
 }

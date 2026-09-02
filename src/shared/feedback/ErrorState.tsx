@@ -13,12 +13,12 @@ export interface ErrorStateProps {
     retryLabel?: string;
 }
 export function ErrorState({ title, message, onRetry, supportCode, retryLabel, }: ErrorStateProps) {
-    const { colors } = useAppTheme();
+    const { semantic } = useAppTheme();
     const messages = useMessages();
     const resolvedTitle = title ?? messages.common.unableToLoadData;
     return (<View style={styles.container}>
-      <View style={[styles.iconContainer, createViewBackgroundColorStyle(colors.dangerSoft)]}>
-        <AppIcon name="error" size={32} color={colors.danger}/>
+      <View style={[styles.iconContainer, createViewBackgroundColorStyle(semantic.status.dangerSurface)]}>
+        <AppIcon name="error" size={28} color={semantic.status.danger}/>
       </View>
       <SafeText variant="title" color="primary" align="center" numberOfLines={3} style={styles.title}>{resolvedTitle}</SafeText>
       <SafeText variant="body" color="secondary" align="center" numberOfLines={5} style={styles.message}>{message}</SafeText>
@@ -27,4 +27,3 @@ export function ErrorState({ title, message, onRetry, supportCode, retryLabel, }
     </View>);
 }
 export default ErrorState;
-

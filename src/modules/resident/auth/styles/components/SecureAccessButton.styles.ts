@@ -6,16 +6,28 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     button: {
-        minHeight: 52,
+        minHeight: 58,
         borderRadius: Radius.button,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'stretch',
         paddingHorizontal: Spacing.lg,
     },
     content: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: Spacing.xs,
+        justifyContent: 'space-between',
+        gap: Spacing.md,
+    },
+    label: {
+        fontWeight: '700',
+        fontSize: 15,
+    },
+    commandIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     loadingWrapper: {
         flexDirection: 'row',
@@ -23,15 +35,18 @@ export const styles = StyleSheet.create({
         gap: Spacing.sm,
     },
 });
-export function createAppTextColorStyle(colorValue: "rgba(255, 255, 255, 0.35)" | "rgba(15, 23, 42, 0.35)" | "#ffffff") {
+export function createAppTextColorStyle(colorValue: string) {
     return {
-        color: colorValue,
-        fontWeight: '700'
+        color: colorValue
     } as const;
 }
-export function createPressableBackgroundColorStyle(backgroundColorValue: "#4F46E5" | "rgba(99, 102, 241, 0.12)" | "rgba(99, 102, 241, 0.06)") {
+export function createPressableBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}

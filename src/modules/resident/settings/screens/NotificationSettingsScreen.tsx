@@ -1,80 +1,156 @@
-import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { useState } from "react";
-import { Switch, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAppTheme } from "../../../../shared/theme/useAppTheme";
-import { Spacing } from "../../../../shared/theme/spacing";
-import { useNotificationPermission } from "../../../../core/notifications/useNotificationPermission";
-import { useLocalNotificationTest } from "../../../../core/notifications/useLocalNotificationTest";
-import { getCachedNotificationPreferences, updateNotificationPreference } from "../../../../core/notifications/notificationPreferences";
-import { resolvePermissionDeniedError } from "../../../../core/device/deviceCapabilityError";
-import { AppButton } from "../../../../shared/components/AppButton";
-import { AppScreen } from "../../../../shared/layouts/AppScreen";
-import { AppHeader } from "../../../../shared/components/AppHeader";
-import { styles, createViewPaddingBottomStyle, createViewBackgroundColorBorderColorStyle, createTextColorStyle, createTextColorStyle2, createTextColorStyle3, createViewBackgroundColorBorderColorStyle2, createTextColorStyle4, createViewBorderBottomColorStyle, createTextColorStyle5, createTextColorStyle6, createTextColorStyle7, createTextColorStyle8 } from "../styles/screens/NotificationSettingsScreen.styles";
-import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
-export function NotificationSettingsScreen({ navigation }: BackOnlyScreenProps) {
-    const localizedUiText = useGeneratedUiMessages().uiLiterals;
-    const { colors } = useAppTheme();
-    const insets = useSafeAreaInsets();
-    const { status, loading, askPermission } = useNotificationPermission();
-    const { triggerTest, isSending } = useLocalNotificationTest();
-    const [preferences, setPreferences] = useState(getCachedNotificationPreferences());
-    function handleToggle(key: string, value: boolean, important?: boolean) {
-        if (important && !value) {
-            AppAlert.alert(String(localizedUiText.m_90c50691653a), String(localizedUiText.m_67422ecc9e25));
-            return;
-        }
-        updateNotificationPreference(key, value);
-        setPreferences(getCachedNotificationPreferences());
-    }
-    async function handleSendTest() {
-        const result = await triggerTest();
-        if (!result.success) {
-            AppAlert.alert(String(localizedUiText.m_34de315c5c90), String(localizedUiText.m_de13ebbe2d50));
-        }
-    }
-    async function handleEnable() {
-        const nextStatus = await askPermission();
-        if (nextStatus.status === 'denied') {
-            AppAlert.alert(String(localizedUiText.m_866a0a58fd9a), resolvePermissionDeniedError('notifications'));
-        }
-    }
-    return (<AppScreen scroll>
-      <AppHeader title={localizedUiText.m_07a063cab7ec} showBack onBack={() => navigation.goBack()}/>
-      <View style={[styles.content, createViewPaddingBottomStyle(insets.bottom + Spacing.xxl)]}>
-        
-        
-        <View style={[styles.card, createViewBackgroundColorBorderColorStyle(colors.card, colors.border)]}>
-          <Text style={[styles.title, createTextColorStyle(colors.textPrimary)]}>{localizedUiText.m_4e0190a510fa}</Text>
-          <View style={styles.statusRow}>
-            <Text style={[styles.label, createTextColorStyle2(colors.textSecondary)]}>{localizedUiText.m_5427e0ef4eba}</Text>
-            <Text style={[styles.statusVal, createTextColorStyle3(status === 'granted' ? colors.success : colors.danger)]}>
-              {loading ? localizedUiText.m_2e5f79bb94a8 : status.toUpperCase()}
-            </Text>
-          </View>
-          {status !== 'granted' ? (<AppButton title={localizedUiText.m_87b9876704ed} variant="primary" size="sm" onPress={handleEnable} style={styles.btn}/>) : (<AppButton title={localizedUiText.m_5b297385e4fb} variant="secondary" size="sm" onPress={handleSendTest} loading={isSending} style={styles.btn}/>)}
-        </View>
+import { useMemo, useState } from 'react';
+import { Linking, Pressable, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNotificationPermission } from '../../../../core/notifications/useNotificationPermission';
+import { useLocalNotificationTest } from '../../../../core/notifications/useLocalNotificationTest';
+import { getCachedNotificationPreferences, updateNotificationPreference } from '../../../../core/notifications/notificationPreferences';
+import type { NotificationPreference } from '../../../../core/notifications/notification.types';
+import { resolvePermissionDeniedError } from '../../../../core/device/deviceCapabilityError';
+import { SafeText } from '../../../../shared/components/SafeText';
+import { useMessages } from '../../../../shared/constants/useMessages';
+import { useAppTheme } from '../../../../shared/theme/useAppTheme';
+import { AppAlert } from '../../../../ui/modal/AppAlert';
+import { SocietySwitch } from '../../../../ui/controls/SocietySwitch';
+import { SocietyScreen } from '../../../../ui/layout/SocietyScreen';
+import { useResponsiveLayout } from '../../../../ui/layout/useResponsiveLayout';
+import { AmbientPageChrome } from '../../experience/AmbientPageChrome';
+import { SocietyExperienceFrame } from '../../experience/SocietyExperienceFrame';
+import {
+  createBorderStyle,
+  createMutedSurfaceStyle,
+  createScrollInsetStyle,
+  styles,
+} from '../styles/screens/NotificationSettingsScreen.styles';
 
-        
-        <View style={[styles.card, createViewBackgroundColorBorderColorStyle2(colors.card, colors.border)]}>
-          <Text style={[styles.title, createTextColorStyle4(colors.textPrimary)]}>{localizedUiText.m_66962f72a088}</Text>
-          {preferences.map((pref) => (<View key={pref.key} style={[styles.toggleRow, createViewBorderBottomColorStyle(colors.divider)]}>
-              <View style={styles.toggleText}>
-                <Text style={[styles.label, createTextColorStyle5(colors.textSecondary)]}>{pref.label}</Text>
-                {pref.important && (<Text style={[styles.importantTag, createTextColorStyle6(colors.danger)]}>{localizedUiText.m_4850b174b713}</Text>)}
-              </View>
-              <Switch value={pref.enabled} onValueChange={(val) => handleToggle(pref.key, val, pref.important)} trackColor={{ true: colors.primary, false: colors.border }} disabled={pref.important}/>
-            </View>))}
-        </View>
+type NotificationSectionKey = 'aroundHome' | 'yourSociety' | 'money' | 'safety' | 'other';
 
-        
-        <View style={styles.infoBox}>
-          <Text style={[styles.infoText, createTextColorStyle7(colors.textMuted)]}>{localizedUiText.m_00c9dabed390}</Text>
-          <Text style={[styles.syncText, createTextColorStyle8(colors.textMuted)]}>{localizedUiText.m_c2ad103f4456}</Text>
-        </View>
+const preferenceSections: Record<string, NotificationSectionKey> = {
+  visitorAlerts: 'aroundHome',
+  gateEntryAlerts: 'aroundHome',
+  staffAttendanceAlerts: 'aroundHome',
+  noticeAnnouncements: 'yourSociety',
+  complaintUpdates: 'yourSociety',
+  documentNocUpdates: 'yourSociety',
+  billingReminders: 'money',
+  emergencyAlerts: 'safety',
+};
 
-      </View>
-    </AppScreen>);
+function settingLabel(pref: NotificationPreference, labels: Record<string, string>): string {
+  return labels[pref.key] ?? pref.label;
 }
 
+export function NotificationSettingsScreen({ navigation }: BackOnlyScreenProps) {
+  const messages = useMessages();
+  const copy = messages.settings.notificationExperience;
+  const { semantic } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const responsive = useResponsiveLayout();
+  const { status, loading, askPermission } = useNotificationPermission();
+  const { triggerTest, isSending } = useLocalNotificationTest();
+  const [preferences, setPreferences] = useState(getCachedNotificationPreferences);
+  const [showHelp, setShowHelp] = useState(false);
+  const grouped = useMemo(() => {
+    const result: Record<NotificationSectionKey, NotificationPreference[]> = { aroundHome: [], yourSociety: [], money: [], safety: [], other: [] };
+    preferences.forEach((pref) => result[preferenceSections[pref.key] ?? 'other'].push(pref));
+    return result;
+  }, [preferences]);
+
+  function handleToggle(key: string, value: boolean) {
+    updateNotificationPreference(key, value);
+    setPreferences(getCachedNotificationPreferences());
+  }
+
+  async function handleSendTest() {
+    const result = await triggerTest();
+    if (!result.success) AppAlert.alert(copy.testErrorTitle, copy.testErrorMessage);
+  }
+
+  async function handlePermissionAction() {
+    if (status === 'denied') {
+      await Linking.openSettings();
+      return;
+    }
+    const nextStatus = await askPermission();
+    if (nextStatus.status === 'denied') AppAlert.alert(copy.permissionDeniedTitle, resolvePermissionDeniedError('notifications'));
+  }
+
+  const renderSection = (key: NotificationSectionKey, title: string) => {
+    const sectionPreferences = grouped[key];
+    if (sectionPreferences.length === 0) return null;
+    return (
+      <View key={key} style={[styles.section, responsive.isTablet && styles.sectionWide, createBorderStyle(semantic.border.subtle)]}>
+        <SafeText variant="tiny" style={styles.sectionTitle}>{title}</SafeText>
+        {sectionPreferences.map((pref, index) => {
+          const required = pref.important === true;
+          return (
+            <View key={pref.key} style={[styles.settingRow, index < sectionPreferences.length - 1 && createBorderStyle(semantic.border.subtle)]}>
+              <View style={styles.settingCopy}>
+                <SafeText variant="bodyStrong" color="primary">{settingLabel(pref, copy.labels)}</SafeText>
+                {required ? <SafeText variant="caption" color="muted">{copy.requiredForSafety}</SafeText> : null}
+              </View>
+              {required ? (
+                <View style={[styles.requiredState, createMutedSurfaceStyle(semantic.surface.soft)]} accessibilityLabel={`${settingLabel(pref, copy.labels)}, ${copy.alwaysOn}`}>
+                  <Ionicons name="lock-closed-outline" size={14} color={semantic.accent.moss} />
+                  <SafeText variant="tiny" color="success">{copy.alwaysOn}</SafeText>
+                </View>
+              ) : <SocietySwitch accessibilityLabel={settingLabel(pref, copy.labels)} value={pref.enabled} onValueChange={(value) => handleToggle(pref.key, value)} />}
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const permissionGranted = status === 'granted';
+  return (
+    <SocietyExperienceFrame showAmbientChrome={false}>
+      <View style={styles.root}>
+        <AmbientPageChrome
+          titleKey="settings.notificationExperience.title"
+          subtitleKey="settings.notificationExperience.subtitle"
+          contextLabelKey="settings.notificationExperience.context"
+          showBackButton
+          onBackPress={() => navigation.goBack()}
+        />
+        <SocietyScreen scroll layoutMode="full" edges={['left', 'right', 'bottom']} contentStyle={createScrollInsetStyle(insets.bottom)} testID="notification-settings-screen">
+          <View style={[styles.deviceSection, createBorderStyle(semantic.border.subtle)]}>
+            <SafeText variant="tiny" style={styles.sectionTitle}>{copy.device}</SafeText>
+            <View style={styles.deviceBody}>
+              <View style={styles.deviceCopy}>
+                <SafeText variant="h3" color="primary">{loading ? copy.permissionLoading : permissionGranted ? copy.permissionOn : copy.permissionOff}</SafeText>
+                <SafeText variant="body" color="muted">{permissionGranted ? copy.permissionOnDescription : copy.permissionOffDescription}</SafeText>
+              </View>
+              <Pressable
+                onPress={permissionGranted ? handleSendTest : handlePermissionAction}
+                disabled={loading || isSending}
+                accessibilityRole="button"
+                style={styles.deviceCommand}
+              >
+                <SafeText variant="bodyStrong" color="success">
+                  {permissionGranted ? copy.test : status === 'denied' ? copy.openSettings : copy.enable} →
+                </SafeText>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={[styles.sections, responsive.isTablet && styles.sectionsWide]}>
+            {renderSection('aroundHome', copy.aroundHome)}
+            {renderSection('yourSociety', copy.yourSociety)}
+            {renderSection('money', copy.money)}
+            {renderSection('safety', copy.safety)}
+            {renderSection('other', copy.other)}
+          </View>
+
+          <View style={[styles.helpSection, createBorderStyle(semantic.border.subtle)]}>
+            <Pressable onPress={() => setShowHelp((current) => !current)} accessibilityRole="button" accessibilityState={{ expanded: showHelp }} style={styles.helpTrigger}>
+              <SafeText variant="bodyStrong" color="secondary">{copy.help}</SafeText>
+              <Ionicons name={showHelp ? 'chevron-up' : 'chevron-forward'} size={18} color={semantic.text.secondary} />
+            </Pressable>
+            {showHelp ? <SafeText variant="caption" color="muted" style={styles.helpCopy}>{copy.helpDescription}</SafeText> : null}
+          </View>
+        </SocietyScreen>
+      </View>
+    </SocietyExperienceFrame>
+  );
+}

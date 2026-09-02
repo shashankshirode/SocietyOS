@@ -41,11 +41,11 @@ export const styles = StyleSheet.create({
     },
     phoneFormArea: {
         flex: 1,
-        marginTop: -32,
+        marginTop: -24,
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     viewMaxHeight: { maxHeight: 400 }
 });
@@ -69,4 +69,3 @@ export function createKeyboardAvoidingViewBackgroundColorStyle(backgroundColorVa
         backgroundColor: backgroundColorValue
     } as const;
 }
-

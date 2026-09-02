@@ -14,12 +14,12 @@ export const styles = StyleSheet.create({
         paddingVertical: 16,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

@@ -9,60 +9,60 @@ export const styles = StyleSheet.create({
     scopeOption: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, padding: 13 },
     consent: { flexDirection: 'row', gap: 10, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 22 }
 });
-export function createSafeTextColorStyle(colorValue: "#D8464A" | "#FF8588") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#F9FAFD" | "#172033", borderColorValue: "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createTextInputColorBackgroundColorBorderColorStyle(colorValue: "#101828" | "#F8FAFC", backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
-    return {
-        color: colorValue,
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createTextInputColorBackgroundColorBorderColorStyle2(colorValue: "#101828" | "#F8FAFC", backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createTextInputColorBackgroundColorBorderColorStyle(colorValue: string, backgroundColorValue: string, borderColorValue: string) {
     return {
         color: colorValue,
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createTextInputColorBackgroundColorBorderColorStyle3(colorValue: "#101828" | "#F8FAFC", backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createTextInputColorBackgroundColorBorderColorStyle2(colorValue: string, backgroundColorValue: string, borderColorValue: string) {
     return {
         color: colorValue,
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#FFFFFF" | "#111827" | "#1E1B4B" | "#E8E5FB", borderColorValue: "#4E46E5" | "#9DA5FF" | "#253149" | "#E2E6EE") {
+export function createTextInputColorBackgroundColorBorderColorStyle3(colorValue: string, backgroundColorValue: string, borderColorValue: string) {
+    return {
+        color: colorValue,
+        backgroundColor: backgroundColorValue,
+        borderColor: borderColorValue
+    } as const;
+}
+export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle3(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#4E46E5" | "#9DA5FF" | "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle3(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

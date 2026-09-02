@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { StyleSheet, View, Image } from "react-native";
+import { View } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
-import { authAssets } from "../data/authAssets";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { SocietyOSBrandLockup } from "./SocietyOSBrandLockup";
-import { ResidenceActivityPreviewRail } from "./ResidenceActivityPreviewRail";
 import { styles } from "../styles/components/ResidenceVisualPanel.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
+import { AppText } from "../../../../shared/components/AppText";
+import { residentColors } from "../../../../shared/theme/residentColors";
+import { authMessages } from "../messages/auth.messages";
 interface ResidenceVisualPanelProps {
     isKeyboardActive?: boolean;
     isPhoneValid?: boolean;
@@ -13,50 +15,49 @@ interface ResidenceVisualPanelProps {
 export function ResidenceVisualPanel({ isKeyboardActive = false, isPhoneValid = false, }: ResidenceVisualPanelProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
     const scale = useSharedValue(1.03);
-    const opacity = useSharedValue(1);
+    const detailOpacity = useSharedValue(1);
     useEffect(() => {
-        scale.value = withTiming(1.00, { duration: 900, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
+        scale.value = withTiming(1.00, { duration: 240, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
     }, [scale]);
     useEffect(() => {
-        opacity.value = withTiming(isKeyboardActive ? 0 : 1, { duration: 200 });
-    }, [isKeyboardActive, opacity]);
-    const animatedImageStyle = useAnimatedStyle(() => {
+        detailOpacity.value = withTiming(isKeyboardActive ? 0 : 1, { duration: 180 });
+    }, [detailOpacity, isKeyboardActive]);
+    const animatedOrbitStyle = useAnimatedStyle(() => {
         return {
             transform: [{ scale: scale.value }],
         };
     });
-    const animatedTagsStyle = useAnimatedStyle(() => {
+    const animatedDetailsStyle = useAnimatedStyle(() => {
         return {
-            opacity: opacity.value,
+            opacity: detailOpacity.value,
         };
     });
     return (<View style={styles.container}>
-      
-      <Animated.View style={[StyleSheet.absoluteFillObject, animatedImageStyle]}>
-        <Image source={{ uri: authAssets.lobby.uri }} style={styles.image} accessibilityLabel={authAssets.lobby.accessibilityLabel}/>
-      </Animated.View>
-
-      
-      <View style={[styles.gradientOverlay, styles.topLeftGradient]}/>
-
-      
-      <View style={[styles.gradientOverlay, styles.rightIndigoMesh]}/>
-
-      
-      <View style={styles.ambientGlow}/>
-
-      
-      <View style={[styles.gradientOverlay, styles.bottomSoftFade]}/>
-
-      
       <View style={styles.brandOverlay}>
         <SocietyOSBrandLockup variant="hero" showTagline={true} animated={true} accessibilityLabel={localizedUiText.m_3a9ae27980fe} isPhoneValid={isPhoneValid}/>
       </View>
 
-      
-      <Animated.View style={[styles.railOverlay, animatedTagsStyle]}>
-        <ResidenceActivityPreviewRail />
+      <Animated.View
+        style={[styles.orbitField, animatedOrbitStyle, animatedDetailsStyle]}
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
+      >
+        <View style={[styles.orbit, styles.orbitOuter]}/>
+        <View style={[styles.orbit, styles.orbitMiddle]}/>
+        <View style={[styles.orbit, styles.orbitInner]}/>
+        <View style={styles.homeNode}>
+          <Ionicons name="home-outline" size={22} color={residentColors.brandInk}/>
+        </View>
+        <View style={[styles.signalNode, styles.signalNodeTop]}/>
+        <View style={[styles.signalNode, styles.signalNodeRight]}/>
+        <View style={[styles.signalNode, styles.signalNodeBottom]}/>
+      </Animated.View>
+
+      <Animated.View style={[styles.contextLine, animatedDetailsStyle]}>
+        <AppText variant="caption" style={styles.contextEyebrow}>{authMessages.contextEyebrow}</AppText>
+        <AppText variant="bodySmall" style={styles.contextCopy}>
+          {authMessages.contextDescription}
+        </AppText>
       </Animated.View>
     </View>);
 }
-

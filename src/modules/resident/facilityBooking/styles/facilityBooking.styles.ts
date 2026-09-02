@@ -5,8 +5,9 @@ import { Spacing } from '../../../../shared/theme/spacing';
 export const facilityBookingStyles = StyleSheet.create({
   root: { flex: 1 },
   flex: { flex: 1 },
-  scrollContent: { paddingBottom: Spacing['3xl'] },
-  contentStack: { gap: Spacing.xl, paddingTop: Spacing.lg, paddingBottom: Spacing['3xl'] },
+  scrollContent: { flexGrow: 1 },
+  contentStack: { gap: Spacing.xl, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
+  footerContainer: { width: '100%' },
   compactStack: { gap: Spacing.md },
   section: { gap: Spacing.md },
   row: { flexDirection: 'row', alignItems: 'center' },
@@ -14,15 +15,140 @@ export const facilityBookingStyles = StyleSheet.create({
   wrapRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.sm },
   grow: { flex: 1 },
   mutedDivider: { height: 1, width: '100%' },
-  hero: { borderRadius: Radius.xl, overflow: 'hidden', minHeight: 250 },
-  heroImage: { minHeight: 250, borderRadius: 0 },
-  heroContent: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.xl, gap: Spacing.sm },
-  heroBadge: { alignSelf: 'flex-start' },
-  heroAction: { alignSelf: 'flex-start', marginTop: Spacing.sm },
+
+  // Hero & Narrative
+  hero: { borderRadius: Radius.xl, overflow: 'hidden', minHeight: 180, position: 'relative' },
+  heroImage: { minHeight: 180, width: '100%', borderRadius: Radius.xl },
+  heroScrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    top: 0,
+    justifyContent: 'flex-end',
+    padding: Spacing.lg,
+    gap: 6,
+    backgroundColor: 'rgba(10, 18, 14, 0.75)',
+  },
+  heroBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.pill },
+  heroAction: { alignSelf: 'flex-start', marginTop: Spacing.xs },
+
+  // Space Horizon
+  horizonContainer: {
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    borderWidth: 1,
+  },
+  horizonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  horizonTrack: {
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  horizonNode: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    gap: 4,
+    minWidth: 130,
+  },
+
+  // Space Objects (Discovery)
+  spaceFeatureCard: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    gap: 0,
+  },
+  spaceFeatureImage: {
+    height: 160,
+    width: '100%',
+  },
+  spaceFeatureBody: {
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  spaceCompactCard: {
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+
+  // Facts Grid (2x2)
+  factsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  factCell: {
+    flexBasis: '48%',
+    flexGrow: 1,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    gap: 4,
+  },
+
+  // Time Landscape (Availability Ribbon)
+  timeLandscape: {
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  timeRibbonTrack: {
+    gap: Spacing.sm,
+    paddingRight: Spacing.lg,
+  },
+  timeSlotNode: {
+    minWidth: 100,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  timeSlotNodeSelected: {
+    transform: [{ scale: 1.04 }],
+  },
+
+  // My Time (Bookings)
+  nextBookingSpotlight: {
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  timelineCard: {
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  paymentCallout: {
+    padding: Spacing.sm,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
+  },
+
+  // Legacy / Form Elements
   searchBar: { minHeight: 50, borderWidth: 1, borderRadius: Radius.input, flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.lg },
   searchInput: { flex: 1, minHeight: 48, fontSize: 15 },
   horizontalContent: { gap: Spacing.sm, paddingRight: Spacing.lg },
-  chip: { minHeight: 42, paddingHorizontal: Spacing.lg, borderRadius: Radius.pill, borderWidth: 1, justifyContent: 'center' },
+  chip: { minHeight: 38, paddingHorizontal: Spacing.md, borderRadius: Radius.pill, borderWidth: 1, justifyContent: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.lg },
   gridItem: { minWidth: 280, flexGrow: 1, flexBasis: 320, maxWidth: 560 },
   facilityCard: { overflow: 'hidden', gap: 0 },
@@ -32,12 +158,12 @@ export const facilityBookingStyles = StyleSheet.create({
   iconText: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
   statusPill: { borderRadius: Radius.pill, borderWidth: 1, paddingHorizontal: Spacing.md, minHeight: 28, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' },
   detailHero: { borderRadius: Radius.xl, overflow: 'hidden' },
-  detailImage: { minHeight: 280 },
+  detailImage: { minHeight: 200, width: '100%' },
   imageBadges: { position: 'absolute', left: Spacing.lg, right: Spacing.lg, bottom: Spacing.lg, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.sm },
   informationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
   informationCell: { minWidth: 150, flexGrow: 1, flexBasis: 180, borderWidth: 1, borderRadius: Radius.md, padding: Spacing.md, gap: Spacing.xs },
   amenityGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  amenity: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, minHeight: 44, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: Spacing.md, flexGrow: 1, flexBasis: 150 },
+  amenity: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, minHeight: 40, borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: Spacing.md, flexGrow: 1, flexBasis: 140 },
   policyCard: { gap: Spacing.md },
   policyRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md },
   policyIcon: { width: 34, height: 34, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center' },
@@ -71,11 +197,11 @@ export const facilityBookingStyles = StyleSheet.create({
   qrCodeText: { letterSpacing: 3 },
   instructionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm },
   bookingCard: { gap: Spacing.md },
-  bookingImage: { width: 92, minHeight: 92, borderRadius: Radius.md },
+  bookingImage: { width: 72, height: 72, borderRadius: Radius.md },
   bookingCardContent: { flex: 1, gap: Spacing.xs },
   bookingActions: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Spacing.sm },
   tabs: { flexDirection: 'row', gap: Spacing.sm, paddingVertical: Spacing.md },
-  tab: { flex: 1, minHeight: 44, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.sm },
+  tab: { flex: 1, minHeight: 40, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.sm },
   timeline: { gap: 0 },
   timelineRow: { flexDirection: 'row', alignItems: 'stretch', gap: Spacing.md },
   timelineMarkerColumn: { width: 24, alignItems: 'center' },

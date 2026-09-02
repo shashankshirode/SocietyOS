@@ -1,5 +1,4 @@
 import type { ResidenceMembership as Membership, SupportedCallingCode } from './membership.types';
-import type { AuthenticationMessageKey } from '../messages/auth.messages';
 
 export type ResidentCountryCode = SupportedCallingCode;
 
@@ -69,20 +68,3 @@ export type PhoneFieldStatus =
   | 'submitting'
   | 'disabled'
   | 'offline';
-
-export type ResidenceActivityType =
-  | 'visitor'
-  | 'maintenance'
-  | 'parcel'
-  | 'complaint'
-  | 'notice'
-  | 'family'
-  | 'emergency'
-  | 'noc';
-
-export interface ResidenceActivityPreview {
-  readonly id: string;
-  readonly type: ResidenceActivityType;
-  readonly messageKey: AuthenticationMessageKey;
-  readonly status: 'success' | 'information' | 'attention';
-}

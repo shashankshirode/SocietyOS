@@ -6,6 +6,7 @@ import { Radius } from './radius';
 import { Shadows } from './shadows';
 import { Layout } from './layout';
 import { zIndex } from './zIndex';
+import { societyBorderWidths, societyContent, societyIcons, societyMotion, societyNavigation, societySemanticLight, societyTouch } from './societyTheme';
 
 export const lightTheme: AppTheme = {
   dark: false,
@@ -27,10 +28,10 @@ export const lightTheme: AppTheme = {
     primary: lightPalette.primary,
     primarySoft: lightPalette.primarySoft,
     primaryPressed: lightPalette.primaryPressed,
-    primaryText: '#FFFFFF',
+    primaryText: '#FFFDF8',
 
     secondary: lightPalette.accentTeal,
-    secondarySoft: '#CCFBF1',
+    secondarySoft: '#DCE8DF',
     accentIndigo: lightPalette.accentIndigo,
     accentTeal: lightPalette.accentTeal,
     accentGold: lightPalette.accentGold,
@@ -49,7 +50,7 @@ export const lightTheme: AppTheme = {
     textPrimary: lightPalette.textPrimary,
     textSecondary: lightPalette.textSecondary,
     textMuted: lightPalette.textMuted,
-    textInverse: '#FFFFFF',
+    textInverse: '#FFFDF8',
 
     border: lightPalette.border,
     divider: lightPalette.divider,
@@ -59,14 +60,14 @@ export const lightTheme: AppTheme = {
     inputPlaceholder: lightPalette.textDisabled,
 
     disabled: lightPalette.textDisabled,
-    overlay: 'rgba(15, 23, 42, 0.48)',
-    shadow: '#0F172A',
+    overlay: 'rgba(17, 22, 18, 0.58)',
+    shadow: '#232820',
 
-    tabBarBackground: 'rgba(255,255,255,0.92)',
-    tabBarActive: lightPalette.accentIndigo,
-    tabBarInactive: lightPalette.textDisabled,
+    tabBarBackground: '#171C18',
+    tabBarActive: '#C2DCA5',
+    tabBarInactive: '#A9ADA4',
 
-    headerBackground: '#FFFFFF',
+    headerBackground: lightPalette.surface,
     headerText: lightPalette.textPrimary,
 
     statusBarStyle: 'dark-content',
@@ -91,14 +92,14 @@ export const lightTheme: AppTheme = {
     neutralLight: lightPalette.surfaceMuted,
     resident: lightPalette.accentIndigo,
     guard: lightPalette.accentTeal,
-    facility: '#7C3AED',
+    facility: '#6873B8',
     admin: lightPalette.accentSky,
     treasurer: lightPalette.accentGold,
     governance: lightPalette.primary,
     document: lightPalette.primary,
     billing: lightPalette.accentGold,
     parking: lightPalette.accentTeal,
-    backdrop: 'rgba(15, 23, 42, 0.5)',
+    backdrop: 'rgba(17, 22, 18, 0.62)',
   },
   spacing: Spacing,
   typography: Typography,
@@ -106,4 +107,11 @@ export const lightTheme: AppTheme = {
   shadows: Shadows,
   layout: Layout,
   zIndex: zIndex,
+  semantic: societySemanticLight,
+  borderWidths: societyBorderWidths,
+  motion: societyMotion,
+  touch: societyTouch,
+  navigation: societyNavigation,
+  content: societyContent,
+  icons: societyIcons,
 };

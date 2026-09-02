@@ -9,6 +9,8 @@ import { getResidentMockRecords } from '../../mock/residentMockRegistry';
 import { enMessages } from '../../../../messages/en';
 import { getRequiredItem } from "../../../../shared/utils/requiredItem";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
+import { domainEventBus } from '../../../../core/events/DomainEventBus';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
 const familyMembersStateByHomeContext = new Map<string, FamilyMember[]>();
 let tenantRequestsState: TenantOnboardingRequest[] = [
     cloneTenantRequest(mockTenantOnboardingDraft),
@@ -347,6 +349,35 @@ export const residentHouseholdMockSource: ResidentHouseholdRepository = {
         await withMockDelay();
         const member = toFamilyMember(input);
         setCurrentFamilyMembersState([...getFamilyMembersState(), member]);
+
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Household Admin';
+        const actorId = session?.userId ?? 'usr-rohan-01';
+
+        void domainEventBus.emit({
+            eventId: `evt-fam-add-${member.id}`,
+            eventType: 'household.member.invited',
+            societyId: member.societyId ?? 'soc-palm-grove-01',
+            unitId: member.unitId ?? 'unit-b804',
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'FamilyMember',
+                entityId: member.id,
+            },
+            severity: 'INFO',
+            createdAtIso: nowIso(),
+            correlationId: `corr-${member.id}`,
+            payload: {
+                memberName: member.fullName,
+                relation: member.relationToOwner,
+            },
+        });
+
         return { ...member, permissions: { ...member.permissions } };
     },
     async updateFamilyMember(familyMemberId: string, input: UpdateFamilyMemberInput) {
@@ -365,6 +396,35 @@ export const residentHouseholdMockSource: ResidentHouseholdRepository = {
             updatedAt: nowIso()
         };
         setCurrentFamilyMembersState(getFamilyMembersState().map((member) => (member.id === familyMemberId ? updated : member)));
+
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Household Admin';
+        const actorId = session?.userId ?? 'usr-rohan-01';
+
+        void domainEventBus.emit({
+            eventId: `evt-fam-perm-${familyMemberId}`,
+            eventType: 'household.permissions.changed',
+            societyId: updated.societyId ?? 'soc-palm-grove-01',
+            unitId: updated.unitId ?? 'unit-b804',
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'FamilyMember',
+                entityId: familyMemberId,
+            },
+            severity: 'INFO',
+            createdAtIso: nowIso(),
+            correlationId: `corr-${familyMemberId}`,
+            payload: {
+                memberName: updated.fullName,
+                permissions: updated.permissions,
+            },
+        });
+
         return { ...updated, permissions: { ...updated.permissions } };
     },
     async removeFamilyMemberAccess(familyMemberId: string, _input: RemoveFamilyMemberAccessInput) {
@@ -385,6 +445,34 @@ export const residentHouseholdMockSource: ResidentHouseholdRepository = {
             updatedAt: nowIso()
         };
         setCurrentFamilyMembersState(getFamilyMembersState().map((member) => (member.id === familyMemberId ? updated : member)));
+
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Household Admin';
+        const actorId = session?.userId ?? 'usr-rohan-01';
+
+        void domainEventBus.emit({
+            eventId: `evt-fam-rem-${familyMemberId}`,
+            eventType: 'household.member.removed',
+            societyId: updated.societyId ?? 'soc-palm-grove-01',
+            unitId: updated.unitId ?? 'unit-b804',
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'FamilyMember',
+                entityId: familyMemberId,
+            },
+            severity: 'WARNING',
+            createdAtIso: nowIso(),
+            correlationId: `corr-${familyMemberId}`,
+            payload: {
+                memberName: updated.fullName,
+            },
+        });
+
         return { ...updated, permissions: { ...updated.permissions } };
     },
     async getTenantManagementSummary(context?: ResidentRepositoryRequestContext) {

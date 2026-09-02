@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
         paddingBottom: 40,
     },
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

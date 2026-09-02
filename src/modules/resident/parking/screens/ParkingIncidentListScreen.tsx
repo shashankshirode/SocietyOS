@@ -1,84 +1,233 @@
-import React from "react";
-import { FlatList, Text, View } from "react-native";
-import { LoadingState } from "../../../../shared/feedback/LoadingState";
-import { ErrorState } from "../../../../shared/feedback/ErrorState";
-import { EmptyState } from "../../../../shared/feedback/EmptyState";
-import { AppCard } from "../../../../shared/cards/AppCard";
-import { FilterChips } from "../../../../shared/lists/FilterChips";
-import { FormField } from "../../../../shared/forms/FormField";
-import { StatusBadge, getParkingBadgeType } from "../../../../shared/components/StatusBadge";
-import { useParkingIncidents } from "../data/useParkingIncidents";
-import { DetailRow, labelize, ParkingScreen } from "../components/ParkingUi";
-import type { ParkingIncidentListScreenProps } from "../../../../app/navigation/navigation.types";
-import type { ParkingIncident } from "../../../../shared/types/parking.types";
-import { formatResidentDateTime } from "../../../../core/localization/dateTimeFormatters";
-import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
-import { styles } from "../styles/screens/ParkingIncidentListScreen.styles";
-import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
-import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
-type IncidentFilter = 'OPEN' | 'SECURITY_NOTIFIED' | 'OWNER_NOTIFIED' | 'RESOLVED' | 'ESCALATED' | 'ALL';
-const FILTERS = [
-    { key: 'OPEN', get label() {
-            return getActiveUiLiteral("m_ed077f3d8125");
-        } },
-    { key: 'SECURITY_NOTIFIED', get label() {
-            return getActiveUiLiteral("m_55d8f1f3b492");
-        } },
-    { key: 'OWNER_NOTIFIED', get label() {
-            return getActiveUiLiteral("m_7f1da34fb8d8");
-        } },
-    { key: 'RESOLVED', get label() {
-            return getActiveUiLiteral("m_5be3c2c8354e");
-        } },
-    { key: 'ESCALATED', get label() {
-            return getActiveUiLiteral("m_b710aaaaa7ba");
-        } },
-    { key: 'ALL', get label() {
-            return getActiveUiLiteral("m_a52ace420f21");
-        } },
-] satisfies {
-    key: IncidentFilter;
-    label: string;
-}[];
+import React, { useMemo, useState } from 'react';
+import { View } from 'react-native';
+import { useResponsiveLayout } from '../../../../ui/layout/useResponsiveLayout';
+import { useAppTheme } from '../../../../shared/theme/useAppTheme';
+import { Spacing } from '../../../../shared/theme/spacing';
+import { SafeText } from '../../../../shared/components/SafeText';
+import { SearchInputBar } from '../../../../shared/components/SearchInputBar';
+import { FilterChipBar } from '../../../../shared/components/FilterChipBar';
+import { EmptyState } from '../../../../shared/components/EmptyState';
+import { ErrorState } from '../../../../shared/components/ErrorState';
+import { ResidentAppHeader } from '../../navigation/ResidentAppHeader';
+import { SocietyPageShell } from '../../experience/SocietyPageShell';
+import type { ParkingIncidentListScreenProps } from '../../../../app/navigation/navigation.types';
+import type { ParkingIncident } from '../../../../shared/types/parking.types';
+import { useParkingIncidents } from '../data/useParkingIncidents';
+import {
+  useEscalateParkingIncident,
+  useReportFalseParkingResolution,
+  useResolveParkingIncident,
+} from '../data/useParkingIncidentDetail';
+import { ParkingIncidentTrace } from '../components/ParkingIncidentTrace';
+import { ParkingIncidentFocus } from '../components/ParkingIncidentFocus';
+
+type ResidentIncidentFilter = 'OPEN' | 'SECURITY' | 'OWNER' | 'RESOLVED' | 'ALL';
+
+const FILTER_OPTIONS: { value: ResidentIncidentFilter; label: string }[] = [
+  { value: 'OPEN', label: 'Open' },
+  { value: 'SECURITY', label: 'Security' },
+  { value: 'OWNER', label: 'Owner Notified' },
+  { value: 'RESOLVED', label: 'Resolved' },
+  { value: 'ALL', label: 'All Reports' },
+];
+
 export function ParkingIncidentListScreen({ navigation, route }: ParkingIncidentListScreenProps) {
-    const localizedUiText = useGeneratedUiMessages().uiLiterals;
-    const [filter, setFilter] = React.useState<IncidentFilter>('OPEN');
-    const [query, setQuery] = React.useState('');
-    const status = filter === 'OPEN' ? undefined : filter;
-    const { data = [], isLoading, error, refetch } = useParkingIncidents({ unitId: route.params.unitId, ...includeWhenPresent("status", status), query });
-    const incidents = filter === 'OPEN'
-        ? data.filter((incident) => !['RESOLVED', 'REJECTED', 'CLOSED'].includes(incident.status))
-        : data;
-    if (isLoading) {
-        return <LoadingState message={localizedUiText.m_5a5d3d052d1f} showCardPlaceholder/>;
+  const theme = useAppTheme();
+  const layout = useResponsiveLayout();
+  const [filter, setFilter] = useState<ResidentIncidentFilter>('OPEN');
+  const [query, setQuery] = useState('');
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
+
+  const { data = [], isLoading, error, refetch } = useParkingIncidents({
+    unitId: route.params?.unitId,
+  });
+
+  const resolveMutation = useResolveParkingIncident();
+  const escalateMutation = useEscalateParkingIncident();
+  const falseResolutionMutation = useReportFalseParkingResolution();
+
+  // Filter & Search resolution
+  const filteredIncidents = useMemo(() => {
+    let list = data;
+
+    // Apply status filter
+    if (filter === 'OPEN') {
+      list = list.filter((i) => !['RESOLVED', 'REJECTED', 'CLOSED'].includes(i.status));
+    } else if (filter === 'SECURITY') {
+      list = list.filter((i) => ['SECURITY_NOTIFIED', 'IN_PROGRESS', 'ESCALATED'].includes(i.status));
+    } else if (filter === 'OWNER') {
+      list = list.filter((i) => i.status === 'OWNER_NOTIFIED');
+    } else if (filter === 'RESOLVED') {
+      list = list.filter((i) => ['RESOLVED', 'CLOSED'].includes(i.status));
     }
-    if (error) {
-        return <ErrorState message={error.message} onRetry={refetch}/>;
+
+    // Apply search query
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      list = list.filter(
+        (i) =>
+          i.incidentNumber.toLowerCase().includes(q) ||
+          i.location.toLowerCase().includes(q) ||
+          (i.vehicleNumber && i.vehicleNumber.toLowerCase().includes(q)) ||
+          (i.reportedBy && i.reportedBy.toLowerCase().includes(q)) ||
+          (i.description && i.description.toLowerCase().includes(q))
+      );
     }
-    return (<ParkingScreen title={localizedUiText.m_20f7c82d50c1} subtitle={localizedUiText.m_1f655d56af9d} onBack={navigation.goBack}>
-      <FormField label={localizedUiText.m_49c266baaaa7} value={query} onChangeText={setQuery} placeholder={localizedUiText.m_12af9e495e91}/>
-      <FilterChips options={FILTERS} selectedKey={filter} onSelect={setFilter}/>
-      <FlatList data={incidents} keyExtractor={(item) => item.id} scrollEnabled={false} ListEmptyComponent={<EmptyState title={localizedUiText.m_f1dce2c1fc8c} description={localizedUiText.m_e69a449abbd0} iconName="clipboard-outline"/>} renderItem={({ item }) => (<IncidentCard incident={item} onPress={() => navigation.navigate('ParkingIncidentDetail', { incidentId: item.id })}/>)} extraData={localizedUiText}/>
-    </ParkingScreen>);
-}
-function IncidentCard({ incident, onPress }: {
-    incident: ParkingIncident;
-    onPress: () => void;
-}) {
-    const localizedUiText = useGeneratedUiMessages().uiLiterals;
-    return (<AppCard style={styles.card} onPress={onPress}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>{incident.incidentNumber}</Text>
-          <Text style={styles.meta}>{labelize(incident.issueType)} · {incident.location}</Text>
+
+    return list;
+  }, [data, filter, query]);
+
+  // Selected incident for tablet / fold view
+  const selectedIncident = useMemo(() => {
+    if (!selectedIncidentId) return filteredIncidents[0] ?? null;
+    return data.find((i) => i.id === selectedIncidentId) ?? filteredIncidents[0] ?? null;
+  }, [data, filteredIncidents, selectedIncidentId]);
+
+  const isSplitLayout = (layout.isTablet || layout.isFold) && filteredIncidents.length > 0;
+
+  const handleSelectIncident = (incident: ParkingIncident) => {
+    if (layout.isTablet || layout.isFold) {
+      setSelectedIncidentId(incident.id);
+    } else {
+      navigation.navigate('ParkingIncidentDetail', { incidentId: incident.id });
+    }
+  };
+
+  const handleResolve = async () => {
+    if (!selectedIncident) return;
+    const res = await resolveMutation.submit(selectedIncident.id);
+    if (res.ok) await refetch();
+  };
+
+  const handleEscalate = async () => {
+    if (!selectedIncident) return;
+    const res = await escalateMutation.submit(selectedIncident.id);
+    if (res.ok) await refetch();
+  };
+
+  const handleReportFalse = async () => {
+    if (!selectedIncident) return;
+    const res = await falseResolutionMutation.submit(selectedIncident.id);
+    if (res.ok) await refetch();
+  };
+
+  return (
+    <SocietyPageShell
+      showHeader={false}
+      showDockClearance={true}
+      testID="parking-incident-list-screen"
+    >
+      {/* Global Society OS Navigation Header */}
+      <ResidentAppHeader
+        showBackButton={true}
+        onBackPress={() =>
+          navigation.canGoBack()
+            ? navigation.goBack()
+            : navigation.navigate('ParkingHome', { unitId: route.params?.unitId ?? '' })
+        }
+        fallbackTab="HomeTab"
+        fallbackRoute="ParkingHome"
+        showNarrative={false}
+      />
+
+      <View style={{ gap: Spacing.md, paddingTop: Spacing.sm }}>
+        {/* Page Narrative */}
+        <View style={{ gap: Spacing.xs }}>
+          <SafeText variant="display" style={{ color: theme.semantic.text.primary }}>
+            Parking Incidents
+          </SafeText>
+          <SafeText variant="body" color="secondary">
+            Track reports and follow-ups around your vehicle and parking spaces.
+          </SafeText>
         </View>
-        <StatusBadge label={labelize(incident.status)} type={getParkingBadgeType(incident.status)}/>
+
+        {/* Search Input */}
+        <SearchInputBar
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search incident, vehicle, or location..."
+        />
+
+        {/* Filter Chips */}
+        <FilterChipBar
+          options={FILTER_OPTIONS}
+          value={filter}
+          onChange={(val) => setFilter(val as ResidentIncidentFilter)}
+        />
+
+        {/* Body Content: Split Layout on Tablet/Fold or Single Trace on Phone */}
+        {isLoading ? (
+          <View style={{ paddingVertical: Spacing.xl, alignItems: 'center' }}>
+            <SafeText variant="caption" color="secondary">Loading parking reports...</SafeText>
+          </View>
+        ) : error ? (
+          <ErrorState
+            title="Unable to load incidents"
+            message={error.message}
+            onRetry={refetch}
+          />
+        ) : filteredIncidents.length === 0 ? (
+          <EmptyState
+            title={
+              query
+                ? 'No matching incidents'
+                : filter === 'OPEN'
+                ? 'All clear'
+                : 'No incidents in this category'
+            }
+            description={
+              query
+                ? `No reports match "${query}". Try searching a different keyword.`
+                : filter === 'OPEN'
+                ? 'There are no active parking issues reported around your flat.'
+                : 'No incidents found under the selected filter.'
+            }
+            iconName="car-sport-outline"
+            actionTitle={filter !== 'OPEN' || query ? 'Reset Filters' : undefined}
+            onAction={
+              filter !== 'OPEN' || query
+                ? () => {
+                    setFilter('OPEN');
+                    setQuery('');
+                  }
+                : undefined
+            }
+          />
+        ) : isSplitLayout ? (
+          <View style={{ flexDirection: 'row', gap: Spacing.lg, alignItems: 'flex-start', paddingTop: Spacing.xs }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <ParkingIncidentTrace
+                incidents={filteredIncidents}
+                selectedIncidentId={selectedIncident?.id}
+                onSelectIncident={handleSelectIncident}
+              />
+            </View>
+
+            {selectedIncident ? (
+              <View style={{ width: 380, minWidth: 0 }}>
+                <ParkingIncidentFocus
+                  incident={selectedIncident}
+                  onResolve={handleResolve}
+                  onEscalate={handleEscalate}
+                  onReportFalseResolution={handleReportFalse}
+                  isResolving={resolveMutation.isSubmitting}
+                  isEscalating={escalateMutation.isSubmitting}
+                  isReportingFalse={falseResolutionMutation.isSubmitting}
+                />
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <View style={{ paddingTop: Spacing.xs }}>
+            <ParkingIncidentTrace
+              incidents={filteredIncidents}
+              onSelectIncident={handleSelectIncident}
+            />
+          </View>
+        )}
       </View>
-      <DetailRow label={localizedUiText.m_a62394ba4acc} value={incident.vehicleNumber ?? getActiveUiLiteral("m_665bac6a5ec3")}/>
-      <DetailRow label={localizedUiText.m_d60dbba07922} value={labelize(incident.priority)}/>
-      <DetailRow label={localizedUiText.m_d70b9e24bca2} value={formatResidentDateTime(incident.createdAt)}/>
-      <DetailRow label={localizedUiText.m_3a5ecca188c0} value={formatResidentDateTime(incident.updatedAt)}/>
-      <DetailRow label={localizedUiText.m_0dacf019b533} value={incident.assignedTeam} isLast/>
-    </AppCard>);
+    </SocietyPageShell>
+  );
 }
 
+export default ParkingIncidentListScreen;

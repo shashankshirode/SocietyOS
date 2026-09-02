@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { KeyboardAvoidingView, Platform, FlatList, View, TextInput, Pressable, ActivityIndicator, Keyboard } from "react-native";
+import { KeyboardAvoidingView, FlatList, View, TextInput, Pressable, ActivityIndicator, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";

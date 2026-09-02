@@ -1,24 +1,27 @@
 import { StyleSheet } from "react-native";
+import { Radius } from "../../../shared/theme/radius";
+import { Spacing } from "../../../shared/theme/spacing";
+import { Typography } from "../../../shared/theme/typography";
 export const styles = StyleSheet.create({
     pill: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.xs,
+        borderRadius: Radius.pill,
         alignSelf: 'flex-start',
+        maxWidth: '100%',
     },
     pillSmall: {
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 8,
+        paddingHorizontal: Spacing.sm,
+        paddingVertical: 3,
+        borderRadius: Radius.pill,
     },
     text: {
-        fontSize: 11,
-        fontWeight: '700',
-        letterSpacing: 0.3,
+        ...Typography.tiny,
         textTransform: 'uppercase',
+        flexShrink: 1,
     },
     textSmall: {
-        fontSize: 10,
+        lineHeight: 15,
     },
 });
 export function createViewBackgroundColorStyle(backgroundColorValue: string) {
@@ -31,4 +34,3 @@ export function createSafeTextColorStyle(colorValue: string) {
         color: colorValue
     } as const;
 }
-

@@ -31,6 +31,8 @@ function parseStoredSession(raw: string): AuthSession | null {
         userId: value.userId,
         name: value.name,
         role: roleValue as AppRole,
+        ...includeWhenPresent("personaKey", optionalString(value.personaKey)),
+        ...includeWhenPresent("isHouseholdAdmin", typeof value.isHouseholdAdmin === 'boolean' ? value.isHouseholdAdmin : undefined),
         ...includeWhenPresent("societyId", optionalString(value.societyId)),
         ...includeWhenPresent("societyName", optionalString(value.societyName)),
         ...includeWhenPresent("unitId", optionalString(value.unitId)),

@@ -96,15 +96,15 @@ export function MockPaymentConfirmationScreen({ navigation, route }: MockPayment
                     styles.methodRow,
                     createPressableBackgroundColorBorderColorStyle(selected ? theme.accentSoft : theme.surface, selected ? theme.accent : theme.border),
                 ]}>
-                    <View style={[styles.methodIcon, createViewBackgroundColorStyle2(selected ? theme.accent : theme.background)]}> 
-                      <Ionicons name={method.icon} size={20} color={selected ? '#FFFFFF' : theme.textPrimary}/>
+                    <View style={[styles.methodIcon, createViewBackgroundColorStyle2(selected ? theme.selectedBackground : theme.background)]}>
+                      <Ionicons name={method.icon} size={20} color={selected ? theme.selectedForeground : theme.textPrimary}/>
                     </View>
                     <View style={styles.methodInfo}>
                       <SafeText variant="caption" style={createSafeTextColorStyle2(theme.textPrimary)}>{method.label}</SafeText>
                       <SafeText variant="tiny" style={createSafeTextColorStyle3(theme.textSecondary)}>{method.description}</SafeText>
                     </View>
-                    <View style={[styles.radio, createViewBorderColorStyle(selected ? theme.accent : theme.border)]}> 
-                      {selected ? <View style={[styles.radioInner, createViewBackgroundColorStyle3(theme.accent)]}/> : null}
+                    <View style={[styles.radio, createViewBorderColorStyle(selected ? theme.selectedBorder : theme.border)]}>
+                      {selected ? <View style={[styles.radioInner, createViewBackgroundColorStyle3(theme.selectedBackground)]}/> : null}
                     </View>
                   </Pressable>);
         })}
@@ -118,11 +118,10 @@ export function MockPaymentConfirmationScreen({ navigation, route }: MockPayment
       </ScrollView>
 
       <StickyFooter onHeightChange={setFooterHeight} testID="payment-sticky-footer">
-        <AppButton title={checkout.confirmPayment(formattedAmount)} onPress={() => void handleConfirmPayment()} loading={isSubmitting} disabled={!selectedMethod} accessibilityLabel={checkout.confirmPayment(formattedAmount)} iconLeft={<Ionicons name="shield-checkmark-outline" size={18} color="#FFFFFF"/>}/>
+        <AppButton title={checkout.confirmPayment(formattedAmount)} onPress={() => void handleConfirmPayment()} loading={isSubmitting} disabled={!selectedMethod} accessibilityLabel={checkout.confirmPayment(formattedAmount)} iconLeft={<Ionicons name="shield-checkmark-outline" size={18} color={theme.selectedForeground}/>}/>
       </StickyFooter>
 
       <StatusModal visible={errorVisible} type="error" title={checkout.paymentFailed} message={checkout.verificationFailed} actionLabel={checkout.dismissError} onClose={() => setErrorVisible(false)}/>
     </View>);
 }
 export default MockPaymentConfirmationScreen;
-

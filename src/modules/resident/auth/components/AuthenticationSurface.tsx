@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { AppText } from "../../../../shared/components/AppText";
 import { useAppTheme } from "../../../../shared/theme/useAppTheme";
-import { styles, createViewBackgroundColorBorderColorStyle, createAppTextColorStyle, createAppTextColorStyle2, createAppTextColorStyle3 } from "../styles/components/AuthenticationSurface.styles";
+import { styles, createViewBackgroundColorBorderColorStyle, createViewBackgroundColorStyle, createViewBorderTopColorStyle, createAppTextColorStyle, createAppTextColorStyle2, createAppTextColorStyle3 } from "../styles/components/AuthenticationSurface.styles";
 export interface AuthenticationSurfaceProps {
     eyebrow: string;
     title: string;
@@ -14,12 +14,12 @@ export interface AuthenticationSurfaceProps {
     accessibilityLabel: string;
 }
 export function AuthenticationSurface({ eyebrow, title, description, children, footer, accessibilityLabel, }: AuthenticationSurfaceProps) {
-    const { colors, dark } = useAppTheme();
+    const { colors } = useAppTheme();
     return (<View style={[
             styles.surface,
-            createViewBackgroundColorBorderColorStyle(dark ? '#0A0E1A' : '#FAF9F6', dark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.04)'),
+            createViewBackgroundColorBorderColorStyle(colors.background, colors.border),
         ]} accessibilityLabel={accessibilityLabel} accessibilityRole="summary">
-      <View style={styles.curveHeader}/>
+      <View style={[styles.contextMarker, createViewBackgroundColorStyle(colors.primarySoft)]}/>
 
       <View style={styles.body}>
         
@@ -38,12 +38,8 @@ export function AuthenticationSurface({ eyebrow, title, description, children, f
         
         <View style={styles.childrenContainer}>{children}</View>
 
-        
-        <View style={styles.spacer}/>
-
-        
-        {!!footer && <View style={styles.footerContainer}>{footer}</View>}
       </View>
+
+      {!!footer && <View style={[styles.footerContainer, createViewBorderTopColorStyle(colors.divider)]}>{footer}</View>}
     </View>);
 }
-

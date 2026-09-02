@@ -4,7 +4,8 @@ export const styles = StyleSheet.create({
         flex: 1
     },
     relativeForm: {
-        width: '100%'
+        width: '100%',
+        flex: 1
     },
     absoluteForm: {
         position: 'absolute',

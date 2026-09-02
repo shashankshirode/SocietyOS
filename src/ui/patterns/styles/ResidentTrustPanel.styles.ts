@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
         gap: 8,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#34D399" | "#065F46") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         flex: 1,
         color: colorValue,

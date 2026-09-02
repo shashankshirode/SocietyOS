@@ -2,6 +2,11 @@ import { mockStore } from '../../../../core/mockStore/mockStore';
 import { addMinutesToIso } from '../utils/visitorExitPolicyResolver';
 import { visitorExitAssuranceMockNowIso } from '../data/visitorExitPolicy';
 import { visitorsMockSource } from '../data/visitors.mockSource';
+import { VisitorPassCancellationReason } from '../../../../shared/types/visitor.types';
+import { getScopedDashboardData } from '../../dashboard/data/dashboard.mockSource';
+import { mockResidentHomeContexts } from '../../homeContext/data/residentHomeContext.mockData';
+import { mapContextToActive } from '../../homeContext/state/residentHomeContext.store';
+import { getRequiredItem } from '../../../../shared/utils/requiredItem';
 
 describe('visitorsMockSource assurance actions', () => {
   beforeEach(() => {
@@ -93,5 +98,57 @@ describe('visitorsMockSource assurance actions', () => {
       alertStatus: 'escalated',
       exitStatus: 'escalatedToSecurity',
     });
+  });
+
+  it('issues a unique credential only after create and invalidates it on cancellation', async () => {
+    const result = await visitorsMockSource.create({
+      name: 'Rajesh Kulkarni',
+      phone: '9876543210',
+      type: 'GUEST',
+      expectedDate: 'Today',
+      expectedTime: '5:30 PM',
+      purpose: 'Social visit',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.otp).toMatch(/^\d{6}$/);
+    expect(visitorsMockSource.validateCredential(result.data.id, result.data.otp)).toBe('VALID');
+
+    await visitorsMockSource.cancelVisitorPass({
+      residenceId: result.data.homeContextId ?? '',
+      visitorPassId: result.data.id,
+      reason: VisitorPassCancellationReason.PlansChanged,
+      notes: null,
+      requestedAt: new Date().toISOString(),
+    });
+
+    expect(visitorsMockSource.validateCredential(result.data.id, result.data.otp)).toBe('CANCELLED');
+  });
+
+  it('projects the authoritative visitor into the matching Home pulse and Activity only', async () => {
+    const home = mapContextToActive(getRequiredItem(mockResidentHomeContexts, 0, 'residentVisitors.repository.exitAssurance.test.ts'));
+    const created = await visitorsMockSource.create({
+      activeHome: home,
+      dataScopeKey: home.dataScopeKey,
+    }, {
+      name: 'Rajesh Pulse Test',
+      phone: '9876543210',
+      type: 'GUEST',
+      expectedDate: 'Today',
+      expectedTime: '5:30 PM',
+      purpose: 'Social visit',
+    });
+
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const dashboard = getScopedDashboardData({ activeHome: home, dataScopeKey: home.dataScopeKey });
+    expect(dashboard.visitorTimeline.some((visitor) => visitor.id === created.data.id)).toBe(true);
+    expect(dashboard.activities.some((activity) => activity.id === `created-activity-${created.data.id}`)).toBe(true);
+
+    const otherHome = mapContextToActive(getRequiredItem(mockResidentHomeContexts, 2, 'residentVisitors.repository.exitAssurance.test.ts'));
+    const otherDashboard = getScopedDashboardData({ activeHome: otherHome, dataScopeKey: otherHome.dataScopeKey });
+    expect(otherDashboard.visitorTimeline.some((visitor) => visitor.id === created.data.id)).toBe(false);
   });
 });

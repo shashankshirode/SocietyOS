@@ -35,30 +35,30 @@ export const styles = StyleSheet.create({
         gap: 6,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '600'
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#198A59" | "#B97818" | "#5BD39A" | "#F0B85A") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#198A59" | "#B97818" | "#5BD39A" | "#F0B85A") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

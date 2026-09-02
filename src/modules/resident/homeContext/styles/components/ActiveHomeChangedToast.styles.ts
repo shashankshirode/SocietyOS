@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#10B981" | "#EF4444") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

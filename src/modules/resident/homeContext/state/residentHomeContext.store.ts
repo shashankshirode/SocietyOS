@@ -11,15 +11,55 @@ export function isSelectableResidentHomeContext(context: ResidentHomeContext): b
         context.status === 'moveOutPending' ||
         context.status === 'accessRestricted');
 }
+export const zeroHomeFallbackContext: ActiveResidentHomeContext = {
+    homeContextId: 'ctx-zero-home',
+    residentId,
+    societyId: 'soc-none',
+    societyName: 'No Home Linked',
+    societyAreaId: 'area-none',
+    societyAreaName: 'None',
+    city: 'Pune',
+    unitId: 'unit-none',
+    flatNumber: '',
+    displayUnitName: 'No Active Unit',
+    residentRole: 'owner',
+    status: 'accessRestricted',
+    featureFlagScopeId: 'scope-none',
+    permissionScopeId: 'perm-none',
+    pendingCount: 0,
+    dataScopeKey: 'scope:resident-001:soc-none:unit-none:owner'
+};
+
 export function getPrimaryActiveResidentHomeContext(): ResidentHomeContext {
     const primary = mockResidentHomeContexts.find((context) => context.isPrimary && isSelectableResidentHomeContext(context));
     const firstSelectable = mockResidentHomeContexts.find(isSelectableResidentHomeContext);
     const fallback = primary ?? firstSelectable;
     if (!fallback) {
-        throw new Error('RESIDENT_HOME_CONTEXT_CONFIGURATION_INVALID');
+        return {
+            homeContextId: 'ctx-zero-home',
+            societyId: 'soc-none',
+            societyName: 'No Home Linked',
+            societyAreaId: 'area-none',
+            societyAreaName: 'None',
+            city: 'Pune',
+            unitId: 'unit-none',
+            flatNumber: '',
+            displayUnitName: 'No Active Unit',
+            residentRole: 'owner',
+            status: 'accessRestricted',
+            isPrimary: false,
+            isCurrent: false,
+            unreadNotificationCount: 0,
+            activeVisitorCount: 0,
+            featureCoverage: 'restricted',
+            featureFlagScopeId: 'scope-none',
+            permissionScopeId: 'perm-none',
+            pendingCount: 0,
+        };
     }
     return fallback;
 }
+
 export function mapContextToActive(ctx: ResidentHomeContext): ActiveResidentHomeContext {
     return {
         homeContextId: ctx.homeContextId,
@@ -66,6 +106,19 @@ export const residentHomeContextStore = {
             return;
         }
         currentActiveContext = context;
+        listeners.forEach((l) => l());
+    },
+    setZeroHomeState(status: string = 'INVITED') {
+        const isPending = status === 'PENDING_APPROVAL';
+        const zeroContext: ActiveResidentHomeContext = {
+            ...zeroHomeFallbackContext,
+            homeContextId: isPending ? 'ctx-pending-home' : 'ctx-zero-home',
+            societyName: isPending ? 'Green Valley Heights (Pending)' : 'No Home Linked',
+            displayUnitName: isPending ? 'A-1204 (Under Review)' : 'No Active Unit',
+            status: 'accessRestricted',
+            dataScopeKey: isPending ? 'scope:resident-001:soc-pending:unit-pending:owner' : 'scope:resident-001:soc-none:unit-none:owner'
+        };
+        currentActiveContext = zeroContext;
         listeners.forEach((l) => l());
     },
     setActiveContextById(homeContextId: string): boolean {

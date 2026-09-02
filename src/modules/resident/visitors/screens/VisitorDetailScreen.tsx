@@ -42,6 +42,7 @@ function getVisitor(route: Props['route']): Visitor {
 export function VisitorDetailScreen({ navigation, route }: Props) {
     const theme = useResidentTheme();
     const messages = useMessages();
+    const focusCopy = messages.resident.experience.focus;
     const { state, updateVisitor } = useMockStore();
     const routeVisitor = getVisitor(route);
     const visitor = state.visitors.find((item) => item.id === routeVisitor.id) || routeVisitor;
@@ -156,7 +157,15 @@ export function VisitorDetailScreen({ navigation, route }: Props) {
             : []),
     ];
     return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
-      <ResidentPageHeader titleKey="visitors.passDetailTitle" title={messages.visitors.passDetailTitle}/>
+      <ResidentPageHeader
+        contextLabel={focusCopy.visitors}
+        title={visitor.status === 'CANCELLED'
+            ? focusCopy.visitorCancelled(visitor.name)
+            : visitor.actualEntryTime
+                ? focusCopy.visitorEntered(visitor.name, visitor.actualEntryTime)
+                : focusCopy.visitorExpected(visitor.name, visitor.expectedTime)}
+        subtitle={`${visitor.expectedDate} · ${activeContext.displayUnitName}`}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {visitor.status === 'CANCELLED' && (<View style={createViewBackgroundColorBorderColorStyle(theme.dangerSoft, theme.danger)}>
@@ -180,7 +189,7 @@ export function VisitorDetailScreen({ navigation, route }: Props) {
             </View>
           </View>)}
 
-        {visitor.status === 'CANCELLED' ? (<VisitorPassPanel visitorName={visitor.name} visitorType={visitor.type} purpose={visitor.purpose} validFrom={visitor.expectedDate} validTill={visitor.expectedTime} gateName={visitor.societyName} otpCode="------"/>) : (<VisitorPassPanel visitorName={visitor.name} visitorType={visitor.type} purpose={visitor.purpose} validFrom={visitor.expectedDate} validTill={visitor.expectedTime} gateName={visitor.societyName} otpCode={visitor.otp} onCancelPress={() => setCancelConfirmVisible(true)} onSharePress={() => setShareVisible(true)} onRegenerateOtp={handleRegenOtp}/>)}
+        {visitor.status === 'CANCELLED' ? (<VisitorPassPanel visitorName={visitor.name} visitorType={visitor.type} purpose={visitor.purpose} validFrom={visitor.expectedDate} validTill={visitor.expectedTime} gateName={visitor.societyName}/>) : (<VisitorPassPanel visitorName={visitor.name} visitorType={visitor.type} purpose={visitor.purpose} validFrom={visitor.expectedDate} validTill={visitor.expectedTime} gateName={visitor.societyName} otpCode={visitor.otp} credentialValue={`societyos://visitor/${visitor.id}`} onCancelPress={() => setCancelConfirmVisible(true)} onSharePress={() => setShareVisible(true)} onRegenerateOtp={handleRegenOtp}/>)}
 
         {exitAlert ? (<VisitorOverstayAlertCard alert={exitAlert} onConfirmLeft={handleConfirmLeft} onStillInside={handleStillInside} onExtendTime={() => setExtensionVisible(true)} onContactSecurity={handleContactSecurity}/>) : null}
 
@@ -260,4 +269,3 @@ export function VisitorDetailScreen({ navigation, route }: Props) {
     </View>);
 }
 export default VisitorDetailScreen;
-

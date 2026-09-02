@@ -17,7 +17,7 @@ interface PhoneIdentityFieldProps {
 }
 export function PhoneIdentityField({ country, value, onChangeText, onCountryPress, error, editable = true, }: PhoneIdentityFieldProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
-    const { colors, dark } = useAppTheme();
+    const { colors } = useAppTheme();
     const [isFocused, setIsFocused] = useState(false);
     const handleTextChange = (text: string) => {
         const numeric = text.replace(/[^0-9]/g, '');
@@ -29,15 +29,13 @@ export function PhoneIdentityField({ country, value, onChangeText, onCountryPres
         ? colors.danger
         : isFocused
             ? colors.primary
-            : dark
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(15, 23, 42, 0.08)';
+            : colors.inputBorder;
     return (<View style={styles.container}>
       <View style={[
             styles.inputContainer,
-            createViewBorderColorBackgroundColorBorderWidthStyle(focusBorderColor, dark ? '#131926' : '#F1F3F5', isFocused || error ? 1.5 : 1),
+            createViewBorderColorBackgroundColorBorderWidthStyle(focusBorderColor, colors.inputBackground, isFocused || error ? 1.5 : 1),
         ]}>
-        <Pressable style={[styles.countryTrigger, createPressableBorderRightColorStyle(dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(15, 23, 42, 0.1)')]} onPress={onCountryPress} disabled={!editable} accessibilityRole="button" accessibilityLabel={formatUiLiteral(localizedUiText.m_36635581f518, [country.displayName, country.callingCode])}>
+        <Pressable style={[styles.countryTrigger, createPressableBorderRightColorStyle(colors.divider)]} onPress={onCountryPress} disabled={!editable} accessibilityRole="button" accessibilityLabel={formatUiLiteral(localizedUiText.m_36635581f518, [country.displayName, country.callingCode])}>
           <AppText style={styles.flag}>{country.flag}</AppText>
           <AppText variant="body" style={[styles.code, createAppTextColorStyle(colors.textPrimary)]}>
             {country.callingCode}
@@ -60,4 +58,3 @@ export function PhoneIdentityField({ country, value, onChangeText, onCountryPres
       </View>
     </View>);
 }
-

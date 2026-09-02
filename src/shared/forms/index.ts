@@ -5,3 +5,4 @@ export * from './AppCheckbox';
 export * from './FieldErrorText';
 export * from './FormSection';
 export * from './FormActions';
+export * from './KeyboardAwareForm';

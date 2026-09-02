@@ -96,9 +96,9 @@ export function VisitorHistoryScreen() {
             const isSelected = filter === chip.key;
             return (<Pressable key={chip.key} onPress={() => setFilter(chip.key)} style={[
                     styles.chip,
-                    createPressableBackgroundColorBorderColorStyle(isSelected ? theme.accent : theme.surface, isSelected ? 'transparent' : theme.border),
+                    createPressableBackgroundColorBorderColorStyle(isSelected ? theme.selectedBackground : theme.surface, isSelected ? theme.selectedBorder : theme.border),
                 ]}>
-                <SafeText variant="tiny" style={createSafeTextColorStyle(isSelected ? '#FFFFFF' : theme.textSecondary)}>
+                <SafeText variant="tiny" style={createSafeTextColorStyle(isSelected ? theme.selectedForeground : theme.textSecondary)}>
                   {chip.label}
                 </SafeText>
               </Pressable>);
@@ -112,4 +112,3 @@ export function VisitorHistoryScreen() {
     </View>);
 }
 export default VisitorHistoryScreen;
-

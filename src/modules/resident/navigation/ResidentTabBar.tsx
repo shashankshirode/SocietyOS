@@ -1,11 +1,10 @@
-import React from 'react';
-import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Pressable, Platform, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -13,19 +12,11 @@ import { useResidentTabVisibility } from './useResidentTabVisibility';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { SafeText } from '../../../shared/components/SafeText';
 import { useReducedMotion } from '../../../shared/motion/useReducedMotion';
-
-type TabIconName = 'home' | 'people' | 'chatbox-ellipses' | 'card' | 'chatbubbles';
-
-const TAB_ICONS: Record<string, {
-  filled: TabIconName;
-  outline: `${TabIconName}-outline`;
-}> = {
-  HomeTab: { filled: 'home', outline: 'home-outline' },
-  VisitorTab: { filled: 'people', outline: 'people-outline' },
-  ComplaintTab: { filled: 'chatbox-ellipses', outline: 'chatbox-ellipses-outline' },
-  BillTab: { filled: 'card', outline: 'card-outline' },
-  ChatTab: { filled: 'chatbubbles', outline: 'chatbubbles-outline' },
-};
+import { createBottomStyle, createColorStyle, createDockHorizontalStyle, createLensWidthStyle, createResidentTabBarStyles } from './styles/ResidentTabBar.styles';
+import type { AppTheme } from '../../../shared/theme';
+import { isResidentPrimaryTabRoute, residentTabIcons } from './residentPrimaryNavigation';
+import { IdentityCenterHost } from '../experience/IdentityCenterHost';
+import { useKeyboardExperience } from '../experience/KeyboardExperienceContext';
 
 function TabBarItem({
   route,
@@ -33,43 +24,39 @@ function TabBarItem({
   isFocused,
   onPress,
   onLongPress,
-  activeColor,
   inactiveColor,
   badge,
+  theme,
 }: {
   route: string;
   label: string;
   isFocused: boolean;
   onPress: () => void;
   onLongPress: () => void;
-  activeColor: string;
   inactiveColor: string;
   badge?: number;
+  theme: AppTheme;
 }) {
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
-  const iconConfig = TAB_ICONS[route] ?? TAB_ICONS['HomeTab']!;
-  const iconName = isFocused ? iconConfig!.filled : iconConfig!.outline;
-  const color = isFocused ? activeColor : inactiveColor;
+  const iconConfig = isResidentPrimaryTabRoute(route) ? residentTabIcons[route] : residentTabIcons.HomeTab;
+  const iconName = isFocused ? iconConfig.filled : iconConfig.outline;
+  const styles = useMemo(() => createResidentTabBarStyles(theme), [theme]);
+  const color = isFocused ? theme.semantic.text.primary : inactiveColor;
 
   const animatedIconStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
-  const dotStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isFocused ? 1 : 0, { duration: 200 }),
-    transform: [{ scaleX: withSpring(isFocused ? 1 : 0, { damping: 18, stiffness: 300 }) }],
-  }));
-
   const handlePressIn = () => {
     if (!reducedMotion) {
-      scale.value = withSpring(1.15, { damping: 14, stiffness: 400 });
+      scale.value = withTiming(theme.motion.scale.active, { duration: theme.navigation.motionDuration });
     }
   };
 
   const handlePressOut = () => {
     if (!reducedMotion) {
-      scale.value = withSpring(1, { damping: 14, stiffness: 400 });
+      scale.value = withTiming(1, { duration: theme.navigation.motionDuration });
     }
   };
 
@@ -82,7 +69,7 @@ function TabBarItem({
       accessibilityRole="tab"
       accessibilityState={{ selected: isFocused }}
       accessibilityLabel={label}
-      style={tabStyles.tabItem}
+      style={styles.tabItem}
     >
       <Animated.View style={animatedIconStyle}>
         <View>
@@ -92,8 +79,8 @@ function TabBarItem({
             color={color}
           />
           {badge !== undefined && badge > 0 && (
-            <View style={tabStyles.badge}>
-              <SafeText variant="tiny" style={tabStyles.badgeText}>
+            <View style={styles.badge}>
+              <SafeText variant="tiny" style={styles.badgeText}>
                 {badge > 99 ? '99+' : badge}
               </SafeText>
             </View>
@@ -102,40 +89,64 @@ function TabBarItem({
       </Animated.View>
       <SafeText
         variant="tiny"
-        style={[tabStyles.label, { color }]}
+        style={[styles.label, createColorStyle(color)]}
         numberOfLines={1}
       >
         {label}
       </SafeText>
-      <Animated.View style={[tabStyles.activeDot, { backgroundColor: activeColor }, dotStyle]} />
     </Pressable>
   );
 }
 
-export function ResidentTabBar(props: BottomTabBarProps) {
+export function SocietyNavigationDock(props: BottomTabBarProps) {
   const hideTabBar = useResidentTabVisibility(props.state);
+  const activeRoute = props.state.routes[props.state.index];
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const theme = useAppTheme();
+  const { colors } = theme;
+  const styles = useMemo(() => createResidentTabBarStyles(theme), [theme]);
+  const reducedMotion = useReducedMotion();
+  const keyboard = useKeyboardExperience();
+  const [dockContentWidth, setDockContentWidth] = useState(0);
+  const lensX = useSharedValue(0);
+  const primaryRoutes = props.state.routes.filter((route) => isResidentPrimaryTabRoute(route.name));
+  const activePrimaryIndex = Math.max(0, primaryRoutes.findIndex((route) => route.key === activeRoute?.key));
+  const itemWidth = primaryRoutes.length > 0 ? dockContentWidth / primaryRoutes.length : 0;
 
-  if (hideTabBar) {
-    return null;
+  useEffect(() => {
+    const nextX = activePrimaryIndex * itemWidth;
+    lensX.value = reducedMotion ? nextX : withTiming(nextX, { duration: theme.navigation.motionDuration });
+  }, [activePrimaryIndex, itemWidth, lensX, reducedMotion, theme.navigation.motionDuration]);
+
+  const lensStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: lensX.value }],
+  }));
+
+  const handleDockLayout = (event: LayoutChangeEvent) => {
+    setDockContentWidth(Math.max(0, event.nativeEvent.layout.width - theme.navigation.internalPadding * 2));
+  };
+
+  if (hideTabBar || keyboard.isOpen || !activeRoute || !isResidentPrimaryTabRoute(activeRoute.name)) {
+    return <IdentityCenterHost navigation={props.navigation} />;
   }
 
   const { state, descriptors, navigation } = props;
   const bottomOffset = Platform.OS === 'android' ? Math.max(insets.bottom, 8) : insets.bottom;
 
-  return (
+  return (<>
+    <IdentityCenterHost navigation={navigation} />
     <View
+      onLayout={handleDockLayout}
       style={[
-        tabStyles.container,
-        {
-          bottom: bottomOffset + 8,
-          backgroundColor: colors.tabBarBackground,
-          borderColor: colors.border,
-        },
+        styles.container,
+        createDockHorizontalStyle(screenWidth, theme.navigation.capsuleInset, theme.navigation.tabletMaxWidth),
+        createBottomStyle(bottomOffset + theme.navigation.dockBottomGap),
       ]}
     >
+      {itemWidth > 0 ? <Animated.View pointerEvents="none" style={[styles.activeLens, createLensWidthStyle(itemWidth), lensStyle]} /> : null}
       {state.routes.map((route, index) => {
+        if (!isResidentPrimaryTabRoute(route.name)) return null;
         const descriptor = descriptors[route.key];
         if (!descriptor) return null;
         const { options } = descriptor;
@@ -175,77 +186,16 @@ export function ResidentTabBar(props: BottomTabBarProps) {
             isFocused={isFocused}
             onPress={onPress}
             onLongPress={onLongPress}
-            activeColor={colors.tabBarActive}
             inactiveColor={colors.tabBarInactive}
+            theme={theme}
             {...(badge !== undefined ? { badge } : {})}
           />
         );
       })}
     </View>
-  );
+  </>);
 }
 
-const tabStyles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    height: 64,
-    borderRadius: 32,
-    borderWidth: StyleSheet.hairlineWidth,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.12,
-        shadowRadius: 24,
-      },
-      android: {
-        elevation: 12,
-      },
-    }),
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-    paddingBottom: 6,
-    gap: 2,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-    marginTop: 2,
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 2,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-});
+export const ResidentTabBar = SocietyNavigationDock;
 
 export default ResidentTabBar;

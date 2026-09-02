@@ -109,6 +109,8 @@ export interface Visitor extends ResidentScopedEntity {
   vehicleNumber?: string;
   otp: string;
   createdAt: string;
+  createdByUserId?: string;
+  createdByDisplayName?: string;
   visitorCategory?: VisitorCategory;
   exitTracking?: VisitorExitTracking;
   cancellationReason?: string;

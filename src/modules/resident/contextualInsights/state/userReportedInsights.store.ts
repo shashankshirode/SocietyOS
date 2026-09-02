@@ -23,7 +23,6 @@ export interface UserReportedAdvisory extends LocalAreaAdvisory {
   autoIconName: AppIconName;
 }
 
-// Automatic icon mapping function - Users NEVER need to pick icons!
 export function getAutoIconForCategory(type: LocalAdvisoryType, titleText = ''): AppIconName {
   const lowerTitle = titleText.toLowerCase();
   
@@ -44,12 +43,11 @@ export function getAutoIconForCategory(type: LocalAdvisoryType, titleText = ''):
 const userReportedAdvisories: UserReportedAdvisory[] = [];
 const userLastReportTimestamp: Record<string, number> = {};
 
-// Rate-limiting check: max 1 report every 30 seconds per user
 export function checkReportRateLimit(userId: string): { allowed: boolean; waitSecondsRemaining: number } {
   const lastTime = userLastReportTimestamp[userId] || 0;
   const now = Date.now();
   const elapsedSeconds = Math.floor((now - lastTime) / 1000);
-  const minInterval = 30; // 30 seconds cooldown
+  const minInterval = 30;
   
   if (elapsedSeconds < minInterval) {
     return { allowed: false, waitSecondsRemaining: minInterval - elapsedSeconds };
@@ -114,7 +112,7 @@ export function confirmUserAdvisory(advisoryId: string, userId: string): boolean
   if (!adv) return false;
   
   if (adv.confirmedByUserIds.has(userId)) {
-    return false; // Already confirmed
+    return false;
   }
 
   adv.confirmedByUserIds.add(userId);

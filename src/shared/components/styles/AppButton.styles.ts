@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     base: {
-        borderRadius: Radius.button,
+        borderRadius: Radius.control,
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'row',
@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     disabled: {
-        opacity: 0.5,
+        opacity: 1,
     },
     contentRow: {
         flexDirection: 'row',
@@ -41,4 +41,3 @@ export function createViewOpacityStyle(opacityValue: 0 | 1) {
         opacity: opacityValue
     } as const;
 }
-

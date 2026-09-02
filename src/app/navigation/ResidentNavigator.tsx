@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMessages } from "../../shared/constants/useMessages";
 import { ResidentHomeScreen } from "../../modules/resident/dashboard/screens/ResidentHomeScreen";
+import { ResidentActivityScreen } from "../../modules/resident/dashboard/screens/ResidentActivityScreen";
+import { ResidentServicesScreen } from "../../modules/resident/services/ResidentServicesScreen";
 import { VisitorListScreen } from "../../modules/resident/visitors/screens/VisitorListScreen";
 import { VisitorDetailScreen } from "../../modules/resident/visitors/screens/VisitorDetailScreen";
 import { CreateVisitorPassScreen } from "../../modules/resident/visitors/screens/CreateVisitorPassScreen";
@@ -75,6 +77,9 @@ import type { RootTabParamList, HomeStackParamList, VisitorStackParamList, Compl
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { includeWhenPresent } from "../../shared/utils/presentProperty";
 import { styles } from "./styles/ResidentNavigator.styles";
+import { residentTabIcons } from "../../modules/resident/navigation/residentPrimaryNavigation";
+import { SocietyExperienceProvider } from "../../modules/resident/experience/SocietyExperienceContext";
+import { KeyboardExperienceProvider } from "../../modules/resident/experience/KeyboardExperienceContext";
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const VisitorStack = createNativeStackNavigator<VisitorStackParamList>();
@@ -83,9 +88,10 @@ const BillStack = createNativeStackNavigator<BillStackParamList>();
 const ChatStack = createNativeStackNavigator<ChatStackParamList>();
 const stackScreenOptions = {
     headerShown: false,
-    animation: 'slide_from_right' as const,
-    animationDuration: 250
+    animation: 'fade' as const,
+    animationDuration: 220
 };
+
 function CreateVisitorFromHomeAdapter(props: NativeStackScreenProps<HomeStackParamList, 'CreateVisitorFromHome'>) {
     return (<ResidentCapabilityGuard capabilityId="resident.visitors">
       <CreateVisitorPassScreen navigation={props.navigation as never} route={props.route as never}/>
@@ -282,17 +288,6 @@ function ResidentBillingCapabilityNavigator() {
 function ResidentChatCapabilityNavigator() {
     return <ResidentCapabilityGuard capabilityId="resident.chat"><ChatStackNavigator /></ResidentCapabilityGuard>;
 }
-type TabIconName = 'home' | 'people' | 'chatbox-ellipses' | 'card' | 'person-circle' | 'chatbubbles';
-const TAB_ICONS: Record<keyof RootTabParamList, {
-    filled: TabIconName;
-    outline: `${TabIconName}-outline`;
-}> = {
-    HomeTab: { filled: 'home', outline: 'home-outline' },
-    VisitorTab: { filled: 'people', outline: 'people-outline' },
-    ComplaintTab: { filled: 'chatbox-ellipses', outline: 'chatbox-ellipses-outline' },
-    BillTab: { filled: 'card', outline: 'card-outline' },
-    ChatTab: { filled: 'chatbubbles', outline: 'chatbubbles-outline' }
-};
 export function ResidentNavigator() {
     const { colors } = useAppTheme();
     const messages = useMessages();
@@ -302,7 +297,7 @@ export function ResidentNavigator() {
     const incomingRequestCount = (contactRequests.incoming.data ?? []).filter((request) => request.status === 'pending').length;
     const directUnreadCount = (directConversations.data ?? []).reduce((total, conversation) => total + (conversation.unreadByResidentProfileId[contactRequests.scope.residentProfileId] ?? 0), 0);
     const combinedUnreadCount = unreadCount + incomingRequestCount + directUnreadCount;
-    return (<Tab.Navigator tabBar={(props) => <ResidentTabBar {...props}/>} screenOptions={({ route }) => ({
+    return (<KeyboardExperienceProvider><SocietyExperienceProvider><Tab.Navigator tabBar={(props) => <ResidentTabBar {...props}/>} screenOptions={({ route }) => ({
             headerShown: false,
             tabBarStyle: {
                 ...styles.tabBar,
@@ -314,7 +309,7 @@ export function ResidentNavigator() {
             tabBarLabelStyle: styles.tabLabel,
             tabBarHideOnKeyboard: true,
             tabBarIcon: ({ focused, color, size }) => {
-                const icons = TAB_ICONS[route.name];
+                const icons = residentTabIcons[route.name];
                 const iconName = focused ? icons.filled : icons.outline;
                 return (<Ionicons name={iconName as keyof typeof Ionicons.glyphMap} size={size ?? 22} color={color}/>);
             }
@@ -322,6 +317,18 @@ export function ResidentNavigator() {
         <Tab.Screen name="HomeTab" component={ResidentHomeCapabilityNavigator} options={{
             tabBarLabel: messages.tabs.home,
             tabBarAccessibilityLabel: messages.accessibility.tabs.home
+        }}/>
+        <Tab.Screen name="ActivityTab" component={ResidentActivityScreen} options={{
+            tabBarLabel: messages.tabs.activity,
+            tabBarAccessibilityLabel: messages.accessibility.tabs.activity
+        }}/>
+        <Tab.Screen name="CommunityTab" component={CommunityCapabilityStack} options={{
+            tabBarLabel: messages.tabs.community,
+            tabBarAccessibilityLabel: messages.accessibility.tabs.community
+        }}/>
+        <Tab.Screen name="ServicesTab" component={ResidentServicesScreen} options={{
+            tabBarLabel: messages.tabs.services,
+            tabBarAccessibilityLabel: messages.accessibility.tabs.services
         }}/>
         <Tab.Screen name="VisitorTab" component={ResidentVisitorCapabilityNavigator} options={{
             tabBarLabel: messages.tabs.visitors,
@@ -340,7 +347,6 @@ export function ResidentNavigator() {
             tabBarAccessibilityLabel: messages.accessibility.tabs.chat,
             ...includeWhenPresent("tabBarBadge", combinedUnreadCount > 0 ? combinedUnreadCount : undefined)
         }}/>
-      </Tab.Navigator>);
+      </Tab.Navigator></SocietyExperienceProvider></KeyboardExperienceProvider>);
 }
 export default ResidentNavigator;
-

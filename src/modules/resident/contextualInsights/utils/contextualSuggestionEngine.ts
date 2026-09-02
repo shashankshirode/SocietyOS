@@ -16,7 +16,7 @@ export function buildSuggestions(
   
   for (const adv of filterCurrentAdvisories(advisories, nowMs)) {
     let iconName: AppIconName = 'warning-outline';
-    if ('autoIconName' in adv && (adv as any).autoIconName) iconName = (adv as any).autoIconName;
+    if (adv.autoIconName) iconName = adv.autoIconName;
     else if (adv.type === 'roadBlock') iconName = 'warning-outline';
     else if (adv.type === 'waterlogging') iconName = 'water-outline';
     else if (adv.type === 'gateCongestion') iconName = 'people-outline';

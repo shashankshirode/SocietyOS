@@ -86,17 +86,17 @@ export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: 
         borderColor: borderColorValue
     } as const;
 }
-export function createViewSpread1Style(spread1Value: Partial<Record<"backgroundColor", "#142454" | "#4E46E5" | "#3268D8" | "#159E96" | "#111827" | "#172033" | "#B97818">>) {
+export function createViewSpread1Style(spread1Value: Partial<Record<"backgroundColor", string>>) {
     return {
         ...spread1Value
     } as const;
 }
-export function createViewSpread1Style2(spread1Value: Partial<Record<"backgroundColor", "#142454" | "#4E46E5" | "#3268D8" | "#159E96" | "#111827" | "#172033" | "#B97818">>) {
+export function createViewSpread1Style2(spread1Value: Partial<Record<"backgroundColor", string>>) {
     return {
         ...spread1Value
     } as const;
 }
-export function createViewSpread1Style3(spread1Value: Partial<Record<"backgroundColor", "#142454" | "#4E46E5" | "#3268D8" | "#159E96" | "#111827" | "#172033" | "#B97818">>) {
+export function createViewSpread1Style3(spread1Value: Partial<Record<"backgroundColor", string>>) {
     return {
         ...spread1Value
     } as const;

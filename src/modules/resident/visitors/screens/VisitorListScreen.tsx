@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useVisitors } from "../data/useVisitors";
@@ -10,23 +10,27 @@ import { VisitorAccessTimeline } from "../../../../ui/patterns/VisitorAccessTime
 import { SafeText } from "../../../../shared/components/SafeText";
 import { ContentFrame } from "../../../../ui/layout/ContentFrame";
 import { PressableScale } from "../../../../shared/motion/PressableScale";
+import { DeliveryPreApprovalPanel } from "../components/DeliveryPreApprovalPanel";
+import { PartyPassModal } from "../components/PartyPassModal";
 import type { VisitorListScreenProps } from "../../../../app/navigation/navigation.types";
 import type { VisitorAccessItem, VisitorType, VisitorStatus, AccessType } from "../../dashboard/data/dashboard.types";
-import { useWindowDimensions } from "react-native";
 import { resolveResidentTabBarObstruction } from "../../navigation/useResidentTabBarLayout";
 import { getAppPlatform } from "../../../../shared/platform";
 import { formatVisitorEntryExit } from "../../../../core/localization/dateTimeFormatters";
-import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createPressableBackgroundColorBorderColorStyle, createViewBottomStyle, createPressableScaleBackgroundColorStyle } from "../styles/screens/VisitorListScreen.styles";
+import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createPressableBackgroundColorBorderColorStyle, createViewBottomStyle, createPressableScaleBackgroundColorStyle, createScrollPaddingBottomStyle } from "../styles/screens/VisitorListScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
+import { useMessages } from "../../../../shared/constants/useMessages";
 type TabType = 'UPCOMING' | 'INSIDE' | 'COMPLETED' | 'EXPIRED' | 'CANCELLED';
 export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
+    const messages = useMessages();
     const theme = useResidentTheme();
     const insets = useSafeAreaInsets();
     const { width } = useWindowDimensions();
     const tabBarObstruction = resolveResidentTabBarObstruction(width, insets.bottom, getAppPlatform());
     const { isEnabled } = useFeatureFlags();
     const [activeTab, setActiveTab] = useState<TabType>('UPCOMING');
+    const [partyPassModalVisible, setPartyPassModalVisible] = useState(false);
     const { data: visitorsData = [] } = useVisitors();
     const mappedVisitors = useMemo((): VisitorAccessItem[] => {
         return visitorsData.map((v) => {
@@ -92,10 +96,10 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         key: TabType;
         label: string;
     }[] = [
-        { key: 'UPCOMING', label: String(localizedUiText.m_5f1a2542e4e4) },
-        { key: 'INSIDE', label: String(localizedUiText.m_123a3ebc57e3) },
-        { key: 'COMPLETED', label: String(localizedUiText.m_22a970d2e5b1) },
-        { key: 'EXPIRED', label: String(localizedUiText.m_424a2551d356) },
+        { key: 'UPCOMING', label: messages.visitors.arrivingSection },
+        { key: 'INSIDE', label: messages.visitors.atGateSection },
+        { key: 'COMPLETED', label: messages.visitors.enteredTodaySection },
+        { key: 'EXPIRED', label: messages.visitors.pastSection },
     ];
     if (!isEnabled('visitorManagement')) {
         return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
@@ -116,9 +120,9 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
             const isActive = activeTab === tab.key;
             return (<Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={[
                     styles.tabChip,
-                    createPressableBackgroundColorBorderColorStyle(isActive ? theme.accent : theme.surface, isActive ? 'transparent' : theme.border),
+                    createPressableBackgroundColorBorderColorStyle(isActive ? theme.selectedBackground : theme.surface, isActive ? theme.selectedBorder : theme.border),
                 ]}>
-                <SafeText variant="tiny" style={createSafeTextColorStyle3(isActive ? '#FFFFFF' : theme.textSecondary)}>
+                <SafeText variant="tiny" style={createSafeTextColorStyle3(isActive ? theme.selectedForeground : theme.textSecondary)}>
                   {tab.label}
                 </SafeText>
               </Pressable>);
@@ -126,8 +130,42 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarObstruction + 72 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, createScrollPaddingBottomStyle(tabBarObstruction + 72)]} showsVerticalScrollIndicator={false}>
         <ContentFrame>
+          <View style={[styles.arrivalHero, createViewBackgroundColorStyle(theme.surface)]}>
+            <SafeText variant="tiny" style={createSafeTextColorStyle3(theme.accentSecondary)}>{messages.visitors.screenTitle.toUpperCase()}</SafeText>
+            <SafeText variant="h2" style={createSafeTextColorStyle3(theme.textPrimary)}>{messages.visitors.arrivalWorldTitle}</SafeText>
+            <SafeText variant="body" style={createSafeTextColorStyle3(theme.textSecondary)}>
+              {mappedVisitors.filter((visitor) => visitor.status === 'upcoming').length > 0
+                ? messages.visitors.expectedToday(mappedVisitors.filter((visitor) => visitor.status === 'upcoming').length)
+                : messages.visitors.quietToday}
+            </SafeText>
+          </View>
+          <DeliveryPreApprovalPanel />
+          <Pressable
+            onPress={() => setPartyPassModalVisible(true)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              borderColor: '#F59E0B',
+              borderWidth: 1,
+              borderRadius: 16,
+              padding: 14,
+              marginHorizontal: 16,
+              marginBottom: 12,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="sparkles" size={22} color="#D97706" />
+              <View>
+                <SafeText variant="bodyStrong" style={{ color: '#B45309' }}>Host an Event / Party Pass</SafeText>
+                <SafeText variant="caption" style={{ color: '#D97706' }}>Bulk invite link for multiple guests</SafeText>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#D97706" />
+          </Pressable>
           <VisitorAccessTimeline items={filteredVisitors} onCreateVisitorPress={() => navigation.navigate('CreateVisitorPass')} onVisitorPress={(id) => {
             const originalVisitor = visitorsData.find((v) => v.id === id);
             if (originalVisitor) {
@@ -137,12 +175,14 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         </ContentFrame>
       </ScrollView>
 
-      <View style={[styles.fabContainer, createViewBottomStyle(tabBarObstruction + 16)]}>
-        <PressableScale onPress={() => navigation.navigate('CreateVisitorPass')} style={[styles.fab, createPressableScaleBackgroundColorStyle(theme.accent)]}>
-          <Ionicons name="add" size={24} color="#FFFFFF"/>
+      <PartyPassModal visible={partyPassModalVisible} onClose={() => setPartyPassModalVisible(false)} />
+
+      {mappedVisitors.length > 0 ? <View style={[styles.fabContainer, createViewBottomStyle(tabBarObstruction + 16)]}>
+        <PressableScale onPress={() => navigation.navigate('CreateVisitorPass')} style={[styles.fab, createPressableScaleBackgroundColorStyle(theme.selectedBackground)]}>
+          <Ionicons name="add" size={20} color={theme.selectedForeground}/>
+          <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.selectedForeground)}>{messages.visitors.createVisitor}</SafeText>
         </PressableScale>
-      </View>
+      </View> : null}
     </View>);
 }
 export default VisitorListScreen;
-

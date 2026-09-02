@@ -3,7 +3,7 @@ import type { RootStackParamList } from '../../app/navigation/navigation.types';
 import type { AppRole } from '../permissions/permission.types';
 import type { AuthSession } from './authSession.types';
 import { logoutCurrentSession } from './logout';
-import { createMockSessionForRoute, getMockSessionSeedForRole } from './mockSession';
+import { createMockSessionForPersona, createMockSessionForRoute, getMockSessionSeedForRole } from './mockSession';
 import {
   getCurrentSession,
   setCurrentSession,
@@ -16,6 +16,12 @@ export function useAuthSession() {
     getCurrentSession,
     getCurrentSession
   );
+
+  const startMockSessionForPersona = React.useCallback(async (personaKey: any) => {
+    const mockSession = createMockSessionForPersona(personaKey);
+    await setCurrentSession(mockSession);
+    return mockSession;
+  }, []);
 
   const startMockSessionForRoute = React.useCallback(async (routeName: keyof RootStackParamList) => {
     const mockSession = createMockSessionForRoute(routeName);
@@ -38,6 +44,7 @@ export function useAuthSession() {
   return {
     session,
     isAuthenticated: Boolean(session),
+    startMockSessionForPersona,
     startMockSessionForRoute,
     startMockSessionForRole,
     logout,

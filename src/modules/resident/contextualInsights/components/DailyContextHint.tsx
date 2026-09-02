@@ -8,7 +8,6 @@ import { useDailyContextHint } from "../hooks/useDailyContextHint";
 import { ContextualInsightIcon } from "./ContextualInsightIcon";
 import { DailyInsightsBottomSheet } from "../../dashboard/components/insights/DailyInsightsBottomSheet";
 import { ContextualInsightSkeleton } from "./ContextualInsightSkeleton";
-import { ContextualInsightErrorState } from "./ContextualInsightErrorState";
 import { residentColors } from "../../../../shared/theme/residentColors";
 import { styles } from "../styles/components/DailyContextHint.styles";
 export interface DailyContextHintProps {
@@ -52,4 +51,3 @@ export function DailyContextHint({ societyId, unitId }: DailyContextHintProps) {
     </View>);
 }
 export default DailyContextHint;
-

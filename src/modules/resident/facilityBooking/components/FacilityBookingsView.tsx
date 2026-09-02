@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppCard } from '../../../../shared/cards/AppCard';
@@ -40,8 +40,6 @@ interface FacilityBookingsViewProps {
   readonly onBookAgain: (facilityId: string) => void;
 }
 
-const filters = Object.values(FacilityBookingFilter);
-
 function actionForBooking(booking: FacilityBooking, labels: ReturnType<typeof useMessages>['resident']['facilityBooking']['bookings']) {
   if (booking.status === FacilityBookingStatus.PaymentPending) return labels.completePayment;
   if (booking.status === FacilityBookingStatus.Confirmed && booking.qrPass?.active) {
@@ -72,11 +70,19 @@ export function FacilityBookingsView({
 }: FacilityBookingsViewProps) {
   const { colors } = useAppTheme();
   const labels = useMessages().resident.facilityBooking;
+  const msg = labels.spaces;
   const { activeContext } = useActiveResidentHome();
   const [filter, setFilter] = useState(initialFilter);
   const resource = useFacilityBookings(filter);
   const leaveMutation = useLeaveFacilityWaitlist();
   const locale = activeContext.locale ?? 'en-IN';
+
+  const filters = [
+    { id: FacilityBookingFilter.Upcoming, label: labels.bookings.filters.UPCOMING.toUpperCase() },
+    { id: FacilityBookingFilter.Waitlisted, label: labels.bookings.filters.WAITLISTED.toUpperCase() },
+    { id: FacilityBookingFilter.Past, label: labels.bookings.filters.PAST.toUpperCase() },
+    { id: FacilityBookingFilter.Cancelled, label: labels.bookings.filters.CANCELLED.toUpperCase() },
+  ];
 
   function handleAction(booking: FacilityBooking): void {
     if (booking.status === FacilityBookingStatus.PaymentPending) onPay(booking.id);
@@ -87,41 +93,60 @@ export function FacilityBookingsView({
     } else onBookAgain(booking.facilityId);
   }
 
+  const nextBooking = filter === FacilityBookingFilter.Upcoming && resource.bookings.length > 0
+    ? resource.bookings[0]
+    : null;
+
+  const subsequentBookings = nextBooking
+    ? resource.bookings.slice(1)
+    : resource.bookings;
+
   const emptyCopy = {
     [FacilityBookingFilter.Upcoming]: { title: labels.bookings.noUpcomingTitle, description: labels.bookings.noUpcomingDescription },
     [FacilityBookingFilter.Past]: { title: labels.bookings.noPastTitle, description: labels.bookings.noPastDescription },
     [FacilityBookingFilter.Cancelled]: { title: labels.bookings.noCancelledTitle, description: labels.bookings.noCancelledDescription },
     [FacilityBookingFilter.Waitlisted]: { title: labels.bookings.noWaitlistTitle, description: labels.bookings.noWaitlistDescription },
   }[filter];
+
   return (
     <FacilityScreenLayout
-      title={labels.bookings.title}
-      subtitle={`${activeContext.societyName} · ${activeContext.displayUnitName}`}
+      title={msg.myTimeTitle}
+      subtitle={msg.myTimeSubtitle}
       onBack={onBack}
       testID="my-facility-bookings-screen"
     >
+      {/* Lifecycle Navigation Rail */}
       <View style={styles.tabs} accessibilityRole="tablist">
         {filters.map((item) => {
-          const selected = filter === item;
+          const selected = filter === item.id;
           return (
             <Pressable
-              key={item}
+              key={item.id}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
-              testID={`facility-booking-tab-${item}`}
-              onPress={() => setFilter(item)}
+              testID={`facility-booking-tab-${item.id}`}
+              onPress={() => setFilter(item.id)}
               style={[
                 styles.tab,
-                backgroundBorderStyle(selected ? colors.primarySoft : colors.surface, selected ? colors.primary : colors.border),
+                backgroundBorderStyle(
+                  selected ? colors.primarySoft : colors.surface,
+                  selected ? colors.primary : colors.border
+                ),
               ]}
             >
-              <SafeText variant="tiny" color={selected ? 'info' : 'secondary'} align="center">{labels.bookings.filters[item]}</SafeText>
+              <SafeText variant="tiny" style={{ fontWeight: selected ? '700' : '500' }} color={selected ? 'info' : 'secondary'} align="center">
+                {item.label}
+              </SafeText>
             </Pressable>
           );
         })}
       </View>
+
       {resource.isLoading ? (
-        <View style={styles.section}><DetailBlockSkeleton /><DetailBlockSkeleton /><DetailBlockSkeleton /></View>
+        <View style={styles.section}>
+          <DetailBlockSkeleton />
+          <DetailBlockSkeleton />
+        </View>
       ) : resource.error ? (
         <ErrorState
           title={labels.states.loadBookingsTitle}
@@ -138,19 +163,47 @@ export function FacilityBookingsView({
         />
       ) : (
         <View style={styles.section}>
-          {resource.bookings.map((booking) => {
-            const actionLabel = actionForBooking(booking, labels.bookings);
-            return (
+          {/* Spotlight Hero for NEXT booking */}
+          {nextBooking ? (
+            <View style={{ gap: 8, marginBottom: 8 }}>
+              <SafeText variant="tiny" color="primary" style={{ fontWeight: '700', letterSpacing: 0.5 }}>
+                {msg.nextUp}
+              </SafeText>
               <FacilityBookingCard
-                key={booking.id}
-                booking={booking}
+                booking={nextBooking}
                 locale={locale}
-                onView={() => onView(booking.id)}
-                {...includeWhenPresent('actionLabel', actionLabel ?? undefined)}
-                {...includeWhenPresent('onAction', actionLabel ? () => handleAction(booking) : undefined)}
+                onView={() => onView(nextBooking.id)}
+                {...includeWhenPresent('actionLabel', actionForBooking(nextBooking, labels.bookings) ?? undefined)}
+                {...includeWhenPresent('onAction', actionForBooking(nextBooking, labels.bookings) ? () => handleAction(nextBooking) : undefined)}
               />
-            );
-          })}
+            </View>
+          ) : null}
+
+          {/* Subsequent Chronological Bookings */}
+          {subsequentBookings.length > 0 ? (
+            <View style={{ gap: 12 }}>
+              {nextBooking ? (
+                <SafeText variant="tiny" color="secondary" style={{ fontWeight: '700', letterSpacing: 0.5 }}>
+                  {msg.laterReservations}
+                </SafeText>
+              ) : null}
+              {subsequentBookings.map((booking) => {
+                const actionLabel = actionForBooking(booking, labels.bookings);
+                return (
+                  <FacilityBookingCard
+                    key={booking.id}
+                    booking={booking}
+                    locale={locale}
+                    onView={() => onView(booking.id)}
+                    {...includeWhenPresent('actionLabel', actionLabel ?? undefined)}
+                    {...includeWhenPresent('onAction', actionLabel ? () => handleAction(booking) : undefined)}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+
+          {/* Waitlist Entries */}
           {resource.waitlistEntries.map((entry) => (
             <AppCard key={entry.id} variant="warning" style={styles.summaryCard}>
               <View style={styles.rowBetween}>
@@ -172,6 +225,7 @@ export function FacilityBookingsView({
               />
             </AppCard>
           ))}
+
           {resource.hasMore ? (
             <AppButton title={labels.bookings.retryMore} onPress={() => void resource.loadMore()} loading={resource.isLoadingMore} variant="outline" />
           ) : null}

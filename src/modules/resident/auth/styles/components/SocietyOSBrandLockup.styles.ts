@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Spacing } from "../../../../../shared/theme/spacing";
+import { residentColors } from "../../../../../shared/theme/residentColors";
 export const styles = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
@@ -78,12 +79,12 @@ export const styles = StyleSheet.create({
         marginTop: 2,
     },
     tagline: {
-        color: 'rgba(255, 255, 255, 0.95)',
+        color: residentColors.onBrandStrong,
         fontWeight: '600',
         fontSize: 15,
     },
     trustLine: {
-        color: 'rgba(255, 255, 255, 0.65)',
+        color: residentColors.onBrandMedium,
         fontWeight: '600',
         fontSize: 11.5,
     },
@@ -98,7 +99,7 @@ export function createAnimatedViewBorderColorStyle2(borderColorValue: string) {
         borderColor: borderColorValue
     } as const;
 }
-export function createAnimatedViewBackgroundColorStyle(backgroundColorValue: "#10B981" | "#00F0FF") {
+export function createAnimatedViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
@@ -113,4 +114,3 @@ export function createAppTextColorStyle2(colorValue: string) {
         color: colorValue
     } as const;
 }
-

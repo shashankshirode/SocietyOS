@@ -26,31 +26,31 @@ export const styles = StyleSheet.create({
         borderRadius: 2.5,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#4E46E5" | "#9DA5FF") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         lineHeight: 16
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue,
         flex: 1
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#1E1B4B" | "#E8E5FB", borderColorValue: "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#4E46E5" | "#9DA5FF") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

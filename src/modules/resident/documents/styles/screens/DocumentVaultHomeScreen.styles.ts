@@ -1,97 +1,27 @@
-import { StyleSheet } from "react-native";
-export const styles = StyleSheet.create({
-    root: {
-        flex: 1,
-    },
-    unavailableContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 32,
-        gap: 8,
-    },
-    scrollContent: {
-        padding: 20,
-        gap: 24,
-        paddingBottom: 40,
-    },
-    section: {
-        gap: 12,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-    },
-    folderList: {
-        gap: 12,
-    },
-    folderCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        gap: 14,
-    },
-    folderIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    folderInfo: {
-        flex: 1,
-        gap: 2,
-    },
-});
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
-    return {
-        color: colorValue,
-        marginTop: 16
-    } as const;
-}
-export function createSafeTextColorStyle2(colorValue: "#CBD5E1" | "#475467") {
-    return {
-        color: colorValue,
-        textAlign: 'center',
-        marginTop: 8
-    } as const;
-}
-export function createSafeTextColorStyle3(colorValue: "#101828" | "#F8FAFC") {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle2(backgroundColorValue: "#F4F6FB" | "#080D18") {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createSafeTextColorStyle4(colorValue: "#101828" | "#F8FAFC") {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle5(colorValue: "#101828" | "#F8FAFC") {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle3(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
+import { StyleSheet } from 'react-native';
 
+export const styles = StyleSheet.create({
+  root: { flex: 1 },
+  loading: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 48, gap: 30 },
+  hero: { minHeight: 218, borderRadius: 30, padding: 24, paddingRight: 72, justifyContent: 'flex-end', gap: 10, overflow: 'hidden' },
+  archiveMark: { position: 'absolute', right: 22, top: 24, width: 54, height: 96, justifyContent: 'space-between' },
+  archiveLine: { width: 2, height: 96, opacity: 0.26 },
+  archiveLineShort: { position: 'absolute', right: 14, top: 20, width: 2, height: 58, opacity: 0.18 },
+  section: { gap: 0 },
+  sectionHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionLabel: { letterSpacing: 1.25, marginBottom: 10 },
+  documentRow: { minHeight: 86, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth },
+  documentCopy: { flex: 1, gap: 4 },
+  command: { minHeight: 86, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderWidth: 1, borderRadius: 22 },
+  commandIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  commandCopy: { flex: 1, gap: 3 },
+  securityNote: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingHorizontal: 4 },
+  securityCopy: { flex: 1, gap: 3 },
+});
+
+export function createRootStyle(backgroundColor: string) { return { backgroundColor } as const; }
+export function createSurfaceStyle(backgroundColor: string) { return { backgroundColor } as const; }
+export function createAccentStyle(backgroundColor: string) { return { backgroundColor } as const; }
+export function createBorderStyle(borderColor: string) { return { borderColor } as const; }
+export function createColorStyle(color: string) { return { color } as const; }

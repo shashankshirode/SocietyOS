@@ -1,6 +1,6 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState, useEffect } from "react";
-import { View, ScrollView, Switch } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentPrivacySettings, useUpdatePrivacySettings } from "../data/useResidentPrivacySettings";
@@ -9,6 +9,7 @@ import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { AppButton } from "../../../../shared/components/AppButton";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createSafeTextColorStyle4, createSafeTextColorStyle5, createSafeTextColorStyle6, createSafeTextColorStyle7, createSafeTextColorStyle8, createViewBackgroundColorStyle, createViewBorderColorStyle, createViewBorderColorStyle2, createViewBorderColorStyle3, createViewBorderColorStyle4, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/ResidentPrivacySettingsScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
 export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScreenProps) {
@@ -54,7 +55,7 @@ export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScre
               <SafeText variant="bodyStrong" style={createSafeTextColorStyle(theme.textPrimary)}>{localizedUiText.m_6a40732aec9e}</SafeText>
               <SafeText variant="tiny" style={createSafeTextColorStyle2(theme.textSecondary)}>{localizedUiText.m_7235fbb66c6e}</SafeText>
             </View>
-            <Switch value={showFlatNumber} onValueChange={setShowFlatNumber} trackColor={{ false: theme.border, true: theme.accent }}/>
+            <SocietySwitch value={showFlatNumber} onValueChange={setShowFlatNumber}/>
           </View>
 
           <View style={[styles.switchRow, createViewBorderColorStyle2(theme.border)]}>
@@ -62,7 +63,7 @@ export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScre
               <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.textPrimary)}>{localizedUiText.m_af941da4051b}</SafeText>
               <SafeText variant="tiny" style={createSafeTextColorStyle4(theme.textSecondary)}>{localizedUiText.m_a239d9708083}</SafeText>
             </View>
-            <Switch value={!showDisplayName} onValueChange={(val) => setShowDisplayName(!val)} trackColor={{ false: theme.border, true: theme.accent }}/>
+            <SocietySwitch value={!showDisplayName} onValueChange={(val) => setShowDisplayName(!val)}/>
           </View>
 
           <View style={[styles.switchRow, createViewBorderColorStyle3(theme.border)]}>
@@ -70,7 +71,7 @@ export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScre
               <SafeText variant="bodyStrong" style={createSafeTextColorStyle5(theme.textPrimary)}>{localizedUiText.m_796110e28da1}</SafeText>
               <SafeText variant="tiny" style={createSafeTextColorStyle6(theme.textSecondary)}>{localizedUiText.m_513a8f239595}</SafeText>
             </View>
-            <Switch value={allowFirstContact} onValueChange={setAllowFirstContact} trackColor={{ false: theme.border, true: theme.accent }}/>
+            <SocietySwitch value={allowFirstContact} onValueChange={setAllowFirstContact}/>
           </View>
 
           <View style={[styles.switchRow, createViewBorderColorStyle4(theme.border)]}>
@@ -78,7 +79,7 @@ export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScre
               <SafeText variant="bodyStrong" style={createSafeTextColorStyle7(theme.textPrimary)}>{localizedUiText.m_d51e8dbd09a9}</SafeText>
               <SafeText variant="tiny" style={createSafeTextColorStyle8(theme.textSecondary)}>{localizedUiText.m_399edcde80b3}</SafeText>
             </View>
-            <Switch value={sameTowerOnly} onValueChange={setSameTowerOnly} trackColor={{ false: theme.border, true: theme.accent }}/>
+            <SocietySwitch value={sameTowerOnly} onValueChange={setSameTowerOnly}/>
           </View>
         </View>
       </ScrollView>
@@ -90,4 +91,3 @@ export function ResidentPrivacySettingsScreen({ navigation }: NavigationOnlyScre
     </View>);
 }
 export default ResidentPrivacySettingsScreen;
-

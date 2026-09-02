@@ -243,9 +243,16 @@ export type ParkingHardwareReadiness = {
   notes: string;
 };
 
+export type SocietyParkingAllocationPolicy =
+  | 'FIXED_ALLOTMENT'
+  | 'OPEN_COMMON_POOL'
+  | 'MECHANICAL_STACK'
+  | 'NO_PARKING_SOCIETY';
+
 export type ParkingHome = {
   resident: ParkingResidentContext;
   unit: ParkingUnitContext;
+  allocationPolicy?: SocietyParkingAllocationPolicy;
   registeredVehiclesCount: number;
   allocatedParkingSlotsCount: number;
   visitorParkingRequestsCount: number;

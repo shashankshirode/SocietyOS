@@ -3,7 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeText } from "../../shared/components/SafeText";
 import { useAppTheme } from "../../shared/theme/useAppTheme";
 import { AppButton } from "../../shared/components/AppButton";
-import { styles, createViewBackgroundColorStyle, createViewBackgroundColorStyle2 } from "./styles/ScreenEmptyState.styles";
+import { styles, createViewBackgroundColorStyle, createViewBorderColorStyle } from "./styles/ScreenEmptyState.styles";
 export interface ScreenEmptyStateProps {
     title: string;
     description: string;
@@ -15,13 +15,14 @@ export interface ScreenEmptyStateProps {
     };
 }
 export function ScreenEmptyState({ title, description, iconName = 'file-tray-outline', accessibilityLabel, primaryAction, }: ScreenEmptyStateProps) {
-    const { colors, dark } = useAppTheme();
-    return (<View style={[styles.container, createViewBackgroundColorStyle(colors.background)]} accessibilityLabel={accessibilityLabel ?? title}>
+    const { semantic } = useAppTheme();
+    return (<View style={[styles.container, createViewBackgroundColorStyle(semantic.surface.canvas)]} accessibilityLabel={accessibilityLabel ?? title}>
       <View style={[
             styles.iconContainer,
-            createViewBackgroundColorStyle2(dark ? colors.surfaceElevated : colors.surface),
+            createViewBackgroundColorStyle(semantic.surface.soft),
+            createViewBorderColorStyle(semantic.border.subtle),
         ]}>
-        <Ionicons name={iconName} size={36} color={colors.secondary}/>
+        <Ionicons name={iconName} size={28} color={semantic.accent.moss}/>
       </View>
       <SafeText variant="title" color="primary" align="center" numberOfLines={3} style={styles.title}>
         {title}
@@ -32,4 +33,3 @@ export function ScreenEmptyState({ title, description, iconName = 'file-tray-out
       {primaryAction ? (<AppButton title={primaryAction.label} onPress={primaryAction.onPress} style={styles.action}/>) : null}
     </View>);
 }
-

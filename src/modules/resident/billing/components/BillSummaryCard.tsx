@@ -51,8 +51,8 @@ export function BillSummaryCard({ summary, onPayOutstanding, onPayInAdvance, onV
       
       <View style={styles.actions}>
         {hasOutstanding ? (<Pressable onPress={onPayOutstanding} accessibilityRole="button" accessibilityLabel={messages.residentAccessibility.billing.payNow} style={[styles.primaryAction, createPressableBackgroundColorStyle(theme.accent)]}>
-            <Ionicons name="card-outline" size={16} color="#FFFFFF"/>
-            <SafeText variant="caption" style={styles.primaryLabel}>{billing.payOutstanding}</SafeText>
+            <Ionicons name="card-outline" size={16} color={theme.selectedForeground}/>
+            <SafeText variant="caption" style={[styles.primaryLabel, createSafeTextColorStyle(theme.selectedForeground)]}>{billing.payOutstanding}</SafeText>
           </Pressable>) : null}
         
         <Pressable onPress={onPayInAdvance} accessibilityRole="button" style={[styles.secondaryAction, createPressableBorderColorStyle(theme.border), styles.pressableFlexDirectionAlignItemsGap]}>
@@ -69,4 +69,3 @@ export function BillSummaryCard({ summary, onPayOutstanding, onPayInAdvance, onV
     </View>);
 }
 export default BillSummaryCard;
-

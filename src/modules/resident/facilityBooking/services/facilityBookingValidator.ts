@@ -50,7 +50,20 @@ export function validateFacilityBookingEligibility({
   if (!scope.hasResidenceAccess) block(FacilityEligibilityCode.ResidenceAccessRequired, 'This residence is not available to your account.');
   if (scope.societyId !== facility.societyId) block(FacilityEligibilityCode.WrongSociety, 'This facility belongs to a different residence.');
   if (!scope.featureEnabled) block(FacilityEligibilityCode.FeatureDisabled, 'Facility booking is disabled for this residence.');
-  if (!facility.eligibilityPolicy.allowedRoles.includes(scope.role)) block(FacilityEligibilityCode.RoleRestricted, 'Your active role cannot book this facility.');
+  if (!facility.eligibilityPolicy.allowedRoles.includes(scope.role)) {
+    block(
+      FacilityEligibilityCode.RoleRestricted,
+      scope.role === 'tenant'
+        ? 'Booking this space is restricted for tenant profiles under society rules.'
+        : 'Your current resident role cannot book this space.'
+    );
+  }
+  if (facility.eligibilityPolicy.blockedUnitIds?.includes(scope.unitId)) {
+    block(FacilityEligibilityCode.UnitBlockedByAdmin, 'Booking privileges for this unit have been restricted by Society Administration.');
+  }
+  if (facility.eligibilityPolicy.blockedTowersOrWings?.some((tower) => scope.unitLabel.toLowerCase().includes(tower.toLowerCase()))) {
+    block(FacilityEligibilityCode.TowerBlockedByAdmin, 'Facility access is temporarily suspended for your building/tower by Society Administration.');
+  }
   if (!facility.bookingEnabled || facility.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance || facility.availabilityStatus === FacilityAvailabilityStatus.TemporarilyClosed) {
     block(FacilityEligibilityCode.FacilityUnavailable, 'This facility is not open for booking right now.');
   }

@@ -1,5 +1,5 @@
 import { AppAlert } from "../../../../../ui/modal/AppAlert";
-import { Text, View, Pressable, Switch, ScrollView } from "react-native";
+import { Text, View, Pressable, ScrollView } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { EmergencySafetyStackParamList } from "../../../../../app/navigation/navigation.types";
 import { useFamilyConnect } from "../../data/useFamilyConnect";
@@ -10,6 +10,7 @@ import { EmergencyPrivacyNotice } from "../../components/EmergencyPrivacyNotice"
 import { styles } from "../../styles/screens/safety_screens/FamilyConnectScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../../messages/useMessages";
 import { formatUiLiteral } from "../../../../../shared/localization/formatUiLiteral";
+import { SocietySwitch } from "../../../../../ui/controls/SocietySwitch";
 type Props = NativeStackScreenProps<EmergencySafetyStackParamList, 'FamilyConnect'>;
 export function FamilyConnectScreen({ navigation }: Props) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
@@ -43,7 +44,7 @@ export function FamilyConnectScreen({ navigation }: Props) {
               <Text style={styles.rowTitle}>{localizedUiText.m_75efe52d0207}</Text>
               <Text style={styles.rowDesc}>{localizedUiText.m_19e4a314c0e4}</Text>
             </View>
-            <Switch value={connData.enabled} onValueChange={handleToggle}/>
+            <SocietySwitch value={connData.enabled} onValueChange={handleToggle}/>
           </View>
         </View>
 
@@ -64,4 +65,3 @@ export function FamilyConnectScreen({ navigation }: Props) {
       </ScrollView>
     </ScreenContainer>);
 }
-

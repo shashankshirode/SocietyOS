@@ -24,7 +24,7 @@ jest.mock('../../../../core/notifications/useLocalNotificationTest', () => ({
 jest.mock('../../../../core/notifications/notificationPreferences', () => ({
   getCachedNotificationPreferences: jest.fn(() => [
     { key: 'emergencyAlerts', label: 'Emergency Alerts', enabled: true, important: true },
-    { key: 'visitorArrival', label: 'Visitor Arrivals', enabled: true, important: false },
+    { key: 'visitorAlerts', label: 'Visitor alerts', enabled: true, important: false },
     { key: 'billingReminders', label: 'Billing Reminders', enabled: false, important: false },
   ]),
   updateNotificationPreference: jest.fn(),
@@ -39,9 +39,10 @@ describe('NotificationSettingsScreen', () => {
       </ThemeProvider>
     );
 
-    expect(screen.getByText('Notification Settings')).toBeOnTheScreen();
-    expect(screen.getByText('GRANTED')).toBeOnTheScreen();
-    expect(screen.getByText('Visitor Arrivals')).toBeOnTheScreen();
+    expect(screen.getByText('Notifications')).toBeOnTheScreen();
+    expect(screen.getByText('Notifications are on.')).toBeOnTheScreen();
+    expect(screen.getByText('Visitors')).toBeOnTheScreen();
+    expect(screen.getByText('Always on')).toBeOnTheScreen();
   });
 
   it('triggers send test notification action', async () => {
@@ -52,7 +53,7 @@ describe('NotificationSettingsScreen', () => {
       </ThemeProvider>
     );
 
-    const testBtn = screen.getByRole('button', { name: 'Trigger Test Notification' });
+    const testBtn = screen.getByRole('button', { name: /Test notification/ });
     expect(testBtn).toBeOnTheScreen();
     fireEvent.press(testBtn);
 

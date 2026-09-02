@@ -4,6 +4,7 @@ import { useAppTheme } from "../../../../shared/theme/useAppTheme";
 import { ResidentHomeContextCard } from "./ResidentHomeContextCard";
 import type { ResidentHomeContext } from "../data/residentHomeContext.types";
 import { styles, createSafeTextColorStyle } from "../styles/components/ResidentHomeContextSummary.styles";
+import { useMessages } from "../../../../shared/constants/useMessages";
 export function ResidentHomeContextSummary({ contexts, activeHomeContextId, switchingHomeContextId, onSelectContext, }: {
     contexts: ResidentHomeContext[];
     activeHomeContextId: string;
@@ -11,23 +12,14 @@ export function ResidentHomeContextSummary({ contexts, activeHomeContextId, swit
     onSelectContext: (ctx: ResidentHomeContext) => void;
 }) {
     const { colors } = useAppTheme();
-    const grouped = contexts.reduce<Record<string, {
-        name: string;
-        items: ResidentHomeContext[];
-    }>>((acc, item) => {
-        const group = acc[item.societyId] ?? { name: item.societyName, items: [] };
-        group.items.push(item);
-        acc[item.societyId] = group;
-        return acc;
-    }, {});
+    const copy = useMessages().resident.homeContext;
+    const ordered = [...contexts].sort((left, right) => Number(right.homeContextId === activeHomeContextId) - Number(left.homeContextId === activeHomeContextId));
     return (<View style={styles.container}>
-      {Object.entries(grouped).map(([societyId, group]) => (<View key={societyId} style={styles.group}>
-          <SafeText variant="bodyStrong" style={[styles.societyTitle, createSafeTextColorStyle(colors.textSecondary)]}>
-            {group.name}
-          </SafeText>
-          {group.items.map((ctx) => (<ResidentHomeContextCard key={ctx.homeContextId} context={ctx} isActive={activeHomeContextId === ctx.homeContextId} isSwitching={switchingHomeContextId === ctx.homeContextId} isInteractionDisabled={switchingHomeContextId !== null && switchingHomeContextId !== ctx.homeContextId} onPress={() => onSelectContext(ctx)}/>))}
+      <SafeText variant="tiny" style={[styles.societyTitle, createSafeTextColorStyle(colors.success)]}>{copy.currentHome}</SafeText>
+      {ordered.map((ctx, index) => (<View key={ctx.homeContextId} style={index === 1 ? styles.otherHomesStart : undefined}>
+          {index === 1 ? <SafeText variant="tiny" style={[styles.otherHomesLabel, createSafeTextColorStyle(colors.textMuted)]}>{copy.otherHomes}</SafeText> : null}
+          <ResidentHomeContextCard context={ctx} isActive={activeHomeContextId === ctx.homeContextId} isSwitching={switchingHomeContextId === ctx.homeContextId} isInteractionDisabled={switchingHomeContextId !== null && switchingHomeContextId !== ctx.homeContextId} onPress={() => onSelectContext(ctx)}/>
         </View>))}
     </View>);
 }
 export default ResidentHomeContextSummary;
-

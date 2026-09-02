@@ -28,10 +28,9 @@ export function PrivateComplaintPlaceholderScreen({ navigation }: NavigationOnly
         ]}/>
 
         <View style={styles.action}>
-          <AppButton title={localizedUiText.m_dba374edce89} onPress={() => navigation.navigate('CreateComplaint')} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF"/>}/>
+          <AppButton title={localizedUiText.m_dba374edce89} onPress={() => navigation.navigate('CreateComplaint')} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color={theme.selectedForeground}/>}/>
         </View>
       </ScrollView>
     </View>);
 }
 export default PrivateComplaintPlaceholderScreen;
-

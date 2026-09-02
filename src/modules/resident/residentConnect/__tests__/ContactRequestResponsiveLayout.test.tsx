@@ -5,11 +5,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 describe('contact request responsive layout', () => {
-  it('uses 16 point small-phone padding and a bounded tablet content width', () => {
-    expect(resolveResponsiveLayout(320, 640).screenPadding).toBe(16);
+  it('uses compact-phone padding and a bounded tablet content width', () => {
+    expect(resolveResponsiveLayout(320, 640).screenPadding).toBe(12);
     expect(resolveResponsiveLayout(1024, 768).isTablet).toBe(true);
     expect(Layout.maxTabletContentWidth).toBe(680);
-    expect(resolveResidentTabBarObstruction(1024, 24, 'ios')).toBe(96);
+    expect(resolveResidentTabBarObstruction(1024, 24, 'ios')).toBe(100);
   });
 
   it('does not use negative margins or absolute form text positioning', () => {

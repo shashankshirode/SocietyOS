@@ -39,7 +39,7 @@ export function TemporaryVehiclePassScreen() {
       <ResidentPageHeader title={localizedUiText.m_256abeda81af}/>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {created ? (<VisitorPassPanel visitorName={form.vehicleNumber} visitorType="Guest Vehicle Pass" purpose={String(localizedUiText.m_6494690a5ff8)} validFrom="Today" validTill={`Next ${form.durationDays} day(s)`} gateName="Main Gate" otpCode="8801"/>) : (<View style={styles.form}>
+        {created ? (<VisitorPassPanel visitorName={form.vehicleNumber} visitorType="Guest Vehicle Pass" purpose={String(localizedUiText.m_6494690a5ff8)} validFrom="Today" validTill={`Next ${form.durationDays} day(s)`} gateName="Main Gate"/>) : (<View style={styles.form}>
             <FormField label={localizedUiText.m_f3d04f43d049} value={form.vehicleNumber} onChangeText={(val) => setForm({ ...form, vehicleNumber: val })} placeholder={localizedUiText.m_949f403fa432}/>
             <FormField label={localizedUiText.m_28f9e3229a53} value={form.driverName} onChangeText={(val) => setForm({ ...form, driverName: val })} placeholder={localizedUiText.m_a02c7b55675c}/>
             <FormField label={localizedUiText.m_d484da37566f} value={form.durationDays} onChangeText={(val) => setForm({ ...form, durationDays: val })} placeholder={localizedUiText.m_b1fd798deb7a} keyboardType="number-pad"/>
@@ -52,4 +52,3 @@ export function TemporaryVehiclePassScreen() {
     </View>);
 }
 export default TemporaryVehiclePassScreen;
-

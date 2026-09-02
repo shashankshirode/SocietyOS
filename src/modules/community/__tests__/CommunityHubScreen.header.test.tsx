@@ -24,8 +24,8 @@ describe('CommunityHomeScreen Header', () => {
       <CommunityHomeScreen navigation={navigationMock} />
     );
 
-    expect(screen.getByText('Community Hub')).toBeOnTheScreen();
-    expect(screen.getByText('Marketplace, skills, borrow and lend')).toBeOnTheScreen();
+    expect(screen.getByText('Around your community')).toBeOnTheScreen();
+    expect(screen.getByText('Useful, local and close to home.')).toBeOnTheScreen();
   });
 
   it('does not render duplicate local header', async () => {

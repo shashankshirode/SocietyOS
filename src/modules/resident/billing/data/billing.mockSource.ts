@@ -9,6 +9,8 @@ import type { ResidentRepositoryRequestContext } from '../../homeContext/data/re
 import { matchesResidentRepositoryContext } from '../../homeContext/utils/matchesResidentRepositoryContext';
 import type { ResidentBillingRepository } from './residentBilling.repository.types';
 import type { BillListFilter, ResidentBillListPage, ResidentBillListPageRequest, ResidentLedgerEntry, ResidentLedgerPage, ResidentLedgerPageRequest, } from './residentBilling.types';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
+import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import type { Absent } from "../../../../shared/types/absence.types";
 const MAX_PAGE_SIZE = 50;
 function matchesFilter(bill: Bill, filter: BillListFilter): boolean {
@@ -22,9 +24,6 @@ function matchesFilter(bill: Bill, filter: BillListFilter): boolean {
     return true;
 }
 function getScopedBills(context: ResidentRepositoryRequestContext): Bill[] {
-    if (context.activeHome.residentRole === 'familyMember') {
-        return [];
-    }
     return mockStore
         .getState()
         .bills
@@ -247,13 +246,42 @@ const residentBillingMockRepository: ResidentBillingRepository = {
             });
         }
         
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Resident';
+        const actorId = session?.userId ?? 'usr-resident-01';
+
         mockStore.addLedgerEntry({
             id: `payment:${transactionId}`,
             date: paymentDate,
             type: 'CREDIT' as const,
             unitId: residenceId,
-            description: isAdvance ? `Advance Maintenance Payment` : `Maintenance Payment Received`,
+            description: isAdvance ? `Advance Maintenance Payment by ${actorName}` : `Maintenance Payment Received from ${actorName}`,
             amount: input.amount,
+        });
+
+        void domainEventBus.emit({
+            eventId: `evt-pay-${transactionId}`,
+            eventType: 'billing.payment.settled',
+            societyId: requestContext.activeHome.societyId,
+            unitId: residenceId,
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'BillPayment',
+                entityId: transactionId,
+            },
+            severity: 'INFO',
+            createdAtIso: paymentDate,
+            correlationId: `corr-${transactionId}`,
+            payload: {
+                amount: input.amount,
+                billTitle: isAdvance ? 'Advance Maintenance' : 'Maintenance Dues',
+                receiptNumber,
+            },
         });
         
         return repositorySuccess({ transactionId, receiptNumber, paymentDate });

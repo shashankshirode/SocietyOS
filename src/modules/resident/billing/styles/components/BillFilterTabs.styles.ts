@@ -14,13 +14,13 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-export function createSafeTextColorStyle(colorValue: "#FFFFFF" | "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827" | "#4E46E5" | "#9DA5FF", borderColorValue: "#4E46E5" | "#9DA5FF" | "#253149" | "#E2E6EE") {
+export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

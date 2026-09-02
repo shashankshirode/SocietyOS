@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { AsyncStatus } from './AsyncState';
 
 export type PageInfo = {
   nextCursor: string | null;
@@ -18,6 +19,7 @@ export function usePaginatedList<TItem extends { id: string }>(
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [status, setStatus] = useState<AsyncStatus>(AsyncStatus.IDLE);
   const [error, setError] = useState<Error | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -29,14 +31,17 @@ export function usePaginatedList<TItem extends { id: string }>(
     if (initialRequestInFlight.current) return;
     initialRequestInFlight.current = true;
     setIsLoading(true);
+    setStatus(AsyncStatus.INITIAL_LOADING);
     setError(null);
     try {
       const result = await fetchPage(null);
       setItems(result.items);
       setNextCursor(result.pageInfo.nextCursor);
       setHasNextPage(result.pageInfo.hasNextPage);
+      setStatus(AsyncStatus.SUCCESS);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)));
+      setStatus(AsyncStatus.ERROR);
     } finally {
       initialRequestInFlight.current = false;
       setIsLoading(false);
@@ -47,6 +52,7 @@ export function usePaginatedList<TItem extends { id: string }>(
     if (initialRequestInFlight.current || nextPageRequestInFlight.current || !hasNextPage || !nextCursor) return;
     nextPageRequestInFlight.current = true;
     setIsLoadingMore(true);
+    setStatus(AsyncStatus.LOADING_MORE);
     try {
       const result = await fetchPage(nextCursor);
       setItems((prev) => {
@@ -56,8 +62,10 @@ export function usePaginatedList<TItem extends { id: string }>(
       });
       setNextCursor(result.pageInfo.nextCursor);
       setHasNextPage(result.pageInfo.hasNextPage);
+      setStatus(AsyncStatus.SUCCESS);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)));
+      setStatus(AsyncStatus.ERROR);
     } finally {
       nextPageRequestInFlight.current = false;
       setIsLoadingMore(false);
@@ -68,14 +76,17 @@ export function usePaginatedList<TItem extends { id: string }>(
     if (refreshRequestInFlight.current) return;
     refreshRequestInFlight.current = true;
     setIsRefreshing(true);
+    setStatus(AsyncStatus.REFRESHING);
     setError(null);
     try {
       const result = await fetchPage(null);
       setItems(result.items);
       setNextCursor(result.pageInfo.nextCursor);
       setHasNextPage(result.pageInfo.hasNextPage);
+      setStatus(AsyncStatus.SUCCESS);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)));
+      setStatus(AsyncStatus.ERROR);
     } finally {
       refreshRequestInFlight.current = false;
       setIsRefreshing(false);
@@ -84,6 +95,7 @@ export function usePaginatedList<TItem extends { id: string }>(
 
   return {
     items,
+    status,
     isLoading,
     isLoadingMore,
     isRefreshing,

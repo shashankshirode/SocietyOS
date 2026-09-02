@@ -1,4 +1,5 @@
 import React from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useReducedMotion } from '../../shared/motion/useReducedMotion';
 import { includeWhenPresent } from '../../shared/utils/presentProperty';
@@ -8,7 +9,7 @@ interface ListItemAnimatorProps {
   children: React.ReactNode;
   index: number;
   maxStagger?: number;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function ListItemAnimator({

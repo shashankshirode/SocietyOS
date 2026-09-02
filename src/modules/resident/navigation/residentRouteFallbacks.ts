@@ -1,0 +1,89 @@
+export interface RouteFallbackTarget {
+  readonly tab: string;
+  readonly screen?: string;
+}
+
+export const RESIDENT_ROUTE_FALLBACKS: Record<string, RouteFallbackTarget> = {
+  // Facilities / Spaces
+  FacilityDetail: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilitySlotAvailability: { tab: 'HomeTab', screen: 'FacilityList' },
+  CreateFacilityBooking: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilityBookingReview: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilityBookingConsent: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilityPayment: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilityBookingConfirmation: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+  MyFacilityBookings: { tab: 'HomeTab', screen: 'FacilityList' },
+  FacilityBookingDetail: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+  CancelFacilityBooking: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+  RescheduleFacilityBooking: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+  FacilityQrCheckIn: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+  FacilityBookingHistory: { tab: 'HomeTab', screen: 'MyFacilityBookings' },
+
+  // Visitors
+  VisitorDetail: { tab: 'VisitorTab', screen: 'VisitorList' },
+  VisitorDetailFromHome: { tab: 'VisitorTab', screen: 'VisitorList' },
+  CreateVisitorPass: { tab: 'VisitorTab', screen: 'VisitorList' },
+  CreateVisitorFromHome: { tab: 'VisitorTab', screen: 'VisitorList' },
+
+  // Complaints
+  ComplaintDetail: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+  ComplaintDetailFromHome: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+  CreateComplaint: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+  CreateComplaintFromHome: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+  ComplaintReopen: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+  ComplaintFeedback: { tab: 'ComplaintTab', screen: 'ComplaintList' },
+
+  // Billing
+  BillDetail: { tab: 'BillTab', screen: 'BillList' },
+  MockPaymentConfirmation: { tab: 'BillTab', screen: 'BillList' },
+  AdvancePayment: { tab: 'BillTab', screen: 'BillList' },
+  PaymentSuccess: { tab: 'BillTab', screen: 'BillList' },
+  FlatLedger: { tab: 'BillTab', screen: 'BillList' },
+
+  // Notices
+  NoticeDetail: { tab: 'HomeTab', screen: 'NoticeListFromHome' },
+  NoticeDetailFromHome: { tab: 'HomeTab', screen: 'NoticeListFromHome' },
+  NoticeListFromHome: { tab: 'HomeTab', screen: 'ResidentHome' },
+
+  // Documents
+  DocumentVaultHome: { tab: 'HomeTab', screen: 'ResidentHome' },
+  MyDocuments: { tab: 'HomeTab', screen: 'DocumentVaultHome' },
+  SocietyDocuments: { tab: 'HomeTab', screen: 'DocumentVaultHome' },
+  DocumentDetail: { tab: 'HomeTab', screen: 'DocumentVaultHome' },
+  UploadDocument: { tab: 'HomeTab', screen: 'DocumentVaultHome' },
+  DocumentAccessLog: { tab: 'HomeTab', screen: 'DocumentVaultHome' },
+
+  // NOC & Move Out
+  NocRequestList: { tab: 'HomeTab', screen: 'ResidentHome' },
+  CreateNocRequest: { tab: 'HomeTab', screen: 'NocRequestList' },
+  NocRequestDetail: { tab: 'HomeTab', screen: 'NocRequestList' },
+  MoveOutRequest: { tab: 'HomeTab', screen: 'NocRequestList' },
+  MoveOutClearanceChecklist: { tab: 'HomeTab', screen: 'NocRequestList' },
+  NocCertificate: { tab: 'HomeTab', screen: 'NocRequestList' },
+
+  // Household & Tenancy
+  HouseholdOverview: { tab: 'HomeTab', screen: 'ResidentHome' },
+  FamilyMemberList: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  AddFamilyMember: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  EditFamilyMember: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  FamilyMemberDetail: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  FamilyAccessPermissions: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  TenantManagement: { tab: 'HomeTab', screen: 'HouseholdOverview' },
+  TenantDetail: { tab: 'HomeTab', screen: 'TenantManagement' },
+  AddTenantStart: { tab: 'HomeTab', screen: 'TenantManagement' },
+
+  // Chat & Connect
+  ResidentConversation: { tab: 'ChatTab', screen: 'ResidentChatHome' },
+  ResidentDirectConversation: { tab: 'ChatTab', screen: 'ResidentChatHome' },
+  ResidentContactRequests: { tab: 'ChatTab', screen: 'ResidentChatHome' },
+  ResidentDirectorySelection: { tab: 'ChatTab', screen: 'ResidentChatHome' },
+  NewResidentContactRequest: { tab: 'ChatTab', screen: 'ResidentChatHome' },
+
+  // Profile & Settings
+  ResidentProfile: { tab: 'HomeTab', screen: 'ResidentHome' },
+  NotificationPreferences: { tab: 'HomeTab', screen: 'ResidentProfile' },
+  PrivacySettings: { tab: 'HomeTab', screen: 'ResidentProfile' },
+  LanguageSelection: { tab: 'HomeTab', screen: 'ResidentProfile' },
+  SecuritySettings: { tab: 'HomeTab', screen: 'ResidentProfile' },
+  HelpSupport: { tab: 'HomeTab', screen: 'ResidentProfile' },
+};

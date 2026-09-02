@@ -10,7 +10,14 @@ import type { Absent } from "../../../../shared/types/absence.types";
 export const noticeApiSource = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Notice[]>> {
         try {
-            const dtos = await apiClient.get<NoticeDto[]>(apiEndpoints.notices.list);
+            const dtos = await apiClient.get<NoticeDto[]>(apiEndpoints.notices.list, context ? {
+                context: {
+                    societyId: context.activeHome.societyId,
+                    unitId: context.activeHome.unitId,
+                    ...context.activeHome.locale ? { locale: context.activeHome.locale } : {},
+                    ...context.activeHome.timezone ? { timezone: context.activeHome.timezone } : {},
+                },
+            } : undefined);
             return repositorySuccess(dtos.map(mapNoticeDtoToDomain));
         }
         catch (error) {

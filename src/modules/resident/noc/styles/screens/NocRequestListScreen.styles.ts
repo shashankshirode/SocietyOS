@@ -76,64 +76,64 @@ export const styles = StyleSheet.create({
         shadowRadius: 4,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         marginTop: 16
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         textAlign: 'center',
         marginTop: 8
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#FFFFFF" | "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createSafeTextColorStyle4(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle4(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle5(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle5(colorValue: string) {
     return {
         color: colorValue,
         flex: 1
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle2(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827" | "#4E46E5" | "#9DA5FF", borderColorValue: "transparent" | "#253149" | "#E2E6EE") {
+export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle3(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
+export function createViewBackgroundColorStyle3(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBorderTopColorStyle(borderTopColorValue: "#253149" | "#E2E6EE") {
+export function createViewBorderTopColorStyle(borderTopColorValue: string) {
     return {
         borderTopColor: borderTopColorValue
     } as const;
@@ -143,7 +143,7 @@ export function createViewBottomStyle(bottomValue: number) {
         bottom: bottomValue
     } as const;
 }
-export function createPressableScaleBackgroundColorStyle(backgroundColorValue: "#4E46E5" | "#9DA5FF") {
+export function createPressableScaleBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

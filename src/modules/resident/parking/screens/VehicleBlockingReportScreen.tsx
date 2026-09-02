@@ -1,6 +1,6 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState } from "react";
-import { View, ScrollView, Switch } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
@@ -10,6 +10,7 @@ import { FormField } from "../../../../shared/forms/FormField";
 import { AppButton } from "../../../../shared/components/AppButton";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { PressableScale } from "../../../../shared/motion/PressableScale";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { useCreateParkingIncident } from "../data/useCreateParkingIncident";
 import type { VehicleBlockingReportScreenProps } from "../../../../app/navigation/navigation.types";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
@@ -100,7 +101,7 @@ export function VehicleBlockingReportScreen({ navigation, route }: VehicleBlocki
                 <SafeText variant="bodyStrong" style={createSafeTextColorStyle5(theme.textPrimary)}>{localizedUiText.m_92ec94d5dc73}</SafeText>
                 <SafeText variant="tiny" style={createSafeTextColorStyle6(theme.textSecondary)}>{localizedUiText.m_4e2aac177754}</SafeText>
               </View>
-              <Switch value={form.immediateHelp} onValueChange={(val) => setForm({ ...form, immediateHelp: val })} trackColor={{ false: theme.border, true: theme.accent }}/>
+              <SocietySwitch value={form.immediateHelp} onValueChange={(val) => setForm({ ...form, immediateHelp: val })}/>
             </View>
           </View>)}
       </ScrollView>
@@ -112,4 +113,3 @@ export function VehicleBlockingReportScreen({ navigation, route }: VehicleBlocki
     </View>);
 }
 export default VehicleBlockingReportScreen;
-

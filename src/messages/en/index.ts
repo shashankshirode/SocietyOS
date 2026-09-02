@@ -205,6 +205,9 @@ export const enMessages = {
     residentAccessibility: residentAccessibilityMessages,
     tabs: {
         home: 'Home',
+        activity: 'Activity',
+        community: 'Community',
+        services: 'Services',
         visitors: 'Visitors',
         complaints: 'Complaints',
         bills: 'Bills',
@@ -534,4 +537,3 @@ export const enMessages = {
 } as const;
 export type EnglishMessagesType = typeof enMessages;
 export default enMessages;
-

@@ -3,6 +3,7 @@ import {  fireEvent } from '@testing-library/react-native';
 import { renderWithProviders } from '../../../../test/testUtils';
 import { EmergencyFloatingAction } from '../components/EmergencyFloatingAction';
 import type { NavigationState } from '@react-navigation/native';
+import { sosEventMockSource } from '../data/sosEvent.mockSource';
 
 let mockRouteName = 'Dashboard';
 
@@ -34,6 +35,7 @@ jest.mock('react-native', () => {
 describe('EmergencyFloatingAction', () => {
   beforeEach(() => {
     mockRouteName = 'Dashboard';
+    sosEventMockSource._resetAll();
   });
 
   it('renders floating SOS trigger button by default', async () => {
@@ -47,11 +49,11 @@ describe('EmergencyFloatingAction', () => {
     expect(toJSON()).toBeNull();
   });
 
-  it('opens command dock when trigger button is clicked', async () => {
+  it('enters Crisis Mode when the SOS trigger is pressed', async () => {
     const { getByLabelText, findByText } = await renderWithProviders(<EmergencyFloatingAction />);
     const btn = getByLabelText('Open SOS Command Dock');
     fireEvent.press(btn);
 
-    expect(await findByText('Emergency Command Dock')).toBeTruthy();
+    expect(await findByText('What do you need right now?')).toBeTruthy();
   });
 });

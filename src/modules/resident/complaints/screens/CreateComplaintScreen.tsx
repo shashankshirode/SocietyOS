@@ -1,17 +1,18 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { useState } from "react";
-import { View, ScrollView, Switch, Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRef, useState } from "react";
+import { View, Pressable, type TextInput } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
 import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { ResidentWorkflowStepper } from "../../../../ui/patterns/ResidentWorkflowStepper";
 import { FormField } from "../../../../shared/forms/FormField";
+import { KeyboardAwareForm } from "../../../../shared/forms/KeyboardAwareForm";
 import { AppButton } from "../../../../shared/components/AppButton";
 import { PressableScale } from "../../../../shared/motion/PressableScale";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { WrapRow } from "../../../../ui/layout/WrapRow";
 import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { useCreateComplaint } from "../hooks/useCreateComplaint";
 import type { ComplaintCategory } from "../../../../shared/types/complaint.types";
 import { useMessages } from "../../../../shared/constants/useMessages";
@@ -21,7 +22,6 @@ import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafe
 export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps) {
     const localizedUiText = useMessages().uiLiterals;
     const theme = useResidentTheme();
-    const insets = useSafeAreaInsets();
     const messages = useMessages();
     const { submit, isSubmitting } = useCreateComplaint();
     const STEPS = [
@@ -59,9 +59,21 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
         isPrivate: false,
         hasEvidence: false
     });
+    const titleInputRef = useRef<TextInput>(null);
+    const descriptionInputRef = useRef<TextInput>(null);
+    const locationInputRef = useRef<TextInput>(null);
+    const [fieldErrors, setFieldErrors] = useState({ title: '', description: '' });
     const nextStep = () => {
         if (stepIndex === 1 && (!form.title || !form.description)) {
-            AppAlert.alert(messages.resident.errors.generic || String(localizedUiText.m_54a0e8c17ebb), messages.complaints.reasonRequiredMessage || String(localizedUiText.m_e5597d9a8abe));
+            const nextErrors = {
+                title: form.title.trim() ? '' : messages.validation.required(messages.complaints.titleSummaryLabel),
+                description: form.description.trim() ? '' : messages.validation.required(messages.complaints.detailedDescriptionLabel),
+            };
+            setFieldErrors(nextErrors);
+            requestAnimationFrame(() => {
+                if (nextErrors.title) titleInputRef.current?.focus();
+                else descriptionInputRef.current?.focus();
+            });
             return;
         }
         if (stepIndex < STEPS.length - 1) {
@@ -91,11 +103,14 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
             AppAlert.alert(messages.resident.errors.generic || String(localizedUiText.m_54a0e8c17ebb), res.error.message || String(localizedUiText.m_dc09d02ba5d1));
         }
     };
+    const command = <View style={[styles.formCommand, createViewPaddingBottomBorderTopColorBackgroundColorStyle(12, theme.border, theme.background)]}>
+      {stepIndex < STEPS.length - 1 ? (<AppButton title={messages.complaints.nextStepButton || localizedUiText.m_226366c3301a} onPress={nextStep} iconRight={<Ionicons name="arrow-forward-outline" size={18} color={theme.selectedForeground}/>}/>) : (<AppButton title={messages.complaints.submitButton || localizedUiText.m_a7435f2157a8} onPress={handleCreate} loading={isSubmitting} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color={theme.selectedForeground}/>}/>)}
+    </View>;
     return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
       <ResidentPageHeader titleKey="complaints.createTitle" title={localizedUiText.m_8171f68f4572} {...includeWhenPresent("onBackPress", stepIndex > 0 ? prevStep : undefined)}/>
       <ResidentWorkflowStepper steps={STEPS} currentStepIndex={stepIndex}/>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareForm command={command} contentStyle={styles.scrollContent} testID="complaint-keyboard-aware-form">
         {stepIndex === 0 && (<View style={styles.formContainer}>
             <SafeText variant="bodyStrong" style={createSafeTextColorStyle(theme.textPrimary)}>
               {messages.complaints.selectCategoryHeader}
@@ -106,10 +121,10 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
                 return (<PressableScale key={c.key} onPress={() => setForm({ ...form, category: c.key })} style={styles.gridItem}>
                     <View style={[
                         styles.catCard,
-                        createViewBackgroundColorBorderColorStyle(isSelected ? theme.accent : theme.surface, isSelected ? 'transparent' : theme.border),
+                        createViewBackgroundColorBorderColorStyle(isSelected ? theme.selectedBackground : theme.surface, isSelected ? theme.selectedBorder : theme.border),
                     ]}>
-                      <Ionicons name={c.icon as keyof typeof Ionicons.glyphMap} size={22} color={isSelected ? '#FFFFFF' : theme.accent}/>
-                      <SafeText variant="caption" style={createSafeTextColorStyle2(isSelected ? '#FFFFFF' : theme.textPrimary)}>
+                      <Ionicons name={c.icon as keyof typeof Ionicons.glyphMap} size={22} color={isSelected ? theme.selectedForeground : theme.accent}/>
+                      <SafeText variant="caption" style={createSafeTextColorStyle2(isSelected ? theme.selectedForeground : theme.textPrimary)}>
                         {c.label}
                       </SafeText>
                     </View>
@@ -122,9 +137,9 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
             <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.textPrimary)}>
               {messages.complaints.describeIssueHeader}
             </SafeText>
-            <FormField label={messages.complaints.titleSummaryLabel} value={form.title} onChangeText={(val) => setForm({ ...form, title: val })} placeholder={messages.complaints.titleSummaryPlaceholder}/>
-            <FormField label={messages.complaints.detailedDescriptionLabel} value={form.description} onChangeText={(val) => setForm({ ...form, description: val })} placeholder={messages.complaints.detailedDescriptionPlaceholder} multiline numberOfLines={4}/>
-            <FormField label={messages.complaints.locationLabel} value={form.location} onChangeText={(val) => setForm({ ...form, location: val })} placeholder={messages.complaints.locationPlaceholder}/>
+            <FormField ref={titleInputRef} label={messages.complaints.titleSummaryLabel} value={form.title} onChangeText={(val) => { setForm({ ...form, title: val }); if (fieldErrors.title) setFieldErrors((current) => ({ ...current, title: '' })); }} placeholder={messages.complaints.titleSummaryPlaceholder} error={fieldErrors.title} required returnKeyType="next" blurOnSubmit={false} onSubmitEditing={() => descriptionInputRef.current?.focus()}/>
+            <FormField ref={descriptionInputRef} label={messages.complaints.detailedDescriptionLabel} value={form.description} onChangeText={(val) => { setForm({ ...form, description: val }); if (fieldErrors.description) setFieldErrors((current) => ({ ...current, description: '' })); }} placeholder={messages.complaints.detailedDescriptionPlaceholder} error={fieldErrors.description} multiline numberOfLines={4} required/>
+            <FormField ref={locationInputRef} label={messages.complaints.locationLabel} value={form.location} onChangeText={(val) => setForm({ ...form, location: val })} placeholder={messages.complaints.locationPlaceholder} returnKeyType="done"/>
 
             <SafeText variant="caption" style={createSafeTextColorStyle4(theme.textSecondary)}>{messages.complaints.priorityLevelLabel}</SafeText>
             <WrapRow gap={8}>
@@ -133,9 +148,9 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
                 return (<PressableScale key={p.key} onPress={() => setForm({ ...form, priority: p.key })}>
                     <View style={[
                         styles.chip,
-                        createViewBackgroundColorBorderColorStyle2(isSelected ? theme.accent : theme.surface, isSelected ? 'transparent' : theme.border),
+                        createViewBackgroundColorBorderColorStyle2(isSelected ? theme.selectedBackground : theme.surface, isSelected ? theme.selectedBorder : theme.border),
                     ]}>
-                      <SafeText variant="tiny" style={createSafeTextColorStyle5(isSelected ? '#FFFFFF' : theme.textPrimary)}>
+                      <SafeText variant="tiny" style={createSafeTextColorStyle5(isSelected ? theme.selectedForeground : theme.textPrimary)}>
                         {p.label}
                       </SafeText>
                     </View>
@@ -153,7 +168,7 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
                   {messages.complaints.filePrivatelyDescription}
                 </SafeText>
               </View>
-              <Switch value={form.isPrivate} onValueChange={(val) => setForm({ ...form, isPrivate: val })} trackColor={{ false: theme.border, true: theme.accent }}/>
+              <SocietySwitch value={form.isPrivate} onValueChange={(val) => setForm({ ...form, isPrivate: val })}/>
             </View>
             {form.isPrivate && (<PrivacyNoticePanel description={messages.complaints.privateNoticeText}/>)}
           </View>)}
@@ -212,13 +227,7 @@ export function CreateComplaintScreen({ navigation }: NavigationOnlyScreenProps)
               </View>
             </View>
           </View>)}
-      </ScrollView>
-
-      
-      <View style={[styles.bottomBar, createViewPaddingBottomBorderTopColorBackgroundColorStyle(insets.bottom + 12, theme.border, theme.background)]}>
-        {stepIndex < STEPS.length - 1 ? (<AppButton title={messages.complaints.nextStepButton || localizedUiText.m_226366c3301a} onPress={nextStep} iconRight={<Ionicons name="arrow-forward-outline" size={18} color="#FFFFFF"/>}/>) : (<AppButton title={messages.complaints.submitButton || localizedUiText.m_a7435f2157a8} onPress={handleCreate} loading={isSubmitting} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF"/>}/>)}
-      </View>
+      </KeyboardAwareForm>
     </View>);
 }
 export default CreateComplaintScreen;
-

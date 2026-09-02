@@ -45,9 +45,9 @@ export function VisitorExitExtensionModal({ visible, currentExpectedExitAtIso, o
             return (<PressableScale key={minutes} onPress={() => setSelectedExitAtIso(optionIso)}>
                 <View style={[
                     styles.chip,
-                    createViewBackgroundColorBorderColorStyle(selected ? theme.accent : theme.surface, selected ? 'transparent' : theme.border),
+                    createViewBackgroundColorBorderColorStyle(selected ? theme.selectedBackground : theme.surface, selected ? theme.selectedBorder : theme.border),
                 ]}>
-                  <SafeText variant="tiny" style={createSafeTextColorStyle2(selected ? '#FFFFFF' : theme.textPrimary)}>
+                  <SafeText variant="tiny" style={createSafeTextColorStyle2(selected ? theme.selectedForeground : theme.textPrimary)}>
                     {formatVisitorExitTime(optionIso)}
                   </SafeText>
                 </View>
@@ -63,9 +63,9 @@ export function VisitorExitExtensionModal({ visible, currentExpectedExitAtIso, o
             return (<PressableScale key={key} onPress={() => setReasonKey(key)}>
                 <View style={[
                     styles.chip,
-                    createViewBackgroundColorBorderColorStyle2(selected ? theme.accent : theme.surface, selected ? 'transparent' : theme.border),
+                    createViewBackgroundColorBorderColorStyle2(selected ? theme.selectedBackground : theme.surface, selected ? theme.selectedBorder : theme.border),
                 ]}>
-                  <SafeText variant="tiny" style={createSafeTextColorStyle4(selected ? '#FFFFFF' : theme.textPrimary)}>
+                  <SafeText variant="tiny" style={createSafeTextColorStyle4(selected ? theme.selectedForeground : theme.textPrimary)}>
                     {t(messages, key)}
                   </SafeText>
                 </View>
@@ -76,4 +76,3 @@ export function VisitorExitExtensionModal({ visible, currentExpectedExitAtIso, o
       </View>
     </AppModal>);
 }
-

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { RepositoryError, RepositoryResult } from './repository.types';
+import { repositoryErrorFromUnknown, repositoryFailure, type RepositoryError, type RepositoryResult } from './repository.types';
 import { useLatestValue } from '../../shared/hooks/useLatestValue';
 import type { Absent } from "../../shared/types/absence.types";
 export function useRepositoryResult<T>(loader: () => Promise<RepositoryResult<T>>, dependencies: React.DependencyList = []): {
@@ -11,11 +11,23 @@ export function useRepositoryResult<T>(loader: () => Promise<RepositoryResult<T>
     const [data, setData] = React.useState<T | Absent>(undefined);
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState<RepositoryError | null>(null);
+    const requestVersion = React.useRef(0);
     const dependencySignature = JSON.stringify(dependencies);
     const loaderHandle = useLatestValue(loader, dependencySignature);
     const load = React.useCallback(async () => {
+        const version = ++requestVersion.current;
         setIsLoading(true);
-        const result = await loaderHandle.valueRef.current();
+        setError(null);
+        let result: RepositoryResult<T>;
+        try {
+            result = await loaderHandle.valueRef.current();
+        }
+        catch (unknownError) {
+            result = repositoryFailure(repositoryErrorFromUnknown(unknownError as Error));
+        }
+        if (version !== requestVersion.current) {
+            return;
+        }
         if (result.ok) {
             setData(result.data);
             setError(null);
@@ -27,11 +39,19 @@ export function useRepositoryResult<T>(loader: () => Promise<RepositoryResult<T>
     }, [loaderHandle]);
     React.useEffect(() => {
         let isMounted = true;
+        const version = ++requestVersion.current;
         async function run() {
             setIsLoading(true);
             setError(null);
-            const result = await loaderHandle.valueRef.current();
-            if (!isMounted) {
+            setData(undefined);
+            let result: RepositoryResult<T>;
+            try {
+                result = await loaderHandle.valueRef.current();
+            }
+            catch (unknownError) {
+                result = repositoryFailure(repositoryErrorFromUnknown(unknownError as Error));
+            }
+            if (!isMounted || version !== requestVersion.current) {
                 return;
             }
             if (result.ok) {
@@ -46,6 +66,7 @@ export function useRepositoryResult<T>(loader: () => Promise<RepositoryResult<T>
         run();
         return () => {
             isMounted = false;
+            requestVersion.current += 1;
         };
     }, [loaderHandle]);
     return {
@@ -63,19 +84,41 @@ export function useRepositoryMutation<TInput, TOutput>(mutation: (input: TInput)
 } {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [error, setError] = React.useState<RepositoryError | null>(null);
+    const inFlight = React.useRef<Promise<RepositoryResult<TOutput>> | null>(null);
+    const isMounted = React.useRef(true);
+    const mutationVersion = React.useRef(0);
+    React.useEffect(() => () => {
+        isMounted.current = false;
+        mutationVersion.current += 1;
+    }, []);
     const submit = React.useCallback(async (input: TInput) => {
+        if (inFlight.current) {
+            return inFlight.current;
+        }
         setIsSubmitting(true);
-        const result = await mutation(input);
+        setError(null);
+        const version = ++mutationVersion.current;
+        const request = (async (): Promise<RepositoryResult<TOutput>> => {
+            try {
+                return await mutation(input);
+            }
+            catch (unknownError) {
+                return repositoryFailure(repositoryErrorFromUnknown(unknownError as Error));
+            }
+        })();
+        inFlight.current = request;
+        const result = await request;
+        inFlight.current = null;
+        if (!isMounted.current || version !== mutationVersion.current) {
+            return result;
+        }
         setIsSubmitting(false);
-        if (result.ok) {
-            setError(null);
-        }
-        else {
-            setError(result.error);
-        }
+        setError(result.ok ? null : result.error);
         return result;
     }, [mutation]);
     const reset = React.useCallback(() => {
+        mutationVersion.current += 1;
+        inFlight.current = null;
         setError(null);
         setIsSubmitting(false);
     }, []);
@@ -86,4 +129,3 @@ export function useRepositoryMutation<TInput, TOutput>(mutation: (input: TInput)
         reset,
     };
 }
-

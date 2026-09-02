@@ -11,9 +11,13 @@ import type { FacilityBookingListParams, FacilityListParams } from './facility.d
 import { getResidentMockRecords } from '../../mock/residentMockRegistry';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import { mockResidentFacilityAmenities } from './residentFacilityBooking.mockData';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
+import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import { getRequiredItem } from '../../../../shared/utils/requiredItem';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
+import { evaluateCapability } from '../../../../core/permissions/capabilityEngine';
+import { MOCK_PERSONAS } from '../../../../core/identity/personaRegistry';
 function matchesQuery(query: string | Absent, values: string[]) {
     const normalized = query?.trim().toLowerCase();
     return !normalized || values.some((value) => value.toLowerCase().includes(normalized));
@@ -148,9 +152,40 @@ export const facilityMockSource = {
     },
     async createFacilityBooking(input: CreateFacilityBookingInput): Promise<RepositoryResult<FacilityBooking>> {
         await withMockDelay();
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Resident';
+        const actorId = session?.userId ?? 'usr-resident-01';
+        const context = resolveRequestContext();
+
+        // 1. Dynamic permission revalidation
+        if (session?.personaKey && MOCK_PERSONAS[session.personaKey as keyof typeof MOCK_PERSONAS]) {
+            const persona = MOCK_PERSONAS[session.personaKey as keyof typeof MOCK_PERSONAS];
+            const cap = evaluateCapability(
+                persona,
+                (input.chargeAmount ?? 0) > 0 ? 'FACILITY_BOOK_PAID' : 'FACILITY_BOOK_FREE',
+                { bookingCost: input.chargeAmount ?? 0 }
+            );
+            if (cap.status === 'DENIED') {
+                return repositoryFailure({ code: 'PERMISSION_DENIED', message: 'You no longer have permission to book spaces for this home.' });
+            }
+        }
+
+        // 2. Transactional availability / slot race condition check
+        const existingBookings = mockStore.getState().facilityBookings;
+        const slotTaken = existingBookings.some(
+            (b) =>
+                b.facilityId === input.facilityId &&
+                b.date === input.date &&
+                b.slot === input.slot &&
+                b.status !== 'CANCELLED'
+        );
+        if (slotTaken) {
+            return repositoryFailure({ code: 'SLOT_UNAVAILABLE', message: 'This slot is no longer available. Please select another time slot.' });
+        }
+
         const booking: FacilityBooking = {
             id: `facility-booking-${Date.now()}`,
-            unitId: input.unitId,
+            unitId: input.unitId || context.activeHome.unitId,
             bookingNumber: `FB-GVH-2026-${Date.now().toString().slice(-5)}`,
             facilityId: input.facilityId,
             facilityName: input.facilityName,
@@ -158,8 +193,10 @@ export const facilityMockSource = {
             date: input.date,
             slot: input.slot,
             status: input.approvalRequired ? 'PENDING_APPROVAL' : 'CONFIRMED',
-            residentName: 'Shashank',
-            flatNumber: 'A-1204',
+            residentName: actorName,
+            createdByUserId: actorId,
+            createdByDisplayName: actorName,
+            flatNumber: context.activeHome.flatNumber,
             guestCount: input.guestCount,
             purpose: input.purpose,
             chargeAmount: input.chargeAmount,
@@ -175,6 +212,33 @@ export const facilityMockSource = {
             timeline: [{ id: `timeline-${Date.now()}`, title: 'Booking created', note: 'Created in mock mode.', createdAt: new Date().toISOString() }]
         };
         mockStore.addFacilityBooking(booking);
+
+        void domainEventBus.emit({
+            eventId: `evt-fb-${booking.id}`,
+            eventType: 'facility.booking.confirmed',
+            societyId: context.activeHome.societyId,
+            unitId: booking.unitId,
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'FacilityBooking',
+                entityId: booking.id,
+            },
+            severity: 'INFO',
+            createdAtIso: new Date().toISOString(),
+            correlationId: `corr-${booking.id}`,
+            payload: {
+                facilityName: booking.facilityName,
+                slotTime: `${booking.date} · ${booking.slot}`,
+                chargeAmount: booking.chargeAmount,
+                unitNumber: booking.flatNumber,
+            },
+        });
+
         return repositorySuccess(booking);
     },
     async getMyBookings(params: FacilityBookingListParams = {}): Promise<RepositoryResult<FacilityBooking[]>> {

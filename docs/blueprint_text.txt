@@ -1,5 +1,11 @@
 Society OS
 
+DOCUMENT STATUS NOTICE — 19 August 2026
+
+This v2.0 file is the original product blueprint and remains the source for product intent, business rules and long-term scope. It is not an accurate implementation-status report. The codebase has since added features that are not represented here, while many features described here currently exist only as mock-backed frontend workflows or integration-readiness screens.
+
+For the code-aligned feature inventory, current limitations, revised roadmap and release criteria, read docs/implementation-aligned-product-specification.md. Where the two documents differ about current implementation status, the implementation-aligned specification takes precedence. Neither document should treat a rendered screen as proof that its backend, third-party integration, security enforcement or production operations are complete.
+
 Enterprise Product Blueprint & Functional Specification
 
 For Indian Residential Communities, Standalone Buildings, Apartments, Villas, Complexes and Townships

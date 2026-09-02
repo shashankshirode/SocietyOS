@@ -135,7 +135,7 @@ export const mockResidentHomeContexts: ResidentHomeContext[] = [
   {
     homeContextId: 'context-006',
     societyId: 'society-pgh',
-    societyName: 'Palm Grove Heights',
+    societyName: 'Palm Grove Heights Residential Cooperative Society',
     societyAreaId: 'area-powai',
     societyAreaName: 'Powai',
     city: 'Mumbai',

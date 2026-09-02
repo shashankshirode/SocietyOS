@@ -1,94 +1,25 @@
-import { StyleSheet } from "react-native";
-export const styles = StyleSheet.create({
-    root: { flex: 1 },
-    scrollContent: { flexGrow: 1 },
-    contentFrame: {
-        paddingHorizontal: 0
-    },
-    restrictionNotice: {
-        marginTop: 20,
-        marginHorizontal: 8,
-        borderWidth: 1,
-        borderRadius: 14,
-        padding: 16,
-        gap: 6
-    },
-    sections: {
-        paddingTop: 24
-    },
-    widePhonePair: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 14
-    },
-    widePhonePairItem: {
-        flex: 1,
-        minWidth: 0
-    },
-    tabletColumns: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingTop: 28,
-        paddingHorizontal: 8
-    },
-    tabletLeft: {
-        flex: 7,
-        minWidth: 0
-    },
-    tabletRight: {
-        flex: 5,
-        minWidth: 0
-    }
-});
-export function createSafeTextColorStyle(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewGapStyle(gapValue: number) {
-    return {
-        gap: gapValue
-    } as const;
-}
-export function createViewGapStyle2(gapValue: number) {
-    return {
-        gap: gapValue
-    } as const;
-}
-export function createViewGapStyle3(gapValue: number) {
-    return {
-        gap: gapValue
-    } as const;
-}
-export function createViewGapStyle4(gapValue: number) {
-    return {
-        gap: gapValue
-    } as const;
-}
-export function createViewBackgroundColorStyle3(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createScrollViewPaddingBottomStyle(paddingBottomValue: number) {
-    return {
-        paddingBottom: paddingBottomValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
+import { StyleSheet } from 'react-native';
+import { Radius } from '../../../../../shared/theme/radius';
+import { Spacing } from '../../../../../shared/theme/spacing';
 
+export const createRootStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createScrollContentStyle = (topInset: number, bottomInset: number) => ({
+  paddingTop: topInset + 2,
+  paddingBottom: bottomInset + 56,
+});
+export const createContextBarStyle = (backgroundColor: string, borderColor: string) => ({ backgroundColor, borderColor });
+export const createContextSocietyStyle = (color: string) => ({ color });
+export const createRolePillStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createCommunityBorderStyle = (borderTopColor: string) => ({ borderTopColor });
+
+export const styles = StyleSheet.create({
+  root: { flex: 1 },
+  centeredState: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.md, padding: Spacing.xl },
+  scrollContent: { paddingHorizontal: 20, gap: 24 },
+  contextBar: { minHeight: 68, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  contextCopy: { flex: 1, gap: 2 },
+  contextSociety: { letterSpacing: 0.55, textTransform: 'uppercase' },
+  rolePill: { borderRadius: Radius.pill, paddingHorizontal: 12, paddingVertical: 7 },
+  greetingBlock: { gap: 4, paddingTop: 2, paddingBottom: 2 },
+  communityRow: { borderTopWidth: 1, paddingTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+});

@@ -53,11 +53,10 @@ export function PaymentSuccessScreen({ navigation, route }: PaymentSuccessScreen
         }))}/>
           </Animated.View>
           <Animated.View entering={FadeInUp.delay(300).duration(450)} style={styles.actions}>
-            <AppButton title={billing.backToDashboard} onPress={() => navigation.popToTop()} iconLeft={<Ionicons name="home-outline" size={18} color="#FFFFFF"/>}/>
+            <AppButton title={billing.backToDashboard} onPress={() => navigation.popToTop()} iconLeft={<Ionicons name="home-outline" size={18} color={theme.selectedForeground}/>}/>
           </Animated.View>
         </ContentFrame>
       </ScrollView>
     </View>);
 }
 export default PaymentSuccessScreen;
-

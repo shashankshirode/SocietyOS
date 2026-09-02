@@ -70,23 +70,23 @@ export const styles = StyleSheet.create({
     safeTextFontWeight: { fontWeight: '600' },
     safeTextFlex: { flex: 1 }
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createAnimatedViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createAnimatedViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle2(backgroundColorValue: "#1E1B4B" | "#E8E5FB") {
+export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827" | "#1E1B4B" | "#E8E5FB", borderColorValue: "#4E46E5" | "#9DA5FF" | "#253149" | "#E2E6EE") {
+export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
@@ -97,37 +97,37 @@ export function createSafeTextFontWeightStyle(fontWeightValue: "400" | "700") {
         fontWeight: fontWeightValue
     } as const;
 }
-export function createTextInputColorBorderColorBackgroundColorStyle(colorValue: "#101828" | "#F8FAFC", borderColorValue: "#253149" | "#E2E6EE", backgroundColorValue: "#FFFFFF" | "#111827") {
+export function createTextInputColorBorderColorBackgroundColorStyle(colorValue: string, borderColorValue: string, backgroundColorValue: string) {
     return {
         color: colorValue,
         borderColor: borderColorValue,
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createAnimatedViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createAnimatedViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createSafeTextColorStyle(colorValue: "#D8464A" | "#FF8588") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '600'
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#198A59" | "#5BD39A") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '600'
     } as const;
 }
-export function createViewBorderBottomColorStyle(borderBottomColorValue: "#253149" | "#E2E6EE") {
+export function createViewBorderBottomColorStyle(borderBottomColorValue: string) {
     return {
         borderBottomColor: borderBottomColorValue
     } as const;
 }
-export function createAnimatedViewBackgroundColorBorderColorStyle3(backgroundColorValue: "#FFFFFF" | "#111827", borderColorValue: "#253149" | "#E2E6EE") {
+export function createAnimatedViewBackgroundColorBorderColorStyle3(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

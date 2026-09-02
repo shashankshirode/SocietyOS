@@ -75,14 +75,12 @@ export function ReportDailyInsightModal({
   const handleSubmit = () => {
     setErrorText(null);
 
-    // Rate limiting check
     const rateCheck = checkReportRateLimit(userId);
     if (!rateCheck.allowed) {
       setErrorText(`Please wait ${rateCheck.waitSecondsRemaining} seconds before reporting another insight.`);
       return;
     }
 
-    // Validation checks
     const trimmedTitle = title.trim();
     if (trimmedTitle.length < 4) {
       setErrorText('Title must be at least 4 characters long.');
@@ -95,7 +93,6 @@ export function ReportDailyInsightModal({
       return;
     }
 
-    // Add advisory
     addUserReportedAdvisory(
       {
         societyId,
@@ -111,7 +108,6 @@ export function ReportDailyInsightModal({
       userId
     );
 
-    // Reset form
     setTitle('');
     setDescription('');
     setSelectedType('roadBlock');

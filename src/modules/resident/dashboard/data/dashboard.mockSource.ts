@@ -15,6 +15,7 @@ import { getRequiredItem } from "../../../../shared/utils/requiredItem";
 import { getRequiredProperty } from '../../../../shared/utils/requiredProperty';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
+import type { Visitor } from '../../../../shared/types/visitor.types';
 function visitorTimeWindow(ordinal: number): {
     validFrom: string;
     validTill: string;
@@ -253,6 +254,51 @@ function buildVisitorTimeline(context: ResidentRepositoryRequestContext): Visito
             } : {})
         };
     });
+}
+
+const visitorStatusToDashboardStatus: Record<Visitor['status'], VisitorStatus> = {
+    EXPECTED: 'upcoming',
+    WAITING_APPROVAL: 'upcoming',
+    APPROVED: 'upcoming',
+    CHECKED_IN: 'inside',
+    CHECKED_OUT: 'completed',
+    COMPLETED: 'completed',
+    REJECTED: 'completed',
+    EXPIRED: 'expired',
+    CANCELLED: 'completed'
+};
+
+function mapCreatedVisitorToDashboard(visitor: Visitor): VisitorAccessItem {
+    const visitorType: VisitorType = visitor.type === 'DELIVERY'
+        ? 'delivery'
+        : visitor.type === 'CAB'
+            ? 'cab'
+            : visitor.type === 'VENDOR'
+                ? 'vendor'
+                : 'guest';
+    return {
+        id: visitor.id,
+        visitorName: visitor.name,
+        visitorType,
+        accessType: 'limitedHours',
+        purpose: visitor.purpose,
+        validFrom: `${visitor.expectedDate}, ${visitor.expectedTime}`,
+        validTill: visitor.exitTracking?.expectedExitAtIso
+            ? new Date(visitor.exitTracking.expectedExitAtIso).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })
+            : visitor.expectedTime,
+        status: visitorStatusToDashboardStatus[visitor.status],
+        gateName: 'Main Gate',
+        otpAvailable: Boolean(visitor.otp),
+        ...includeWhenPresent('enteredAtLabel', visitor.actualEntryTime)
+    };
+}
+
+function getCreatedVisitors(context: ResidentRepositoryRequestContext): VisitorAccessItem[] {
+    const createdIdPrefix = `vis-${context.activeHome.homeContextId}-`;
+    return mockStore.getState().visitors
+        .filter((visitor) => matchesResidentRepositoryContext(visitor, context) && visitor.id.startsWith(createdIdPrefix))
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+        .map(mapCreatedVisitorToDashboard);
 }
 function buildMaintenancePayment(context: ResidentRepositoryRequestContext): MaintenancePaymentData {
     const allBills = mockStore.getState().bills;
@@ -689,6 +735,20 @@ export function getScopedDashboardData(context: ResidentRepositoryRequestContext
         : null;
     const generatedReminders = buildReminders(dashboardContext);
     const generatedActivities = buildActivities(dashboardContext);
+    const createdVisitors = getCreatedVisitors(dashboardContext);
+    const profileVisitors = profile?.visitorTimeline ?? buildVisitorTimeline(dashboardContext);
+    const visitorTimeline = orderDashboardVisitors([
+        ...createdVisitors,
+        ...profileVisitors.filter((visitor) => !createdVisitors.some((created) => created.id === visitor.id))
+    ]);
+    const createdVisitorActivities: HomeActivityItem[] = createdVisitors.map((visitor) => ({
+        id: `created-activity-${visitor.id}`,
+        title: `${visitor.visitorName} access updated`,
+        description: `${visitorStatusLabels[visitor.status]} · ${visitor.gateName}`,
+        module: 'visitor',
+        timestampLabel: visitor.validFrom,
+        dateGroupLabel: 'Visitor history'
+    }));
     return {
         contextKey: dashboardContext.dataScopeKey,
         residentProfileId: dashboardContext.residentProfileId,
@@ -705,7 +765,7 @@ export function getScopedDashboardData(context: ResidentRepositoryRequestContext
         pendingActionCount: profile?.reminders.length ?? getResidentMockRecords(dashboardContext, 'todaysPriority').length,
         reminders: profile?.reminders ?? generatedReminders,
         priorityActions: profile?.priorityActions ?? buildPriorityActions(dashboardContext),
-        visitorTimeline: orderDashboardVisitors(profile?.visitorTimeline ?? buildVisitorTimeline(dashboardContext)),
+        visitorTimeline,
         maintenancePayment: profile?.maintenancePayment ?? buildMaintenancePayment(dashboardContext),
         ...includeWhenPresent("complaintProgress", profile?.complaintProgress ?? buildComplaintProgress(dashboardContext)),
         ...includeWhenPresent("contactRequest", profile?.contactRequest ?? buildContactRequest(dashboardContext)),
@@ -715,7 +775,9 @@ export function getScopedDashboardData(context: ResidentRepositoryRequestContext
         amenities: profile?.amenities ?? buildAmenities(dashboardContext),
         emergencyActions: profile?.emergencyActions ?? buildEmergencyActions(dashboardContext),
         communityServices: profile?.communityServices ?? buildCommunityServices(dashboardContext),
-        activities: profile?.activities ?? generatedActivities,
+        activities: [...createdVisitorActivities, ...(profile?.activities ?? generatedActivities)]
+            .filter((activity, index, activities) => activities.findIndex((candidate) => candidate.id === activity.id) === index)
+            .slice(0, 20),
         ...includeWhenPresent("residenceDetails", profile?.residenceDetails),
         sectionStates: {
             priorities: { status: 'ready' },

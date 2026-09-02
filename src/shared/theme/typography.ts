@@ -1,11 +1,11 @@
 import { TextStyle, Platform } from 'react-native';
 
-const fontFamily = 'Inter';
 const fontFamilyFallback = Platform.select({
   ios: 'System',
   android: 'Roboto',
   default: 'System',
 });
+const fontFamily = fontFamilyFallback;
 
 export const FONT_FAMILY = fontFamily;
 export const FONT_FAMILY_FALLBACK = fontFamilyFallback;

@@ -3,6 +3,9 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle, TextSt
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useAppTheme } from "../theme/useAppTheme";
 import { Spacing } from "../theme/spacing";
+import { Typography } from "../theme/typography";
+import { societyTouch } from "../theme/societyTheme";
+import { useReducedMotion } from "../motion/useReducedMotion";
 import { styles, createViewOpacityStyle } from "./styles/AppButton.styles";
 import { useMessages as useGeneratedUiMessages } from "../../messages/useMessages";
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
@@ -25,7 +28,8 @@ interface AppButtonProps {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export function AppButton({ title, onPress, variant = 'primary', size = 'md', disabled = false, loading = false, fullWidth = false, compact = false, iconLeft, iconRight, style, accessibilityLabel, testID, }: AppButtonProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
-    const { colors } = useAppTheme();
+    const { semantic, borderWidths, motion, colors } = useAppTheme();
+    const reducedMotion = useReducedMotion();
     const resolvedSize = compact ? 'sm' : size;
     const isDisabled = disabled || loading;
     const scale = useSharedValue(1);
@@ -33,34 +37,34 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
         transform: [{ scale: scale.value }],
     }));
     function handlePressIn() {
-        if (!isDisabled) {
-            scale.value = withSpring(0.96, { damping: 15, stiffness: 400 });
+        if (!isDisabled && !reducedMotion) {
+            scale.value = withSpring(motion.scale.press, motion.spring.press);
         }
     }
     function handlePressOut() {
-        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+        scale.value = reducedMotion ? 1 : withSpring(1, motion.spring.press);
     }
     const buttonBgStyles: Record<ButtonVariant, ViewStyle> = {
-        primary: { backgroundColor: colors.primary },
-        secondary: { backgroundColor: colors.primarySoft },
+        primary: { backgroundColor: semantic.accent.moss },
+        secondary: { backgroundColor: semantic.surface.focus },
         outline: {
             backgroundColor: 'transparent',
-            borderWidth: 1.5,
-            borderColor: colors.border,
+            borderWidth: borderWidths.emphasis,
+            borderColor: semantic.border.default,
         },
         ghost: { backgroundColor: 'transparent' },
-        danger: { backgroundColor: colors.danger },
-        success: { backgroundColor: colors.success },
-        warning: { backgroundColor: colors.warning },
+        danger: { backgroundColor: semantic.status.danger },
+        success: { backgroundColor: semantic.status.success },
+        warning: { backgroundColor: semantic.status.warning },
     };
     const buttonTextStyles: Record<ButtonVariant, TextStyle> = {
-        primary: { color: colors.primaryText },
-        secondary: { color: colors.primary },
-        outline: { color: colors.textSecondary },
-        ghost: { color: colors.primary },
-        danger: { color: colors.textInverse },
-        success: { color: colors.textInverse },
-        warning: { color: colors.textInverse },
+        primary: { color: semantic.text.primary },
+        secondary: { color: semantic.text.primary },
+        outline: { color: semantic.text.secondary },
+        ghost: { color: semantic.text.primary },
+        danger: { color: semantic.text.inverse },
+        success: { color: semantic.text.inverse },
+        warning: { color: semantic.text.inverse },
     };
     return (<AnimatedPressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} disabled={isDisabled} style={[
             animatedStyle,
@@ -69,6 +73,7 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
             buttonBgStyles[variant],
             fullWidth && styles.fullWidth,
             isDisabled && styles.disabled,
+            isDisabled && { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
             style,
         ]} accessibilityRole="button" accessibilityState={{ disabled: isDisabled, busy: loading }} accessibilityLabel={accessibilityLabel ?? `${title}${loading ? localizedUiText.m_d25310778d62 : ''}`} testID={testID}>
       <View style={styles.containerWrap}>
@@ -77,7 +82,7 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
           </View>)}
         <View style={[styles.contentRow, createViewOpacityStyle(loading ? 0 : 1)]}>
           {iconLeft && <View style={styles.iconContainer}>{iconLeft}</View>}
-          <Text style={[styles.text, sizeTextStyles[resolvedSize], buttonTextStyles[variant]]}>
+          <Text style={[styles.text, sizeTextStyles[resolvedSize], buttonTextStyles[variant], isDisabled && { color: colors.textDisabled }]}>
             {loading ? '' : title}
           </Text>
           {iconRight && <View style={styles.iconContainer}>{iconRight}</View>}
@@ -87,28 +92,27 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
 }
 const sizeStyles: Record<ButtonSize, ViewStyle> = {
     sm: {
-        minHeight: 38,
+        minHeight: societyTouch.minimum,
         paddingHorizontal: Spacing.md,
     },
     md: {
-        minHeight: 48,
+        minHeight: societyTouch.comfortable,
         paddingHorizontal: Spacing.xl,
     },
     lg: {
-        minHeight: 56,
+        minHeight: societyTouch.command,
         paddingHorizontal: Spacing.xxl,
     },
 };
 const sizeTextStyles: Record<ButtonSize, TextStyle> = {
     sm: {
-        fontSize: 13,
+        fontSize: Typography.caption.fontSize,
     },
     md: {
-        fontSize: 14,
+        fontSize: Typography.button.fontSize,
     },
     lg: {
-        fontSize: 16,
+        fontSize: Typography.bodyLarge.fontSize,
     },
 };
 export default AppButton;
-

@@ -22,7 +22,7 @@ import { dailyInsightMessages } from "../../../../../messages/en/residentDashboa
 import type { ResidentContextualInsightsResult } from "../../../contextualInsights/data/residentContextualInsights.types";
 import type { DailyInsightViewModel } from "../../../contextualInsights/data/dailyInsight.types";
 import { includeWhenPresent } from "../../../../../shared/utils/presentProperty";
-import { styles, createSafeTextColorStyle, createViewBorderColorStyle, createViewBackgroundColorBorderColorStyle } from "../../styles/components/insights/DailyInsightsBottomSheet.styles";
+import { styles, createSafeTextColorStyle, createViewBackgroundColorBorderColorStyle } from "../../styles/components/insights/DailyInsightsBottomSheet.styles";
 export interface DailyInsightsBottomSheetProps {
     visible: boolean;
     onClose: () => void;
@@ -177,4 +177,3 @@ export function DailyInsightsBottomSheet({ visible, onClose, data, onDismissSugg
     </>);
 }
 export default DailyInsightsBottomSheet;
-

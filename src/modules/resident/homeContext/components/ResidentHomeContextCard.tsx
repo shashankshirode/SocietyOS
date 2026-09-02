@@ -27,25 +27,27 @@ export function ResidentHomeContextCard({ context, isActive, isSwitching, isInte
         ]}>
       <View style={styles.cardHeader}>
         <View style={styles.headerInfo}>
-          <SafeText variant="bodyStrong" style={[styles.unitText, createSafeTextColorStyle5(colors.textPrimary)]}>
-            {context.flatNumber}
+          <SafeText variant="bodyStrong" numberOfLines={2} style={[styles.unitText, createSafeTextColorStyle5(colors.textPrimary)]}>
+            {context.societyName}
           </SafeText>
-          {context.buildingName ? (<SafeText variant="caption" style={[styles.buildingText, createSafeTextColorStyle6(colors.textSecondary)]}>
-              {context.buildingName}
-            </SafeText>) : null}
         </View>
 
-        <View style={styles.badgeRow}>
-          <ResidentHomeContextBadge value={context.residentRole} type="role"/>
-          <ResidentHomeContextBadge value={context.status} type="status"/>
-          {isSwitching ? (<ActivityIndicator testID={`home-context-switching-${context.homeContextId}`} size="small" color={colors.primary}/>) : isActive ? (<Ionicons name="checkmark-circle" size={20} color={colors.primary}/>) : null}
+        <View style={styles.actionSlot}>
+          {isSwitching ? (<ActivityIndicator testID={`home-context-switching-${context.homeContextId}`} size="small" color={colors.primary}/>) : isActive ? (<Ionicons name="checkmark" size={24} color={colors.success}/>) : (<Ionicons name="arrow-forward" size={18} color={colors.textMuted}/>)}
         </View>
       </View>
 
+      <SafeText variant="caption" numberOfLines={2} style={[styles.buildingText, createSafeTextColorStyle6(colors.textSecondary)]}>
+        {context.flatNumber}{context.buildingName ? ` · ${context.buildingName}` : ''}
+      </SafeText>
+
+      <View style={styles.badgeRow}>
+        <ResidentHomeContextBadge value={context.residentRole} type="role"/>
+        {context.status !== 'active' ? <ResidentHomeContextBadge value={context.status} type="status"/> : null}
+      </View>
+
       <View style={styles.contextLabelRow}>
-        {isActive ? (<SafeText variant="tiny" style={createSafeTextColorStyle(colors.primary)}>
-            {messages.resident.homeContext.currentHome}
-          </SafeText>) : null}
+        {isActive ? (<SafeText variant="tiny" style={createSafeTextColorStyle(colors.success)}>{messages.resident.homeContext.currentHome}</SafeText>) : null}
         {context.isPrimary ? (<SafeText variant="tiny" style={createSafeTextColorStyle2(colors.textSecondary)}>
             {messages.resident.homeContext.primaryHome}
           </SafeText>) : null}
@@ -62,16 +64,16 @@ export function ResidentHomeContextCard({ context, isActive, isSwitching, isInte
               </SafeText>
             </View>)}
 
-          {context.outstandingBillAmount !== undefined && context.outstandingBillAmount > 0 ? (<View style={[styles.statChip, styles.viewBackgroundColor]}>
-              <Ionicons name="card-outline" size={12} color="#DC2626"/>
-              <SafeText variant="tiny" style={styles.safeTextColorFontWeight}>
+          {context.outstandingBillAmount !== undefined && context.outstandingBillAmount > 0 ? (<View style={[styles.statChip, createViewBackgroundColorStyle(colors.dangerSoft)]}>
+              <Ionicons name="card-outline" size={12} color={colors.danger}/>
+              <SafeText variant="tiny" style={[styles.statText, createSafeTextColorStyle4(colors.danger)]}>
                 {messages.resident.homeContext.outstandingBill(context.outstandingBillAmount)}
               </SafeText>
             </View>) : null}
 
-          {context.pendingCount > 0 && (<View style={[styles.statChip, styles.viewBackgroundColor2]}>
-              <Ionicons name="time-outline" size={12} color="#D97706"/>
-              <SafeText variant="tiny" style={styles.safeTextColorFontWeight2}>
+          {context.pendingCount > 0 && (<View style={[styles.statChip, createViewBackgroundColorStyle(colors.warningSoft)]}>
+              <Ionicons name="time-outline" size={12} color={colors.warning}/>
+              <SafeText variant="tiny" style={[styles.statText, createSafeTextColorStyle4(colors.warning)]}>
                 {messages.resident.homeContext.pendingItems(context.pendingCount)}
               </SafeText>
             </View>)}
@@ -79,4 +81,3 @@ export function ResidentHomeContextCard({ context, isActive, isSwitching, isInte
     </Pressable>);
 }
 export default ResidentHomeContextCard;
-

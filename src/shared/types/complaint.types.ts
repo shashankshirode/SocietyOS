@@ -45,6 +45,8 @@ export interface Complaint extends ResidentScopedEntity {
   technicianContact?: string;
   isPrivate?: boolean;
   raisedBy?: string;
+  reportedByUserId?: string;
+  reportedByDisplayName?: string;
   resolvedAt?: string;
   resolutionNotes?: string;
 }

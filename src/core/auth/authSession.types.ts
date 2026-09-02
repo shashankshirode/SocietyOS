@@ -4,15 +4,17 @@ export type AuthSession = {
   userId: string;
   name: string;
   role: AppRole;
-  societyId?: string;
-  societyName?: string;
-  unitId?: string;
-  unitLabel?: string;
-  gateName?: string;
-  shiftLabel?: string;
-  token?: string;
-  refreshToken?: string;
-  expiresAt?: string;
+  personaKey?: string | undefined;
+  societyId?: string | undefined;
+  societyName?: string | undefined;
+  unitId?: string | undefined;
+  unitLabel?: string | undefined;
+  isHouseholdAdmin?: boolean | undefined;
+  gateName?: string | undefined;
+  shiftLabel?: string | undefined;
+  token?: string | undefined;
+  refreshToken?: string | undefined;
+  expiresAt?: string | undefined;
   isMockSession: boolean;
 };
 

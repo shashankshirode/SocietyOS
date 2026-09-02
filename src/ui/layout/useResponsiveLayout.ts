@@ -1,20 +1,21 @@
 
 import { useWindowDimensions } from 'react-native';
 import { useMemo } from 'react';
+import { resolveResponsiveClass, responsiveBreakpoints, responsiveLayoutTokens, type ResponsiveClass } from './responsiveTokens';
 
-export type DeviceLayoutSize = 'phoneSmall' | 'phone' | 'phoneLarge' | 'tablet' | 'tabletWide';
+export type DeviceLayoutSize = 'phoneSmall' | 'phone' | 'phoneLarge' | 'fold' | 'tablet' | 'tabletWide';
 
 export const layoutBreakpoints = {
-  compactPhone: 0,
-  standardPhone: 360,
-  largePhone: 480,
-  tablet: 768,
-  largeTablet: 1024,
-  
-  phoneSmall: 0,
-  phone: 360,
-  phoneLarge: 480,
-  tabletWide: 1024,
+  compactPhone: responsiveBreakpoints.compact,
+  standardPhone: responsiveBreakpoints.phone,
+  largePhone: responsiveBreakpoints.largePhone,
+  fold: responsiveBreakpoints.fold,
+  tablet: responsiveBreakpoints.tablet,
+  largeTablet: responsiveBreakpoints.wide,
+  phoneSmall: responsiveBreakpoints.compact,
+  phone: responsiveBreakpoints.phone,
+  phoneLarge: responsiveBreakpoints.largePhone,
+  tabletWide: responsiveBreakpoints.wide,
 } as const;
 
 export interface ResponsiveLayout {
@@ -34,6 +35,8 @@ export interface ResponsiveLayout {
   isTabletWide: boolean;
   
   layoutSize: DeviceLayoutSize;
+  layoutClass: ResponsiveClass;
+  isFold: boolean;
   
   contentMaxWidth: number;
   
@@ -45,22 +48,24 @@ export interface ResponsiveLayout {
 }
 
 export function resolveResponsiveLayout(width: number, height: number): ResponsiveLayout {
-  const isSmall = width < layoutBreakpoints.phone;
-  const isNormal = width >= layoutBreakpoints.phone && width < layoutBreakpoints.phoneLarge;
-  const isLarge = width >= layoutBreakpoints.phoneLarge && width < layoutBreakpoints.tablet;
-  const isTablet = width >= layoutBreakpoints.tablet;
-  const isTabletWide = width >= layoutBreakpoints.tabletWide;
-  const layoutSize: DeviceLayoutSize = isSmall
+  const layoutClass = resolveResponsiveClass(width);
+  const isSmall = layoutClass === 'compact';
+  const isNormal = layoutClass === 'phone';
+  const isFold = layoutClass === 'fold';
+  const isLarge = layoutClass === 'largePhone' || isFold;
+  const isTablet = layoutClass === 'tablet' || layoutClass === 'wide';
+  const isTabletWide = layoutClass === 'wide';
+  const layoutSize: DeviceLayoutSize = layoutClass === 'compact'
     ? 'phoneSmall'
-    : isNormal
+    : layoutClass === 'phone'
       ? 'phone'
-      : isLarge
+      : layoutClass === 'largePhone'
         ? 'phoneLarge'
-        : isTabletWide
+        : layoutClass === 'wide'
           ? 'tabletWide'
-          : 'tablet';
-  const contentMaxWidth = isTabletWide ? 1240 : isTablet ? 1040 : width;
-  const screenPadding = isTabletWide ? 32 : isTablet ? 28 : isLarge ? 24 : isSmall ? 16 : 20;
+          : layoutClass;
+  const contentMaxWidth = Math.min(width, responsiveLayoutTokens.maxContentWidth[layoutClass]);
+  const screenPadding = responsiveLayoutTokens.gutter[layoutClass];
 
   return {
     width,
@@ -71,9 +76,11 @@ export function resolveResponsiveLayout(width: number, height: number): Responsi
     isTablet,
     isTabletWide,
     layoutSize,
+    layoutClass,
+    isFold,
     contentMaxWidth,
-    columns: isTabletWide ? 4 : isTablet ? 3 : isLarge ? 2 : isSmall ? 1 : 2,
-    modalMode: isTablet || isLarge ? 'centered' : 'sheet',
+    columns: isTabletWide ? 4 : isTablet ? 3 : isSmall ? 1 : 2,
+    modalMode: isTablet || isFold ? 'centered' : 'sheet',
     screenPadding,
   };
 }

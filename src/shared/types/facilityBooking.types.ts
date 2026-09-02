@@ -95,6 +95,8 @@ export type FacilityBooking = {
   damageConsentAccepted: boolean;
   cancellationEligibility: string;
   refundEligibility: string;
+  createdByUserId?: string;
+  createdByDisplayName?: string;
   notes?: string;
   timeline: FacilityBookingTimelineItem[];
 };

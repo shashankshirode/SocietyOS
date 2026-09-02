@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Spacing } from "../../theme/spacing";
-import { Layout } from "../../theme/layout";
+import { societyContent } from "../../theme/societyTheme";
 export const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     tabletContainer: {
-        maxWidth: Layout.maxTabletContentWidth || 680,
+        maxWidth: societyContent.readableWidth,
     },
     flex: {
         flex: 1,
@@ -24,11 +24,11 @@ export const styles = StyleSheet.create({
         flexGrow: 1,
     },
     phonePadding: {
-        paddingHorizontal: Spacing.screenPaddingPhone,
+        paddingHorizontal: societyContent.phonePadding,
         paddingBottom: Spacing.xl,
     },
     tabletPadding: {
-        paddingHorizontal: Spacing.screenPaddingTablet,
+        paddingHorizontal: societyContent.tabletPadding,
         paddingBottom: Spacing.xxl,
     },
 });
@@ -37,4 +37,3 @@ export function createSafeAreaViewBackgroundColorStyle(backgroundColorValue: str
         backgroundColor: backgroundColorValue
     } as const;
 }
-

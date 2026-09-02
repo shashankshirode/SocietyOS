@@ -3,6 +3,7 @@ import { StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ResidentTabBarLayout } from './residentTabBar.types';
 import { getAppPlatform, type AppPlatform } from '../../../shared/platform';
+import { societyNavigation } from '../../../shared/theme/societyTheme';
 
 export function resolveResidentTabBarLayout(
   width: number,
@@ -22,7 +23,7 @@ export function resolveResidentTabBarLayout(
     };
   }
 
-  const dockWidth = Math.min(Math.max(width * 0.58, 720), 840);
+  const dockWidth = Math.min(Math.max(width * 0.58, societyNavigation.tabletMaxWidth), 840);
   const dockBottom = Math.max(bottomInset, 12);
 
   return {
@@ -32,9 +33,9 @@ export function resolveResidentTabBarLayout(
       width: dockWidth,
       left: (width - dockWidth) / 2,
       bottom: dockBottom,
-      height: 64,
-      paddingBottom: 8,
-      paddingTop: 8,
+      height: societyNavigation.capsuleHeight,
+      paddingBottom: societyNavigation.internalPadding,
+      paddingTop: societyNavigation.internalPadding,
       borderRadius: 28,
       borderWidth: StyleSheet.hairlineWidth,
     },
@@ -47,11 +48,11 @@ export function resolveResidentTabBarObstruction(
   platformOS: AppPlatform,
 ): number {
   if (width >= 768) {
-    return 64 + Math.max(bottomInset, 12) + 8;
+    return societyNavigation.capsuleHeight + Math.max(bottomInset, 12) + societyNavigation.dockBottomGap;
   }
 
   const phoneBottomPadding = platformOS === 'android' ? Math.max(bottomInset, 8) : bottomInset;
-  return 64 + 8 + phoneBottomPadding;
+  return societyNavigation.capsuleHeight + societyNavigation.dockBottomGap + phoneBottomPadding;
 }
 
 export function useResidentTabBarLayout(): ResidentTabBarLayout {

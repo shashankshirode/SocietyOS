@@ -38,9 +38,9 @@ export function VisitorExpectedExitSelector({ expectedEntryAtIso, selectedExpect
                 return (<PressableScale key={minutes} onPress={() => onSelectExpectedExit(optionIso)}>
                 <View style={[
                         styles.chip,
-                        createViewBackgroundColorBorderColorStyle(selected ? theme.accent : theme.surface, selected ? 'transparent' : theme.border),
+                        createViewBackgroundColorBorderColorStyle(selected ? theme.selectedBackground : theme.surface, selected ? theme.selectedBorder : theme.border),
                     ]}>
-                  <SafeText variant="tiny" style={createSafeTextColorStyle3(selected ? '#FFFFFF' : theme.textPrimary)}>
+                  <SafeText variant="tiny" style={createSafeTextColorStyle3(selected ? theme.selectedForeground : theme.textPrimary)}>
                     {t(messages, 'visitor.exitAssurance.minutesLabel', minutes)}
                   </SafeText>
                 </View>
@@ -52,4 +52,3 @@ export function VisitorExpectedExitSelector({ expectedEntryAtIso, selectedExpect
         </SafeText>) : null}
     </View>);
 }
-

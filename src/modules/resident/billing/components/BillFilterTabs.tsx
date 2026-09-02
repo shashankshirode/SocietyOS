@@ -26,13 +26,12 @@ export function BillFilterTabs({ value, onChange }: BillFilterTabsProps) {
             const selected = value === filter.value;
             return (<Pressable key={filter.value} accessibilityRole="tab" accessibilityState={{ selected }} onPress={() => onChange(filter.value)} style={[
                     styles.chip,
-                    createPressableBackgroundColorBorderColorStyle(selected ? theme.accent : theme.surface, selected ? theme.accent : theme.border),
+                    createPressableBackgroundColorBorderColorStyle(selected ? theme.selectedBackground : theme.surface, selected ? theme.selectedBorder : theme.border),
                 ]}>
-            <SafeText variant="tiny" style={createSafeTextColorStyle(selected ? '#FFFFFF' : theme.textSecondary)}>
+            <SafeText variant="tiny" style={createSafeTextColorStyle(selected ? theme.selectedForeground : theme.textSecondary)}>
               {filter.label}
             </SafeText>
           </Pressable>);
         })}
     </View>);
 }
-

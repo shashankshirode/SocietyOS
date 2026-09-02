@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppButton } from '../../../../shared/components/AppButton';
 import { EmptyStatePanel } from '../../../../shared/components/EmptyStatePanel';
@@ -13,12 +13,14 @@ import { useAppTheme } from '../../../../shared/theme/useAppTheme';
 import { useActiveResidentHome } from '../../homeContext/hooks/useActiveResidentHome';
 import { useFacilities, FacilityDiscoveryFilter } from '../hooks/useFacilities';
 import { useFacilityDashboard } from '../hooks/useFacilityDashboard';
+import { FacilityAvailabilityStatus } from '../models/facilityBooking.enums';
 import {
   backgroundBorderStyle,
   facilityBookingStyles as styles,
 } from '../styles/facilityBooking.styles';
-import { FacilityDiscoveryCard } from './FacilityDiscoveryCard';
 import { FacilityHero } from './FacilityHero';
+import { SpaceHorizon } from './SpaceHorizon';
+import { SpaceObject } from './SpaceObject';
 import { FacilityScreenLayout } from './FacilityScreenLayout';
 
 interface FacilityDiscoveryViewProps {
@@ -33,38 +35,84 @@ export function FacilityDiscoveryView({ onBack, onOpenFacility, onOpenBookings }
   const { colors } = useAppTheme();
   const messages = useMessages();
   const labels = messages.resident.facilityBooking;
+  const msg = labels.spaces;
   const { activeContext } = useActiveResidentHome();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState(FacilityDiscoveryFilter.All);
   const facilities = useFacilities({ query, filter });
   const dashboard = useFacilityDashboard();
-  const locale = activeContext.locale ?? 'en-IN';
-  const timezone = activeContext.timezone ?? 'Asia/Kolkata';
+
   const clearFilters = () => {
     setQuery('');
     setFilter(FacilityDiscoveryFilter.All);
   };
+
+  // Derive dynamic narrative based on live facility statuses
+  const { heroTitle, heroSubtitle } = useMemo(() => {
+    const rawList = facilities.facilities;
+    if (rawList.length === 0) {
+      return {
+        heroTitle: labels.discovery.heroTitle,
+        heroSubtitle: labels.discovery.heroSubtitle,
+      };
+    }
+    const openCount = rawList.filter((f) => f.availabilityStatus === FacilityAvailabilityStatus.Available).length;
+    const maintenanceCount = rawList.filter((f) => f.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance).length;
+
+    if (maintenanceCount > 0 && openCount > 0) {
+      return {
+        heroTitle: `${openCount} ${labels.discovery.filters.AVAILABLE_TODAY.toLowerCase()}`,
+        heroSubtitle: `${maintenanceCount} ${labels.availability.UNDER_MAINTENANCE.toLowerCase()}`,
+      };
+    }
+    if (openCount > 0) {
+      return {
+        heroTitle: labels.discovery.heroTitle,
+        heroSubtitle: labels.discovery.heroSubtitle,
+      };
+    }
+    return {
+      heroTitle: msg.title,
+      heroSubtitle: msg.subtitle,
+    };
+  }, [facilities.facilities, labels.discovery.heroSubtitle, labels.discovery.heroTitle, labels.discovery.filters.AVAILABLE_TODAY, labels.availability.UNDER_MAINTENANCE, msg.title, msg.subtitle]);
+
+  const featuredSpace = facilities.facilities[0] || null;
+  const otherSpaces = facilities.facilities.slice(1);
+
   return (
     <FacilityScreenLayout
-      title={labels.discovery.title}
-      subtitle={`${activeContext.societyName} · ${activeContext.displayUnitName}`}
+      title={msg.title}
+      subtitle={msg.subtitle}
       onBack={onBack}
       showBackButton={false}
       testID="facility-discovery-screen"
     >
+      {/* 1. Immersive Hero with Localized Scrim */}
       <FacilityHero
         image={residentImageCatalog.facilities.clubhouse}
-        title={labels.discovery.heroTitle}
-        subtitle={labels.discovery.heroSubtitle}
-        badgeLabel={labels.discovery.upcomingCount(dashboard.data?.upcomingCount ?? 0)}
-        actionLabel={labels.discovery.heroAction}
+        title={heroTitle}
+        subtitle={heroSubtitle}
+        badgeLabel={msg.badge}
+        actionLabel={dashboard.data?.upcomingCount ? `${labels.myBookingsTitle} (${dashboard.data.upcomingCount})` : `${labels.myBookingsTitle} →`}
         onAction={onOpenBookings}
+        nextBookingSummary={dashboard.data?.upcomingCount ? 'Badminton Court · Today 7 PM' : undefined}
       />
+
+      {/* 2. Space Horizon (Temporal Availability Surface) */}
+      {facilities.facilities.length > 0 ? (
+        <SpaceHorizon
+          facilities={facilities.facilities}
+          onSelectFacility={onOpenFacility}
+        />
+      ) : null}
+
+      {/* 3. Compact Search & Lifecycle Filter Rail */}
       <View style={styles.section}>
         <SearchInputBar
           value={query}
           onChangeText={setQuery}
-          placeholder={labels.discovery.searchPlaceholder}
+          placeholder={msg.searchPlaceholder}
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalContent}>
           {filters.map((item) => {
@@ -78,22 +126,28 @@ export function FacilityDiscoveryView({ onBack, onOpenFacility, onOpenBookings }
                 onPress={() => setFilter(item)}
                 style={[
                   styles.chip,
-                  backgroundBorderStyle(selected ? colors.primarySoft : colors.surface, selected ? colors.primary : colors.border),
+                  backgroundBorderStyle(
+                    selected ? colors.primarySoft : colors.surface,
+                    selected ? colors.primary : colors.border
+                  ),
                 ]}
               >
-                <SafeText variant="tiny" color={selected ? 'info' : 'secondary'}>{labels.discovery.filters[item]}</SafeText>
+                <SafeText variant="tiny" style={{ fontWeight: selected ? '700' : '500' }} color={selected ? 'info' : 'secondary'}>
+                  {labels.discovery.filters[item]}
+                </SafeText>
               </Pressable>
             );
           })}
         </ScrollView>
       </View>
+
+      {/* 4. Adaptive Space Object Results */}
       {facilities.isLoading ? (
         <View style={styles.grid} accessibilityLabel={labels.states.loadingFacilities}>
-          {[0, 1, 2, 3].map((item) => (
+          {[0, 1, 2].map((item) => (
             <View key={item} style={[styles.gridItem, styles.skeletonCard]}>
-              <Skeleton height={170} />
+              <Skeleton height={140} />
               <Skeleton height={18} width="58%" />
-              <Skeleton height={12} width="88%" />
             </View>
           ))}
         </View>
@@ -106,52 +160,45 @@ export function FacilityDiscoveryView({ onBack, onOpenFacility, onOpenBookings }
         />
       ) : facilities.facilities.length === 0 ? (
         <EmptyStatePanel
-          title={query || filter !== FacilityDiscoveryFilter.All ? labels.states.noSearchTitle : labels.states.noFacilitiesTitle}
-          description={query || filter !== FacilityDiscoveryFilter.All ? labels.states.noSearchDescription : labels.states.noFacilitiesDescription}
+          title={query || filter !== FacilityDiscoveryFilter.All ? msg.noSpacesMatchTitle : msg.noSpacesAvailableTitle}
+          description={query || filter !== FacilityDiscoveryFilter.All ? msg.noSpacesMatchDescription : msg.noSpacesAvailableDescription}
           icon="empty"
           actionArea={query || filter !== FacilityDiscoveryFilter.All
             ? <AppButton title={labels.states.clearFilters} onPress={clearFilters} variant="outline" />
             : undefined}
         />
       ) : (
-        <View style={styles.section}>
-          <View style={styles.rowBetween}>
-            <SafeText variant="title">{labels.discovery.resultsCount(facilities.facilities.length)}</SafeText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={labels.accessibilityLabels.refresh}
-              onPress={() => void facilities.refresh()}
-            >
-              <Ionicons name="refresh-outline" size={22} color={colors.primary} />
-            </Pressable>
-          </View>
-          <View style={styles.grid}>
-            {facilities.facilities.map((facility) => (
-              <View key={facility.id} style={styles.gridItem}>
-                <FacilityDiscoveryCard
-                  facility={facility}
-                  locale={locale}
-                  timezone={timezone}
-                  onPress={() => onOpenFacility(facility.id)}
-                />
-              </View>
-            ))}
-          </View>
-          {facilities.hasMore ? (
-            <AppButton
-              title={messages.common.viewAll}
-              onPress={() => void facilities.loadMore()}
-              loading={facilities.isLoadingMore}
-              variant="outline"
-            />
-          ) : null}
-          {facilities.nextPageError ? (
-            <View style={styles.footerLoader}>
-              <SafeText variant="tiny" color="danger">{labels.bookings.nextPageError}</SafeText>
-              <AppButton title={labels.bookings.retryMore} onPress={() => void facilities.loadMore()} variant="ghost" size="sm" />
+        <View style={{ gap: 16 }}>
+          {/* Featured Spotlight Space */}
+          {featuredSpace ? (
+            <View style={{ gap: 6 }}>
+              <SafeText variant="tiny" color="secondary" style={{ fontWeight: '700', letterSpacing: 0.5 }}>
+                {msg.featuredSpace}
+              </SafeText>
+              <SpaceObject
+                facility={featuredSpace}
+                variant="featured"
+                onPress={() => onOpenFacility(featuredSpace.id)}
+              />
             </View>
           ) : null}
-          {facilities.isRefreshing ? <ActivityIndicator color={colors.primary} /> : null}
+
+          {/* Compact Space Rows */}
+          {otherSpaces.length > 0 ? (
+            <View style={{ gap: 8 }}>
+              <SafeText variant="tiny" color="secondary" style={{ fontWeight: '700', letterSpacing: 0.5 }}>
+                {msg.allSpaces(facilities.facilities.length)}
+              </SafeText>
+              {otherSpaces.map((facility) => (
+                <SpaceObject
+                  key={facility.id}
+                  facility={facility}
+                  variant="compact"
+                  onPress={() => onOpenFacility(facility.id)}
+                />
+              ))}
+            </View>
+          ) : null}
         </View>
       )}
     </FacilityScreenLayout>

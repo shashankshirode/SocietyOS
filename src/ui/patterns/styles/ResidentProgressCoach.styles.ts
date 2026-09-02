@@ -65,7 +65,7 @@ export function createViewBackgroundColorStyle(backgroundColorValue: string) {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#1E293B" | "#F8FAFC", borderColorValue: string) {
+export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

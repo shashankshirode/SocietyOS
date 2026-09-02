@@ -17,11 +17,11 @@ export interface EmptyStateProps {
     onSecondaryAction?: () => void;
 }
 export function EmptyState({ title, description, icon, iconName, actionLabel, onAction, secondaryActionLabel, onSecondaryAction, }: EmptyStateProps) {
-    const { colors } = useAppTheme();
+    const { semantic } = useAppTheme();
     const resolvedIcon = (icon || iconName || 'empty') as AppIconName;
     return (<View style={styles.container}>
-      <View style={[styles.iconCircle, createViewBackgroundColorStyle(colors.surfaceSoft)]}>
-        <AppIcon name={resolvedIcon} size={36} color={colors.textMuted}/>
+      <View style={[styles.iconCircle, createViewBackgroundColorStyle(semantic.surface.soft)]}>
+        <AppIcon name={resolvedIcon} size={28} color={semantic.accent.moss}/>
       </View>
       <SafeText variant="title" color="primary" align="center" numberOfLines={3} style={styles.title}>{title}</SafeText>
       <SafeText variant="body" color="muted" align="center" numberOfLines={5} style={styles.description}>{description}</SafeText>
@@ -32,4 +32,3 @@ export function EmptyState({ title, description, icon, iconName, actionLabel, on
     </View>);
 }
 export default EmptyState;
-

@@ -1,5 +1,7 @@
 # Society OS — Milestone 13 Walkthrough
 
+> Historical milestone record: this file describes the verification state when Milestone 13 was completed. It is not the current whole-product implementation status. See `docs/implementation-aligned-product-specification.md` for the code-aligned audit dated 19 August 2026. In particular, the repository does not currently satisfy the clean TypeScript-build claim recorded below.
+
 This walkthrough details the changes implemented for **Milestone 13 (Visual Polish + Design System Hardening for Mobile + Tablet)**.
 
 ---

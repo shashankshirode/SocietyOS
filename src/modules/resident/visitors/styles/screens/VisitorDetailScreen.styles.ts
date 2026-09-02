@@ -26,17 +26,17 @@ export const styles = StyleSheet.create({
     viewMarginBottom: { marginBottom: 16 },
     safeTextMarginBottom3: { marginBottom: 6 }
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#450A0A" | "#FEE2E2", borderColorValue: "#D8464A" | "#FF8588") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         marginHorizontal: 16,
         marginVertical: 12,
@@ -50,12 +50,12 @@ export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: 
         gap: 12
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#D8464A" | "#FF8588") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createPressableBorderColorBackgroundColorStyle(borderColorValue: "#4E46E5" | "#9DA5FF" | "#253149" | "#E2E6EE", backgroundColorValue: "#FFFFFF" | "#111827" | "#1E1B4B" | "#E8E5FB") {
+export function createPressableBorderColorBackgroundColorStyle(borderColorValue: string, backgroundColorValue: string) {
     return {
         flexDirection: 'row',
         alignItems: 'center',
@@ -66,7 +66,7 @@ export function createPressableBorderColorBackgroundColorStyle(borderColorValue:
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createTextInputBorderColorColorBackgroundColorStyle(borderColorValue: "#253149" | "#E2E6EE", colorValue: "#101828" | "#F8FAFC", backgroundColorValue: "#F4F6FB" | "#080D18") {
+export function createTextInputBorderColorColorBackgroundColorStyle(borderColorValue: string, colorValue: string, backgroundColorValue: string) {
     return {
         borderWidth: 1,
         borderColor: borderColorValue,

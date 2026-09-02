@@ -22,17 +22,24 @@ export type ResidentHeaderAction = {
   badgeCount?: number;
 };
 
+import type { ReturnSemantic } from '../experience/EdgeReturn';
+
 export type ResidentAppHeaderProps = {
-  variant: ResidentHeaderVariant;
-  titleKey: MessageKey;
+  variant?: ResidentHeaderVariant;
+  titleKey?: MessageKey;
   subtitleKey?: MessageKey;
   roleLabelKey?: MessageKey;
-  showBackButton: boolean;
+  showBackButton?: boolean;
   actions?: ResidentHeaderAction[];
   contextLabelKey?: MessageKey;
   onBackPress?: () => void;
+  semantic?: ReturnSemantic;
+  fallbackRoute?: string;
+  fallbackTab?: string;
   includeSafeAreaTop?: boolean;
+  showNarrative?: boolean;
   testID?: string;
+  contextualAction?: React.ReactNode;
 };
 
 export type ResidentHeaderRoleTokenKey =

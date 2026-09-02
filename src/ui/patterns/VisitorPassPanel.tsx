@@ -5,6 +5,7 @@ import { useResidentTheme } from "../foundation/residentTheme";
 import { PressableScale } from "../../shared/motion/PressableScale";
 import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createSafeTextColorStyle4, createSafeTextColorStyle5, createSafeTextColorStyle6, createSafeTextColorStyle7, createSafeTextColorStyle8, createSafeTextColorStyle9, createViewBackgroundColorBorderColorStyle, createViewBackgroundColorBorderColorStyle2, createViewBackgroundColorBorderColorStyle3, createViewBackgroundColorStyle, createViewBorderBottomColorStyle, createViewBorderColorStyle, createSafeTextColorStyle10, createPressableScaleBackgroundColorStyle, createPressableScaleBorderColorStyle } from "./styles/VisitorPassPanel.styles";
 import { useMessages as useGeneratedUiMessages } from "../../messages/useMessages";
+import QRCode from 'react-native-qrcode-svg';
 export interface VisitorPassPanelProps {
     visitorName: string;
     visitorType: string;
@@ -13,11 +14,12 @@ export interface VisitorPassPanelProps {
     validTill: string;
     gateName: string;
     otpCode?: string;
+    credentialValue?: string;
     onCancelPress?: () => void;
     onSharePress?: () => void;
     onRegenerateOtp?: () => void;
 }
-export function VisitorPassPanel({ visitorName, visitorType, purpose, validFrom, validTill, gateName, otpCode = '8342', onCancelPress, onSharePress, onRegenerateOtp, }: VisitorPassPanelProps) {
+export function VisitorPassPanel({ visitorName, visitorType, purpose, validFrom, validTill, gateName, otpCode, credentialValue, onCancelPress, onSharePress, onRegenerateOtp, }: VisitorPassPanelProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
     const theme = useResidentTheme();
     return (<View style={[styles.card, createViewBackgroundColorBorderColorStyle(theme.surface, theme.border)]}>
@@ -36,9 +38,9 @@ export function VisitorPassPanel({ visitorName, visitorType, purpose, validFrom,
       </View>
 
       
-      <View style={[styles.passContainer, createViewBorderBottomColorStyle(theme.border)]}>
+      {otpCode && credentialValue ? <View style={[styles.passContainer, createViewBorderBottomColorStyle(theme.border)]}>
         <View style={[styles.qrPlaceholder, createViewBorderColorStyle(theme.border)]}>
-          <Ionicons name="qr-code-outline" size={100} color={theme.textPrimary}/>
+          <QRCode value={credentialValue} size={132} backgroundColor="#FFFFFF" color="#111813"/>
         </View>
 
         <View style={styles.otpSection}>
@@ -51,7 +53,7 @@ export function VisitorPassPanel({ visitorName, visitorType, purpose, validFrom,
               <SafeText variant="tiny" style={createSafeTextColorStyle4(theme.accent)}>{localizedUiText.m_a01a8765b6db}</SafeText>
             </PressableScale>)}
         </View>
-      </View>
+      </View> : null}
 
       
       <View style={styles.details}>
@@ -89,4 +91,3 @@ export function VisitorPassPanel({ visitorName, visitorType, purpose, validFrom,
     </View>);
 }
 export default VisitorPassPanel;
-

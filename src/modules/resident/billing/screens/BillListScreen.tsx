@@ -20,6 +20,7 @@ import { BillingListSkeleton } from "../components/BillingListSkeleton";
 import { BillFilterTabs } from "../components/BillFilterTabs";
 import { BillListItem } from "../components/BillListItem";
 import { BillSummaryCard } from "../components/BillSummaryCard";
+import { UpiPaymentSheet } from "../components/UpiPaymentSheet";
 import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createSafeTextColorStyle4, createSafeTextColorStyle5, createSafeTextColorStyle6, createSafeTextColorStyle7, createSafeTextColorStyle8, createSafeTextColorStyle9, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createViewBackgroundColorStyle3, createViewBackgroundColorStyle4, createViewBackgroundColorStyle5, createPressableBorderColorStyle, createFlatListPaddingBottomPaddingHorizontalStyle } from "../styles/screens/BillListScreen.styles";
 type BillListScreenNavigation = Pick<BillListScreenProps['navigation'], 'navigate'>;
 export function BillListScreen({ navigation }: {
@@ -32,6 +33,7 @@ export function BillListScreen({ navigation }: {
     const { isEnabled } = useFeatureFlags();
     const { canPerformAction } = useResidentRoleNavigation();
     const [filter, setFilter] = React.useState<BillListFilter>('all');
+    const [upiModalVisible, setUpiModalVisible] = React.useState(false);
     const { bills, summary, isInitialLoading, isLoadingMore, isRefreshing, hasMore, error, loadMore, refresh, retry, } = useResidentBills(filter);
     const billing = messages.resident.billing;
     const bottomPadding = getResidentScreenBottomPadding({
@@ -44,32 +46,8 @@ export function BillListScreen({ navigation }: {
     }, [navigation]);
     const handlePayOutstanding = React.useCallback(() => {
         if (!summary || summary.totalOutstanding <= 0) return;
-        const virtualBill: Bill = {
-            id: 'total_outstanding',
-            billNumber: `TOT-${Date.now()}`,
-            flatNumber: summary?.latestBill?.flatNumber || '',
-            societyName: summary?.latestBill?.societyName || '',
-            title: messages.resident.billing.payOutstanding,
-            amount: summary.totalOutstanding,
-            dueDate: new Date().toISOString().slice(0, 10),
-            status: 'DRAFT' as const,
-            billingPeriod: 'Outstanding Dues',
-            charges: [
-                {
-                    lineItemId: `charge-outstanding-${Date.now()}`,
-                    type: 'maintenance' as const,
-                    label: messages.resident.billing.totalOutstanding,
-                    labelMessageKey: 'resident.billing.totalOutstanding',
-                    amount: summary.totalOutstanding,
-                    currencyCode: summary.currencyCode,
-                    isCredit: false,
-                }
-            ],
-            homeContextId: summary?.latestBill?.homeContextId || '',
-            societyId: summary?.latestBill?.societyId || '',
-        };
-        navigation.navigate('MockPaymentConfirmation', { bill: virtualBill });
-    }, [summary, navigation, messages.resident.billing]);
+        setUpiModalVisible(true);
+    }, [summary]);
     if (!canPerformAction('maintenance')) {
         return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}> 
         <ResidentPageHeader title={billing.title} titleKey="resident.billing.title" subtitleKey="resident.billing.subtitle" showBackButton/>
@@ -131,6 +109,15 @@ export function BillListScreen({ navigation }: {
             createFlatListPaddingBottomPaddingHorizontalStyle(bottomPadding, screenPadding),
         ]} refreshing={isRefreshing} onRefresh={() => void refresh()} onEndReached={() => void loadMore()} onEndReachedThreshold={0.35} showsVerticalScrollIndicator={false}/>
       </ContentFrame>
+      <UpiPaymentSheet
+        visible={upiModalVisible}
+        amount={summary?.totalOutstanding ?? 4500}
+        onClose={() => setUpiModalVisible(false)}
+        onPaymentComplete={() => {
+          setUpiModalVisible(false);
+          void refresh();
+        }}
+      />
     </View>);
 }
 export default BillListScreen;

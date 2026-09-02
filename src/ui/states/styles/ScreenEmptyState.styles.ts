@@ -1,25 +1,27 @@
 import { StyleSheet } from "react-native";
-import { Spacing } from "../../../shared/theme/spacing";
+import { Radius, Spacing } from "../../../shared/theme";
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: Spacing.xl,
+        paddingHorizontal: Spacing.xl,
+        paddingVertical: Spacing.xxxl,
     },
     iconContainer: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
+        width: 64,
+        height: 64,
+        borderRadius: Radius.surface,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: Spacing.md,
+        marginBottom: Spacing.lg,
     },
     title: {
         marginBottom: Spacing.xs,
     },
     description: {
-        maxWidth: 300,
+        maxWidth: 320,
     },
     action: {
         marginTop: Spacing.lg,
@@ -30,9 +32,8 @@ export function createViewBackgroundColorStyle(backgroundColorValue: string) {
         backgroundColor: backgroundColorValue
     } as const;
 }
-export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
+export function createViewBorderColorStyle(borderColorValue: string) {
     return {
-        backgroundColor: backgroundColorValue
+        borderColor: borderColorValue
     } as const;
 }
-

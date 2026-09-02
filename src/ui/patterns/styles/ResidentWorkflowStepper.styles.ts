@@ -45,7 +45,7 @@ export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: 
         borderColor: borderColorValue
     } as const;
 }
-export function createSafeTextColorStyle(colorValue: "#FFFFFF" | "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
@@ -56,7 +56,7 @@ export function createSafeTextColorFontWeightStyle(colorValue: string, fontWeigh
         fontWeight: fontWeightValue
     } as const;
 }
-export function createViewBackgroundColorStyle(backgroundColorValue: "#198A59" | "#5BD39A" | "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;

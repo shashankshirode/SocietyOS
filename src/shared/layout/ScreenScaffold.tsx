@@ -14,7 +14,7 @@ export interface ScreenScaffoldProps {
     testID?: string;
 }
 export function ScreenScaffold({ children, scroll = false, keyboardAvoiding = false, edges = ['top', 'left', 'right'], style, contentStyle, testID, }: ScreenScaffoldProps) {
-    const { colors } = useAppTheme();
+    const { semantic } = useAppTheme();
     const { width } = useWindowDimensions();
     const isTablet = width >= 768;
     const keyboardConfig = getPlatformKeyboardConfig();
@@ -36,7 +36,7 @@ export function ScreenScaffold({ children, scroll = false, keyboardAvoiding = fa
     </KeyboardAvoidingView>) : (content);
     return (<SafeAreaView testID={testID} edges={edges} style={[
             styles.safeArea,
-            createSafeAreaViewBackgroundColorStyle(colors.background),
+            createSafeAreaViewBackgroundColorStyle(semantic.surface.canvas),
             style,
         ]}>
       <View style={styles.responsiveWrapper}>
@@ -50,4 +50,3 @@ export function ScreenScaffold({ children, scroll = false, keyboardAvoiding = fa
     </SafeAreaView>);
 }
 export default ScreenScaffold;
-

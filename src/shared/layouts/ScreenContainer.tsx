@@ -3,7 +3,8 @@ import { ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ResponsiveContainer } from "./ResponsiveContainer";
 import { includeWhenPresent } from "../utils/presentProperty";
-import { styles } from "./styles/ScreenContainer.styles";
+import { createBackgroundStyle, styles } from "./styles/ScreenContainer.styles";
+import { useAppTheme } from "../theme/useAppTheme";
 interface ScreenContainerProps {
     children: React.ReactNode;
     style?: ViewStyle;
@@ -11,11 +12,11 @@ interface ScreenContainerProps {
     edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 export function ScreenContainer({ children, style, contentStyle, edges = [], }: ScreenContainerProps) {
-    return (<SafeAreaView style={[styles.safeArea, style]} edges={edges}>
+    const { semantic } = useAppTheme();
+    return (<SafeAreaView style={[styles.safeArea, createBackgroundStyle(semantic.surface.canvas), style]} edges={edges}>
       <ResponsiveContainer {...includeWhenPresent("contentStyle", contentStyle)}>
         {children}
       </ResponsiveContainer>
     </SafeAreaView>);
 }
 export default ScreenContainer;
-

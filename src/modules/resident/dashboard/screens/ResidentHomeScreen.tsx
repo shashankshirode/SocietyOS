@@ -1,377 +1,396 @@
-import { useCallback, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import type { Complaint } from "../../../../shared/types/complaint.types";
-import type { Notice, NoticeCategory as DetailNoticeCategory } from "../../../../shared/types/notice.types";
-import type { Visitor } from "../../../../shared/types/visitor.types";
-import { ErrorState } from "../../../../shared/feedback/ErrorState";
-import { useAppTheme } from "../../../../shared/theme/useAppTheme";
-import { useMessages } from "../../../../shared/constants/useMessages";
-import { DashboardSkeleton } from "../../../../ui/loading/DashboardSkeleton";
-import { ContentFrame } from "../../../../ui/layout/ContentFrame";
-import { SafeText } from "../../../../shared/components/SafeText";
-import { useResponsiveLayout } from "../../../../ui/layout/useResponsiveLayout";
-import type { ResidentHomeScreenProps, RootTabParamList } from "../../../../app/navigation/navigation.types";
-import { useResidentDashboard } from "../hooks/useResidentDashboard";
-import type { DashboardSectionKey, DashboardSectionStatus, ComplaintPriority, NoticeCategory, VisitorAccessItem } from "../data/dashboard.types";
-import { createResidentDashboardPersonalization, RESIDENT_DASHBOARD_LIMITS } from "../hooks/useResidentDashboardPersonalization";
-import { normalizeDashboardIsoDate } from "../data/dashboard.normalization";
-import { ResidentHomeHeader } from "../../../../ui/patterns/ResidentHomeHeader";
-import { FloatingSosButton } from "../../../../ui/patterns/FloatingSosButton";
-import { useResidentRoleNavigation } from "../../navigation/useResidentRoleNavigation";
-import { useActiveResidentHome } from "../../homeContext/hooks/useActiveResidentHome";
-import { mapContextRoleToAppRole } from "../../homeContext/utils/residentHomeContextPermissions";
-import { residentAmenityImageById, residentAmenityImageByName } from "../../media/residentImageUsageMap";
-import { getAppPlatform } from "../../../../shared/platform";
-import { resolveResidentTabBarObstruction } from "../../navigation/useResidentTabBarLayout";
-import { resolveResidentDashboardLayout } from "../layout/residentDashboardLayout";
-import { AmenityDiscoveryRail, ActivityOverviewSheet, AsyncContentBoundary, CommunityServiceMatrix, ComplaintJourney, DocumentReadinessPanel, FinancialSnapshot, HomePulsePanel, PriorityOverviewSheet, ResidentActivityStream, ResidentCommandDock, SocietyNoticeRail, TodayCommandCenter, VisitorJourneyTimeline } from "../components";
-import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
-import { styles, createSafeTextColorStyle, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createViewGapStyle, createViewGapStyle2, createViewGapStyle3, createViewGapStyle4, createViewBackgroundColorStyle3, createScrollViewPaddingBottomStyle, createViewBackgroundColorBorderColorStyle } from "../styles/screens/ResidentHomeScreen.styles";
-import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
-function mapVisitorType(item: VisitorAccessItem): Visitor['type'] {
-    if (item.visitorType === 'delivery')
-        return 'DELIVERY';
-    if (item.visitorType === 'cab')
-        return 'CAB';
-    if (item.visitorType === 'guest')
-        return 'GUEST';
-    return 'VENDOR';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { ResidentHomeScreenProps, RootTabParamList } from '../../../../app/navigation/navigation.types';
+import { SafeText } from '../../../../shared/components/SafeText';
+import { useAppTheme } from '../../../../shared/theme/useAppTheme';
+import { useMessages } from '../../../../shared/constants/useMessages';
+import { ErrorState } from '../../../../shared/feedback/ErrorState';
+import { FloatingSosButton } from '../../../../ui/patterns/FloatingSosButton';
+import { useActiveResidentHome } from '../../homeContext/hooks/useActiveResidentHome';
+import { useResidentRoleNavigation } from '../../navigation/useResidentRoleNavigation';
+import { resolveResidentTabBarObstruction } from '../../navigation/useResidentTabBarLayout';
+import { getAppPlatform } from '../../../../shared/platform';
+import { useResidentDashboard } from '../hooks/useResidentDashboard';
+import { useResidentGreeting } from '../hooks/useResidentGreeting';
+import { useAuthSession } from '../../../../core/auth/useAuthSession';
+import { createResidentDashboardPersonalization } from '../hooks/useResidentDashboardPersonalization';
+import { PriorityOverviewSheet } from '../components/PriorityOverviewSheet';
+import { ContextCommand } from '../components/ContextCommand';
+import { HomeAttentionField } from '../components/HomeAttentionField';
+import { LivingTimeline } from '../components/LivingTimeline';
+import { ResidencePulseExpanded } from '../components/ResidencePulseExpanded';
+import { ResidencePulseField, type ResidencePulseState } from '../components/ResidencePulseField';
+import type { HomeActivityItem, ResidentPriorityItem, VisitorAccessItem } from '../data/dashboard.types';
+import { createResidencePulseSignals } from '../data/pulseSignal.model';
+import { SocietyExperienceFrame } from '../../experience/SocietyExperienceFrame';
+import { ResidenceBeacon } from '../../experience/ResidenceBeacon';
+import { IdentityOrb } from '../../experience/IdentityOrb';
+import { PartyPassModal } from '../../visitors/components/PartyPassModal';
+import { UpiPaymentSheet } from '../../billing/components/UpiPaymentSheet';
+import { ConnectHomeView } from '../../homeContext/components/ConnectHomeView';
+import { ScenarioLabDrawer } from '../../../../core/scenario/ScenarioLabDrawer';
+import { ResidencePulseSkeleton, VisitorTimelineSkeleton, BillSummarySkeleton } from '../../../../ui/skeletons/FeatureSkeletons';
+import {
+  createCommunityBorderStyle,
+  createContextSocietyStyle,
+  createRootStyle,
+  createScrollContentStyle,
+  styles,
+} from '../styles/screens/ResidentHomeScreen.styles';
+
+function formatAmount(amount: number): string {
+  return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
-function mapVisitorStatus(item: VisitorAccessItem): Visitor['status'] {
-    if (item.status === 'inside' || item.status === 'exitConfirmationRequired')
-        return 'CHECKED_IN';
-    if (item.status === 'waitingAtGate')
-        return 'WAITING_APPROVAL';
-    if (item.status === 'completed')
-        return 'COMPLETED';
-    if (item.status === 'expired' || item.status === 'cancelled')
-        return 'EXPIRED';
-    return 'EXPECTED';
-}
-function mapNoticeCategory(category: NoticeCategory): DetailNoticeCategory {
-    if (category === 'maintenance')
-        return 'MAINTENANCE';
-    if (category === 'event')
-        return 'FESTIVAL_EVENT';
-    if (category === 'emergency')
-        return 'EMERGENCY';
-    if (category === 'important')
-        return 'AGM_MEETING';
-    return 'GENERAL';
-}
-function mapComplaintPriority(priority: ComplaintPriority): Complaint['priority'] {
-    if (priority === 'critical')
-        return 'URGENT';
-    if (priority === 'high')
-        return 'HIGH';
-    if (priority === 'medium')
-        return 'MEDIUM';
-    return 'LOW';
-}
+
 export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
-    const localizedUiText = useMessages().uiLiterals;
-    void localizedUiText;
-    const { colors } = useAppTheme();
-    const responsive = useResponsiveLayout();
-    const insets = useSafeAreaInsets();
-    const dashboardLayout = useMemo(() => resolveResidentDashboardLayout(responsive.width, responsive.height), [responsive.height, responsive.width]);
-    const messages = useMessages();
-    const dashboardMessages = messages.resident.dashboard;
-    const { canPerformAction, role } = useResidentRoleNavigation();
-    const { activeContext } = useActiveResidentHome();
-    const residentRoleKey = mapContextRoleToAppRole(activeContext.residentRole);
-    const { data: dashboard, error, isLoading, refetch, } = useResidentDashboard();
-    const [refreshing, setRefreshing] = useState(false);
-    const [prioritySheetVisible, setPrioritySheetVisible] = useState(false);
-    const [activitySheetVisible, setActivitySheetVisible] = useState(false);
-    const handleRefresh = useCallback(async () => {
-        setRefreshing(true);
-        try {
-            await refetch();
-        }
-        finally {
-            setRefreshing(false);
-        }
-    }, [refetch]);
-    if (isLoading && !dashboard && !error && !refreshing) {
-        return (<View style={[styles.root, createViewBackgroundColorStyle(colors.background)]} accessibilityLabel={messages.resident.loading.dashboard}>
-        <DashboardSkeleton />
-      </View>);
-    }
-    if (error || !dashboard) {
-        return (<View style={[styles.root, createViewBackgroundColorStyle2(colors.background)]}> 
-        <ErrorState title={dashboardMessages.errors.dashboardTitle} message={dashboardMessages.errors.dashboardDescription} retryLabel={dashboardMessages.actions.retrySection} onRetry={refetch}/>
-      </View>);
-    }
-    const experience = createResidentDashboardPersonalization({
-        dashboard,
-        messages,
-        role
-    });
-    const tabNavigation = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
-    const openVisitorTab = () => tabNavigation?.navigate('VisitorTab', { screen: 'VisitorList' });
-    const openBillTab = () => tabNavigation?.navigate('BillTab', { screen: 'BillList' });
-    const openComplaintTab = () => tabNavigation?.navigate('ComplaintTab', { screen: 'ComplaintList' });
-    const openProfile = () => navigation.navigate('ProfileTab');
-    const openDocumentVault = () => navigation.navigate('DocumentVaultHome');
-    const openResidentConnect = () => navigation.navigate('ResidentConnectStack');
-    const openAmenities = () => navigation.navigate('FacilityStack', { screen: 'FacilityList' });
-    const openServices = () => navigation.navigate('CommunityStack', { screen: 'ResidentServiceListing' });
-    const handleVisitorPress = (id: string) => {
-        const item = dashboard.visitorTimeline.find((visitor) => visitor.id === id);
-        if (!item)
-            return;
-        const visitor: Visitor = {
-            id: item.id,
-            homeContextId: activeContext.homeContextId,
-            societyId: activeContext.societyId,
-            unitId: activeContext.unitId,
-            dataScopeKey: activeContext.dataScopeKey,
-            name: item.visitorName,
-            phone: '••••••••••',
-            type: mapVisitorType(item),
-            status: mapVisitorStatus(item),
-            expectedDate: item.validFrom,
-            expectedTime: item.validTill,
-            flatNumber: activeContext.flatNumber,
-            societyName: activeContext.societyName,
-            purpose: item.purpose,
-            otp: item.otpAvailable ? '••••••' : '—',
-            createdAt: new Date().toISOString(),
-            visitorCategory: item.visitorType === 'vendor' ? 'serviceProvider' : item.visitorType
-        };
-        navigation.navigate('VisitorDetailFromHome', { visitor });
-    };
-    const handleComplaintPress = () => {
-        const item = dashboard.complaintProgress;
-        if (!item) {
-            openComplaintTab();
-            return;
-        }
-        const complaint: Complaint = {
-            id: item.complaintId,
-            homeContextId: activeContext.homeContextId,
-            societyId: activeContext.societyId,
-            unitId: activeContext.unitId,
-            dataScopeKey: activeContext.dataScopeKey,
-            title: item.title,
-            description: item.latestUpdate ?? item.title,
-            category: 'OTHER',
-            status: item.steps.some((step) => step.status === 'current' && step.label === 'Resolved')
-                ? 'RESOLVED'
-                : 'IN_PROGRESS',
-            priority: mapComplaintPriority(item.priority),
-            location: activeContext.displayUnitName,
-            flatNumber: activeContext.flatNumber,
-            residentName: dashboard.residentName,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            slaText: item.slaRemainingLabel,
-            assignedTo: item.assignedTo,
-            updates: item.latestUpdate
-                ? [{ id: `${item.complaintId}:latest`, status: 'IN_PROGRESS', note: item.latestUpdate, timestamp: new Date().toISOString() }]
-                : []
-        };
-        navigation.navigate('ComplaintDetailFromHome', { complaint });
-    };
-    const handleNoticePress = (id: string) => {
-        const item = dashboard.notices.find((notice) => notice.id === id);
-        if (!item) {
-            navigation.navigate('NoticeListFromHome');
-            return;
-        }
-        const notice: Notice = {
-            id: item.id,
-            homeContextId: activeContext.homeContextId,
-            societyId: activeContext.societyId,
-            unitId: activeContext.unitId,
-            dataScopeKey: activeContext.dataScopeKey,
-            title: item.title,
-            body: item.summary ?? item.title,
-            category: mapNoticeCategory(item.category),
-            date: normalizeDashboardIsoDate(item.publishedDate, new Date().toISOString()),
-            postedBy: item.publishedBy ?? activeContext.societyName,
-            isImportant: item.category === 'important' || item.category === 'emergency',
-            priority: item.category === 'emergency' ? 'URGENT' : item.category === 'important' ? 'IMPORTANT' : 'NORMAL',
-            status: item.acknowledgementStatus === 'pending' ? 'UNREAD' : 'READ',
-            societyName: activeContext.societyName,
-            ...includeWhenPresent("attachment", item.attachmentName
-                ? { name: item.attachmentName, type: 'PDF', size: '1.2 MB' }
-                : undefined),
-            ...includeWhenPresent("acknowledgementRequired", item.acknowledgementRequired),
-            acknowledged: item.acknowledgementStatus === 'acknowledged'
-        };
-        navigation.navigate('NoticeDetailFromHome', { notice });
-    };
-    const handlePriorityAction = (id: string) => {
-        if (id.startsWith('visitor-exit-')) {
-            openVisitorTab();
-            return;
-        }
-        const actionHandlers: Record<string, () => void> = {
-            'act-visitor': () => navigation.navigate('CreateVisitorFromHome'),
-            'act-pay': openBillTab,
-            'act-complaint': () => navigation.navigate('CreateComplaintFromHome'),
-            'act-sos': () => navigation.navigate('EmergencySos'),
-            'act-documents': () => navigation.navigate('UploadDocument'),
-            'act-noc': () => navigation.navigate('NocRequestList'),
-            'act-family': () => navigation.navigate('AddFamilyMember'),
-            'act-tenant': () => navigation.navigate('TenantManagement'),
-            'act-connect': openResidentConnect,
-            'act-amenity': openAmenities,
-            'act-notice': () => navigation.navigate('NoticeListFromHome'),
-            'act-domestic-help': () => navigation.navigate('DomesticHelpStack', { screen: 'DomesticHelpHome' })
-        };
-        actionHandlers[id]?.();
-    };
-    const handleActivityPress = (id: string) => {
-        const item = dashboard.activities.find((activity) => activity.id === id);
-        if (!item)
-            return;
-        if (item.module === 'visitor')
-            openVisitorTab();
-        else if (item.module === 'billing')
-            openBillTab();
-        else if (item.module === 'complaint')
-            openComplaintTab();
-        else if (item.module === 'notice')
-            navigation.navigate('NoticeListFromHome');
-        else if (item.module === 'document')
-            openDocumentVault();
-        else if (item.module === 'facility')
-            openAmenities();
-        else if (item.module === 'residentConnect')
-            openResidentConnect();
-        else
-            navigation.navigate('EmergencySos');
-    };
-    const resolveSectionStatus = (key: DashboardSectionKey, hasContent = true): DashboardSectionStatus => dashboard.sectionStates?.[key]?.status ?? (hasContent ? 'ready' : 'empty');
-    const boundaryMessages = {
-        errorTitle: dashboardMessages.errors.partialTitle,
-        errorDescription: dashboardMessages.errors.partialDescription,
-        offlineTitle: dashboardMessages.errors.offlineTitle,
-        offlineDescription: dashboardMessages.errors.offlineDescription,
-        retryLabel: dashboardMessages.actions.retrySection,
-        onRetry: refetch
-    };
-    const prioritiesSection = (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('priorities', experience.priorities.length > 0)} skeletonVariant="priority" emptyTitle={dashboardMessages.todayCommandCentre.noPrioritiesTitle} emptyDescription={dashboardMessages.todayCommandCentre.noPrioritiesMessage} testID="dashboard-priorities">
-      <TodayCommandCenter title={dashboardMessages.todayCommandCentre.title} subtitle={dashboardMessages.todayCommandCentre.subtitle} viewAllLabel={dashboardMessages.todayCommandCentre.viewAll} emptyTitle={dashboardMessages.todayCommandCentre.noPrioritiesTitle} emptyDescription={dashboardMessages.todayCommandCentre.noPrioritiesMessage} items={experience.priorities} summary={experience.prioritySummary} onActionPress={handlePriorityAction} onViewAllPress={() => setPrioritySheetVisible(true)}/>
-    </AsyncContentBoundary>);
-    const pulseSection = (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('pulse')} skeletonVariant="pulse" emptyTitle={messages.resident.pulse.ready} emptyDescription={messages.resident.pulse.subtitle} testID="dashboard-home-pulse">
-      <HomePulsePanel pulse={experience.pulse}/>
-    </AsyncContentBoundary>);
-    const commandSection = (<ResidentCommandDock title={dashboardMessages.sections.commandDock} subtitle={dashboardMessages.sections.commandDockSubtitle} actions={experience.commandActions} onActionPress={handlePriorityAction}/>);
-    const visitorsSection = canPerformAction('visitors') ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('visitors', dashboard.visitorTimeline.length > 0)} skeletonVariant="timeline" emptyTitle={dashboardMessages.empty.visitorsTitle} emptyDescription={dashboardMessages.empty.visitorsDescription} testID="dashboard-visitors">
-      <VisitorJourneyTimeline items={dashboard.visitorTimeline.slice(0, RESIDENT_DASHBOARD_LIMITS.visitors)} onCreateVisitorPress={() => navigation.navigate('CreateVisitorFromHome')} onVisitorPress={handleVisitorPress} onViewAllPress={openVisitorTab} title={dashboardMessages.sections.visitors} subtitle={dashboardMessages.sections.visitorsSubtitle} createPassLabel={dashboardMessages.actions.createVisitor} viewAllLabel={dashboardMessages.actions.viewAllVisitors} noVisitorsLabel={dashboardMessages.empty.visitorsTitle} noVisitorsCtaLabel={dashboardMessages.actions.createVisitor} statusLabels={{
-            upcoming: dashboardMessages.status.upcoming,
-            waitingAtGate: dashboardMessages.status.waitingAtGate,
-            inside: dashboardMessages.status.insideSociety,
-            exitConfirmationRequired: dashboardMessages.status.exitConfirmationRequired,
-            completed: dashboardMessages.status.completed,
-            expired: dashboardMessages.status.expired,
-            cancelled: dashboardMessages.status.cancelled
-        }} accessLabels={{
-            oneDay: dashboardMessages.status.oneDay,
-            limitedHours: dashboardMessages.status.limited,
-            recurring: dashboardMessages.status.recurring,
-            expired: dashboardMessages.status.expired
-        }} otpLabel={dashboardMessages.status.otp}/>
-    </AsyncContentBoundary>) : null;
-    const financeSection = canPerformAction('maintenance') ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('finance')} skeletonVariant="finance" emptyTitle={dashboardMessages.empty.billsTitle} emptyDescription={dashboardMessages.empty.billsDescription} testID="dashboard-finance">
-      <FinancialSnapshot {...dashboard.maintenancePayment} sectionTitle={dashboardMessages.sections.finance} sectionSubtitle={dashboardMessages.sections.financeSubtitle} onPayNowPress={openBillTab} onBillPress={openBillTab} onLedgerPress={openBillTab}/>
-    </AsyncContentBoundary>) : null;
-    const complaintSection = canPerformAction('complaints') ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('complaints', Boolean(dashboard.complaintProgress))} skeletonVariant="complaint" emptyTitle={dashboardMessages.empty.complaintsTitle} emptyDescription={dashboardMessages.empty.complaintsDescription} testID="dashboard-complaints">
-      {dashboard.complaintProgress ? (<ComplaintJourney {...dashboard.complaintProgress} onComplaintPress={handleComplaintPress} sectionTitle={dashboardMessages.sections.complaints} sectionSubtitle={dashboardMessages.sections.complaintsSubtitle} slaTitle={dashboardMessages.complaint.slaProgress} assignedToPrefix={dashboardMessages.complaint.assignedTo} latestUpdateLabel={dashboardMessages.complaint.latestUpdate} nextActionLabel={dashboardMessages.complaint.nextAction} viewComplaintLabel={dashboardMessages.actions.viewComplaint} {...includeWhenPresent("additionalComplaintsLabel", dashboard.complaintProgress.additionalActiveCount
-            ? dashboardMessages.complaint.additionalComplaints(dashboard.complaintProgress.additionalActiveCount)
-            : undefined)} priorityLabels={dashboardMessages.complaint.priority}/>) : null}
-    </AsyncContentBoundary>) : null;
-    const isNoticesEnabled = dashboard.residenceDetails?.featureFlags?.includes('notices') ?? true;
-    const noticeSection = (<AsyncContentBoundary {...boundaryMessages} status={isNoticesEnabled ? resolveSectionStatus('notices', dashboard.notices.length > 0) : 'empty'} skeletonVariant="editorial" emptyTitle={isNoticesEnabled ? dashboardMessages.empty.noticesTitle : getActiveUiLiteral("m_7d45e2bcbeee")} emptyDescription={isNoticesEnabled ? dashboardMessages.empty.noticesDescription : getActiveUiLiteral("m_ee334e545021")} testID="dashboard-notices">
-      <SocietyNoticeRail notices={dashboard.notices.slice(0, RESIDENT_DASHBOARD_LIMITS.notices)} onNoticePress={handleNoticePress} onViewAllPress={() => navigation.navigate('NoticeListFromHome')} sectionTitle={dashboardMessages.sections.notices} sectionSubtitle={dashboardMessages.sections.noticesSubtitle} viewAllLabel={dashboardMessages.actions.viewAllNotices} emptyTitle={isNoticesEnabled ? dashboardMessages.empty.noticesTitle : getActiveUiLiteral("m_7d45e2bcbeee")} emptyDescription={isNoticesEnabled ? dashboardMessages.empty.noticesDescription : getActiveUiLiteral("m_ee334e545021")}/>
-    </AsyncContentBoundary>);
-    const documentSection = canPerformAction('documents') ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('documents', dashboard.documents.length > 0)} skeletonVariant="editorial" emptyTitle={dashboardMessages.empty.documentsTitle} emptyDescription={dashboardMessages.empty.documentsDescription} testID="dashboard-documents">
-      <DocumentReadinessPanel documents={dashboard.documents.slice(0, RESIDENT_DASHBOARD_LIMITS.documents)} onDocumentPress={(id) => navigation.navigate('DocumentDetail', { documentId: id })} onAddDocumentPress={() => navigation.navigate('UploadDocument')} onOpenVaultPress={openDocumentVault} sectionTitle={dashboardMessages.sections.documents} sectionSubtitle={dashboardMessages.sections.documentsSubtitle} securityNote={dashboardMessages.status.secureAccess} addDocumentLabel={dashboardMessages.actions.uploadDocument} openVaultLabel={dashboardMessages.actions.openDocumentVault} summaryLabels={dashboardMessages.documents} statusLabels={{
-            verified: dashboardMessages.documents.verified,
-            pending: dashboardMessages.documents.pending,
-            expiring: dashboardMessages.documents.expiringSoon,
-            expired: dashboardMessages.documents.expired,
-            missing: dashboardMessages.documents.missing
-        }} emptyTitle={dashboardMessages.empty.documentsTitle} emptyDescription={dashboardMessages.empty.documentsDescription}/>
-    </AsyncContentBoundary>) : null;
-    const amenitySection = canPerformAction('facilityBooking') && dashboard.amenities.length > 0 ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('amenities', dashboard.amenities.length > 0)} skeletonVariant="media" emptyTitle={dashboardMessages.empty.amenitiesTitle} emptyDescription={dashboardMessages.empty.amenitiesDescription} testID="dashboard-amenities">
-      <AmenityDiscoveryRail amenities={dashboard.amenities.slice(0, RESIDENT_DASHBOARD_LIMITS.amenities)} onAmenityPress={(id) => navigation.navigate('FacilityStack', { screen: 'FacilityDetail', params: { facilityId: id } })} onBookPress={(id) => navigation.navigate('FacilityStack', { screen: 'CreateFacilityBooking', params: { facilityId: id } })} onViewAllPress={openAmenities} imageAssetsByAmenityId={residentAmenityImageById} imageAssetsByAmenityName={residentAmenityImageByName} sectionTitle={dashboardMessages.sections.amenities} sectionSubtitle={dashboardMessages.sections.amenitiesSubtitle} bookLabel={dashboardMessages.actions.bookAmenity} viewAllLabel={dashboardMessages.actions.exploreAmenities} availabilityLabels={{
-            available: dashboardMessages.status.available,
-            limited: dashboardMessages.status.limitedSlots,
-            closed: dashboardMessages.status.closed
-        }} emptyTitle={dashboardMessages.empty.amenitiesTitle} emptyDescription={dashboardMessages.empty.amenitiesDescription}/>
-    </AsyncContentBoundary>) : null;
-    const serviceSection = canPerformAction('marketplace') ? (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('services', dashboard.communityServices.length > 0)} skeletonVariant="matrix" emptyTitle={dashboardMessages.empty.servicesTitle} emptyDescription={dashboardMessages.empty.servicesDescription} testID="dashboard-services">
-      <CommunityServiceMatrix services={dashboard.communityServices.slice(0, RESIDENT_DASHBOARD_LIMITS.communityServices)} onServicePress={openServices} onViewAllPress={openServices} paddingHorizontal={responsive.isTablet ? 0 : 20} sectionTitle={dashboardMessages.sections.services} sectionSubtitle={dashboardMessages.sections.servicesSubtitle} viewAllLabel={dashboardMessages.actions.viewAllServices} verifiedLabel={dashboardMessages.status.societyVerified} independentLabel={dashboardMessages.status.independentProvider} emptyTitle={dashboardMessages.empty.servicesTitle} emptyDescription={dashboardMessages.empty.servicesDescription}/>
-    </AsyncContentBoundary>) : null;
-    const activitySection = (<AsyncContentBoundary {...boundaryMessages} status={resolveSectionStatus('activity', dashboard.activities.length > 0)} skeletonVariant="timeline" emptyTitle={dashboardMessages.empty.activityTitle} emptyDescription={dashboardMessages.empty.activityDescription} testID="dashboard-activity">
-      <ResidentActivityStream title={dashboardMessages.sections.activity} subtitle={dashboardMessages.sections.activitySubtitle} activities={dashboard.activities.slice(0, RESIDENT_DASHBOARD_LIMITS.activities)} onActivityPress={handleActivityPress} viewAllLabel={dashboardMessages.actions.viewAllActivity} {...includeWhenPresent("onViewAllPress", dashboard.activities.length > RESIDENT_DASHBOARD_LIMITS.activities
-        ? () => setActivitySheetVisible(true)
-        : undefined)} emptyTitle={dashboardMessages.empty.activityTitle} emptyDescription={dashboardMessages.empty.activityDescription}/>
-    </AsyncContentBoundary>);
-    const phoneContent = (<View style={[styles.sections, createViewGapStyle(dashboardLayout.sectionGap)]} testID="resident-dashboard-phone-layout">
-      {prioritiesSection}
-      {pulseSection}
-      {commandSection}
-      {visitorsSection}
-      {dashboardLayout.usesWidePhonePairs ? (<View style={styles.widePhonePair}>
-          <View style={styles.widePhonePairItem}>{financeSection}</View>
-          <View style={styles.widePhonePairItem}>{complaintSection}</View>
-        </View>) : (<>{financeSection}{complaintSection}</>)}
-      {noticeSection}
-      {documentSection}
-      {amenitySection}
-      {serviceSection}
-      {activitySection}
-    </View>);
-    const tabletContent = (<View style={[styles.tabletColumns, createViewGapStyle2(dashboardLayout.horizontalGap)]} testID="resident-dashboard-tablet-layout">
-      <View style={[styles.tabletLeft, createViewGapStyle3(dashboardLayout.sectionGap)]}> 
-        {prioritiesSection}
-        {pulseSection}
-        {visitorsSection}
-        {complaintSection}
-        {activitySection}
-      </View>
-      <View style={[styles.tabletRight, createViewGapStyle4(dashboardLayout.sectionGap)]}> 
-        {commandSection}
-        {financeSection}
-        {noticeSection}
-        {documentSection}
-        {amenitySection}
-        {serviceSection}
-      </View>
-    </View>);
-    const tabBarObstruction = resolveResidentTabBarObstruction(responsive.width, insets.bottom, getAppPlatform());
-    return (<View style={[styles.root, createViewBackgroundColorStyle3(colors.background)]} testID="resident-dashboard">
-      <ScrollView contentContainerStyle={[
-            styles.scrollContent,
-            createScrollViewPaddingBottomStyle(tabBarObstruction + 56 + dashboardLayout.bottomContentInset),
-        ]} showsVerticalScrollIndicator={false} bounces refreshControl={(<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} colors={[colors.primary]} accessibilityLabel={dashboardMessages.accessibility.dashboardRefreshing}/>)}>
-        <ResidentHomeHeader residentName={dashboard.residentName} unitLabel={dashboard.unitLabel} societyName={dashboard.societyName} roleLabel={dashboard.roleLabel} residentRoleKey={residentRoleKey} unreadNoticeCount={dashboard.unreadNoticeCount} pendingActionCount={experience.priorities.length} onProfilePress={openProfile} onNotificationsPress={() => navigation.navigate('NoticeListFromHome')}/>
+  const { colors } = useAppTheme();
+  const messages = useMessages();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const { session } = useAuthSession();
+  const { activeContext } = useActiveResidentHome();
+  const greeting = useResidentGreeting(activeContext);
+  const { canPerformAction, role } = useResidentRoleNavigation();
+  const { data: dashboard, error, isLoading, refetch } = useResidentDashboard();
+  const pulseSignals = useMemo(() => dashboard ? createResidencePulseSignals(dashboard) : [], [dashboard]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pulseVisible, setPulseVisible] = useState(false);
+  const [prioritiesVisible, setPrioritiesVisible] = useState(false);
+  const [partyPassVisible, setPartyPassVisible] = useState(false);
+  const [upiSheetVisible, setUpiSheetVisible] = useState(false);
+  const [scenarioLabVisible, setScenarioLabVisible] = useState(false);
+  const copy = messages.resident.dashboard.homeExperience;
 
-        <ContentFrame style={styles.contentFrame} maxWidth={dashboardLayout.contentMaxWidth}>
-          {activeContext.status === 'accessRestricted' ? (<View accessible accessibilityRole="alert" style={[styles.restrictionNotice, createViewBackgroundColorBorderColorStyle(colors.warningSoft, colors.warning)]}>
-              <SafeText variant="bodyStrong" style={createSafeTextColorStyle(colors.warning)}>
-                {messages.resident.homeContext.partialRestrictionTitle}
-              </SafeText>
-              <SafeText variant="caption" color="secondary">
-                {messages.resident.homeContext.partialRestrictionDescription}
-              </SafeText>
-            </View>) : null}
-          {dashboardLayout.usesTwoPane ? tabletContent : phoneContent}
-        </ContentFrame>
-      </ScrollView>
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
-      <PriorityOverviewSheet visible={prioritySheetVisible} title={dashboardMessages.sections.commandCenter} closeLabel={messages.common.close} items={experience.priorities} onClose={() => setPrioritySheetVisible(false)} onActionPress={handlePriorityAction}/>
-      <ActivityOverviewSheet visible={activitySheetVisible} title={dashboardMessages.sections.activity} closeLabel={messages.common.close} activities={dashboard.activities} onClose={() => setActivitySheetVisible(false)} onActivityPress={handleActivityPress}/>
-      <FloatingSosButton />
-    </View>);
+  const experience = useMemo(
+    () => (dashboard ? createResidentDashboardPersonalization({ dashboard, messages, role }) : null),
+    [dashboard, messages, role]
+  );
+
+  const isZeroHome = activeContext.homeContextId === 'ctx-zero-home' || activeContext.societyId === 'soc-none';
+  const isPendingHome = activeContext.displayUnitName?.includes('Under Review') || activeContext.societyName?.includes('Pending');
+
+  if (isZeroHome || isPendingHome) {
+    return (
+      <SocietyExperienceFrame>
+        <View style={[styles.root, createRootStyle(colors.background)]} testID="resident-dashboard">
+          <ConnectHomeView
+            status={isPendingHome ? 'PENDING_APPROVAL' : 'NONE'}
+            societyName={activeContext.societyName}
+            unitName={activeContext.displayUnitName}
+            onLinkResidence={() => setScenarioLabVisible(true)}
+            onViewInvitations={() => setScenarioLabVisible(true)}
+            onWithdrawRequest={() => setScenarioLabVisible(true)}
+          />
+          <Pressable
+            onPress={() => setScenarioLabVisible(true)}
+            style={{
+              position: 'absolute',
+              top: insets.top + 8,
+              right: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              backgroundColor: 'rgba(59, 130, 246, 0.15)',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 12,
+            }}
+          >
+            <Ionicons name="flask-outline" size={14} color={colors.primary} />
+            <SafeText variant="tiny" style={{ color: colors.primary, fontWeight: '700' }}>Lab</SafeText>
+          </Pressable>
+          {scenarioLabVisible ? (
+            <ScenarioLabDrawer visible={scenarioLabVisible} onClose={() => setScenarioLabVisible(false)} />
+          ) : null}
+        </View>
+      </SocietyExperienceFrame>
+    );
+  }
+
+  if (isLoading && !dashboard && !error) {
+    return (
+      <SocietyExperienceFrame>
+        <View style={[styles.root, createRootStyle(colors.background)]}>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ResidencePulseSkeleton />
+            <BillSummarySkeleton />
+            <VisitorTimelineSkeleton />
+          </ScrollView>
+        </View>
+      </SocietyExperienceFrame>
+    );
+  }
+
+  if (error || !dashboard || !experience) {
+    return (
+      <SocietyExperienceFrame>
+        <View style={[styles.centeredState, createRootStyle(colors.background)]}>
+          <ErrorState
+            title={copy.errorTitle}
+            message={copy.errorDescription}
+            retryLabel={messages.resident.dashboard.actions.retrySection}
+            onRetry={refetch}
+          />
+        </View>
+      </SocietyExperienceFrame>
+    );
+  }
+
+  const tabNavigation = navigation.getParent<BottomTabNavigationProp<RootTabParamList>>();
+  const openVisitors = () => tabNavigation?.navigate('VisitorTab', { screen: 'VisitorList' });
+  const openBills = () => tabNavigation?.navigate('BillTab', { screen: 'BillList' });
+  const openComplaints = () => tabNavigation?.navigate('ComplaintTab', { screen: 'ComplaintList' });
+  const openFacilities = () => navigation.navigate('FacilityStack', { screen: 'FacilityList' });
+
+  const urgentNotice = dashboard.notices.find((notice) => notice.category === 'emergency' || notice.category === 'important');
+  const urgentComplaint = dashboard.complaintProgress && ['high', 'critical'].includes(dashboard.complaintProgress.priority);
+  const billDue = dashboard.maintenancePayment.status !== 'paid';
+  const waitingVisitor = dashboard.visitorTimeline.find((visitor) => visitor.status === 'waitingAtGate');
+
+  const moments: HomeActivityItem[] = dashboard.activities.length > 0
+    ? dashboard.activities
+    : dashboard.visitorTimeline.slice(0, 4).map((visitor: VisitorAccessItem) => ({
+        id: visitor.id,
+        title: visitor.visitorName,
+        description: visitor.status === 'inside' ? copy.enteredThrough(visitor.gateName) : visitor.purpose,
+        module: 'visitor' as const,
+        timestampLabel: visitor.enteredAtLabel ?? visitor.validFrom,
+      }));
+
+  const pulseState: ResidencePulseState =
+    urgentNotice || urgentComplaint || dashboard.maintenancePayment.status === 'overdue'
+      ? 'attention'
+      : pulseSignals.length > 0
+      ? 'active'
+      : 'calm';
+
+  const pulseTitle =
+    pulseState === 'attention'
+      ? copy.attentionRequired
+      : pulseState === 'calm'
+      ? copy.allClear
+      : copy.momentsAroundHome(pulseSignals.length);
+
+  const attentionCount = experience.priorities.length;
+  const attentionLabel = copy.attentionCount(attentionCount);
+  const supportingCopy =
+    pulseState === 'attention'
+      ? copy.attentionToday(attentionLabel)
+      : pulseState === 'calm'
+      ? copy.calmSupport
+      : copy.activeSupport;
+
+  const actionable = experience.priorities.filter((item) => item.actionId).slice(0, 3);
+  const nextAction: ResidentPriorityItem = waitingVisitor
+    ? {
+        id: 'waiting-visitor',
+        actionId: 'act-visitor',
+        title: copy.viewAtGate(waitingVisitor.visitorName),
+        description: copy.waitingNow(waitingVisitor.gateName),
+        metaLabel: copy.rightNow,
+        actionLabel: copy.viewVisitor,
+        iconName: 'person-outline',
+        tone: 'warning',
+      }
+    : actionable[0] ?? {
+        id: 'add-visitor',
+        actionId: 'act-visitor',
+        title: copy.addVisitor,
+        description: copy.addVisitorDescription,
+        metaLabel: copy.doNext,
+        actionLabel: copy.addVisitor,
+        iconName: 'person-add-outline',
+        tone: 'success',
+      };
+
+  const handleAction = (actionId?: string) => {
+    if (actionId === 'act-pay') setUpiSheetVisible(true);
+    else if (actionId === 'act-complaint') navigation.navigate('CreateComplaintFromHome');
+    else if (actionId === 'act-amenity') openFacilities();
+    else if (actionId === 'act-documents') navigation.navigate('DocumentVaultHome');
+    else if (actionId === 'act-noc') navigation.navigate('NocRequestList');
+    else if (actionId === 'act-family') navigation.navigate('HouseholdOverview');
+    else if (actionId === 'act-tenant') navigation.navigate('TenantManagement');
+    else if (actionId === 'act-notice') navigation.navigate('NoticeListFromHome');
+    else if (actionId === 'act-sos') navigation.navigate('EmergencySos');
+    else if (actionId === 'act-visitor') {
+      if (waitingVisitor) openVisitors();
+      else navigation.navigate('CreateVisitorFromHome');
+    } else openComplaints();
+  };
+
+  const communityNotice = dashboard.notices.find((notice) => notice.category === 'event');
+  const bottomInset = resolveResidentTabBarObstruction(width, insets.bottom, getAppPlatform());
+  const pulseSubtitle =
+    pulseState === 'attention'
+      ? urgentNotice?.title ?? dashboard.complaintProgress?.title ?? copy.maintenanceAttention
+      : pulseState === 'calm'
+      ? copy.homeQuiet
+      : copy.nothingUrgent;
+
+  const handleMomentPress = (item: HomeActivityItem) => {
+    if (item.module === 'facility') openFacilities();
+    else if (item.module === 'billing') openBills();
+    else if (item.module === 'complaint') openComplaints();
+    else if (item.module === 'notice') navigation.navigate('NoticeListFromHome');
+    else openVisitors();
+  };
+
+  const residentFullName =
+    dashboard?.residentName?.trim() ||
+    session?.name?.trim() ||
+    'Resident';
+  const residentFirstName = residentFullName.split(' ')[0] || 'Resident';
+
+  return (
+    <SocietyExperienceFrame>
+      <View style={[styles.root, createRootStyle(colors.background)]} testID="resident-dashboard">
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, createScrollContentStyle(0, bottomInset)]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+            />
+          }
+        >
+          {/* Large Canvas-Level Human Greeting */}
+          <View style={styles.greetingBlock}>
+            <SafeText testID="resident-dashboard-name" variant="h1" color="primary" style={{ fontSize: 28, fontWeight: '700', lineHeight: 34, marginBottom: 2 }}>
+              {greeting}, {residentFirstName}.
+            </SafeText>
+            <SafeText variant="body" color="secondary" style={{ fontSize: 16, lineHeight: 22 }}>
+              {supportingCopy}
+            </SafeText>
+          </View>
+
+          {/* 3. Hero Residence Pulse */}
+          <ResidencePulseField
+            state={pulseState}
+            eyebrow={copy.pulseTitle}
+            title={pulseTitle}
+            subtitle={pulseSubtitle}
+            signals={pulseSignals}
+            accessibilityLabel={copy.openPulse(pulseTitle)}
+            onPress={() => setPulseVisible(true)}
+          />
+
+          {/* 4. Needs Your Attention */}
+          <HomeAttentionField
+            title={copy.needsAttention}
+            viewAllLabel={copy.viewAll}
+            accessibilityLabel={attentionLabel}
+            items={actionable}
+            totalCount={experience.priorities.length}
+            onViewAll={() => setPrioritiesVisible(true)}
+            onAction={handleAction}
+          />
+
+          {/* 5. What Should I Do Next? */}
+          <ContextCommand
+            sectionLabel={copy.doNext}
+            item={nextAction}
+            onPress={() => handleAction(nextAction.actionId)}
+          />
+
+          {/* 6. Today Around Home (Chronological Moments) */}
+          <LivingTimeline
+            title={copy.todayAroundHome}
+            quietTitle={copy.homeQuiet}
+            quietDescription={copy.quietTimelineDescription}
+            moments={moments}
+            onMomentPress={handleMomentPress}
+          />
+
+          {/* Contextual Community Event Notice (if active) */}
+          {communityNotice ? (
+            <Pressable
+              onPress={() => navigation.navigate('NoticeListFromHome')}
+              style={[styles.communityRow, createCommunityBorderStyle(colors.border)]}
+            >
+              <View style={{ flex: 1 }}>
+                <SafeText variant="tiny" style={createContextSocietyStyle(colors.success)}>
+                  {copy.inYourCommunity}
+                </SafeText>
+                <SafeText variant="bodyStrong" color="primary">
+                  {communityNotice.title}
+                </SafeText>
+                <SafeText variant="caption" color="muted">
+                  {communityNotice.publishedAtLabel}
+                </SafeText>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={colors.textSecondary} />
+            </Pressable>
+          ) : null}
+        </ScrollView>
+
+        {/* Modal Sheets & Floating Controls */}
+        <PriorityOverviewSheet
+          visible={prioritiesVisible}
+          title={copy.needsAttention}
+          closeLabel={copy.closePriorities}
+          items={experience.priorities}
+          onClose={() => setPrioritiesVisible(false)}
+          onActionPress={handleAction}
+        />
+
+        <ResidencePulseExpanded
+          visible={pulseVisible}
+          onClose={() => setPulseVisible(false)}
+          unitLabel={activeContext.displayUnitName}
+          signals={pulseSignals}
+          billAmountLabel={formatAmount(dashboard.maintenancePayment.totalOutstanding ?? dashboard.maintenancePayment.billAmount)}
+          billDue={billDue && canPerformAction('maintenance')}
+          onPay={() => {
+            setPulseVisible(false);
+            setUpiSheetVisible(true);
+          }}
+          onActivityPress={(item) => {
+            setPulseVisible(false);
+            handleMomentPress(item);
+          }}
+        />
+
+        <PartyPassModal
+          visible={partyPassVisible}
+          onClose={() => setPartyPassVisible(false)}
+        />
+
+        <UpiPaymentSheet
+          visible={upiSheetVisible}
+          amount={dashboard.maintenancePayment.totalOutstanding ?? dashboard.maintenancePayment.billAmount ?? 4500}
+          onClose={() => setUpiSheetVisible(false)}
+          onPaymentComplete={() => {
+            setUpiSheetVisible(false);
+            refetch();
+          }}
+        />
+
+        {scenarioLabVisible ? (
+          <ScenarioLabDrawer
+            visible={scenarioLabVisible}
+            onClose={() => setScenarioLabVisible(false)}
+          />
+        ) : null}
+
+        <FloatingSosButton />
+      </View>
+    </SocietyExperienceFrame>
+  );
 }
-export default ResidentHomeScreen;
 
+export default ResidentHomeScreen;

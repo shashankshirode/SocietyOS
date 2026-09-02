@@ -20,9 +20,8 @@ function getResidentRoleLabelKey(role?: string): MessageKey {
             return 'resident.header.roles.owner';
     }
 }
-export function ResponsivePageHeader({ title, subtitle, onBack, }: ResponsivePageHeaderProps) {
+export function ResponsivePageHeader({ title, subtitle, onBack, rightActions, roleContext }: ResponsivePageHeaderProps) {
     const { session } = useAuthSession();
-    return (<ResidentAppHeader variant="detail" titleKey={title} {...includeWhenPresent("subtitleKey", subtitle || session?.societyName || undefined)} roleLabelKey={getResidentRoleLabelKey(session?.role)} showBackButton={!!onBack} {...includeWhenPresent("onBackPress", onBack)}/>);
+    return (<ResidentAppHeader variant="detail" titleKey={title} {...includeWhenPresent("subtitleKey", subtitle || session?.societyName || undefined)} {...includeWhenPresent("contextLabelKey", roleContext)} roleLabelKey={getResidentRoleLabelKey(session?.role)} showBackButton={!!onBack} {...includeWhenPresent("onBackPress", onBack)} {...includeWhenPresent("contextualAction", rightActions)}/>);
 }
 export default ResponsivePageHeader;
-

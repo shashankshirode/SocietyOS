@@ -22,18 +22,18 @@ export interface EmptyStatePanelProps {
     testID?: string;
 }
 export function EmptyStatePanel({ illustration, icon, title, description, primaryAction, secondaryAction, testID, }: EmptyStatePanelProps) {
-    const { colors, dark } = useAppTheme();
+    const { semantic } = useAppTheme();
     const { width: screenWidth } = useWindowDimensions();
     const isTablet = screenWidth >= 768;
     return (<View style={[
             styles.container,
-            createViewBackgroundColorBorderColorMaxWidthStyle(dark ? colors.surfaceElevated : colors.surface, colors.border, isTablet ? 520 : undefined),
+            createViewBackgroundColorBorderColorMaxWidthStyle(semantic.surface.base, semantic.border.subtle, isTablet ? 520 : undefined),
         ]} testID={testID} accessibilityRole="summary" accessibilityLabel={`${title}. ${description}`}>
-      {illustration ? (<Image source={illustration} style={styles.illustration} resizeMode="contain" accessible={false}/>) : icon ? (<View style={[styles.iconContainer, createViewBackgroundColorStyle(dark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.03)')]}>
+      {illustration ? (<Image source={illustration} style={styles.illustration} resizeMode="contain" accessible={false}/>) : icon ? (<View style={[styles.iconContainer, createViewBackgroundColorStyle(semantic.surface.soft)]}>
           {icon}
         </View>) : null}
 
-      <SafeText variant="bodyStrong" align="center" style={[styles.title, createSafeTextColorStyle(colors.textPrimary)]}>
+      <SafeText variant="bodyStrong" align="center" style={[styles.title, createSafeTextColorStyle(semantic.text.primary)]}>
         {title}
       </SafeText>
 
@@ -49,4 +49,3 @@ export function EmptyStatePanel({ illustration, icon, title, description, primar
     </View>);
 }
 export default EmptyStatePanel;
-

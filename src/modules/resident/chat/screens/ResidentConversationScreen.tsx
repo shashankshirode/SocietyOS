@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -107,4 +107,3 @@ export function ResidentConversationScreen({ route, navigation }: Props) {
     </KeyboardAvoidingView>);
 }
 export default ResidentConversationScreen;
-

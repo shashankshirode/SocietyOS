@@ -25,6 +25,21 @@ import {
   residentScopedVisitors,
   residentScopedVehicles,
 } from '../../modules/resident/mock/residentMockDomainBuilders';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const MOCK_DATA_VERSION = 4;
+export const MOCK_STORE_STORAGE_KEY = 'society-os.mock.resident-state.v4';
+const obsoleteMockStoreKeys = [
+  'society-os.mock.resident-state.v1',
+  'society-os.mock.sos-events.v1',
+  'societyos.resident.facilityBooking.v2',
+  'societyos.resident.facilityBooking.v2.meta',
+];
+
+type PersistedMockStore = {
+  version: number;
+  state: MockStoreState;
+};
 
 const initialStoreState: MockStoreState = {
   visitors: [...residentScopedVisitors, ...mockVisitors],
@@ -216,6 +231,7 @@ function normalizeNoticeInput(notice: NoticeStoreInput): Notice {
 class MockStore {
   private state: MockStoreState;
   private listeners: Set<() => void> = new Set();
+  private hydration: Promise<void> | null = null;
 
   constructor() {
     this.state = cloneInitialStoreState();
@@ -232,12 +248,51 @@ class MockStore {
     };
   }
 
+  hydrate(): Promise<void> {
+    if (!this.hydration) {
+      this.hydration = AsyncStorage.getItem(MOCK_STORE_STORAGE_KEY).then(async (raw) => {
+        if (!raw) {
+          const storedKeys = await AsyncStorage.getAllKeys();
+          const legacyKeys = storedKeys.filter((key) => obsoleteMockStoreKeys.includes(key) || key.startsWith('societyos.resident.facilityBooking.v2.chunk'));
+          if (legacyKeys.length) await AsyncStorage.multiRemove(legacyKeys);
+          this.persist();
+          return;
+        }
+        const saved = JSON.parse(raw) as PersistedMockStore;
+        if (saved.version !== MOCK_DATA_VERSION) {
+          await AsyncStorage.removeItem(MOCK_STORE_STORAGE_KEY);
+          this.state = cloneInitialStoreState();
+          this.persist();
+          this.listeners.forEach((listener) => listener());
+          return;
+        }
+        this.state = { ...cloneInitialStoreState(), ...saved.state };
+        this.listeners.forEach((listener) => listener());
+      }).catch(() => undefined);
+    }
+    return this.hydration;
+  }
+
+  private persist() {
+    const persisted: PersistedMockStore = { version: MOCK_DATA_VERSION, state: this.state };
+    void AsyncStorage.setItem(MOCK_STORE_STORAGE_KEY, JSON.stringify(persisted));
+  }
+
   private notify() {
+    this.persist();
     this.listeners.forEach((listener) => listener());
   }
 
   reset() {
     this.state = cloneInitialStoreState();
+    this.hydration = Promise.resolve();
+    this.notify();
+  }
+
+  async resetPersistedDemoData(): Promise<void> {
+    await AsyncStorage.multiRemove([...obsoleteMockStoreKeys, MOCK_STORE_STORAGE_KEY, 'society-os.mock.sos-events.v4']);
+    this.state = cloneInitialStoreState();
+    this.hydration = Promise.resolve();
     this.notify();
   }
 

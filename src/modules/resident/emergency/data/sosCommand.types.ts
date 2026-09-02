@@ -16,7 +16,6 @@ export interface SosCommandActionConfig {
   labelKey: string;
   accessibilityKey: string;
   icon: string;
-  color: string;
   tone: 'danger' | 'warning' | 'info';
   requiresConfirm: boolean;
   confirmationMessageKey: string;

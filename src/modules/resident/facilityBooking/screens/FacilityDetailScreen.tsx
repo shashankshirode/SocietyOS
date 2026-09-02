@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { View, Pressable, ScrollView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { FacilityStackParamList } from '../../../../app/navigation/navigation.types';
@@ -34,6 +34,7 @@ type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityDetail'>;
 export function FacilityDetailScreen({ navigation, route }: Props) {
   const { colors } = useAppTheme();
   const labels = useMessages().resident.facilityBooking;
+  const msg = labels.spaces;
   const { activeContext } = useActiveResidentHome();
   const resource = useFacilityDetails(route.params.facilityId);
   const facility = resource.data;
@@ -45,19 +46,22 @@ export function FacilityDetailScreen({ navigation, route }: Props) {
     paymentMethodAvailable: true,
   });
   const [showAllRules, setShowAllRules] = useState(false);
+  const [selectedSlotHour, setSelectedSlotHour] = useState<string | null>(null);
   const locale = activeContext.locale ?? 'en-IN';
+
   if (resource.isLoading || !facility && !resource.error) {
     return (
-      <FacilityScreenLayout title={labels.details.title} onBack={navigation.goBack}>
-        <Skeleton height={280} />
+      <FacilityScreenLayout title={msg.spaceFocusTitle} onBack={navigation.goBack}>
+        <Skeleton height={200} />
         <DetailBlockSkeleton />
         <DetailBlockSkeleton />
       </FacilityScreenLayout>
     );
   }
+
   if (resource.error || !facility) {
     return (
-      <FacilityScreenLayout title={labels.details.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={msg.spaceFocusTitle} onBack={navigation.goBack}>
         <ErrorState
           title={labels.states.loadDetailsTitle}
           message={labels.states.loadDetailsDescription}
@@ -67,127 +71,262 @@ export function FacilityDetailScreen({ navigation, route }: Props) {
       </FacilityScreenLayout>
     );
   }
+
+  // Check Role & Admin Policy Restrictions
+  const isRoleRestricted = !facility.eligibilityPolicy.allowedRoles.includes(activeContext.residentRole as any);
+  const isUnitBlocked = facility.eligibilityPolicy.blockedUnitIds?.includes(activeContext.unitId) || false;
+  const isTowerBlocked = facility.eligibilityPolicy.blockedTowersOrWings?.some((t) =>
+    activeContext.displayUnitName.toLowerCase().includes(t.toLowerCase()) ||
+    (activeContext.towerName && activeContext.towerName.toLowerCase().includes(t.toLowerCase()))
+  ) || false;
+  const isMaintenance = facility.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance;
+  const isAccessBlocked = isRoleRestricted || isUnitBlocked || isTowerBlocked;
+  const eligible = !isAccessBlocked && (eligibility.data?.eligible ?? (facility.bookingEnabled && !isMaintenance));
+
   const visibleRules = showAllRules ? facility.rules : facility.rules.slice(0, 3);
-  const eligible = eligibility.data?.eligible ?? facility.bookingEnabled;
   const operatingSchedule = facility.operatingSchedule.find((item) => !item.closed);
   const operatingHours = operatingSchedule
     ? formatFacilityOperatingHours(operatingSchedule.opensAtLocalTime, operatingSchedule.closesAtLocalTime, locale)
     : labels.availability.TEMPORARILY_CLOSED;
-  const footer = (
+
+  // Single authoritative footer
+  const footer = isAccessBlocked || isMaintenance ? (
     <StickyFooter>
       <View style={styles.stickyButtonRow}>
         <AppButton
-          title={labels.details.viewAllSlots}
+          title={msg.exploreOtherSpaces}
+          onPress={() => navigation.navigate('FacilityList')}
+          style={styles.stickyButton}
+          variant="primary"
+        />
+      </View>
+    </StickyFooter>
+  ) : (
+    <StickyFooter>
+      <View style={styles.stickyButtonRow}>
+        <AppButton
+          title={msg.seeFullSchedule}
           onPress={() => navigation.navigate('FacilitySlotAvailability', { facilityId: facility.id })}
           variant="outline"
           style={styles.stickyButton}
-          disabled={!eligible}
         />
         <AppButton
-          title={eligible ? labels.details.bookAction : labels.details.disabledAction}
+          title={!eligible ? msg.notEligible : selectedSlotHour ? msg.reserveSlotHour(selectedSlotHour) : msg.reserveAnHour}
           onPress={() => navigation.navigate('FacilitySlotAvailability', { facilityId: facility.id })}
           style={styles.stickyButton}
-          disabled={!eligible}
+          disabled={!eligible || !selectedSlotHour}
         />
       </View>
     </StickyFooter>
   );
+
   return (
     <FacilityScreenLayout
-      title={facility.name}
-      subtitle={facility.locationName}
+      title={msg.spaceFocusTitle}
+      subtitle={facility.name}
       onBack={navigation.goBack}
       footer={footer}
       testID="facility-detail-screen"
     >
+      {/* 1. Immersive Focus Image & Status Pill */}
       <View style={styles.detailHero}>
-        <ResponsiveImage image={resolveFacilityImage(facility)} aspectRatio={16 / 8} style={styles.detailImage} />
+        <ResponsiveImage
+          image={resolveFacilityImage(facility)}
+          aspectRatio={16 / 8}
+          style={styles.detailImage}
+        />
         <View style={styles.imageBadges}>
           <FacilityStatusBadge status={facility.availabilityStatus} />
         </View>
       </View>
-      <View style={styles.section}>
-        <SafeText variant="h2">{facility.name}</SafeText>
-        <SafeText variant="body" color="secondary">{facility.description}</SafeText>
+
+      {/* 2. Narrative Block (Single authoritative title & status) */}
+      <View style={{ gap: 4 }}>
+        <SafeText
+          variant="tiny"
+          style={{
+            color: isAccessBlocked || isMaintenance ? colors.warning : colors.primary,
+            fontWeight: '700',
+            letterSpacing: 0.5,
+          }}
+        >
+          {isUnitBlocked
+            ? msg.adminRestricted
+            : isTowerBlocked
+            ? msg.towerBanActive
+            : isRoleRestricted
+            ? msg.ownerOnly
+            : `${facility.category.toUpperCase()} · ${facility.locationName}`}
+        </SafeText>
+        <SafeText variant="h1" color="primary" style={{ fontSize: 24, fontWeight: '700' }}>
+          {facility.name}
+        </SafeText>
+        <SafeText variant="body" color="secondary">
+          {isUnitBlocked
+            ? msg.adminRestrictedDescription
+            : isTowerBlocked
+            ? msg.towerBanDescription
+            : isRoleRestricted
+            ? msg.tenantRestrictedDescription
+            : isMaintenance
+            ? msg.maintenanceDescription
+            : facility.description}
+        </SafeText>
       </View>
-      <View style={styles.informationGrid}>
-        {[
-          { id: 'location', icon: 'location-outline', label: labels.details.location, value: `${facility.locationName} · ${facility.floorOrZone}` },
-          { id: 'capacity', icon: 'people-outline', label: labels.details.capacity, value: labels.details.guests(facility.maximumGuests) },
-          { id: 'hours', icon: 'time-outline', label: labels.discovery.operatingHours, value: operatingHours },
-          { id: 'window', icon: 'calendar-outline', label: labels.details.bookingWindow, value: labels.details.daysInAdvance(facility.maximumAdvanceBookingDays) },
-        ].map((item) => (
-          <View key={item.id} style={[styles.informationCell, backgroundBorderStyle(colors.surface, colors.border)]}>
-            <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
-            <SafeText variant="tiny" color="muted">{item.label}</SafeText>
-            <SafeText variant="caption">{item.value}</SafeText>
+
+      {/* 3. Availability Horizon (Time Landscape) if Open & Allowed */}
+      {!isMaintenance && !isAccessBlocked ? (
+        <View
+          style={[
+            styles.horizonContainer,
+            backgroundBorderStyle(colors.surface, colors.border),
+          ]}
+        >
+          <View style={styles.horizonHeader}>
+            <SafeText variant="caption" color="primary" style={{ fontWeight: '700' }}>
+              {msg.todayAvailableHours}
+            </SafeText>
+            <SafeText variant="tiny" color="secondary">
+              {msg.selectAnHour}
+            </SafeText>
           </View>
-        ))}
-      </View>
-      <AppCard variant="outlined" style={styles.summaryCard}>
-        <SafeText variant="bodyStrong">{labels.discovery.rate}</SafeText>
-        <SafeText variant="title">
-          {facility.baseFeeInMinorUnits > 0
-            ? formatFacilityCurrency(facility.baseFeeInMinorUnits, facility.currencyCode, locale)
-            : labels.free}
-        </SafeText>
-        <SafeText variant="tiny" color="muted">
-          {labels.discovery.refundableDeposit}: {facility.refundableDepositInMinorUnits > 0
-            ? formatFacilityCurrency(facility.refundableDepositInMinorUnits, facility.currencyCode, locale)
-            : labels.notRequired}
-        </SafeText>
-      </AppCard>
-      <View style={styles.section}>
-        <SafeText variant="title">{labels.details.amenities}</SafeText>
-        <View style={styles.amenityGrid}>
-          {facility.amenities.map((amenity) => (
-            <View key={amenity.id} style={[styles.amenity, backgroundBorderStyle(colors.surface, colors.border)]}>
-              <Ionicons name="checkmark-circle-outline" size={18} color={colors.success} />
-              <SafeText variant="caption">{amenity.name}</SafeText>
-            </View>
-          ))}
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.timeRibbonTrack}>
+            {['7:00 AM', '8:00 AM', '11:00 AM', '4:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'].map((slot) => {
+              const isSelected = selectedSlotHour === slot;
+              return (
+                <Pressable
+                  key={slot}
+                  onPress={() => setSelectedSlotHour(isSelected ? null : slot)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select hour ${slot}`}
+                  accessibilityState={{ selected: isSelected }}
+                  testID={`slot-${slot}`}
+                  style={[
+                    styles.timeSlotNode,
+                    isSelected ? styles.timeSlotNodeSelected : null,
+                    backgroundBorderStyle(
+                      isSelected ? colors.primarySoft : colors.background,
+                      isSelected ? colors.primary : colors.border
+                    ),
+                  ]}
+                >
+                  <SafeText variant="caption" color="primary" style={{ fontWeight: isSelected ? '700' : '500' }}>
+                    {slot}
+                  </SafeText>
+                  <SafeText variant="tiny" style={{ color: colors.success, fontSize: 10, fontWeight: '600' }}>
+                    {msg.openStatus}
+                  </SafeText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {/* 4. Unified 2x2 Architectural Facts Surface */}
+      <View style={styles.factsGrid}>
+        <View style={[styles.factCell, backgroundBorderStyle(colors.surface, colors.border)]}>
+          <Ionicons name="location-outline" size={18} color={colors.primary} />
+          <SafeText variant="tiny" color="muted">{msg.locationLabel}</SafeText>
+          <SafeText variant="caption" color="primary" style={{ fontWeight: '600' }}>
+            {facility.locationName} · {facility.floorOrZone}
+          </SafeText>
+        </View>
+
+        <View style={[styles.factCell, backgroundBorderStyle(colors.surface, colors.border)]}>
+          <Ionicons name="people-outline" size={18} color={colors.primary} />
+          <SafeText variant="tiny" color="muted">{msg.capacityLabel}</SafeText>
+          <SafeText variant="caption" color="primary" style={{ fontWeight: '600' }}>
+            {msg.upToGuests(facility.maximumGuests)}
+          </SafeText>
+        </View>
+
+        <View style={[styles.factCell, backgroundBorderStyle(colors.surface, colors.border)]}>
+          <Ionicons name="time-outline" size={18} color={colors.primary} />
+          <SafeText variant="tiny" color="muted">{msg.hoursLabel}</SafeText>
+          <SafeText variant="caption" color="primary" style={{ fontWeight: '600' }}>
+            {operatingHours}
+          </SafeText>
+        </View>
+
+        <View style={[styles.factCell, backgroundBorderStyle(colors.surface, colors.border)]}>
+          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+          <SafeText variant="tiny" color="muted">{msg.advanceWindowLabel}</SafeText>
+          <SafeText variant="caption" color="primary" style={{ fontWeight: '600' }}>
+            {msg.upToAdvanceDays(facility.maximumAdvanceBookingDays)}
+          </SafeText>
         </View>
       </View>
-      <AppCard variant={eligible ? 'success' : 'danger'} style={styles.summaryCard}>
+
+      {/* 5. Integrated Pricing Card */}
+      <AppCard variant="outlined" style={[styles.summaryCard, { padding: 16 }]}>
         <View style={styles.rowBetween}>
-          <SafeText variant="bodyStrong">{labels.details.eligibility}</SafeText>
-          <Ionicons name={eligible ? 'shield-checkmark-outline' : 'lock-closed-outline'} size={22} color={eligible ? colors.success : colors.danger} />
+          <View style={{ gap: 2 }}>
+            <SafeText variant="tiny" color="secondary" style={{ fontWeight: '700' }}>
+              {msg.accessRate}
+            </SafeText>
+            <SafeText variant="title" color="primary">
+              {facility.baseFeeInMinorUnits > 0
+                ? formatFacilityCurrency(facility.baseFeeInMinorUnits, facility.currencyCode, locale)
+                : msg.freeOfCharge}
+            </SafeText>
+          </View>
+          <View style={{ alignItems: 'flex-end', gap: 2 }}>
+            <SafeText variant="tiny" color="muted">{msg.deposit}</SafeText>
+            <SafeText variant="caption" color="secondary">
+              {facility.refundableDepositInMinorUnits > 0
+                ? formatFacilityCurrency(facility.refundableDepositInMinorUnits, facility.currencyCode, locale)
+                : msg.noneRequired}
+            </SafeText>
+          </View>
         </View>
-        <SafeText variant="caption" color="secondary">
-          {eligible ? labels.details.eligible : labels.details.blocked}
-        </SafeText>
-        {eligibility.data?.blockingReasons.map((reason) => (
-          <SafeText key={reason.code} variant="tiny" color="danger">{labels.eligibilityReasons[reason.code]}</SafeText>
-        ))}
       </AppCard>
+
+      {/* 6. Included Amenities */}
+      {facility.amenities.length > 0 ? (
+        <View style={{ gap: 8 }}>
+          <SafeText variant="tiny" color="secondary" style={{ fontWeight: '700', letterSpacing: 0.5 }}>
+            {msg.includedAmenities}
+          </SafeText>
+          <View style={styles.amenityGrid}>
+            {facility.amenities.map((amenity) => (
+              <View key={amenity.id} style={[styles.amenity, backgroundBorderStyle(colors.surface, colors.border)]}>
+                <Ionicons name="checkmark-circle-outline" size={16} color={colors.success} />
+                <SafeText variant="caption" color="primary">{amenity.name}</SafeText>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {/* 7. Space Guidelines & Rules */}
       <AppCard variant="outlined" style={styles.policyCard}>
-        <SafeText variant="title">{labels.details.rules}</SafeText>
+        <View style={styles.rowBetween}>
+          <SafeText variant="caption" color="primary" style={{ fontWeight: '700' }}>
+            {msg.beforeYouBook(facility.rules.length)}
+          </SafeText>
+          {facility.rules.length > 3 ? (
+            <Pressable onPress={() => setShowAllRules(!showAllRules)}>
+              <SafeText variant="tiny" color="primary" style={{ fontWeight: '700' }}>
+                {showAllRules ? msg.showLess : msg.viewAll}
+              </SafeText>
+            </Pressable>
+          ) : null}
+        </View>
+
         {visibleRules.map((rule) => (
           <View key={rule.id} style={styles.policyRow}>
             <View style={[styles.policyIcon, backgroundColorStyle(colors.primarySoft)]}>
-              <Ionicons name="document-text-outline" size={18} color={colors.primary} />
+              <Ionicons name="shield-checkmark-outline" size={16} color={colors.primary} />
             </View>
             <View style={styles.grow}>
-              <SafeText variant="caption">{rule.title}</SafeText>
+              <SafeText variant="caption" color="primary" style={{ fontWeight: '600' }}>{rule.title}</SafeText>
               <SafeText variant="tiny" color="secondary">{rule.description}</SafeText>
             </View>
           </View>
         ))}
-        {facility.rules.length > 3 ? (
-          <AppButton
-            title={showAllRules ? labels.details.showFewerRules : labels.details.showAllRules}
-            onPress={() => setShowAllRules((current) => !current)}
-            variant="ghost"
-            size="sm"
-          />
-        ) : null}
       </AppCard>
-      {facility.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance ? (
-        <AppCard variant="warning">
-          <SafeText variant="bodyStrong">{labels.availability.UNDER_MAINTENANCE}</SafeText>
-          <SafeText variant="caption" color="secondary">{labels.details.disabledAction}</SafeText>
-        </AppCard>
-      ) : null}
     </FacilityScreenLayout>
   );
 }

@@ -2,14 +2,41 @@ import type { SosEvent, SosEventStatus, SosRecipientDelivery, SosResidenceContex
 import type { TriggerSosInput } from './sosEvent.repository.contract';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const eventStore: SosEvent[] = [];
 let eventIdCounter = 1000;
+let hydration: Promise<void> | null = null;
+const storageKey = 'society-os.mock.sos-events.v4';
+const obsoleteStorageKey = 'society-os.mock.sos-events.v1';
+const activeStatuses: SosEventStatus[] = ['initiated', 'recipientsNotified', 'acknowledged', 'responderDispatched', 'escalated'];
+function ensureHydrated(): Promise<void> {
+    if (!hydration) {
+        hydration = AsyncStorage.getItem(storageKey).then((raw) => {
+            void AsyncStorage.removeItem(obsoleteStorageKey);
+            if (!raw)
+                return;
+            const parsed = JSON.parse(raw) as SosEvent[];
+            eventStore.splice(0, eventStore.length, ...parsed);
+        }).catch(() => undefined);
+    }
+    return hydration;
+}
+async function persist(): Promise<void> {
+    await AsyncStorage.setItem(storageKey, JSON.stringify(eventStore));
+}
 function delay(ms: number = 400): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+function scheduleSimulation(callback: () => void, milliseconds: number): void {
+    setTimeout(callback, milliseconds);
+}
 export const sosEventMockSource = {
     async triggerSos(input: TriggerSosInput): Promise<SosEvent> {
+        await ensureHydrated();
         await delay(600);
+        const current = eventStore.find((candidate) => candidate.residenceId === input.context.residenceId && !candidate.isTestMode && activeStatuses.includes(candidate.status));
+        if (current)
+            return current;
         eventIdCounter += 1;
         const now = new Date().toISOString();
         const recipientDeliveries: SosRecipientDelivery[] = input.resolvedRecipients.map((r) => ({
@@ -38,24 +65,27 @@ export const sosEventMockSource = {
             triggeredAt: now
         };
         eventStore.push(event);
-        if (!input.isTestMode) {
+        await persist();
+        if (!input.isTestMode && process.env.NODE_ENV !== 'test') {
             simulateDelivery(event.id);
         }
         return event;
     },
     async getActiveSosEvent(context: SosResidenceContext): Promise<SosEvent | Absent> {
+        await ensureHydrated();
         await delay(200);
-        const activeStatuses: SosEventStatus[] = ['initiated', 'recipientsNotified', 'acknowledged', 'responderDispatched', 'escalated'];
         return eventStore.find((e) => e.residenceId === context.residenceId &&
             e.societyId === context.societyId &&
             !e.isTestMode &&
             activeStatuses.includes(e.status));
     },
     async getSosEvent(eventId: string): Promise<SosEvent | Absent> {
+        await ensureHydrated();
         await delay(200);
         return eventStore.find((e) => e.id === eventId);
     },
     async acknowledgeSos(eventId: string, recipientId: string): Promise<SosEvent> {
+        await ensureHydrated();
         await delay(300);
         const event = eventStore.find((e) => e.id === eventId);
         if (!event)
@@ -75,9 +105,11 @@ export const sosEventMockSource = {
         };
         const idx = eventStore.indexOf(event);
         eventStore[idx] = updated;
+        await persist();
         return updated;
     },
     async cancelSos(eventId: string, _reason: string): Promise<SosEvent> {
+        await ensureHydrated();
         await delay(300);
         const event = eventStore.find((e) => e.id === eventId);
         if (!event)
@@ -89,9 +121,11 @@ export const sosEventMockSource = {
         };
         const idx = eventStore.indexOf(event);
         eventStore[idx] = updated;
+        await persist();
         return updated;
     },
     async resolveSos(eventId: string): Promise<SosEvent> {
+        await ensureHydrated();
         await delay(300);
         const event = eventStore.find((e) => e.id === eventId);
         if (!event)
@@ -103,9 +137,11 @@ export const sosEventMockSource = {
         };
         const idx = eventStore.indexOf(event);
         eventStore[idx] = updated;
+        await persist();
         return updated;
     },
     async getSosHistory(context: SosResidenceContext): Promise<SosEvent[]> {
+        await ensureHydrated();
         await delay();
         return eventStore
             .filter((e) => e.residenceId === context.residenceId && e.societyId === context.societyId)
@@ -118,10 +154,12 @@ export const sosEventMockSource = {
     _resetAll(): void {
         eventStore.length = 0;
         eventIdCounter = 1000;
+        hydration = Promise.resolve();
+        void AsyncStorage.multiRemove([storageKey, obsoleteStorageKey]);
     }
 };
 function simulateDelivery(eventId: string): void {
-    setTimeout(() => {
+    scheduleSimulation(() => {
         const event = eventStore.find((e) => e.id === eventId);
         if (!event || event.status === 'cancelled' || event.status === 'resolved')
             return;
@@ -136,8 +174,9 @@ function simulateDelivery(eventId: string): void {
             recipientDeliveries: updatedDeliveries,
             status: 'recipientsNotified'
         };
+        void persist();
     }, 1500);
-    setTimeout(() => {
+    scheduleSimulation(() => {
         const event = eventStore.find((e) => e.id === eventId);
         if (!event || event.status === 'cancelled' || event.status === 'resolved')
             return;
@@ -155,6 +194,7 @@ function simulateDelivery(eventId: string): void {
                 status: 'acknowledged',
                 acknowledgedAt: new Date().toISOString()
             };
+            void persist();
         }
     }, 4000);
 }

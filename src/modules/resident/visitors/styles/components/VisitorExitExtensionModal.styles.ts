@@ -11,35 +11,35 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#101828" | "#FFFFFF" | "#F8FAFC") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#CBD5E1" | "#475467") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle4(colorValue: "#101828" | "#FFFFFF" | "#F8FAFC") {
+export function createSafeTextColorStyle4(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '700'
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#FFFFFF" | "#111827" | "#4E46E5" | "#9DA5FF", borderColorValue: "transparent" | "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#FFFFFF" | "#111827" | "#4E46E5" | "#9DA5FF", borderColorValue: "transparent" | "#253149" | "#E2E6EE") {
+export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue

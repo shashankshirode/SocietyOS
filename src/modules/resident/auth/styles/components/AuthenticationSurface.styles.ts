@@ -2,22 +2,23 @@ import { StyleSheet } from "react-native";
 import { Spacing } from "../../../../../shared/theme/spacing";
 export const styles = StyleSheet.create({
     surface: {
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-        borderTopWidth: 1.5,
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        borderTopWidth: 1,
         flex: 1,
-        shadowColor: '#000000',
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: -6 },
-        elevation: 4,
+        minHeight: 390,
     },
-    curveHeader: {
-        height: Spacing.md,
+    contextMarker: {
+        width: 34,
+        height: 4,
+        borderRadius: 2,
+        marginTop: Spacing.sm,
+        marginBottom: Spacing.sm,
+        alignSelf: 'center',
     },
     body: {
         paddingHorizontal: Spacing.xl,
-        paddingBottom: Spacing.xl,
+        paddingBottom: Spacing.md,
         gap: Spacing.md,
         flex: 1,
     },
@@ -42,18 +43,28 @@ export const styles = StyleSheet.create({
     childrenContainer: {
         gap: Spacing.md,
     },
-    spacer: {
-        flex: 1,
-        minHeight: Spacing.md,
-    },
     footerContainer: {
-        marginTop: Spacing.xs,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        marginHorizontal: Spacing.xl,
+        marginTop: 'auto',
+        paddingBottom: Spacing.lg,
+        paddingTop: Spacing.sm,
     },
 });
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#0A0E1A" | "#FAF9F6", borderColorValue: "rgba(255, 255, 255, 0.05)" | "rgba(15, 23, 42, 0.04)") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
+    } as const;
+}
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
+    return {
+        backgroundColor: backgroundColorValue
+    } as const;
+}
+export function createViewBorderTopColorStyle(borderTopColorValue: string) {
+    return {
+        borderTopColor: borderTopColorValue
     } as const;
 }
 export function createAppTextColorStyle(colorValue: string) {
@@ -71,4 +82,3 @@ export function createAppTextColorStyle3(colorValue: string) {
         color: colorValue
     } as const;
 }
-

@@ -3,19 +3,19 @@ import { Spacing } from "../../../../../shared/theme/spacing";
 export const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        gap: Spacing.xs,
-        paddingTop: Spacing.sm,
+        gap: Spacing.sm,
     },
     shieldRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: Spacing.xs,
-        paddingHorizontal: Spacing.lg,
+        paddingHorizontal: Spacing.sm,
     },
     trustText: {
         textAlign: 'center',
         fontWeight: '500',
-        fontSize: 11,
+        fontSize: 10.5,
+        lineHeight: 15,
     },
     linksRow: {
         flexDirection: 'row',
@@ -57,4 +57,3 @@ export function createAppTextColorStyle6(colorValue: string) {
         color: colorValue
     } as const;
 }
-

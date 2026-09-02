@@ -101,4 +101,11 @@ export interface AppTheme {
   shadows: typeof import('./shadows').Shadows;
   layout: typeof import('./layout').Layout;
   zIndex: typeof import('./zIndex').zIndex;
+  semantic: import('./societyTheme').SocietySemanticColors;
+  borderWidths: import('./societyTheme').SocietyBorderWidths;
+  motion: typeof import('./societyTheme').societyMotion;
+  touch: import('./societyTheme').SocietyTouch;
+  navigation: import('./societyTheme').SocietyNavigation;
+  content: import('./societyTheme').SocietyContent;
+  icons: typeof import('./societyTheme').societyIcons;
 }

@@ -41,6 +41,7 @@ export function MockStoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MockStoreState>(mockStore.getState());
 
   useEffect(() => {
+    void mockStore.hydrate();
     const unsubscribe = mockStore.subscribe(() => {
       setState({ ...mockStore.getState() });
     });

@@ -10,9 +10,8 @@ export interface ScreenErrorStateProps {
     canRetry?: boolean;
 }
 export function ScreenErrorState({ title, message, onRetry, canRetry = true, }: ScreenErrorStateProps) {
-    const { colors } = useAppTheme();
-    return (<View style={[styles.container, createViewBackgroundColorStyle(colors.background)]}>
+    const { semantic } = useAppTheme();
+    return (<View style={[styles.container, createViewBackgroundColorStyle(semantic.surface.canvas)]}>
       <ErrorState {...includeWhenPresent("title", title)} message={message} {...includeWhenPresent("onRetry", canRetry ? onRetry : undefined)}/>
     </View>);
 }
-

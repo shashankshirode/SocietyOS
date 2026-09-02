@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, ScrollView, Switch, Pressable } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
@@ -11,6 +11,7 @@ import { PressableScale } from "../../../../shared/motion/PressableScale";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
 import { StatusModal } from "../../../../ui/modal/StatusModal";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 import { useMockStore } from "../../../../core/mockStore/useMockStore";
 import type { DocumentCategory } from "../../../../shared/types/document.types";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
@@ -158,7 +159,7 @@ export function UploadDocumentScreen({ navigation }: NavigationOnlyScreenProps) 
                 <SafeText variant="bodyStrong" style={createSafeTextColorStyle8(theme.textPrimary)}>{localizedUiText.m_9f6f225432bc}</SafeText>
                 <SafeText variant="tiny" style={createSafeTextColorStyle9(theme.textSecondary)}>{localizedUiText.m_74538bde17d3}</SafeText>
               </View>
-              <Switch value={form.isSensitive} onValueChange={(val) => setForm({ ...form, isSensitive: val })} trackColor={{ false: theme.border, true: theme.accent }}/>
+              <SocietySwitch value={form.isSensitive} onValueChange={(val) => setForm({ ...form, isSensitive: val })}/>
             </View>
           </View>)}
 
@@ -192,4 +193,3 @@ export function UploadDocumentScreen({ navigation }: NavigationOnlyScreenProps) 
     </View>);
 }
 export default UploadDocumentScreen;
-

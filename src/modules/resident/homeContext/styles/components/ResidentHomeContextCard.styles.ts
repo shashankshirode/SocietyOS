@@ -3,22 +3,26 @@ import { Radius } from "../../../../../shared/theme/radius";
 import { Spacing } from "../../../../../shared/theme/spacing";
 export const styles = StyleSheet.create({
     card: {
-        borderWidth: 1.5,
-        borderRadius: Radius.lg,
-        padding: Spacing.md,
-        marginBottom: Spacing.sm,
+        minHeight: 118,
+        borderWidth: 1,
+        borderRadius: Radius.xl,
+        padding: Spacing.lg,
+        marginBottom: Spacing.md,
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        gap: Spacing.md,
     },
     headerInfo: {
         gap: 2,
         flex: 1,
+        minWidth: 0,
     },
     unitText: {
-        fontSize: 16,
+        fontSize: 19,
+        lineHeight: 26,
     },
     buildingText: {
         fontSize: 12,
@@ -26,12 +30,21 @@ export const styles = StyleSheet.create({
     badgeRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        flexWrap: 'wrap',
         gap: Spacing.xs,
+        marginTop: Spacing.sm,
+    },
+    actionSlot: {
+        width: 44,
+        minHeight: 44,
+        flexShrink: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     contextLabelRow: {
         flexDirection: 'row',
         gap: Spacing.sm,
-        marginTop: Spacing.xs,
+        marginTop: Spacing.sm,
     },
     statsRow: {
         flexDirection: 'row',
@@ -50,10 +63,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 4,
         borderRadius: Radius.md,
     },
-    safeTextColorFontWeight: { color: '#DC2626', fontWeight: '600' },
-    safeTextColorFontWeight2: { color: '#D97706', fontWeight: '600' },
-    viewBackgroundColor: { backgroundColor: '#FEE2E2' },
-    viewBackgroundColor2: { backgroundColor: '#FEF3C7' }
+    statText: { fontWeight: '600' },
 });
 export function createSafeTextColorStyle(colorValue: string) {
     return {
@@ -97,4 +107,3 @@ export function createViewBackgroundColorStyle(backgroundColorValue: string) {
         backgroundColor: backgroundColorValue
     } as const;
 }
-

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { Spacing } from "../../theme/spacing";
+import { Radius, Spacing } from "../../theme";
 export const styles = StyleSheet.create({
     container: {
         padding: Spacing.xl,
@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     iconContainer: {
         width: 64,
         height: 64,
-        borderRadius: 32,
+        borderRadius: Radius.surface,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: Spacing.md,
@@ -34,4 +34,3 @@ export function createViewBackgroundColorStyle(backgroundColorValue: string) {
         backgroundColor: backgroundColorValue
     } as const;
 }
-

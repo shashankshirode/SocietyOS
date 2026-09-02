@@ -54,6 +54,8 @@ export interface FacilityEligibilityPolicy {
   readonly requiresVerifiedResidence: boolean;
   readonly requiresCompletedDocuments: boolean;
   readonly blockWhenDuesOutstanding: boolean;
+  readonly blockedUnitIds?: readonly string[];
+  readonly blockedTowersOrWings?: readonly string[];
   readonly dailyLimitPerUnit: number;
   readonly weeklyLimitPerUnit: number;
   readonly monthlyLimitPerUnit: number;

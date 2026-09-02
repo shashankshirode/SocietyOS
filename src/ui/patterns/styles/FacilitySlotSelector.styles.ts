@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
         minWidth: 80,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#101828" | "#F8FAFC") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         marginBottom: 8
@@ -32,14 +32,14 @@ export function createSafeTextColorStyle2(colorValue: string) {
         fontWeight: '700'
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#B97818" | "#F0B85A") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue,
         fontSize: 9,
         fontWeight: '700'
     } as const;
 }
-export function createSafeTextColorStyle4(colorValue: "#D8464A" | "#FF8588") {
+export function createSafeTextColorStyle4(colorValue: string) {
     return {
         color: colorValue,
         fontSize: 9,

@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#10B981" | "#EF4444") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: 'bold'

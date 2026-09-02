@@ -24,14 +24,14 @@ export function ResidentWorkflowStepper({ steps, currentStepIndex }: ResidentWor
                 textColor = theme.textPrimary;
             }
             else if (isActive) {
-                nodeBg = theme.accent;
-                nodeBorder = 'transparent';
+                nodeBg = theme.selectedBackground;
+                nodeBorder = theme.selectedBorder;
                 textColor = theme.textPrimary;
             }
             return (<React.Fragment key={index}>
               <View style={styles.stepItem}>
                 <View style={[styles.node, createViewBackgroundColorBorderColorStyle(nodeBg, nodeBorder)]}>
-                  <SafeText variant="tiny" style={[styles.nodeText, createSafeTextColorStyle((isCompleted || isActive) ? '#FFFFFF' : theme.textSecondary)]}>
+                  <SafeText variant="tiny" style={[styles.nodeText, createSafeTextColorStyle(isActive ? theme.selectedForeground : isCompleted ? theme.textInverse : theme.textSecondary)]}>
                     {index + 1}
                   </SafeText>
                 </View>
@@ -46,4 +46,3 @@ export function ResidentWorkflowStepper({ steps, currentStepIndex }: ResidentWor
     </View>);
 }
 export default ResidentWorkflowStepper;
-

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { Spacing } from "../../../shared/theme/spacing";
+import { Radius, Shadows, Spacing, Typography } from "../../../shared/theme";
 import type { Absent } from "../../../shared/types/absence.types";
 export const styles = StyleSheet.create({
     container: {
@@ -7,16 +7,12 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: Spacing.xl,
-        borderRadius: 20,
+        borderRadius: Radius.surface,
         borderWidth: 1,
         width: '100%',
         marginVertical: Spacing.md,
         gap: Spacing.sm,
-        shadowColor: '#000000',
-        shadowOpacity: 0.02,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 1,
+        ...Shadows.soft,
     },
     illustration: {
         width: 120,
@@ -26,18 +22,16 @@ export const styles = StyleSheet.create({
     iconContainer: {
         width: 64,
         height: 64,
-        borderRadius: 32,
+        borderRadius: Radius.surface,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: Spacing.xs,
     },
     title: {
-        fontSize: 18,
-        fontWeight: '700',
+        ...Typography.title,
     },
     description: {
-        fontSize: 14,
-        lineHeight: 20,
+        ...Typography.bodyMedium,
         paddingHorizontal: Spacing.sm,
     },
     actions: {
@@ -47,7 +41,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
-export function createViewBackgroundColorStyle(backgroundColorValue: "rgba(255, 255, 255, 0.05)" | "rgba(15, 23, 42, 0.03)") {
+export function createViewBackgroundColorStyle(backgroundColorValue: string) {
     return {
         backgroundColor: backgroundColorValue
     } as const;
@@ -64,4 +58,3 @@ export function createViewBackgroundColorBorderColorMaxWidthStyle(backgroundColo
         maxWidth: maxWidthValue
     } as const;
 }
-

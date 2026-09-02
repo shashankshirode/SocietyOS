@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ContentFrame } from '../../../../ui/layout/ContentFrame';
 import { ResidentPageHeader } from '../../../../ui/patterns/ResidentPageHeader';
 import { useAppTheme } from '../../../../shared/theme/useAppTheme';
 import { useFacilityNetworkStatus } from '../hooks/useFacilityNetworkStatus';
 import { useMessages } from '../../../../messages/useMessages';
+import { SocietyExperienceFrame } from '../../experience/SocietyExperienceFrame';
 import {
   backgroundBorderStyle,
   backgroundColorStyle,
@@ -36,31 +38,37 @@ export function FacilityScreenLayout({
   const { colors } = useAppTheme();
   const { isOffline } = useFacilityNetworkStatus();
   const labels = useMessages().resident.facilityBooking.states;
+  const insets = useSafeAreaInsets();
+  const trailingPadding = footer ? 16 : Math.max(insets.bottom, 16);
+
   return (
-    <View style={[styles.root, backgroundColorStyle(colors.background)]} testID={testID}>
-      <ResidentPageHeader
-        title={title}
-        showBackButton={showBackButton}
-        onBackPress={onBack}
-        {...includeWhenPresent('subtitle', subtitle)}
-      />
-      {isOffline ? (
-        <View style={[
-          styles.offlineBanner,
-          backgroundBorderStyle(colors.warningSoft, colors.warning),
-        ]}>
-          <Ionicons name="cloud-offline-outline" size={18} color={colors.warning} />
-          <SafeText variant="tiny" color="secondary" style={styles.grow}>{labels.offlineDescription}</SafeText>
-        </View>
-      ) : null}
-      <ScrollView
-        style={styles.flex}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <ContentFrame style={styles.contentStack}>{children}</ContentFrame>
-      </ScrollView>
-      {footer}
-    </View>
+    <SocietyExperienceFrame showAmbientChrome={false}>
+      <View style={[styles.root, backgroundColorStyle(colors.background)]} testID={testID}>
+        <ResidentPageHeader
+          title={title}
+          showBackButton={showBackButton}
+          onBackPress={onBack}
+          {...includeWhenPresent('subtitle', subtitle)}
+        />
+        {isOffline ? (
+          <View style={[
+            styles.offlineBanner,
+            backgroundBorderStyle(colors.warningSoft, colors.warning),
+          ]}>
+            <Ionicons name="cloud-offline-outline" size={18} color={colors.warning} />
+            <SafeText variant="tiny" color="secondary" style={styles.grow}>{labels.offlineDescription}</SafeText>
+          </View>
+        ) : null}
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: trailingPadding }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <ContentFrame style={styles.contentStack}>{children}</ContentFrame>
+        </ScrollView>
+        {footer ? <View style={styles.footerContainer}>{footer}</View> : null}
+      </View>
+    </SocietyExperienceFrame>
   );
 }

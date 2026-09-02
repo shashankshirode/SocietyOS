@@ -11,7 +11,7 @@ describe('resident tablet navigation layout', () => {
     const tabBarLayout = resolveResidentTabBarLayout(1024, 0, 'ios');
 
     expect(layout.layoutSize).toBe('tabletWide');
-    expect(layout.contentMaxWidth).toBe(1240);
+    expect(layout.contentMaxWidth).toBe(1024);
     expect(layout.columns).toBe(4);
     expect(tabBarLayout.isTabletDock).toBe(true);
   });

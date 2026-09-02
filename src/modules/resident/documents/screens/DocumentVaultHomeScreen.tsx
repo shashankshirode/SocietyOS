@@ -1,114 +1,120 @@
-import { useMemo } from "react";
-import { ScrollView, View } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useResidentDocuments } from "../data/useDocuments";
-import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
-import { useFeatureFlags } from "../../../../core/featureFlags/useFeatureFlag";
-import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
-import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
-import { ResidentInfoMosaic } from "../../../../ui/patterns/ResidentInfoMosaic";
-import { SafeText } from "../../../../shared/components/SafeText";
-import { PressableScale } from "../../../../shared/motion/PressableScale";
-import { useMessages } from "../../../../shared/constants/useMessages";
-import { DocumentStatus } from "../data/documents.enums";
-import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createSafeTextColorStyle4, createSafeTextColorStyle5, createViewBackgroundColorBorderColorStyle, createViewBackgroundColorStyle3 } from "../styles/screens/DocumentVaultHomeScreen.styles";
+import { useMemo } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { DocumentInfo } from '../../../../shared/types/document.types';
+import { formatResidentDate } from '../../../../core/localization/dateTimeFormatters';
+import { getDocumentCategoryLabel } from '../../../../shared/utils/formatters';
+import { useFeatureFlags } from '../../../../core/featureFlags/useFeatureFlag';
+import { SafeText } from '../../../../shared/components/SafeText';
+import { useMessages } from '../../../../shared/constants/useMessages';
+import { useResidentTheme } from '../../../../ui/foundation/residentTheme';
+import { ResidentPageHeader } from '../../../../ui/patterns/ResidentPageHeader';
+import { ScreenEmptyState } from '../../../../ui/states/ScreenEmptyState';
+import { ScreenErrorState } from '../../../../ui/states/ScreenErrorState';
+import { DocumentVaultSkeleton } from '../../../../ui/skeletons/FeatureSkeletons';
+import { useDocuments } from '../data/useDocuments';
+import { createAccentStyle, createBorderStyle, createColorStyle, createRootStyle, createSurfaceStyle, styles } from '../styles/screens/DocumentVaultHomeScreen.styles';
+
 type Props = {
-    navigation: {
-        navigate: (screen: string, params?: JsonObject) => void;
-        goBack: () => void;
-    };
+  navigation: {
+    navigate: (screen: string, params?: JsonObject) => void;
+    goBack: () => void;
+  };
 };
+
+function documentTimestamp(document: DocumentInfo): number {
+  return Date.parse(document.uploadedDate ?? document.verifiedDate ?? document.expiryDate ?? '') || 0;
+}
+
+function DocumentRow({ document, onPress }: { document: DocumentInfo; onPress: () => void }) {
+  const theme = useResidentTheme();
+  const copy = useMessages().documents;
+  const dateLabel = document.expiryDate
+    ? `${copy.expires} ${formatResidentDate(document.expiryDate)}`
+    : document.verifiedDate
+      ? `${copy.issued} ${formatResidentDate(document.verifiedDate)}`
+      : document.uploadedDate
+        ? `${copy.uploaded} ${formatResidentDate(document.uploadedDate)}`
+        : copy.permanent;
+  return (
+    <Pressable onPress={onPress} style={[styles.documentRow, createBorderStyle(theme.border)]} accessibilityRole="button" accessibilityLabel={document.title}>
+      <View style={styles.documentCopy}>
+        <SafeText variant="tiny" style={createColorStyle(theme.textMuted)}>{getDocumentCategoryLabel(document.category)}</SafeText>
+        <SafeText variant="title" style={createColorStyle(theme.textPrimary)} numberOfLines={2}>{document.title}</SafeText>
+        <SafeText variant="caption" style={createColorStyle(theme.textSecondary)}>{dateLabel} · {document.status.replaceAll('_', ' ')}</SafeText>
+      </View>
+      <Ionicons name={document.sensitivity === 'PUBLIC' ? 'arrow-forward' : 'lock-closed-outline'} size={18} color={theme.textSecondary} />
+    </Pressable>
+  );
+}
+
 export function DocumentVaultHomeScreen({ navigation }: Props) {
-    const localizedUiText = useMessages().uiLiterals;
-    const theme = useResidentTheme();
-    const messages = useMessages();
-    const { isEnabled } = useFeatureFlags();
-    const { data: documents = [] } = useResidentDocuments();
-    const stats = useMemo(() => {
-        const verified = documents.filter((d) => d.status === DocumentStatus.VERIFIED).length;
-        const pending = documents.filter((d) => d.status === DocumentStatus.PENDING_VERIFICATION).length;
-        const required = documents.filter((d) => d.status === DocumentStatus.REQUIRED).length;
-        const expired = documents.filter((d) => d.status === DocumentStatus.EXPIRED).length;
-        return [
-            { id: '1', label: messages.documents.statusVerified || String(localizedUiText.m_4f7838402f37), value: verified, iconName: 'checkmark-circle-outline' },
-            { id: '2', label: messages.documents.statusPending || String(localizedUiText.m_331551b0de41), value: pending, iconName: 'time-outline' },
-            { id: '3', label: messages.documents.statusMissing || String(localizedUiText.m_4850b174b713), value: required, iconName: 'alert-circle-outline' },
-            { id: '4', label: messages.documents.statusExpired || String(localizedUiText.m_424a2551d356), value: expired, iconName: 'close-circle-outline' },
-        ];
-    }, [documents, localizedUiText, messages]);
-    const folders = [
-        {
-            id: 'my-docs',
-            title: messages.documents.myFlatDocsTitle,
-            subtitle: messages.documents.myFlatDocsDesc,
-            icon: 'file-tray-full-outline',
-            onPress: () => navigation.navigate('MyDocuments'),
-        },
-        {
-            id: 'soc-docs',
-            title: messages.documents.societyPublicDocsTitle,
-            subtitle: messages.documents.societyPublicDocsDesc,
-            icon: 'business-outline',
-            onPress: () => navigation.navigate('SocietyDocuments'),
-        },
-        {
-            id: 'upload-doc',
-            title: messages.documents.uploadNewDocTitle,
-            subtitle: messages.documents.uploadNewDocDesc,
-            icon: 'cloud-upload-outline',
-            onPress: () => navigation.navigate('UploadDocument'),
-        },
-    ];
-    if (!isEnabled('documentVault')) {
-        return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
-        <ResidentPageHeader titleKey="resident.navigation.documents.title" title={localizedUiText.m_0394ca262c99} showBackButton/>
-        <View style={styles.unavailableContainer}>
-          <Ionicons name="lock-closed-outline" size={48} color={theme.textSecondary}/>
-          <SafeText variant="bodyStrong" style={createSafeTextColorStyle(theme.textPrimary)}>
-            {messages.documents.featureDisabledTitle}
-          </SafeText>
-          <SafeText variant="caption" style={createSafeTextColorStyle2(theme.textSecondary)}>
-            {messages.documents.featureDisabledDesc}
-          </SafeText>
-        </View>
-      </View>);
-    }
-    return (<View style={[styles.root, createViewBackgroundColorStyle2(theme.background)]}>
-      <ResidentPageHeader titleKey="resident.navigation.documents.title" title={localizedUiText.m_0394ca262c99} subtitle={messages.resident.navigation.documents.subtitle} showBackButton/>
+  const theme = useResidentTheme();
+  const messages = useMessages();
+  const copy = messages.documents;
+  const { isEnabled } = useFeatureFlags();
+  const { data: documents = [], isLoading, error, refetch } = useDocuments();
+  const ordered = useMemo(() => [...documents].sort((left, right) => documentTimestamp(right) - documentTimestamp(left)), [documents]);
+  const residenceDocuments = ordered.filter((document) => !document.isSocietyDoc);
+  const societyDocuments = ordered.filter((document) => document.isSocietyDoc);
+  const openDocument = (document: DocumentInfo) => navigation.navigate('DocumentDetail', { documentId: document.id });
+  const header = <ResidentPageHeader title={copy.archiveTitle} subtitle={copy.archiveSubtitle} showBackButton />;
 
+  if (!isEnabled('documentVault')) return <View style={[styles.root, createRootStyle(theme.background)]}>{header}<ScreenEmptyState title={copy.featureDisabledTitle} description={copy.featureDisabledDesc} iconName="lock-closed-outline" /></View>;
+  if (isLoading) return <View style={[styles.root, createRootStyle(theme.background)]}>{header}<View style={styles.loading}><DocumentVaultSkeleton /></View></View>;
+  if (error) return <View style={[styles.root, createRootStyle(theme.background)]}>{header}<ScreenErrorState title={copy.errorTitle} message={copy.errorDescription} onRetry={refetch} canRetry={error.retryable !== false} /></View>;
+
+  return (
+    <View style={[styles.root, createRootStyle(theme.background)]}>
+      {header}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        <PrivacyNoticePanel title={messages.documents.encryptedVaultTitle} description={messages.documents.encryptedVaultDesc}/>
-
-        
-        <View style={styles.section}>
-          <SafeText variant="bodyStrong" style={[styles.sectionTitle, createSafeTextColorStyle4(theme.textPrimary)]}>
-            {messages.documents.vaultStatusOverview}
-          </SafeText>
-          <ResidentInfoMosaic items={stats}/>
-        </View>
-
-        
-        <View style={styles.section}>
-          <SafeText variant="bodyStrong" style={[styles.sectionTitle, createSafeTextColorStyle5(theme.textPrimary)]}>
-            {messages.documents.documentRepositories}
-          </SafeText>
-          <View style={styles.folderList}>
-            {folders.map((f) => (<PressableScale key={f.id} onPress={f.onPress}>
-                <View style={[styles.folderCard, createViewBackgroundColorBorderColorStyle(theme.surface, theme.border)]}>
-                  <View style={[styles.folderIcon, createViewBackgroundColorStyle3(theme.accentSoft)]}>
-                    <Ionicons name={f.icon as keyof typeof Ionicons.glyphMap} size={22} color={theme.accent}/>
-                  </View>
-                  <View style={styles.folderInfo}>
-                    <SafeText variant="bodyStrong" style={createSafeTextColorStyle3(theme.textPrimary)}>{f.title}</SafeText>
-                    <SafeText variant="caption" color="secondary">{f.subtitle}</SafeText>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={theme.textSecondary}/>
-                </View>
-              </PressableScale>))}
+        <View style={[styles.hero, createSurfaceStyle(theme.accentSoft)]}>
+          <SafeText variant="h1" style={createColorStyle(theme.textPrimary)}>{copy.archiveSubtitle}</SafeText>
+          <SafeText variant="body" style={createColorStyle(theme.textSecondary)}>{copy.archiveDescription}</SafeText>
+          <View style={styles.archiveMark} accessible={false}>
+            <View style={[styles.archiveLine, createAccentStyle(theme.accent)]} />
+            <View style={[styles.archiveLineShort, createAccentStyle(theme.accent)]} />
           </View>
         </View>
+
+        {ordered.length === 0 ? (
+          <ScreenEmptyState title={copy.emptyTitle} description={copy.emptyDescription} iconName="folder-open-outline" primaryAction={{ label: copy.uploadCommand, onPress: () => navigation.navigate('UploadDocument') }} />
+        ) : (
+          <>
+            <View style={styles.section}>
+              <SafeText variant="tiny" style={[styles.sectionLabel, createColorStyle(theme.textMuted)]}>{copy.recent}</SafeText>
+              {ordered.slice(0, 3).map((document) => <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />)}
+            </View>
+            <View style={styles.section}>
+              <View style={styles.sectionHeading}>
+                <SafeText variant="tiny" style={[styles.sectionLabel, createColorStyle(theme.textMuted)]}>{copy.yourHome}</SafeText>
+                <Pressable onPress={() => navigation.navigate('MyDocuments')} accessibilityRole="button"><SafeText variant="caption" style={createColorStyle(theme.accent)}>{copy.viewAll} →</SafeText></Pressable>
+              </View>
+              {residenceDocuments.slice(0, 4).map((document) => <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />)}
+            </View>
+            {societyDocuments.length > 0 ? <View style={styles.section}>
+              <View style={styles.sectionHeading}>
+                <SafeText variant="tiny" style={[styles.sectionLabel, createColorStyle(theme.textMuted)]}>{copy.society}</SafeText>
+                <Pressable onPress={() => navigation.navigate('SocietyDocuments')} accessibilityRole="button"><SafeText variant="caption" style={createColorStyle(theme.accent)}>{copy.viewAll} →</SafeText></Pressable>
+              </View>
+              {societyDocuments.slice(0, 3).map((document) => <DocumentRow key={document.id} document={document} onPress={() => openDocument(document)} />)}
+            </View> : null}
+          </>
+        )}
+
+        <Pressable onPress={() => navigation.navigate('UploadDocument')} style={[styles.command, createSurfaceStyle(theme.surfaceRaised), createBorderStyle(theme.border)]} accessibilityRole="button">
+          <View style={[styles.commandIcon, createSurfaceStyle(theme.accentSoft)]}><Ionicons name="add" size={24} color={theme.accent} /></View>
+          <View style={styles.commandCopy}><SafeText variant="bodyStrong" style={createColorStyle(theme.textPrimary)}>{copy.uploadCommand}</SafeText><SafeText variant="caption" style={createColorStyle(theme.textSecondary)}>{copy.uploadCommandDescription}</SafeText></View>
+          <Ionicons name="arrow-forward" size={20} color={theme.textPrimary} />
+        </Pressable>
+
+        <View style={styles.securityNote}>
+          <Ionicons name="shield-checkmark-outline" size={18} color={theme.textMuted} />
+          <View style={styles.securityCopy}><SafeText variant="caption" style={createColorStyle(theme.textPrimary)}>{copy.protectedAccess}</SafeText><SafeText variant="tiny" style={createColorStyle(theme.textMuted)}>{copy.protectedAccessDescription}</SafeText></View>
+        </View>
       </ScrollView>
-    </View>);
+    </View>
+  );
 }
+
 export default DocumentVaultHomeScreen;

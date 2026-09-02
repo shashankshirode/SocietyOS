@@ -1,18 +1,20 @@
-import { lightColors, darkColors } from './colorPalette';
+import { darkPalette, lightPalette } from './colors';
+import { societyNavigation } from './societyTheme';
 
 export const navigationTokens = {
   light: {
-    headerBackground: lightColors.brandNavy,
-    headerText: '#FFFFFF',
-    tabBarBackground: '#FFFFFF',
-    tabBarActive: lightColors.brandIndigo,
-    tabBarInactive: lightColors.textMuted,
+    headerBackground: lightPalette.surface,
+    headerText: lightPalette.textPrimary,
+    tabBarBackground: darkPalette.backgroundSoft,
+    tabBarActive: darkPalette.primary,
+    tabBarInactive: darkPalette.textSecondary,
   },
   dark: {
-    headerBackground: darkColors.surfaceMuted,
-    headerText: darkColors.textPrimary,
-    tabBarBackground: darkColors.surfaceMuted,
-    tabBarActive: darkColors.brandIndigo,
-    tabBarInactive: darkColors.textMuted,
+    headerBackground: darkPalette.backgroundSoft,
+    headerText: darkPalette.textPrimary,
+    tabBarBackground: darkPalette.backgroundSoft,
+    tabBarActive: darkPalette.primary,
+    tabBarInactive: darkPalette.textMuted,
   },
+  dimensions: societyNavigation,
 };

@@ -57,30 +57,30 @@ export const styles = StyleSheet.create({
         fontSize: 11,
     },
 });
-export function createSafeTextColorStyle(colorValue: "#F87171" | "#991B1B") {
+export function createSafeTextColorStyle(colorValue: string) {
     return {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle2(colorValue: "#FCA5A5" | "#B91C1C") {
+export function createSafeTextColorStyle2(colorValue: string) {
     return {
         color: colorValue,
         opacity: 0.8
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: "#2D0A0A" | "#FEF2F2", borderColorValue: "#7F1D1D" | "#FECACA") {
+export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: "#1C0505" | "#FFF5F5", borderColorValue: "#450A0A" | "#FEE2E2") {
+export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
     return {
         backgroundColor: backgroundColorValue,
         borderColor: borderColorValue
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#FCA5A5" | "#991B1B") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue
     } as const;

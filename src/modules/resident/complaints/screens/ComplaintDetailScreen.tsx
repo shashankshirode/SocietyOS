@@ -31,6 +31,7 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     const { navigation, route } = props;
     const theme = useResidentTheme();
     const messages = useMessages();
+    const focusCopy = messages.resident.experience.focus;
     const { complaint: initialComplaint } = route.params;
     const { state, updateComplaint } = useMockStore();
     const complaint = state.complaints.find((c) => c.id === initialComplaint.id) || initialComplaint;
@@ -147,7 +148,11 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
         steps,
     };
     return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
-      <ResidentPageHeader titleKey="complaints.detailTitle" title={localizedUiText.m_7cf3a9b75be5}/>
+      <ResidentPageHeader
+        contextLabel={focusCopy.issues}
+        title={complaint.assignedTo ? focusCopy.issueAssigned(complaint.title.toLowerCase()) : focusCopy.issueReported(complaint.title)}
+        subtitle={`${complaint.category} · ${complaint.status.replace(/_/g, ' ')}`}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.viewPaddingHorizontal}>
@@ -167,10 +172,10 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
         </View>
 
         <View style={styles.actions}>
-          {complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED && (<AppButton title={messages.common.done || localizedUiText.m_7ee5fb78c07d} onPress={handleResolve} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF"/>}/>)}
+          {complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED && (<AppButton title={messages.common.done || localizedUiText.m_7ee5fb78c07d} onPress={handleResolve} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color={theme.selectedForeground}/>}/>)}
 
           {complaint.status === ComplaintStatus.RESOLVED && (<View style={styles.buttonStack}>
-              <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} iconLeft={<Ionicons name="star-outline" size={18} color="#FFFFFF"/>}/>
+              <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} iconLeft={<Ionicons name="star-outline" size={18} color={theme.selectedForeground}/>}/>
               <AppButton title={messages.complaints.reopenButton} variant="secondary" onPress={handleReopen} iconLeft={<Ionicons name="refresh-outline" size={18} color={theme.accent}/>}/>
             </View>)}
         </View>
@@ -178,4 +183,3 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     </View>);
 }
 export default ComplaintDetailScreen;
-

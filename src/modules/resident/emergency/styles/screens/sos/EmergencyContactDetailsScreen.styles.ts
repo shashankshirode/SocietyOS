@@ -32,7 +32,7 @@ export function createSafeTextColorStyle2(colorValue: string) {
         color: colorValue
     } as const;
 }
-export function createSafeTextColorStyle3(colorValue: "#6B7280" | "#10B981") {
+export function createSafeTextColorStyle3(colorValue: string) {
     return {
         color: colorValue,
         fontWeight: '600'

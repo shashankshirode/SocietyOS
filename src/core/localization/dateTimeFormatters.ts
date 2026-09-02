@@ -171,17 +171,19 @@ export function formatResidentDateSeparator(
 }
 
 export function formatResidentCurrency(
-  amount: number,
+  amount: number | { readonly minorUnits: number; readonly currency?: string },
   currencyCode = 'INR',
   context?: Pick<ResidentFormatContext, 'locale'>,
 ): string {
-  if (!Number.isFinite(amount)) return '—';
+  const value = typeof amount === 'number' ? amount : amount.minorUnits / 100;
+  const resolvedCurrency = typeof amount === 'object' && amount.currency ? amount.currency : currencyCode;
+  if (!Number.isFinite(value)) return '—';
   try {
     return new Intl.NumberFormat(context?.locale ?? getActiveLocale(), {
       style: 'currency',
-      currency: currencyCode,
-      maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-    }).format(amount);
+      currency: resolvedCurrency,
+      maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    }).format(value);
   } catch {
     return '—';
   }
@@ -312,3 +314,11 @@ export function formatVisitorEntryExit(
 
   return { validFrom, validTill };
 }
+
+export function formatResidentInitials(name: string): string {
+  if (!name || !name.trim()) return '??';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return (parts[0]?.slice(0, 2) ?? '??').toUpperCase();
+  return `${parts[0]?.charAt(0) ?? ''}${parts[parts.length - 1]?.charAt(0) ?? ''}`.toUpperCase();
+}
+

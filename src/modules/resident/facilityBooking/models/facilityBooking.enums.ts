@@ -117,6 +117,8 @@ export enum FacilityEligibilityCode {
   VerificationPending = 'VERIFICATION_PENDING',
   DocumentsPending = 'DOCUMENTS_PENDING',
   OutstandingDues = 'OUTSTANDING_DUES',
+  UnitBlockedByAdmin = 'UNIT_BLOCKED_BY_ADMIN',
+  TowerBlockedByAdmin = 'TOWER_BLOCKED_BY_ADMIN',
   BookingLimitReached = 'BOOKING_LIMIT_REACHED',
   OverlappingBooking = 'OVERLAPPING_BOOKING',
   SlotUnavailable = 'SLOT_UNAVAILABLE',

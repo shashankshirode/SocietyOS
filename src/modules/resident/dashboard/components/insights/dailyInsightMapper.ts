@@ -76,14 +76,13 @@ const categoryIcons: Record<DailyInsightCategory, string> = {
     emergency: 'alert-circle-outline'
 };
 export function mapSuggestionToViewModel(suggestion: ResidentContextualSuggestion, result: ResidentContextualInsightsResult, messages: EnglishMessagesType): DailyInsightViewModel {
-    const isCustomAdvisory = Boolean(suggestion.advisory && 'customTitle' in suggestion.advisory);
-    const customAdv = isCustomAdvisory ? (suggestion.advisory as any) : null;
+    const customAdv = suggestion.advisory?.customTitle ? suggestion.advisory : null;
 
-    const rawTitle = customAdv ? customAdv.customTitle : (resolveMessage(messages, suggestion.titleMessageKey) || 'Advisory');
+    const rawTitle = customAdv?.customTitle ?? (resolveMessage(messages, suggestion.titleMessageKey) || 'Advisory');
     const category = resolveCategory(suggestion);
     const severity = resolveSeverity(suggestion.priority, category, rawTitle);
     const title = rawTitle.replace(/\s+/g, ' ').trim();
-    let description = customAdv ? customAdv.customDescription : (resolveMessage(messages, suggestion.detailMessageKey) || '').replace(/\s+/g, ' ').trim();
+    let description = customAdv?.customDescription ?? (resolveMessage(messages, suggestion.detailMessageKey) || '').replace(/\s+/g, ' ').trim();
     if (!description) {
         description = 'Open this advisory to view the details.';
     }

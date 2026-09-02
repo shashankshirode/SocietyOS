@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, Pressable, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, TextInput, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { GuardStackParamList } from "../../../../app/navigation/navigation.types";
@@ -45,4 +45,3 @@ export function GuardResidentConversationScreen({ route }: Props) {
       </View>
     </KeyboardAvoidingView>);
 }
-

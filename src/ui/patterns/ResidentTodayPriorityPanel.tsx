@@ -50,7 +50,7 @@ export function ResidentTodayPriorityPanel({ title, subtitle, viewAllLabel, empt
                   {badgeLabel}
                 </SafeText>
               </View>
-              {showViewAll && (<Pressable onPress={onViewAllPress} style={styles.viewAllButtonTablet} accessibilityRole="button" accessibilityLabel={viewAllAccessibilityLabel} hitSlop={8}>
+              {showViewAll && (<Pressable onPress={onViewAllPress} style={styles.viewAllButtonTablet} accessibilityRole="button" accessibilityLabel={viewAllAccessibilityLabel} hitSlop={12}>
                   <SafeText variant="caption" style={createSafeTextColorStyle(colors.primary)} numberOfLines={1}>
                     {viewAllLabel}
                   </SafeText>
@@ -110,4 +110,3 @@ export function ResidentTodayPriorityPanel({ title, subtitle, viewAllLabel, empt
         </View>)}
     </View>);
 }
-

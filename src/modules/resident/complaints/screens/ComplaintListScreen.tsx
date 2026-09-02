@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ComplaintListScreenProps } from "../../../../app/navigation/navigation.types";
@@ -18,11 +18,10 @@ import { ListSkeleton } from "../../../../ui/loading/ListSkeleton";
 import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { ScreenEmptyState } from "../../../../ui/states/ScreenEmptyState";
 import { ScreenErrorState } from "../../../../ui/states/ScreenErrorState";
-import { useWindowDimensions } from "react-native";
 import { resolveResidentTabBarObstruction } from "../../navigation/useResidentTabBarLayout";
 import { getAppPlatform } from "../../../../shared/platform";
 import { useComplaints } from "../data/useComplaints";
-import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createPressableBackgroundColorBorderColorStyle, createViewBackgroundColorBorderColorStyle, createViewBackgroundColorStyle3, createViewBackgroundColorStyle4, createViewBorderTopColorStyle, createViewBottomStyle, createPressableScaleBackgroundColorStyle } from "../styles/screens/ComplaintListScreen.styles";
+import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createViewBackgroundColorStyle, createViewBackgroundColorStyle2, createPressableBackgroundColorBorderColorStyle, createViewBackgroundColorBorderColorStyle, createViewBackgroundColorStyle3, createViewBackgroundColorStyle4, createViewBorderTopColorStyle, createViewBottomStyle, createPressableScaleBackgroundColorStyle, createScrollPaddingBottomStyle } from "../styles/screens/ComplaintListScreen.styles";
 type FilterType = 'ALL' | 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
 const categoryIcons = {
     PLUMBING: 'water-outline',
@@ -116,14 +115,14 @@ export function ComplaintListScreen({ navigation }: ComplaintListScreenProps) {
         <WrapRow gap={8}>
           {chips.map((chip) => {
             const selected = filter === chip.key;
-            return (<Pressable key={chip.key} onPress={() => setFilter(chip.key)} accessibilityRole="button" accessibilityState={{ selected }} testID={`complaint-filter-${chip.key}`} style={[styles.tabChip, createPressableBackgroundColorBorderColorStyle(selected ? theme.accent : theme.surface, selected ? theme.accent : theme.border)]}>
-                <SafeText variant="tiny" style={createSafeTextColorStyle(selected ? '#FFFFFF' : theme.textSecondary)}>{chip.label}</SafeText>
+            return (<Pressable key={chip.key} onPress={() => setFilter(chip.key)} accessibilityRole="button" accessibilityState={{ selected }} testID={`complaint-filter-${chip.key}`} style={[styles.tabChip, createPressableBackgroundColorBorderColorStyle(selected ? theme.selectedBackground : theme.surface, selected ? theme.selectedBorder : theme.border)]}>
+                <SafeText variant="tiny" style={createSafeTextColorStyle(selected ? theme.selectedForeground : theme.textSecondary)}>{chip.label}</SafeText>
               </Pressable>);
         })}
         </WrapRow>
       </ContentFrame>
 
-      {isLoading ? (<ContentFrame style={styles.loading}><ListSkeleton count={4}/></ContentFrame>) : error ? (<ScreenErrorState title={complaintMessages.errorTitle} message={complaintMessages.errorDescription} onRetry={refetch}/>) : filteredComplaints.length === 0 ? (<ScreenEmptyState title={emptyMessages.title} description={emptyMessages.description} iconName="chatbox-ellipses-outline" primaryAction={{ label: complaintMessages.actionRaise, onPress: () => navigation.navigate('CreateComplaint') }}/>) : (<ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarObstruction + 72 }]} showsVerticalScrollIndicator={false}>
+      {isLoading ? (<ContentFrame style={styles.loading}><ListSkeleton count={4}/></ContentFrame>) : error ? (<ScreenErrorState title={complaintMessages.errorTitle} message={complaintMessages.errorDescription} onRetry={refetch}/>) : filteredComplaints.length === 0 ? (<ScreenEmptyState title={emptyMessages.title} description={emptyMessages.description} iconName="chatbox-ellipses-outline" primaryAction={{ label: complaintMessages.actionRaise, onPress: () => navigation.navigate('CreateComplaint') }}/>) : (<ScrollView contentContainerStyle={[styles.scrollContent, createScrollPaddingBottomStyle(tabBarObstruction + 72)]} showsVerticalScrollIndicator={false}>
           <ContentFrame style={styles.list}>
             {filteredComplaints.map((complaint) => (<PressableScale key={complaint.id} onPress={() => navigation.navigate('ComplaintDetail', { complaint })} accessibilityLabel={complaintMessages.openComplaintAccessibility(complaint.title)} style={isTablet ? styles.tabletCardWrapper : styles.cardWrapper}>
                 <View style={[styles.card, createViewBackgroundColorBorderColorStyle(theme.surface, theme.border)]}>
@@ -152,12 +151,12 @@ export function ComplaintListScreen({ navigation }: ComplaintListScreenProps) {
           </ContentFrame>
         </ScrollView>)}
 
-      <View style={[styles.fabContainer, createViewBottomStyle(tabBarObstruction + 16)]}>
-        <PressableScale onPress={() => navigation.navigate('CreateComplaint')} accessibilityLabel={complaintMessages.addComplaintAccessibility} style={[styles.fab, createPressableScaleBackgroundColorStyle(theme.accent)]}>
-          <Ionicons name="add" size={24} color="#FFFFFF"/>
+      {complaints.length > 0 ? <View style={[styles.fabContainer, createViewBottomStyle(tabBarObstruction + 16)]}>
+        <PressableScale onPress={() => navigation.navigate('CreateComplaint')} accessibilityLabel={complaintMessages.addComplaintAccessibility} style={[styles.fab, createPressableScaleBackgroundColorStyle(theme.selectedBackground)]}>
+          <Ionicons name="add" size={20} color={theme.selectedForeground}/>
+          <SafeText variant="bodyStrong" style={createSafeTextColorStyle(theme.selectedForeground)}>{complaintMessages.actionRaise}</SafeText>
         </PressableScale>
-      </View>
+      </View> : null}
     </View>);
 }
 export default ComplaintListScreen;
-

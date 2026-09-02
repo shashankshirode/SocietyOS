@@ -37,19 +37,17 @@ export function useResidentDashboard() {
     
     const [mockStateSignature, setMockStateSignature] = useState(() => {
         const state = mockStore.getState();
-        const billsCount = state.bills.length;
-        const unpaidAmount = state.bills.reduce((sum, b) => sum + (b.amount - (b.paidAmount ?? 0)), 0);
-        const visitorsCount = state.visitors.filter(v => v.status === 'EXPECTED').length;
-        return `${billsCount}-${unpaidAmount}-${visitorsCount}`;
+        const billSignature = state.bills.map((bill) => `${bill.id}:${bill.status}:${bill.paidAmount ?? 0}`).join('|');
+        const visitorSignature = state.visitors.map((visitor) => `${visitor.id}:${visitor.status}`).join('|');
+        return `${billSignature}::${visitorSignature}`;
     });
 
     useEffect(() => {
         const unsubscribe = mockStore.subscribe(() => {
             const state = mockStore.getState();
-            const billsCount = state.bills.length;
-            const unpaidAmount = state.bills.reduce((sum, b) => sum + (b.amount - (b.paidAmount ?? 0)), 0);
-            const visitorsCount = state.visitors.filter(v => v.status === 'EXPECTED').length;
-            setMockStateSignature(`${billsCount}-${unpaidAmount}-${visitorsCount}`);
+            const billSignature = state.bills.map((bill) => `${bill.id}:${bill.status}:${bill.paidAmount ?? 0}`).join('|');
+            const visitorSignature = state.visitors.map((visitor) => `${visitor.id}:${visitor.status}`).join('|');
+            setMockStateSignature(`${billSignature}::${visitorSignature}`);
         });
         return unsubscribe;
     }, []);

@@ -6,6 +6,7 @@ import { Radius } from './radius';
 import { Shadows } from './shadows';
 import { Layout } from './layout';
 import { zIndex } from './zIndex';
+import { societyBorderWidths, societyContent, societyIcons, societyMotion, societyNavigation, societySemanticDark, societyTouch } from './societyTheme';
 
 export const darkTheme: AppTheme = {
   dark: true,
@@ -27,10 +28,10 @@ export const darkTheme: AppTheme = {
     primary: darkPalette.primary,
     primarySoft: darkPalette.primarySoft,
     primaryPressed: darkPalette.primaryPressed,
-    primaryText: '#08111F',
+    primaryText: '#111612',
 
     secondary: darkPalette.accentTeal,
-    secondarySoft: '#134E4A',
+    secondarySoft: '#253832',
     accentIndigo: darkPalette.accentIndigo,
     accentTeal: darkPalette.accentTeal,
     accentGold: darkPalette.accentGold,
@@ -46,10 +47,10 @@ export const darkTheme: AppTheme = {
     info: darkPalette.info,
     infoSoft: darkPalette.infoSoft,
 
-    textPrimary: '#F8FAFC',
-    textSecondary: '#CBD5E1',
-    textMuted: '#94A3B8',
-    textInverse: '#0F172A',
+    textPrimary: '#F3F0E7',
+    textSecondary: '#C3C5B9',
+    textMuted: '#92988C',
+    textInverse: '#111612',
 
     border: darkPalette.border,
     divider: darkPalette.divider,
@@ -59,15 +60,15 @@ export const darkTheme: AppTheme = {
     inputPlaceholder: darkPalette.textMuted,
 
     disabled: darkPalette.textDisabled,
-    overlay: 'rgba(0, 0, 0, 0.64)',
-    shadow: '#000000',
+    overlay: 'rgba(7, 10, 8, 0.72)',
+    shadow: '#090C0A',
 
-    tabBarBackground: 'rgba(15,23,42,0.92)',
-    tabBarActive: darkPalette.accentIndigo,
+    tabBarBackground: '#171C18',
+    tabBarActive: '#C2DCA5',
     tabBarInactive: darkPalette.textDisabled,
 
-    headerBackground: '#0F172A',
-    headerText: '#F8FAFC',
+    headerBackground: '#171D18',
+    headerText: '#F3F0E7',
 
     statusBarStyle: 'light-content',
 
@@ -76,7 +77,7 @@ export const darkTheme: AppTheme = {
     primaryDark: darkPalette.primarySoft,
     textTertiary: darkPalette.textMuted,
     textDisabled: darkPalette.textDisabled,
-    textOnPrimary: '#0F172A',
+    textOnPrimary: '#111612',
     white: palette.white,
     black: palette.black,
     surfaceSoft: darkPalette.surfaceRaised,
@@ -91,14 +92,14 @@ export const darkTheme: AppTheme = {
     neutralLight: darkPalette.backgroundSoft,
     resident: darkPalette.accentIndigo,
     guard: darkPalette.accentTeal,
-    facility: '#A78BFA',
+    facility: '#9EA2EE',
     admin: darkPalette.accentSky,
     treasurer: darkPalette.accentGold,
     governance: darkPalette.primary,
     document: darkPalette.primary,
     billing: darkPalette.accentGold,
     parking: darkPalette.accentTeal,
-    backdrop: 'rgba(0, 0, 0, 0.7)',
+    backdrop: 'rgba(7, 10, 8, 0.76)',
   },
   spacing: Spacing,
   typography: Typography,
@@ -106,4 +107,11 @@ export const darkTheme: AppTheme = {
   shadows: Shadows,
   layout: Layout,
   zIndex: zIndex,
+  semantic: societySemanticDark,
+  borderWidths: societyBorderWidths,
+  motion: societyMotion,
+  touch: societyTouch,
+  navigation: societyNavigation,
+  content: societyContent,
+  icons: societyIcons,
 };

@@ -1,5 +1,5 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { Text, View, Pressable, ScrollView, Switch } from "react-native";
+import { Text, View, Pressable, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { EmergencySafetyStackParamList } from "../../../../app/navigation/navigation.types";
@@ -12,6 +12,7 @@ import { EmergencyPrivacyNotice } from "../../emergency/components/EmergencyPriv
 import { styles } from "../styles/screens/SeniorCitizenProfileScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../../messages/useMessages";
 import { formatUiLiteral } from "../../../../shared/localization/formatUiLiteral";
+import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
 type Props = NativeStackScreenProps<EmergencySafetyStackParamList, 'SeniorCitizenProfile'>;
 export function SeniorCitizenProfileScreen({ navigation }: Props) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
@@ -56,7 +57,7 @@ export function SeniorCitizenProfileScreen({ navigation }: Props) {
               <Text style={styles.rowTitle}>{localizedUiText.m_a12957be53c2}</Text>
               <Text style={styles.rowDesc}>{localizedUiText.m_dad0d302b555}</Text>
             </View>
-            <Switch value={profileData.seniorCareStatus === 'ENABLED'} onValueChange={handleToggleSeniorCare}/>
+            <SocietySwitch value={profileData.seniorCareStatus === 'ENABLED'} onValueChange={handleToggleSeniorCare}/>
           </View>
         </View>
 
@@ -66,7 +67,7 @@ export function SeniorCitizenProfileScreen({ navigation }: Props) {
               <Text style={styles.rowTitle}>{localizedUiText.m_a7ecaa91f286}</Text>
               <Text style={styles.rowDesc}>{localizedUiText.m_eb2dfd1581eb}</Text>
             </View>
-            <Switch value={profileData.dailyCheckInEnabled} onValueChange={handleToggleDailyCheckIn}/>
+            <SocietySwitch value={profileData.dailyCheckInEnabled} onValueChange={handleToggleDailyCheckIn}/>
           </View>
         </View>
 
@@ -105,4 +106,3 @@ export function SeniorCitizenProfileScreen({ navigation }: Props) {
       </ScrollView>
     </ScreenContainer>);
 }
-

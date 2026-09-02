@@ -4,6 +4,8 @@ import type { Complaint, ComplaintStatus, CreateComplaintPayload } from '../../.
 import { resolveRequestContext } from '../../homeContext/utils/resolveRequestContext';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import { matchesResidentRepositoryContext } from '../../homeContext/utils/matchesResidentRepositoryContext';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
+import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import type { Absent } from "../../../../shared/types/absence.types";
 export const complaintMockSource = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Complaint[]>> {
@@ -37,6 +39,11 @@ export const complaintMockSource = {
             actualContext = resolveRequestContext();
             actualPayload = context as CreateComplaintPayload;
         }
+
+        const session = getCurrentSession();
+        const actorName = session?.name ?? 'Resident';
+        const actorId = session?.userId ?? 'usr-resident-01';
+
         const newComplaint: Complaint = {
             id: `comp-${Date.now()}`,
             title: actualPayload.title.trim(),
@@ -46,7 +53,9 @@ export const complaintMockSource = {
             priority: actualPayload.priority,
             location: actualPayload.location.trim(),
             flatNumber: actualContext.activeHome.flatNumber,
-            residentName: actualContext.activeHome.residentRole === 'tenant' ? 'Amit' : 'Shashank',
+            residentName: actorName,
+            reportedByUserId: actorId,
+            reportedByDisplayName: actorName,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             slaText: 'Resolution within 48 hours',
@@ -65,6 +74,32 @@ export const complaintMockSource = {
             ],
         };
         mockStore.addComplaint(newComplaint);
+
+        void domainEventBus.emit({
+            eventId: `evt-comp-${newComplaint.id}`,
+            eventType: 'helpdesk.ticket.created',
+            societyId: newComplaint.societyId ?? 'soc-palm-grove-01',
+            unitId: newComplaint.unitId,
+            actor: {
+                userId: actorId,
+                personId: actorId,
+                displayName: actorName,
+                role: session?.role ?? 'RESIDENT_OWNER',
+            },
+            subject: {
+                entityType: 'Complaint',
+                entityId: newComplaint.id,
+            },
+            severity: 'INFO',
+            createdAtIso: newComplaint.createdAt,
+            correlationId: `corr-${newComplaint.id}`,
+            payload: {
+                title: newComplaint.title,
+                category: newComplaint.category,
+                unitNumber: newComplaint.flatNumber,
+            },
+        });
+
         return repositorySuccess(newComplaint);
     },
     async updateStatus(id: string, status: ComplaintStatus, note?: string): Promise<RepositoryResult<Complaint>> {

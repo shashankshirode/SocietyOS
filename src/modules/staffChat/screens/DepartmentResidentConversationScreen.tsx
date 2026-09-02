@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { DepartmentChatStackParamList } from "../../../app/navigation/navigation.types";
@@ -40,4 +40,3 @@ export function DepartmentResidentConversationScreen({ route }: Props) {
       <View style={[styles.composer, createViewBackgroundColorBorderTopColorStyle(colors.surface, colors.border)]}><TextInput value={draft} onChangeText={setDraft} placeholder={text.resident.chat.composer.placeholder} placeholderTextColor={colors.inputPlaceholder} style={[styles.input, createTextInputBorderColorColorStyle(colors.border, colors.inputText)]}/><Pressable accessibilityRole="button" accessibilityLabel={text.resident.chat.composer.send} onPress={() => void handleSend()} style={[styles.send, createPressableBackgroundColorStyle(draft.trim() ? colors.primary : colors.disabled)]}><SafeText variant="caption" style={createSafeTextColorStyle2(colors.primaryText)}>{text.resident.chat.composer.send}</SafeText></Pressable></View>
     </KeyboardAvoidingView>);
 }
-

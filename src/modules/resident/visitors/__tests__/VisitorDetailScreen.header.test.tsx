@@ -2,7 +2,6 @@ import React from "react";
 import { screen } from "@testing-library/react-native";
 import { renderWithProviders } from "../../../../test/testUtils";
 import { VisitorDetailScreen } from "../screens/VisitorDetailScreen";
-import { enMessages } from "../../../../messages/en";
 
 jest.mock("../../../../core/mockStore/useMockStore", () => ({
   useMockStore: () => ({
@@ -55,14 +54,13 @@ const mockRoute = {
 };
 
 describe("VisitorDetailScreen Header Integration", () => {
-  it("renders correct header with translation title and subtitle without crash", async () => {
+  it("renders the visitor state as the narrative hero", async () => {
     await renderWithProviders(
       <VisitorDetailScreen navigation={mockNavigation} route={mockRoute} />,
     );
 
     
-    expect(
-      screen.getByText(enMessages.visitors.passDetailTitle),
-    ).toBeOnTheScreen();
+    expect(screen.getByText('VISITORS')).toBeOnTheScreen();
+    expect(screen.getByText('John Doe is expected at 10:00 AM.')).toBeOnTheScreen();
   });
 });

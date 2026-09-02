@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View, Platform, Pressable, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { Pressable } from 'react-native';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { useReducedMotion } from '../../shared/motion/useReducedMotion';
 
@@ -9,7 +8,7 @@ interface PremiumCardProps {
   children: React.ReactNode;
   onPress?: () => void;
   accentColor?: string;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
   disabled?: boolean;
 }

@@ -130,6 +130,7 @@ function facility(
     | 'guestSurchargeInMinorUnits'
     | 'taxRateBasisPoints'
     | 'convenienceFeeInMinorUnits'
+    | 'eligibilityPolicy'
   >>,
 ): Facility {
   return {
@@ -158,7 +159,7 @@ function facility(
     ),
     requiresConsent: values.requiresConsent ?? true,
     rules: commonRules,
-    eligibilityPolicy,
+    eligibilityPolicy: (values as any).eligibilityPolicy ?? eligibilityPolicy,
     cancellationPolicy,
   };
 }
@@ -194,6 +195,10 @@ export const facilityBookingMockFacilities: readonly Facility[] = [
     ],
     nextAvailableAt: '2026-07-18T03:30:00.000Z',
     taxRateBasisPoints: 1_800,
+    eligibilityPolicy: {
+      ...eligibilityPolicy,
+      allowedRoles: ['owner', 'coOwner'],
+    },
   }),
   facility({
     id: 'gv-badminton',

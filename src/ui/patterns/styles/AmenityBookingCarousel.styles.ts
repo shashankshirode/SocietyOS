@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
         overflow: 'hidden'
     },
     overlay1: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         opacity: 0.35,
         transform: [{ translateX: 80 }, { translateY: -40 }, { rotate: '-20deg' }, { scaleX: 1.5 }]
     },
@@ -31,11 +31,11 @@ export const styles = StyleSheet.create({
         top: -20
     },
     image: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         borderRadius: 18
     },
     imageOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: residentColors.imageScrim
     },
     cardContent: {

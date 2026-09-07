@@ -30,6 +30,7 @@ import {
 } from '../styles/facilityBooking.styles';
 import { BookingInfoRow } from '../components/BookingInfoRow';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'CancelFacilityBooking'>;
 const reasons = Object.values(FacilityBookingCancellationReason);
@@ -70,11 +71,11 @@ export function CancelFacilityBookingScreen({ navigation, route }: Props) {
   }
 
   if (bookingResource.isLoading || facilityResource.isLoading || !booking && !bookingResource.error) {
-    return <FacilityScreenLayout title={labels.cancellation.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.cancellation.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'CancelFacilityBooking' })}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
   }
   if (bookingResource.error || facilityResource.error || !booking || !facility || !preview) {
     return (
-      <FacilityScreenLayout title={labels.cancellation.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.cancellation.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'CancelFacilityBooking' })}>
         <ErrorState title={labels.states.loadBookingTitle} message={labels.states.loadBookingDescription} onRetry={() => void bookingResource.refresh()} />
       </FacilityScreenLayout>
     );
@@ -84,7 +85,7 @@ export function CancelFacilityBookingScreen({ navigation, route }: Props) {
   const footer = (
     <StickyFooter>
       <View style={styles.stickyButtonRow}>
-        <AppButton title={labels.cancellation.keep} onPress={navigation.goBack} variant="outline" style={styles.stickyButton} />
+        <AppButton title={labels.cancellation.keep} onPress={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'CancelFacilityBooking' })} variant="outline" style={styles.stickyButton} />
         <AppButton title={labels.cancellation.confirm} onPress={() => setConfirmationVisible(true)} variant="danger" disabled={!reason} style={styles.stickyButton} />
       </View>
     </StickyFooter>
@@ -93,7 +94,7 @@ export function CancelFacilityBookingScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.cancellation.title}
       subtitle={booking.bookingReference}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'CancelFacilityBooking' })}
       footer={footer}
       testID="cancel-facility-booking-screen"
     >

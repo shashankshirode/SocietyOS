@@ -39,6 +39,7 @@ import { BookingInfoRow } from '../components/BookingInfoRow';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
 import { GuestCounter } from '../components/GuestCounter';
 import { includeWhenPresent } from '../../../../shared/utils/presentProperty';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'CreateFacilityBooking'>;
 
@@ -170,7 +171,7 @@ export function CreateFacilityBookingScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.information.title}
       subtitle={labels.information.subtitle}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilitySlotAvailability', currentRouteName: 'CreateFacilityBooking' })}
       footer={footer}
       testID="facility-booking-information-screen"
     >

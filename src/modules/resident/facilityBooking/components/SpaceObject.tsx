@@ -8,80 +8,59 @@ import { useMessages } from '../../../../messages/useMessages';
 import { useActiveResidentHome } from '../../homeContext/hooks/useActiveResidentHome';
 import type { Facility } from '../models/facilityBooking.models';
 import { FacilityAvailabilityStatus } from '../models/facilityBooking.enums';
+import type { ResidentHomeRole } from '../../homeContext/data/residentHomeContext.types';
 import { resolveFacilityImage } from '../media/resolveFacilityImage';
-import {
-  backgroundBorderStyle,
-  facilityBookingStyles as styles,
-} from '../styles/facilityBooking.styles';
-
+import { backgroundBorderStyle, facilityBookingStyles as styles, } from '../styles/facilityBooking.styles';
 interface SpaceObjectProps {
-  facility: Facility;
-  variant?: 'featured' | 'compact';
-  onPress: () => void;
+    facility: Facility;
+    variant?: 'featured' | 'compact';
+    onPress: () => void;
 }
-
 export function SpaceObject({ facility, variant = 'compact', onPress }: SpaceObjectProps) {
-  const { colors } = useAppTheme();
-  const { activeContext } = useActiveResidentHome();
-  const msg = useMessages().resident.facilityBooking.spaces;
-
-  const isMaintenance = facility.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance;
-  const isAvailable = facility.availabilityStatus === FacilityAvailabilityStatus.Available;
-
-  // Check Role & Admin Policy Restrictions
-  const isRoleRestricted = !facility.eligibilityPolicy.allowedRoles.includes(activeContext.residentRole as any);
-  const isUnitBlocked = facility.eligibilityPolicy.blockedUnitIds?.includes(activeContext.unitId) || false;
-  const isTowerBlocked = facility.eligibilityPolicy.blockedTowersOrWings?.some((t) =>
-    activeContext.displayUnitName.toLowerCase().includes(t.toLowerCase()) ||
-    (activeContext.towerName && activeContext.towerName.toLowerCase().includes(t.toLowerCase()))
-  ) || false;
-
-  let statusTone: string = colors.primary;
-  let statusText: string = msg.availableToday;
-
-  if (isUnitBlocked) {
-    statusTone = colors.danger;
-    statusText = msg.adminRestricted;
-  } else if (isTowerBlocked) {
-    statusTone = colors.danger;
-    statusText = msg.towerBanActive;
-  } else if (isRoleRestricted) {
-    statusTone = colors.warning;
-    statusText = activeContext.residentRole === 'tenant' ? msg.ownerOnly : msg.roleRestricted;
-  } else if (isMaintenance) {
-    statusTone = colors.warning;
-    statusText = msg.maintenanceToday;
-  } else if (isAvailable) {
-    statusTone = colors.success;
-    statusText = msg.availableToday;
-  } else {
-    statusTone = colors.primary;
-    statusText = msg.eveningOpen;
-  }
-
-  const rateText = facility.baseFeeInMinorUnits > 0
-    ? `₹${Math.round(facility.baseFeeInMinorUnits / 100)} / hr`
-    : msg.freeAccess;
-
-  if (variant === 'featured') {
-    return (
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel={`${facility.name}, ${statusText}, ${facility.locationName}, ${rateText}`}
-        style={({ pressed }) => [
-          styles.spaceFeatureCard,
-          backgroundBorderStyle(
-            pressed ? colors.surfaceMuted : colors.surface,
-            isMaintenance || isRoleRestricted || isUnitBlocked || isTowerBlocked ? statusTone : colors.border
-          ),
-        ]}
-      >
-        <ResponsiveImage
-          image={resolveFacilityImage(facility)}
-          aspectRatio={16 / 8}
-          style={styles.spaceFeatureImage}
-        />
+    const { colors } = useAppTheme();
+    const { activeContext } = useActiveResidentHome();
+    const msg = useMessages().resident.facilityBooking.spaces;
+    const isMaintenance = facility.availabilityStatus === FacilityAvailabilityStatus.UnderMaintenance;
+    const isAvailable = facility.availabilityStatus === FacilityAvailabilityStatus.Available;
+    const isRoleRestricted = !facility.eligibilityPolicy.allowedRoles.includes(activeContext.residentRole as ResidentHomeRole);
+    const isUnitBlocked = facility.eligibilityPolicy.blockedUnitIds?.includes(activeContext.unitId) || false;
+    const isTowerBlocked = facility.eligibilityPolicy.blockedTowersOrWings?.some((t) => activeContext.displayUnitName.toLowerCase().includes(t.toLowerCase()) ||
+        (activeContext.towerName && activeContext.towerName.toLowerCase().includes(t.toLowerCase()))) || false;
+    let statusTone: string = colors.primary;
+    let statusText: string = msg.availableToday;
+    if (isUnitBlocked) {
+        statusTone = colors.danger;
+        statusText = msg.adminRestricted;
+    }
+    else if (isTowerBlocked) {
+        statusTone = colors.danger;
+        statusText = msg.towerBanActive;
+    }
+    else if (isRoleRestricted) {
+        statusTone = colors.warning;
+        statusText = activeContext.residentRole === 'tenant' ? msg.ownerOnly : msg.roleRestricted;
+    }
+    else if (isMaintenance) {
+        statusTone = colors.warning;
+        statusText = msg.maintenanceToday;
+    }
+    else if (isAvailable) {
+        statusTone = colors.success;
+        statusText = msg.availableToday;
+    }
+    else {
+        statusTone = colors.primary;
+        statusText = msg.eveningOpen;
+    }
+    const rateText = facility.baseFeeInMinorUnits > 0
+        ? `₹${Math.round(facility.baseFeeInMinorUnits / 100)} / hr`
+        : msg.freeAccess;
+    if (variant === 'featured') {
+        return (<Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${facility.name}, ${statusText}, ${facility.locationName}, ${rateText}`} style={({ pressed }) => [
+                styles.spaceFeatureCard,
+                backgroundBorderStyle(pressed ? colors.surfaceMuted : colors.surface, isMaintenance || isRoleRestricted || isUnitBlocked || isTowerBlocked ? statusTone : colors.border),
+            ]}>
+        <ResponsiveImage image={resolveFacilityImage(facility)} aspectRatio={16 / 8} style={styles.spaceFeatureImage}/>
         <View style={styles.spaceFeatureBody}>
           <View style={styles.rowBetween}>
             <View style={{ gap: 2 }}>
@@ -101,64 +80,52 @@ export function SpaceObject({ facility, variant = 'compact', onPress }: SpaceObj
 
           <SafeText variant="caption" color="secondary" numberOfLines={2}>
             {isUnitBlocked
-              ? msg.adminRestrictedDescription
-              : isTowerBlocked
-              ? msg.towerBanDescription
-              : isRoleRestricted
-              ? msg.tenantRestrictedDescription
-              : facility.description || facility.locationName}
+                ? msg.adminRestrictedDescription
+                : isTowerBlocked
+                    ? msg.towerBanDescription
+                    : isRoleRestricted
+                        ? msg.tenantRestrictedDescription
+                        : facility.description || facility.locationName}
           </SafeText>
 
           <View style={[styles.rowBetween, { marginTop: 4 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="people-outline" size={15} color={colors.textSecondary} />
+              <Ionicons name="people-outline" size={15} color={colors.textSecondary}/>
               <SafeText variant="tiny" color="secondary">
                 {msg.upToGuests(facility.capacity || 4)}
               </SafeText>
               <SafeText variant="tiny" color="muted">·</SafeText>
-              <Ionicons name="location-outline" size={15} color={colors.textSecondary} />
+              <Ionicons name="location-outline" size={15} color={colors.textSecondary}/>
               <SafeText variant="tiny" color="secondary">
                 {facility.locationName}
               </SafeText>
             </View>
-            <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+            <Ionicons name="arrow-forward" size={16} color={colors.primary}/>
           </View>
         </View>
-      </Pressable>
-    );
-  }
-
-  // Compact row representation
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${facility.name}, ${statusText}, ${rateText}`}
-      style={({ pressed }) => [
-        styles.spaceCompactCard,
-        backgroundBorderStyle(
-          pressed ? colors.primarySoft : colors.surface,
-          isMaintenance || isRoleRestricted || isUnitBlocked || isTowerBlocked ? statusTone : colors.border
-        ),
-      ]}
-    >
+      </Pressable>);
+    }
+    return (<Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${facility.name}, ${statusText}, ${rateText}`} style={({ pressed }) => [
+            styles.spaceCompactCard,
+            backgroundBorderStyle(pressed ? colors.primarySoft : colors.surface, isMaintenance || isRoleRestricted || isUnitBlocked || isTowerBlocked ? statusTone : colors.border),
+        ]}>
       <View style={{ flex: 1, gap: 2 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <SafeText variant="bodyStrong" color="primary" numberOfLines={1}>
             {facility.name}
           </SafeText>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusTone }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusTone }}/>
         </View>
         <SafeText variant="tiny" color="secondary" numberOfLines={1}>
           {isUnitBlocked
             ? msg.adminRestricted
             : isTowerBlocked
-            ? msg.towerBanActive
-            : isRoleRestricted
-            ? msg.tenantRestricted
-            : isMaintenance
-            ? msg.maintenanceDescription
-            : `${facility.locationName} · ${rateText}`}
+                ? msg.towerBanActive
+                : isRoleRestricted
+                    ? msg.tenantRestricted
+                    : isMaintenance
+                        ? msg.maintenanceDescription
+                        : `${facility.locationName} · ${rateText}`}
         </SafeText>
       </View>
 
@@ -167,6 +134,6 @@ export function SpaceObject({ facility, variant = 'compact', onPress }: SpaceObj
           {isMaintenance ? msg.unavailable : isRoleRestricted || isUnitBlocked || isTowerBlocked ? msg.restricted : msg.viewSpace}
         </SafeText>
       </View>
-    </Pressable>
-  );
+    </Pressable>);
 }
+

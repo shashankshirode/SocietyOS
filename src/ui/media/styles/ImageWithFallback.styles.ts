@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
         width: '100%',
     },
     loading: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         zIndex: 1,
     },
     image: {

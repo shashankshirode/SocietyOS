@@ -650,10 +650,10 @@ export class MockResidenceAccessRepository implements ResidenceAccessRepository 
         if (!eligibility.canSendReminder) {
             return errorResult('FORBIDDEN', false);
         }
-        const latestReminder = this.reminders
+        const sortedReminders = this.reminders
             .filter((reminder) => reminder.requestId === record.residenceAccessId)
-            .sort((left, right) => new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime())
-            .at(0);
+            .sort((left, right) => new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime());
+        const latestReminder = sortedReminders.length > 0 ? sortedReminders[0] : undefined;
         if (latestReminder && new Date(latestReminder.nextAllowedReminderAt).getTime() > Date.now()) {
             return errorResult('REMINDER_COOLDOWN', false, {
                 retryAfter: latestReminder.nextAllowedReminderAt

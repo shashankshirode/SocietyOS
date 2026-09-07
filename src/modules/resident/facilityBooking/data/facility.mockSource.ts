@@ -156,33 +156,21 @@ export const facilityMockSource = {
         const actorName = session?.name ?? 'Resident';
         const actorId = session?.userId ?? 'usr-resident-01';
         const context = resolveRequestContext();
-
-        // 1. Dynamic permission revalidation
         if (session?.personaKey && MOCK_PERSONAS[session.personaKey as keyof typeof MOCK_PERSONAS]) {
             const persona = MOCK_PERSONAS[session.personaKey as keyof typeof MOCK_PERSONAS];
-            const cap = evaluateCapability(
-                persona,
-                (input.chargeAmount ?? 0) > 0 ? 'FACILITY_BOOK_PAID' : 'FACILITY_BOOK_FREE',
-                { bookingCost: input.chargeAmount ?? 0 }
-            );
+            const cap = evaluateCapability(persona, (input.chargeAmount ?? 0) > 0 ? 'FACILITY_BOOK_PAID' : 'FACILITY_BOOK_FREE', { bookingCost: input.chargeAmount ?? 0 });
             if (cap.status === 'DENIED') {
                 return repositoryFailure({ code: 'PERMISSION_DENIED', message: 'You no longer have permission to book spaces for this home.' });
             }
         }
-
-        // 2. Transactional availability / slot race condition check
         const existingBookings = mockStore.getState().facilityBookings;
-        const slotTaken = existingBookings.some(
-            (b) =>
-                b.facilityId === input.facilityId &&
-                b.date === input.date &&
-                b.slot === input.slot &&
-                b.status !== 'CANCELLED'
-        );
+        const slotTaken = existingBookings.some((b) => b.facilityId === input.facilityId &&
+            b.date === input.date &&
+            b.slot === input.slot &&
+            b.status !== 'CANCELLED');
         if (slotTaken) {
             return repositoryFailure({ code: 'SLOT_UNAVAILABLE', message: 'This slot is no longer available. Please select another time slot.' });
         }
-
         const booking: FacilityBooking = {
             id: `facility-booking-${Date.now()}`,
             unitId: input.unitId || context.activeHome.unitId,
@@ -212,7 +200,6 @@ export const facilityMockSource = {
             timeline: [{ id: `timeline-${Date.now()}`, title: 'Booking created', note: 'Created in mock mode.', createdAt: new Date().toISOString() }]
         };
         mockStore.addFacilityBooking(booking);
-
         void domainEventBus.emit({
             eventId: `evt-fb-${booking.id}`,
             eventType: 'facility.booking.confirmed',
@@ -238,7 +225,6 @@ export const facilityMockSource = {
                 unitNumber: booking.flatNumber,
             },
         });
-
         return repositorySuccess(booking);
     },
     async getMyBookings(params: FacilityBookingListParams = {}): Promise<RepositoryResult<FacilityBooking[]>> {

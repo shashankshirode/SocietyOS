@@ -8,11 +8,11 @@ import { HapticFeedback } from '../../shared/utils/haptics';
 export interface QuickActionItem {
   id: string;
   label: string;
-  sublabel?: string | undefined;
+  sublabel?: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   bgColor: string;
-  badge?: string | undefined;
+  badge?: string;
   onPress: () => void;
 }
 

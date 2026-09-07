@@ -13,14 +13,14 @@ import { includeWhenPresent } from "../utils/presentProperty";
 import { styles, createSafeAreaViewBackgroundColorStyle } from "./styles/DashboardScaffold.styles";
 import { useMessages as useGeneratedUiMessages } from "../../messages/useMessages";
 import { getActiveUiLiteral } from "../localization/activeUiLiteral";
-export type PremiumDashboardMetric = {
+export type EliteDashboardMetric = {
     id: string;
     label: string;
     value: string | number;
     detail?: string;
     icon?: AppIconName;
 };
-export type PremiumDashboardAction = {
+export type EliteDashboardAction = {
     id: string;
     label: string;
     description: string;
@@ -28,7 +28,7 @@ export type PremiumDashboardAction = {
     onPress: () => void;
     badge?: string;
 };
-export type PremiumDashboardFeedItem = {
+export type EliteDashboardFeedItem = {
     id: string;
     title: string;
     subtitle: string;
@@ -40,10 +40,10 @@ type DashboardScaffoldProps = {
     subtitle: string;
     heroImage: AppImageKey;
     heroIcon?: AppIconName;
-    metrics: PremiumDashboardMetric[];
-    actions: PremiumDashboardAction[];
+    metrics: EliteDashboardMetric[];
+    actions: EliteDashboardAction[];
     feedTitle: string;
-    feedItems: PremiumDashboardFeedItem[];
+    feedItems: EliteDashboardFeedItem[];
     emptyTitle?: string;
     emptyMessage?: string;
     testID?: string;

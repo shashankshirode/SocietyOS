@@ -38,6 +38,7 @@ import {
 import { BookingInfoRow } from '../components/BookingInfoRow';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
 import { FacilitySlotCard } from '../components/FacilitySlotCard';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'RescheduleFacilityBooking'>;
 
@@ -109,11 +110,11 @@ export function RescheduleFacilityBookingScreen({ navigation, route }: Props) {
   }
 
   if (bookingResource.isLoading || facilityResource.isLoading || availability.isLoading || !booking && !bookingResource.error) {
-    return <FacilityScreenLayout title={labels.reschedule.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingAvailability}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.reschedule.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'RescheduleFacilityBooking' })}><AppCard><SafeText>{labels.states.loadingAvailability}</SafeText></AppCard></FacilityScreenLayout>;
   }
   if (bookingResource.error || facilityResource.error || availability.error || !booking || !facility) {
     return (
-      <FacilityScreenLayout title={labels.reschedule.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.reschedule.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'RescheduleFacilityBooking' })}>
         <ErrorState title={labels.states.loadSlotsTitle} message={labels.states.loadSlotsDescription} onRetry={() => void availability.refresh()} />
       </FacilityScreenLayout>
     );
@@ -144,7 +145,7 @@ export function RescheduleFacilityBookingScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.reschedule.title}
       subtitle={labels.reschedule.subtitle}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'RescheduleFacilityBooking' })}
       footer={footer}
       testID="reschedule-facility-booking-screen"
     >

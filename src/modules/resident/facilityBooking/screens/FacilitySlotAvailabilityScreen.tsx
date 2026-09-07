@@ -38,6 +38,8 @@ import {
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
 import { FacilitySlotCard } from '../components/FacilitySlotCard';
 import { includeWhenPresent } from '../../../../shared/utils/presentProperty';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
+import { DateHorizonPicker } from '../../../../ui/components/DateHorizonPicker';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilitySlotAvailability'>;
 
@@ -152,11 +154,18 @@ export function FacilitySlotAvailabilityScreen({ navigation, route }: Props) {
     );
   }
   const facility = facilityResource.data;
+  const handleBack = () => {
+    if (draft?.holdId) {
+      void releaseSlot({ residenceId: draft.residenceId, holdId: draft.holdId });
+    }
+    performBackNavigation(navigation, { fallbackRoute: 'FacilityDetail', currentRouteName: 'FacilitySlotAvailability' });
+  };
+
   return (
     <FacilityScreenLayout
       title={labels.slots.title}
       subtitle={labels.slots.subtitle(facility.name)}
-      onBack={navigation.goBack}
+      onBack={handleBack}
       footer={footer}
       testID="facility-slot-screen"
     >

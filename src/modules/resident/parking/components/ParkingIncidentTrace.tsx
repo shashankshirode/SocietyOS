@@ -8,8 +8,8 @@ import { ParkingIncidentObject } from './ParkingIncidentObject';
 export interface ParkingIncidentTraceProps {
   incidents: ParkingIncident[];
   onSelectIncident: (incident: ParkingIncident) => void;
-  selectedIncidentId?: string | null | undefined;
-  style?: StyleProp<ViewStyle> | undefined;
+  selectedIncidentId?: string | null;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function ParkingIncidentTrace({

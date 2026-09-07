@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import { View, ScrollView, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
 import { SocietySkeleton } from './SocietySkeleton';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { Spacing } from '../../shared/theme/spacing';
@@ -75,7 +75,7 @@ export interface SocietySkeletonSurfaceProps {
 export function SocietySkeletonSurface({
   children,
   height,
-  borderRadius = Radius.md,
+  borderRadius = Radius.card,
   style,
   testID,
 }: SocietySkeletonSurfaceProps) {
@@ -98,6 +98,109 @@ export function SocietySkeletonSurface({
       ]}
     >
       {children}
+    </View>
+  );
+}
+
+export interface SocietySkeletonHeaderProps {
+  readonly showBackButton?: boolean;
+  readonly style?: StyleProp<ViewStyle>;
+}
+
+export function SocietySkeletonHeader({ showBackButton = true, style }: SocietySkeletonHeaderProps) {
+  return (
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm }, style]}>
+      {showBackButton ? <SocietySkeleton width={36} height={36} borderRadius={Radius.pill} /> : null}
+      <View style={{ flex: 1, gap: 4 }}>
+        <SocietySkeleton width="55%" height={22} borderRadius={Radius.xs} />
+        <SocietySkeleton width="35%" height={12} borderRadius={Radius.xs} />
+      </View>
+      <SocietySkeleton width={36} height={36} borderRadius={Radius.pill} />
+    </View>
+  );
+}
+
+export interface SocietySkeletonSearchBarProps {
+  readonly style?: StyleProp<ViewStyle>;
+}
+
+export function SocietySkeletonSearchBar({ style }: SocietySkeletonSearchBarProps) {
+  const { semantic } = useAppTheme();
+  return (
+    <View
+      style={[
+        {
+          height: 44,
+          borderRadius: Radius.md,
+          backgroundColor: semantic.surface.raised,
+          borderWidth: 1,
+          borderColor: semantic.border.subtle,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: Spacing.md,
+          gap: Spacing.sm,
+        },
+        style,
+      ]}
+    >
+      <SocietySkeleton width={18} height={18} borderRadius={Radius.pill} />
+      <SocietySkeleton width="60%" height={14} borderRadius={Radius.xs} />
+    </View>
+  );
+}
+
+export interface SocietySkeletonFilterChipsProps {
+  readonly count?: number;
+  readonly style?: StyleProp<ViewStyle>;
+}
+
+export function SocietySkeletonFilterChips({ count = 4, style }: SocietySkeletonFilterChipsProps) {
+  const chipWidths: number[] = [68, 92, 80, 104, 76];
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={[{ flexDirection: 'row', gap: Spacing.xs, paddingHorizontal: Spacing.xs }, style]}
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <SocietySkeleton
+          key={i}
+          width={chipWidths[i % chipWidths.length] ?? 80}
+          height={34}
+          borderRadius={Radius.pill}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+export interface SocietySkeletonStatCardsProps {
+  readonly count?: number;
+  readonly style?: StyleProp<ViewStyle>;
+}
+
+export function SocietySkeletonStatCards({ count = 4, style }: SocietySkeletonStatCardsProps) {
+  const { semantic } = useAppTheme();
+  return (
+    <View style={[{ flexDirection: 'row', gap: Spacing.xs }, style]}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View
+          key={i}
+          style={{
+            flex: 1,
+            backgroundColor: semantic.surface.raised,
+            borderWidth: 1,
+            borderColor: semantic.border.subtle,
+            borderRadius: Radius.md,
+            padding: Spacing.sm,
+            gap: 6,
+          }}
+        >
+          <SocietySkeleton width={24} height={24} borderRadius={Radius.xs} />
+          <SocietySkeleton width="70%" height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width="50%" height={10} borderRadius={Radius.xs} />
+        </View>
+      ))}
     </View>
   );
 }

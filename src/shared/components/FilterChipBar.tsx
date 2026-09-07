@@ -6,13 +6,13 @@ import { SafeText } from "./SafeText";
 import { styles, createPressableBackgroundColorBorderColorStyle } from "./styles/FilterChipBar.styles";
 import { useMessages as useGeneratedUiMessages } from "../../messages/useMessages";
 import { formatUiLiteral } from "../localization/formatUiLiteral";
-export type PremiumFilterOption<T extends string = string> = {
+export type EliteFilterOption<T extends string = string> = {
     label: string;
     value: T;
     count?: number;
 };
 type FilterChipBarProps<T extends string = string> = {
-    options: PremiumFilterOption<T>[];
+    options: EliteFilterOption<T>[];
     value: T;
     onChange: (value: T) => void;
 };

@@ -6,53 +6,30 @@ import { SafeText } from '../../../../shared/components/SafeText';
 import { useAppTheme } from '../../../../shared/theme/useAppTheme';
 import type { Vehicle } from '../../../../shared/types/vehicle.types';
 import type { ParkingSlot } from '../../../../shared/types/parking.types';
-import {
-  styles,
-  createBgStyle,
-  createColorStyle,
-} from '../styles/MobilityField.styles';
-
+import { styles, createBgStyle, createColorStyle, } from '../styles/MobilityField.styles';
+import type { Absent } from "../../../../shared/types/absence.types";
 export type VehicleFocusSheetProps = {
-  visible: boolean;
-  vehicle?: Vehicle | undefined;
-  assignedSlot?: ParkingSlot | undefined;
-  allVehicles?: Vehicle[] | undefined;
-  onClose: () => void;
-  onSelectVehicle?: (vehicle: Vehicle) => void;
-  onReportBlocked?: () => void;
-  onReportWrongParking?: () => void;
-  onAddNewVehicle?: () => void;
+    visible: boolean;
+    vehicle?: Vehicle | Absent;
+    assignedSlot?: ParkingSlot | Absent;
+    allVehicles?: Vehicle[] | Absent;
+    onClose: () => void;
+    onSelectVehicle?: ((vehicle: Vehicle) => void) | Absent;
+    onReportBlocked?: (() => void) | Absent;
+    onReportWrongParking?: (() => void) | Absent;
+    onAddNewVehicle?: (() => void) | Absent;
 };
-
-export function VehicleFocusSheet({
-  visible,
-  vehicle,
-  assignedSlot,
-  allVehicles = [],
-  onClose,
-  onSelectVehicle,
-  onReportBlocked,
-  onReportWrongParking,
-  onAddNewVehicle,
-}: VehicleFocusSheetProps) {
-  const theme = useAppTheme();
-
-  if (!vehicle) return null;
-
-  return (
-    <AppModal
-      visible={visible}
-      onClose={onClose}
-      testID="vehicle-focus-sheet"
-    >
+export function VehicleFocusSheet({ visible, vehicle, assignedSlot, allVehicles = [], onClose, onSelectVehicle, onReportBlocked, onReportWrongParking, onAddNewVehicle, }: VehicleFocusSheetProps) {
+    const theme = useAppTheme();
+    if (!vehicle)
+        return null;
+    return (<AppModal visible={visible} onClose={onClose} testID="vehicle-focus-sheet">
       <ScrollView contentContainerStyle={{ gap: 20, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
-        {/* Vehicle Identity Header */}
-        <View
-          style={[
+        
+        <View style={[
             styles.fieldContainer,
             createBgStyle(theme.semantic.surface.soft, theme.semantic.border.subtle),
-          ]}
-        >
+        ]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ gap: 4 }}>
               <SafeText variant="tiny" style={[styles.eyebrow, createColorStyle(theme.semantic.accent.moss)]}>
@@ -65,13 +42,11 @@ export function VehicleFocusSheet({
                 Owner: {vehicle.ownerName || 'Resident'}
               </SafeText>
             </View>
-            <View
-              style={[
-                styles.vehiclePlateBadge,
-                createBgStyle(theme.semantic.surface.raised, theme.semantic.border.strong),
-                { paddingHorizontal: 12, paddingVertical: 6 },
-              ]}
-            >
+            <View style={[
+            styles.vehiclePlateBadge,
+            createBgStyle(theme.semantic.surface.raised, theme.semantic.border.strong),
+            { paddingHorizontal: 12, paddingVertical: 6 },
+        ]}>
               <SafeText variant="bodyStrong" color="primary" style={{ letterSpacing: 1 }}>
                 {vehicle.vehicleNumber}
               </SafeText>
@@ -79,21 +54,19 @@ export function VehicleFocusSheet({
           </View>
         </View>
 
-        {/* Spatial Connection / Status Details */}
+        
         <View style={{ gap: 12 }}>
           <SafeText variant="caption" color="secondary" style={{ textTransform: 'uppercase', letterSpacing: 1, fontWeight: '700' }}>
             SPATIAL RELATIONSHIP
           </SafeText>
 
-          {/* Assigned Bay */}
-          <View
-            style={[
-              styles.actionCard,
-              createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
-            ]}
-          >
+          
+          <View style={[
+            styles.actionCard,
+            createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
+        ]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name="location-outline" size={22} color={theme.semantic.accent.moss} />
+              <Ionicons name="location-outline" size={22} color={theme.semantic.accent.moss}/>
               <View>
                 <SafeText variant="bodyStrong" color="primary">
                   Home Bay: {assignedSlot?.slotNumber || vehicle.parkingSlotNumber || 'B2 · P118'}
@@ -110,15 +83,13 @@ export function VehicleFocusSheet({
             </View>
           </View>
 
-          {/* Access & RFID Tag */}
-          <View
-            style={[
-              styles.actionCard,
-              createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
-            ]}
-          >
+          
+          <View style={[
+            styles.actionCard,
+            createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
+        ]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name="radio-outline" size={22} color={theme.semantic.status.success} />
+              <Ionicons name="radio-outline" size={22} color={theme.semantic.status.success}/>
               <View>
                 <SafeText variant="bodyStrong" color="primary">
                   RFID Tag: Active
@@ -136,86 +107,64 @@ export function VehicleFocusSheet({
           </View>
         </View>
 
-        {/* Quick Contextual Actions */}
+        
         <View style={{ gap: 10 }}>
           <SafeText variant="caption" color="secondary" style={{ textTransform: 'uppercase', letterSpacing: 1, fontWeight: '700' }}>
             ACTIONS & REPORTS
           </SafeText>
 
-          <Pressable
-            onPress={() => {
-              onClose();
-              onReportBlocked?.();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Someone is blocking my vehicle"
-            style={[
-              styles.actionCard,
-              createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
-            ]}
-          >
+          <Pressable onPress={() => {
+            onClose();
+            onReportBlocked?.();
+        }} accessibilityRole="button" accessibilityLabel="Someone is blocking my vehicle" style={[
+            styles.actionCard,
+            createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
+        ]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name="warning-outline" size={20} color={theme.semantic.status.warning} />
+              <Ionicons name="warning-outline" size={20} color={theme.semantic.status.warning}/>
               <SafeText variant="bodyStrong" color="primary">
                 Someone is blocking my vehicle
               </SafeText>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.semantic.text.tertiary} />
+            <Ionicons name="chevron-forward" size={18} color={theme.semantic.text.tertiary}/>
           </Pressable>
 
-          <Pressable
-            onPress={() => {
-              onClose();
-              onReportWrongParking?.();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Someone parked in my slot"
-            style={[
-              styles.actionCard,
-              createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
-            ]}
-          >
+          <Pressable onPress={() => {
+            onClose();
+            onReportWrongParking?.();
+        }} accessibilityRole="button" accessibilityLabel="Someone parked in my slot" style={[
+            styles.actionCard,
+            createBgStyle(theme.semantic.surface.raised, theme.semantic.border.subtle),
+        ]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Ionicons name="alert-circle-outline" size={20} color={theme.semantic.status.warning} />
+              <Ionicons name="alert-circle-outline" size={20} color={theme.semantic.status.warning}/>
               <SafeText variant="bodyStrong" color="primary">
                 Someone parked in my slot
               </SafeText>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={theme.semantic.text.tertiary} />
+            <Ionicons name="chevron-forward" size={18} color={theme.semantic.text.tertiary}/>
           </Pressable>
         </View>
 
-        {/* Fleet Switcher (If multiple vehicles) */}
-        {allVehicles.length > 1 ? (
-          <View style={{ gap: 10 }}>
+        
+        {allVehicles.length > 1 ? (<View style={{ gap: 10 }}>
             <SafeText variant="caption" color="secondary" style={{ textTransform: 'uppercase', letterSpacing: 1, fontWeight: '700' }}>
               ALL VEHICLES ({allVehicles.length})
             </SafeText>
-            {allVehicles.map((v) => (
-              <Pressable
-                key={v.id}
-                onPress={() => onSelectVehicle?.(v)}
-                accessibilityRole="button"
-                accessibilityLabel={`Select vehicle ${v.makeModel}`}
-                style={[
-                  styles.fleetRow,
-                  { borderColor: theme.semantic.border.subtle },
-                ]}
-              >
+            {allVehicles.map((v) => (<Pressable key={v.id} onPress={() => onSelectVehicle?.(v)} accessibilityRole="button" accessibilityLabel={`Select vehicle ${v.makeModel}`} style={[
+                    styles.fleetRow,
+                    { borderColor: theme.semantic.border.subtle },
+                ]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Ionicons name={v.id === vehicle.id ? 'radio-button-on' : 'radio-button-off'} size={18} color={theme.semantic.accent.moss} />
+                  <Ionicons name={v.id === vehicle.id ? 'radio-button-on' : 'radio-button-off'} size={18} color={theme.semantic.accent.moss}/>
                   <SafeText variant="body" color="primary" style={{ fontWeight: v.id === vehicle.id ? '700' : '400' }}>
                     {v.makeModel} ({v.vehicleNumber})
                   </SafeText>
                 </View>
-                {v.id === vehicle.id ? (
-                  <SafeText variant="tiny" color="secondary">Active</SafeText>
-                ) : null}
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
+                {v.id === vehicle.id ? (<SafeText variant="tiny" color="secondary">Active</SafeText>) : null}
+              </Pressable>))}
+          </View>) : null}
       </ScrollView>
-    </AppModal>
-  );
+    </AppModal>);
 }
+

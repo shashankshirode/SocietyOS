@@ -24,6 +24,7 @@ import {
 } from '../styles/facilityBooking.styles';
 import { BookingPriceBreakdown } from '../components/BookingPriceBreakdown';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityPayment'>;
 
@@ -56,11 +57,11 @@ export function FacilityPaymentScreen({ navigation, route }: Props) {
   }
 
   if (resource.isLoading || !booking && !resource.error) {
-    return <FacilityScreenLayout title={labels.payment.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.payment.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingReview', currentRouteName: 'FacilityPayment' })}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
   }
   if (resource.error || !booking) {
     return (
-      <FacilityScreenLayout title={labels.payment.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.payment.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingReview', currentRouteName: 'FacilityPayment' })}>
         <ErrorState title={labels.states.loadBookingTitle} message={labels.states.loadBookingDescription} onRetry={() => void resource.refresh()} />
       </FacilityScreenLayout>
     );
@@ -80,7 +81,7 @@ export function FacilityPaymentScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.payment.title}
       subtitle={labels.payment.subtitle}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingReview', currentRouteName: 'FacilityPayment' })}
       footer={footer}
       testID="facility-payment-screen"
     >

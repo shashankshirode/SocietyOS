@@ -111,23 +111,26 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
   const [dockContentWidth, setDockContentWidth] = useState(0);
   const lensX = useSharedValue(0);
   const primaryRoutes = props.state.routes.filter((route) => isResidentPrimaryTabRoute(route.name));
-  const activePrimaryIndex = Math.max(0, primaryRoutes.findIndex((route) => route.key === activeRoute?.key));
+  const activePrimaryIndex = primaryRoutes.findIndex((route) => route.key === activeRoute?.key);
   const itemWidth = primaryRoutes.length > 0 ? dockContentWidth / primaryRoutes.length : 0;
 
   useEffect(() => {
-    const nextX = activePrimaryIndex * itemWidth;
-    lensX.value = reducedMotion ? nextX : withTiming(nextX, { duration: theme.navigation.motionDuration });
+    if (activePrimaryIndex >= 0) {
+      const nextX = activePrimaryIndex * itemWidth;
+      lensX.value = reducedMotion ? nextX : withTiming(nextX, { duration: theme.navigation.motionDuration });
+    }
   }, [activePrimaryIndex, itemWidth, lensX, reducedMotion, theme.navigation.motionDuration]);
 
   const lensStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: lensX.value }],
+    opacity: activePrimaryIndex >= 0 ? withTiming(1, { duration: 150 }) : withTiming(0, { duration: 150 }),
   }));
 
   const handleDockLayout = (event: LayoutChangeEvent) => {
     setDockContentWidth(Math.max(0, event.nativeEvent.layout.width - theme.navigation.internalPadding * 2));
   };
 
-  if (hideTabBar || keyboard.isOpen || !activeRoute || !isResidentPrimaryTabRoute(activeRoute.name)) {
+  if (hideTabBar || keyboard.isOpen || !activeRoute) {
     return <IdentityCenterHost navigation={props.navigation} />;
   }
 
@@ -144,7 +147,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
         createBottomStyle(bottomOffset + theme.navigation.dockBottomGap),
       ]}
     >
-      {itemWidth > 0 ? <Animated.View pointerEvents="none" style={[styles.activeLens, createLensWidthStyle(itemWidth), lensStyle]} /> : null}
+      {itemWidth > 0 && activePrimaryIndex >= 0 ? <Animated.View pointerEvents="none" style={[styles.activeLens, createLensWidthStyle(itemWidth), lensStyle]} /> : null}
       {state.routes.map((route, index) => {
         if (!isResidentPrimaryTabRoute(route.name)) return null;
         const descriptor = descriptors[route.key];

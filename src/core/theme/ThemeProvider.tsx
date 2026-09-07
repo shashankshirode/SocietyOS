@@ -22,7 +22,8 @@ export function ThemeProvider({ children }: {
     const { preference, setPreference, isLoading } = useThemePreference();
     const [resolvedMode, setResolvedMode] = useState<ThemeMode>('light');
     useEffect(() => {
-        const mode = resolveThemeMode(preference, systemColorScheme);
+        const normalizedScheme = systemColorScheme === 'dark' ? 'dark' : systemColorScheme === 'light' ? 'light' : null;
+        const mode = resolveThemeMode(preference, normalizedScheme);
         setResolvedMode(mode);
     }, [preference, systemColorScheme]);
     const activeTheme = resolvedMode === 'dark' ? darkTheme : lightTheme;

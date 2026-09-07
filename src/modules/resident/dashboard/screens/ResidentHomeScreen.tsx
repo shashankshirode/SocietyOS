@@ -357,7 +357,7 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
           billDue={billDue && canPerformAction('maintenance')}
           onPay={() => {
             setPulseVisible(false);
-            setUpiSheetVisible(true);
+            openBills();
           }}
           onActivityPress={(item) => {
             setPulseVisible(false);
@@ -373,8 +373,10 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
         <UpiPaymentSheet
           visible={upiSheetVisible}
           amount={dashboard.maintenancePayment.totalOutstanding ?? dashboard.maintenancePayment.billAmount ?? 4500}
+          billId={dashboard.maintenancePayment.billId ?? 'bill-jul-2026-001'}
+          billMonth={dashboard.maintenancePayment.billingMonth ?? 'July 2026'}
           onClose={() => setUpiSheetVisible(false)}
-          onPaymentComplete={() => {
+          onPaymentComplete={(method, transactionId, receiptNumber) => {
             setUpiSheetVisible(false);
             refetch();
           }}

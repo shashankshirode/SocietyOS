@@ -16,14 +16,30 @@ export function createConnectorStyle(nodeX: number, nodeY: number, anchor: Pulse
 }
 
 export const styles = StyleSheet.create({
-  layer: { ...StyleSheet.absoluteFillObject },
-  label: { position: 'absolute', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 7, justifyContent: 'center', gap: 1 },
-  labelSelected: { borderWidth: 1 },
+  layer: { ...StyleSheet.absoluteFill },
+  label: {
+    position: 'absolute',
+    borderRadius: 14,
+    backgroundColor: '#FBF9F3',
+    borderWidth: 1,
+    borderColor: 'rgba(23, 32, 25, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    justifyContent: 'center',
+    gap: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  labelSelected: { borderWidth: 1.5 },
   connector: { position: 'absolute', opacity: 0.52 },
   connectorSelected: { opacity: 0.92 },
   nodeTarget: { position: 'absolute', width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   node: { width: 10, height: 10, borderRadius: 5 },
   nodeHalo: { position: 'absolute', width: 20, height: 20, borderRadius: 10, borderWidth: 1, opacity: 0.28 },
-  time: { letterSpacing: 0.2 },
-  title: { opacity: 0.94 },
+  time: { letterSpacing: 0.2, fontWeight: '700' },
+  title: { fontWeight: '700', color: '#172019' },
 });
+

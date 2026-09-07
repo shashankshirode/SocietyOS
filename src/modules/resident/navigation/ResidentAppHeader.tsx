@@ -4,7 +4,13 @@ import type { RootTabParamList } from '../../../app/navigation/navigation.types'
 import { AmbientPageChrome } from '../experience/AmbientPageChrome';
 import type { ResidentAppHeaderProps } from './residentHeader.types';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
-import { RESIDENT_ROUTE_FALLBACKS } from './residentRouteFallbacks';
+import { performBackNavigation } from '../../../shared/navigation/performBackNavigation';
+
+const validTabs = ['HomeTab', 'ActivityTab', 'CommunityTab', 'ServicesTab', 'VisitorTab', 'ComplaintTab', 'BillTab', 'ChatTab'] as const;
+
+function isValidTab(tab: string): tab is keyof RootTabParamList {
+  return (validTabs as readonly string[]).includes(tab);
+}
 
 export function ResidentAppHeader({
   titleKey,
@@ -22,33 +28,23 @@ export function ResidentAppHeader({
   testID = 'resident-header-container',
 }: ResidentAppHeaderProps) {
   const navigation = useNavigation<NavigationProp<RootTabParamList>>();
-  let currentRouteName: string | undefined;
+  let currentRouteName: string | null = null;
   try {
     const route = useRoute();
-    currentRouteName = route?.name;
+    currentRouteName = route?.name ?? null;
   } catch {
-    currentRouteName = undefined;
+    currentRouteName = null;
   }
 
   const { dark } = useAppTheme();
 
   const handleBackPress = () => {
-    if (onBackPress) {
-      onBackPress();
-      return;
-    }
-    if (typeof navigation?.canGoBack === 'function' && navigation.canGoBack()) {
-      navigation.goBack();
-      return;
-    }
-
-    const fallbackConfig = currentRouteName ? RESIDENT_ROUTE_FALLBACKS[currentRouteName] : undefined;
-    const targetTab = fallbackTab ?? fallbackConfig?.tab ?? 'HomeTab';
-    const targetScreen = fallbackRoute ?? fallbackConfig?.screen ?? 'ResidentHome';
-
-    if (typeof navigation?.navigate === 'function') {
-      navigation.navigate(targetTab as any, { screen: targetScreen } as any);
-    }
+    performBackNavigation(navigation, {
+      customHandler: onBackPress,
+      fallbackTab,
+      fallbackRoute,
+      currentRouteName: currentRouteName ?? undefined,
+    });
   };
 
   return (

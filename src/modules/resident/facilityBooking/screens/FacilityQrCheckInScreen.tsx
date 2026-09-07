@@ -15,6 +15,7 @@ import { BookingQrCard } from '../components/BookingQrCard';
 import { BookingStatusBadge } from '../components/BookingStatusBadge';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
 import { facilityBookingStyles as styles } from '../styles/facilityBooking.styles';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityQrCheckIn'>;
 
@@ -43,18 +44,18 @@ export function FacilityQrCheckInScreen({ navigation, route }: Props) {
   }
 
   if (resource.isLoading || !booking && !resource.error) {
-    return <FacilityScreenLayout title={labels.checkIn.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.checkIn.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'FacilityQrCheckIn' })}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
   }
   if (resource.error || !booking) {
     return (
-      <FacilityScreenLayout title={labels.checkIn.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.checkIn.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'FacilityQrCheckIn' })}>
         <ErrorState title={labels.states.loadBookingTitle} message={labels.states.loadBookingDescription} onRetry={() => void resource.refresh()} />
       </FacilityScreenLayout>
     );
   }
   if (!pass) {
     return (
-      <FacilityScreenLayout title={labels.checkIn.title} subtitle={booking.bookingReference} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.checkIn.title} subtitle={booking.bookingReference} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'FacilityQrCheckIn' })}>
         <AppCard variant="muted"><SafeText variant="caption" color="muted">{labels.bookingDetail.noQr}</SafeText></AppCard>
       </FacilityScreenLayout>
     );
@@ -64,7 +65,7 @@ export function FacilityQrCheckInScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.checkIn.title}
       subtitle={booking.bookingReference}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingDetail', currentRouteName: 'FacilityQrCheckIn' })}
       testID="facility-check-in-screen"
     >
       <BookingQrCard pass={pass} locale={locale} timezone={booking.timezone} />

@@ -22,6 +22,7 @@ import {
   facilityBookingStyles as styles,
 } from '../styles/facilityBooking.styles';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityBookingConsent'>;
 
@@ -35,7 +36,7 @@ export function FacilityBookingConsentScreen({ navigation }: Props) {
   const validDraft = draft && draft.residenceId === activeContext.homeContextId && Date.parse(draft.holdExpiresAt ?? '') > Date.now();
   if (!validDraft || !draft || resource.error) {
     return (
-      <FacilityScreenLayout title={labels.consent.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.consent.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'CreateFacilityBooking', currentRouteName: 'FacilityBookingConsent' })}>
         <ErrorState
           title={labels.review.residenceChangedTitle}
           message={labels.review.residenceChangedDescription}
@@ -46,7 +47,7 @@ export function FacilityBookingConsentScreen({ navigation }: Props) {
     );
   }
   if (resource.isLoading || !resource.data) {
-    return <FacilityScreenLayout title={labels.consent.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingDetails}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.consent.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'CreateFacilityBooking', currentRouteName: 'FacilityBookingConsent' })}><AppCard><SafeText>{labels.states.loadingDetails}</SafeText></AppCard></FacilityScreenLayout>;
   }
   const facility = resource.data;
   const footer = (
@@ -76,7 +77,7 @@ export function FacilityBookingConsentScreen({ navigation }: Props) {
     <FacilityScreenLayout
       title={labels.consent.title}
       subtitle={labels.consent.subtitle}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'CreateFacilityBooking', currentRouteName: 'FacilityBookingConsent' })}
       footer={footer}
       testID="facility-booking-consent-screen"
     >

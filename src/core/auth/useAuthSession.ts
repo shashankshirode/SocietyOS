@@ -17,8 +17,8 @@ export function useAuthSession() {
     getCurrentSession
   );
 
-  const startMockSessionForPersona = React.useCallback(async (personaKey: any) => {
-    const mockSession = createMockSessionForPersona(personaKey);
+  const startMockSessionForPersona = React.useCallback(async (personaKey: string) => {
+    const mockSession = createMockSessionForPersona(personaKey as any);
     await setCurrentSession(mockSession);
     return mockSession;
   }, []);

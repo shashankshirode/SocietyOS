@@ -22,7 +22,8 @@ export function BillPaymentSummary({ bill }: {
     const theme = useResidentTheme();
     const messages = useMessages();
     const billing = messages.resident.billing;
-    const payment = bill.payments?.at(-1);
+    const payments = bill.payments;
+    const payment = payments && payments.length > 0 ? payments[payments.length - 1] : undefined;
     if (!payment)
         return null;
     const currency = bill.charges[0]?.currencyCode ?? 'INR';

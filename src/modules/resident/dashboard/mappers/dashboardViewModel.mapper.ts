@@ -80,7 +80,8 @@ function mapPayment(payment: ResidentDashboardData['maintenancePayment'] | Absen
         chargeTags: safeArray(payment.chargeTags),
         lastPaidLabel: payment.lastPaidAmount
             ? `Last paid ${safeCurrencyFormat(payment.lastPaidAmount)} on ${safeString(payment.lastPaidDate, '—')}`
-            : '—'
+            : '—',
+        billId: safeString(payment.billId, undefined)
     };
 }
 function mapComplaint(complaint: ResidentDashboardData['complaintProgress'] | Absent): DashboardComplaintViewModel | null {

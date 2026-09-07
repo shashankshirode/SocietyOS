@@ -58,13 +58,13 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
         warning: { backgroundColor: semantic.status.warning },
     };
     const buttonTextStyles: Record<ButtonVariant, TextStyle> = {
-        primary: { color: semantic.text.primary },
+        primary: { color: semantic.text.onPrimary },
         secondary: { color: semantic.text.primary },
-        outline: { color: semantic.text.secondary },
+        outline: { color: semantic.accent.moss },
         ghost: { color: semantic.text.primary },
-        danger: { color: semantic.text.inverse },
-        success: { color: semantic.text.inverse },
-        warning: { color: semantic.text.inverse },
+        danger: { color: '#FFFDF8' },
+        success: { color: '#FFFDF8' },
+        warning: { color: '#111612' },
     };
     return (<AnimatedPressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} disabled={isDisabled} style={[
             animatedStyle,
@@ -77,7 +77,7 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
             style,
         ]} accessibilityRole="button" accessibilityState={{ disabled: isDisabled, busy: loading }} accessibilityLabel={accessibilityLabel ?? `${title}${loading ? localizedUiText.m_d25310778d62 : ''}`} testID={testID}>
       <View style={styles.containerWrap}>
-        {loading && (<View style={StyleSheet.absoluteFillObject}>
+        {loading && (<View style={StyleSheet.absoluteFill}>
             <ActivityIndicator size="small" color={buttonTextStyles[variant].color}/>
           </View>)}
         <View style={[styles.contentRow, createViewOpacityStyle(loading ? 0 : 1)]}>

@@ -1,25 +1,44 @@
-import { StyleSheet } from "react-native";
-export const styles = StyleSheet.create({
-    stack: { gap: 14 },
-    hero: { height: 184, borderRadius: 20 },
-    chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    chip: { height: 36, borderRadius: 18 },
-    row: { height: 82, borderRadius: 16 },
-});
-export function createViewBackgroundColorStyle(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewWidthBackgroundColorStyle(widthValue: number, backgroundColorValue: string) {
-    return {
-        width: widthValue,
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
+import { StyleSheet } from 'react-native';
+import { Radius } from '../../../../../shared/theme/radius';
 
+export const styles = StyleSheet.create({
+  stack: {
+    gap: 14,
+    paddingVertical: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    padding: 10,
+    gap: 6,
+  },
+  chips: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  heroCard: {
+    borderRadius: Radius.card,
+    borderWidth: 1,
+    padding: 16,
+    gap: 14,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  billRow: {
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    padding: 14,
+  },
+});

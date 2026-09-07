@@ -70,23 +70,27 @@ export const styles = StyleSheet.create({
     },
     heroText: {
         fontSize: 26,
+        lineHeight: 32,
     },
     compactText: {
         fontSize: 18,
+        lineHeight: 24,
     },
     taglineBlock: {
-        gap: 2,
-        marginTop: 2,
+        gap: 3,
+        marginTop: 4,
     },
     tagline: {
         color: residentColors.onBrandStrong,
         fontWeight: '600',
         fontSize: 15,
+        lineHeight: 21,
     },
     trustLine: {
         color: residentColors.onBrandMedium,
         fontWeight: '600',
-        fontSize: 11.5,
+        fontSize: 12,
+        lineHeight: 16,
     },
 });
 export function createAnimatedViewBorderColorStyle(borderColorValue: string) {

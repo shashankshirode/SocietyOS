@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
     absolute: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         zIndex: 9999,
         alignItems: 'center',
         justifyContent: 'center'

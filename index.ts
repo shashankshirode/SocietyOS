@@ -1,4 +1,21 @@
+// @ts-nocheck
 import { registerRootComponent } from 'expo';
+import { Buffer } from 'buffer';
+
+if (typeof globalThis.Buffer === 'undefined') {
+  try {
+    Object.defineProperty(globalThis, 'Buffer', {
+      value: Buffer,
+      configurable: true,
+      writable: true,
+      enumerable: false,
+    });
+  } catch {
+    try {
+      globalThis.Buffer = Buffer;
+    } catch {}
+  }
+}
 
 import App from './App';
 

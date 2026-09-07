@@ -1,0 +1,56 @@
+export const radius = {
+    none: 0,
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    '2xl': 24,
+    '3xl': 32,
+    full: 9999,
+    button: {
+        sm: 8,
+        md: 12,
+        lg: 16,
+        xl: 20,
+        pill: 9999,
+    },
+    input: {
+        sm: 8,
+        md: 12,
+        lg: 16,
+    },
+    card: {
+        sm: 12,
+        md: 16,
+        lg: 20,
+        xl: 24,
+    },
+    modal: {
+        sm: 20,
+        md: 24,
+        lg: 28,
+        xl: 32,
+    },
+    sheet: {
+        sm: 20,
+        md: 24,
+        lg: 28,
+    },
+    avatar: {
+        sm: 16,
+        md: 20,
+        lg: 24,
+        xl: 32,
+        full: 9999,
+    },
+    badge: 9999,
+    tooltip: 8,
+    popover: 12,
+    dropdown: 12,
+    tab: 12,
+    fab: 28,
+    chip: 8,
+} as const;
+export type PremiumRadius = typeof radius;
+

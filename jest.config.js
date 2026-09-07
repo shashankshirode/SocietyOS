@@ -6,6 +6,9 @@ module.exports = {
     '**/*.(test|spec).(ts|tsx)',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  moduleNameMapper: {
+    '^react-native/setup-env$': '<rootDir>/jest.setup.ts',
+  },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.dto.ts',

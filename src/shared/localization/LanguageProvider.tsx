@@ -17,7 +17,8 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 function getInitialLocale(): SupportedLocale {
-  const deviceLocale = getLocales().at(0);
+  const locales = getLocales();
+  const deviceLocale = locales && locales.length > 0 ? locales[0] : undefined;
   return deviceLocale
     ? resolveSupportedLocale(deviceLocale.languageTag)
     : DEFAULT_SUPPORTED_LOCALE;

@@ -69,11 +69,11 @@ export function FacilityBookingConfirmationScreen({ navigation, route }: Props) 
   }
 
   if (resource.isLoading || !booking && !resource.error) {
-    return <FacilityScreenLayout title={labels.success.title} onBack={navigation.goBack}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
+    return <FacilityScreenLayout title={labels.success.title} onBack={() => navigation.navigate('FacilityHome', { unitId: activeContext.unitId })}><AppCard><SafeText>{labels.states.loadingBooking}</SafeText></AppCard></FacilityScreenLayout>;
   }
   if (resource.error || !booking) {
     return (
-      <FacilityScreenLayout title={labels.success.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.success.title} onBack={() => navigation.navigate('FacilityHome', { unitId: activeContext.unitId })}>
         <ErrorState title={labels.states.loadBookingTitle} message={labels.states.loadBookingDescription} onRetry={() => void resource.refresh()} />
       </FacilityScreenLayout>
     );

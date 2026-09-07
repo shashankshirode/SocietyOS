@@ -14,12 +14,12 @@ export const styles = StyleSheet.create({
         alignSelf: 'center'
     },
     layer1: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         opacity: 0.4,
         transform: [{ translateX: 120 }, { translateY: -60 }, { rotate: '-18deg' }, { scaleX: 1.6 }]
     },
     layer2: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         opacity: 0.2,
         transform: [{ translateX: -80 }, { translateY: 100 }, { rotate: '12deg' }, { scaleX: 1.4 }]
     },

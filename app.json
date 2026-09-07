@@ -12,25 +12,31 @@
       "resizeMode": "contain",
       "backgroundColor": "#F5F1E7"
     },
+    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to capture complaint proof, visitor photos, staff photos and document images.",
         "NSPhotoLibraryUsageDescription": "Photo library access is used to attach files from your gallery."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.societyosmobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F5F1E7"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "CAMERA",
         "RECEIVE_BOOT_COMPLETED",
-        "WAKE_LOCK"
-      ]
+        "WAKE_LOCK",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ],
+      "package": "com.anonymous.societyosmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -52,6 +58,11 @@
           "calendarPermission": "Calendar access is used only when you choose to add a confirmed facility reservation."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "expoRouter": {
+        "disableRNNavigationCheck": true
+      }
+    }
   }
 }

@@ -305,7 +305,7 @@ function buildMaintenancePayment(context: ResidentRepositoryRequestContext): Mai
     const bills = allBills.filter((bill) => matchesResidentRepositoryContext(bill, context));
     const unpaidBills = bills.filter((bill) => bill.status === 'DUE' || bill.status === 'OVERDUE' || bill.status === 'PARTIALLY_PAID');
     if (unpaidBills.length === 0) {
-        const latestPaid = bills.at(0);
+        const latestPaid = bills.length > 0 ? bills[0] : undefined;
         return {
             billingMonth: latestPaid ? formatBillingPeriod(latestPaid.billingPeriod) : 'July 2026',
             billAmount: latestPaid?.amount ?? 0,
@@ -339,7 +339,8 @@ function buildMaintenancePayment(context: ResidentRepositoryRequestContext): Mai
     };
 }
 function buildContactRequest(context: ResidentRepositoryRequestContext): ResidentContactRequest | Absent {
-    const record = getResidentMockRecords(context, 'residentConnect').at(0);
+    const records = getResidentMockRecords(context, 'residentConnect');
+    const record = records.length > 0 ? records[0] : undefined;
     if (!record)
         return undefined;
     const subjects = [
@@ -502,7 +503,8 @@ function buildActivities(context: ResidentRepositoryRequestContext): HomeActivit
     });
 }
 function buildComplaintProgress(context: ResidentRepositoryRequestContext) {
-    const complaint = getResidentMockRecords(context, 'complaints').at(0);
+    const complaints = getResidentMockRecords(context, 'complaints');
+    const complaint = complaints.length > 0 ? complaints[0] : undefined;
     if (!complaint)
         return undefined;
     const data = getRequiredItem(REALISTIC_COMPLAINT_DATA, complaint.ordinal % REALISTIC_COMPLAINT_DATA.length, "dashboard.mockSource.ts");

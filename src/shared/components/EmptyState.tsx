@@ -8,12 +8,12 @@ import { SocietyButton } from './SocietyButton';
 
 export interface EmptyStateProps {
   title: string;
-  description?: string | undefined;
-  iconName?: keyof typeof Ionicons.glyphMap | undefined;
-  actionTitle?: string | undefined;
-  onAction?: (() => void) | undefined;
-  style?: StyleProp<ViewStyle> | undefined;
-  testID?: string | undefined;
+  description?: string;
+  iconName?: keyof typeof Ionicons.glyphMap;
+  actionTitle?: string;
+  onAction?: () => void;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
 export function EmptyState({

@@ -81,7 +81,7 @@ export function CameraCaptureModal({ visible, onCapture, onClose }: CameraCaptur
     }
     return (<AppModal visible={visible} onClose={onClose} fullScreen showDragHandle={false}>
       {photoUri ? (<CapturedImagePreview uri={photoUri} onRetake={() => setPhotoUri(null)} onUsePhoto={handleUsePhoto}/>) : (<View style={styles.cameraContainer}>
-          <CameraView ref={cameraRef} facing={facing} style={StyleSheet.absoluteFillObject}/>
+          <CameraView ref={cameraRef} facing={facing} style={StyleSheet.absoluteFill}/>
 
           
           <View style={[styles.topActions, createViewPaddingTopStyle(insets.top + Spacing.md)]}>

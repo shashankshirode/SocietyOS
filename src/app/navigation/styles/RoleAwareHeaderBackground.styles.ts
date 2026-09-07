@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 import type { Absent } from "../../../shared/types/absence.types";
 export const styles = StyleSheet.create({
     background: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         overflow: 'hidden',
     },
     accentCircle: {

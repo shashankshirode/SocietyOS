@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useMessages } from '../../shared/constants/useMessages';
 import { SafeText } from '../../shared/components/SafeText';
 import { FilterChip } from '../../shared/filters/FilterChip';
@@ -19,6 +19,7 @@ type TemporalFilterProps = {
   value: TemporalFilterValue;
   onChange: (value: TemporalFilterValue) => void;
   testID?: string;
+  horizontal?: boolean;
 };
 
 const PRESETS: readonly TemporalPreset[] = ['today', 'thisWeek', 'thisMonth', 'earlier', 'custom'];
@@ -76,7 +77,7 @@ export function matchesTemporalFilter(dateValue: string, value: TemporalFilterVa
   return (!range.from || date >= range.from) && (!range.to || date <= range.to);
 }
 
-export function TemporalFilter({ value, onChange, testID }: TemporalFilterProps) {
+export function TemporalFilter({ value, onChange, testID, horizontal = false }: TemporalFilterProps) {
   const messages = useMessages();
   const copy = messages.common.temporal;
   const labels: Record<TemporalPreset, string> = {
@@ -88,13 +89,19 @@ export function TemporalFilter({ value, onChange, testID }: TemporalFilterProps)
   };
   const valid = isTemporalRangeValid(value);
 
+  const chips = PRESETS.map((preset) => (
+    <FilterChip key={preset} label={labels[preset]} selected={value.preset === preset} onPress={() => onChange({ ...value, preset })} />
+  ));
+
   return (
     <View style={styles.root} testID={testID}>
-      <WrapRow gap={8}>
-        {PRESETS.map((preset) => (
-          <FilterChip key={preset} label={labels[preset]} selected={value.preset === preset} onPress={() => onChange({ ...value, preset })} />
-        ))}
-      </WrapRow>
+      {horizontal ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRow}>
+          {chips}
+        </ScrollView>
+      ) : (
+        <WrapRow gap={8}>{chips}</WrapRow>
+      )}
       {value.preset === 'custom' ? (
         <View style={styles.rangeFields}>
           <AppDateField label={copy.from} {...includeWhenPresent('value', value.from)} onChange={(from) => onChange({ ...value, from })} />
@@ -105,3 +112,4 @@ export function TemporalFilter({ value, onChange, testID }: TemporalFilterProps)
     </View>
   );
 }
+

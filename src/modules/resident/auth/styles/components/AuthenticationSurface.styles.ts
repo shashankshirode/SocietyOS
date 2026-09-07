@@ -28,7 +28,8 @@ export const styles = StyleSheet.create({
     },
     eyebrow: {
         fontWeight: '800',
-        fontSize: 9.5,
+        fontSize: 11,
+        lineHeight: 15,
         letterSpacing: 0.8,
         textTransform: 'uppercase',
     },

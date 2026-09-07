@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
   orbit: { alignItems: 'center', justifyContent: 'center' },
   ring: { position: 'absolute', borderWidth: 1, opacity: 0.42 },
   center: { alignItems: 'center', justifyContent: 'center', zIndex: 2 },
-  signalLayer: { ...StyleSheet.absoluteFillObject },
+  signalLayer: { ...StyleSheet.absoluteFill },
   momentRail: { minHeight: 64, borderRadius: 20, backgroundColor: residentColors.darkElevatedSurface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
   moment: { flex: 1, gap: 3, minWidth: 0 },
   momentTime: { color: residentColors.attentionOnBrand },

@@ -5,7 +5,7 @@ export const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     endLayer: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         left: '42%',
         opacity: 0.82,
     },

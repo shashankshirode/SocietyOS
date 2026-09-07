@@ -44,7 +44,7 @@ export function createLanguageSettingsStyles(theme: AppTheme) {
       color: theme.colors.textPrimary,
     },
     overlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: theme.colors.overlay,
       justifyContent: 'center',
       alignItems: 'center',

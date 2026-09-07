@@ -39,9 +39,10 @@ export function paginateResidentBills(bills: readonly Bill[], request: ResidentB
     const startIndex = cursorIndex >= 0 ? cursorIndex + 1 : 0;
     const pageBills = filtered.slice(startIndex, startIndex + pageSize);
     const hasMore = startIndex + pageBills.length < filtered.length;
+    const lastBill = pageBills.length > 0 ? pageBills[pageBills.length - 1] : undefined;
     return {
         bills: pageBills,
-        nextCursor: hasMore ? pageBills.at(-1)?.id ?? null : null,
+        nextCursor: hasMore ? lastBill?.id ?? null : null,
         hasMore,
     };
 }
@@ -53,9 +54,10 @@ export function paginateResidentLedger(entries: readonly ResidentLedgerEntry[], 
     const startIndex = cursorIndex >= 0 ? cursorIndex + 1 : 0;
     const pageEntries = entries.slice(startIndex, startIndex + pageSize);
     const hasMore = startIndex + pageEntries.length < entries.length;
+    const lastEntry = pageEntries.length > 0 ? pageEntries[pageEntries.length - 1] : undefined;
     return {
         entries: pageEntries,
-        nextCursor: hasMore ? pageEntries.at(-1)?.id ?? null : null,
+        nextCursor: hasMore ? lastEntry?.id ?? null : null,
         hasMore,
     };
 }

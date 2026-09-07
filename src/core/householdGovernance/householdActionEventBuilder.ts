@@ -4,7 +4,7 @@ import type { HouseholdActionEvent, HouseholdActionPolicyDecision, HouseholdActi
 const sensitiveMetadataKey = /(token|mobile|phone|email|aadhaar|pan|password|payment|card|upi|message|chat|medical|health)/i;
 let eventSequence = 0;
 
-function sanitizeMetadata(metadata: Record<string, string | number | boolean> | undefined): Record<string, string | number | boolean> {
+function sanitizeMetadata(metadata?: Record<string, string | number | boolean>): Record<string, string | number | boolean> {
   return Object.fromEntries(Object.entries(metadata ?? {}).filter(([key]) => !sensitiveMetadataKey.test(key)));
 }
 

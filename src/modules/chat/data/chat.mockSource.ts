@@ -250,7 +250,8 @@ function channelMessages(societyId: string, residenceId: string, channelId: stri
 }
 function makeSummary(channel: ChatChannelDefinition, residenceId: string): ChatChannelSummary {
     const visible = channelMessages(channel.societyId, residenceId, channel.channelId);
-    const lastMessage = [...visible].sort((left, right) => left.sentAtIso.localeCompare(right.sentAtIso)).at(-1) ?? null;
+    const sorted = [...visible].sort((left, right) => left.sentAtIso.localeCompare(right.sentAtIso));
+    const lastMessage = sorted.length > 0 ? (sorted[sorted.length - 1] ?? null) : null;
     return {
         channel,
         residenceId,
@@ -521,7 +522,8 @@ export const chatMockSource: ChatRepository = {
             .filter((segment) => segment.societyId === context.societyId && segment.assignedGuardUserId === context.actorUserId)
             .map((segment): ChatConversationSummary => {
             const visible = messages.filter((item) => item.interactionId === segment.interactionId);
-            const lastMessage = [...visible].sort((a, b) => a.sentAtIso.localeCompare(b.sentAtIso)).at(-1) ?? null;
+            const sorted = [...visible].sort((a, b) => a.sentAtIso.localeCompare(b.sentAtIso));
+            const lastMessage = sorted.length > 0 ? (sorted[sorted.length - 1] ?? null) : null;
             return { channel, residenceId: segment.residenceId, residentUserId: segment.residentUserId, residentDisplayName: 'Shashank Shirode', residentUnitLabel: 'A-1204', interactionId: segment.interactionId, unreadCount: 0, updatedAtIso: lastMessage?.sentAtIso ?? segment.startedAtIso, lastMessage };
         });
     },
@@ -554,7 +556,8 @@ export const chatMockSource: ChatRepository = {
         const residenceIds = [...new Set(messages.filter((item) => item.channelId === channelId).map((item) => item.residenceId))];
         return residenceIds.map((residenceId): ChatConversationSummary => {
             const visible = channelMessages(context.societyId, residenceId, channelId);
-            const lastMessage = [...visible].sort((a, b) => a.sentAtIso.localeCompare(b.sentAtIso)).at(-1) ?? null;
+            const sorted = [...visible].sort((a, b) => a.sentAtIso.localeCompare(b.sentAtIso));
+            const lastMessage = sorted.length > 0 ? (sorted[sorted.length - 1] ?? null) : null;
             return { channel, residenceId, residentUserId: lastMessage?.residentUserId ?? 'resident-001', residentDisplayName: 'Shashank Shirode', residentUnitLabel: residenceId === 'context-001' ? 'A-1204' : 'C-503', unreadCount: 0, updatedAtIso: lastMessage?.sentAtIso ?? channel.updatedAtIso, lastMessage };
         });
     },

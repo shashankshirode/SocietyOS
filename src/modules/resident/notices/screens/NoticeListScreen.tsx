@@ -88,23 +88,39 @@ export function NoticeListScreen({ navigation }: NoticeListFromHomeScreenProps) 
     <View style={[styles.root, createRootStyle(theme.background)]}>
       {header}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <View style={styles.intro}><SafeText variant="h1" style={createColorStyle(theme.textPrimary)}>{copy.editorialIntro}</SafeText></View>
         <SearchInputBar value={search} onChangeText={setSearch} placeholder={copy.searchPlaceholder} />
-        <TemporalFilter value={temporal} onChange={setTemporal} testID="notice-temporal-filter" />
-        <WrapRow gap={8}>{categoryFilters.map((filter) => <FilterChip key={filter.key} label={filter.label} selected={category === filter.key} onPress={() => setCategory(filter.key)} />)}</WrapRow>
 
-        {visibleNotices.length === 0 ? <View style={styles.emptyWrap}><ScreenEmptyState title={copy.emptyTitle} description={copy.emptyDescription} iconName="megaphone-outline" /></View> : null}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+          {categoryFilters.map((filter) => (
+            <FilterChip
+              key={filter.key}
+              label={filter.label}
+              selected={category === filter.key}
+              onPress={() => setCategory(filter.key)}
+            />
+          ))}
+        </ScrollView>
+
+        <TemporalFilter value={temporal} onChange={setTemporal} horizontal testID="notice-temporal-filter" />
+
+        {visibleNotices.length === 0 ? (
+          <View style={styles.emptyWrap}>
+            <ScreenEmptyState title={copy.emptyTitle} description={copy.emptyDescription} iconName="megaphone-outline" />
+          </View>
+        ) : null}
 
         {importantNotice ? (
           <View style={styles.section}>
             <SafeText variant="tiny" style={[styles.sectionLabel, createColorStyle(theme.danger)]}>{copy.sections.important}</SafeText>
             <PressableScale onPress={() => openNotice(importantNotice)}>
               <View style={[styles.hero, createAccentSurfaceStyle(theme.warningSoft, theme.warning)]}>
-                <SafeText variant="tiny" style={createColorStyle(theme.warning)}>{copy.categories[importantNotice.category]}</SafeText>
-                <SafeText variant="h1" style={createColorStyle(theme.textPrimary)}>{importantNotice.title}</SafeText>
-                <SafeText variant="body" style={createColorStyle(theme.textSecondary)} numberOfLines={3}>{importantNotice.body}</SafeText>
-                <View style={styles.heroFooter}>
+                <View style={styles.heroHeader}>
+                  <SafeText variant="tiny" style={createColorStyle(theme.warning)}>{copy.categories[importantNotice.category]}</SafeText>
                   <SafeText variant="caption" style={createColorStyle(theme.textMuted)}>{formatResidentDate(importantNotice.date)}</SafeText>
+                </View>
+                <SafeText variant="title" style={createColorStyle(theme.textPrimary)}>{importantNotice.title}</SafeText>
+                <SafeText variant="body" style={createColorStyle(theme.textSecondary)} numberOfLines={2}>{importantNotice.body}</SafeText>
+                <View style={styles.heroFooter}>
                   <SafeText variant="bodyStrong" style={createColorStyle(theme.warning)}>{copy.readNotice} →</SafeText>
                 </View>
               </View>
@@ -139,3 +155,4 @@ export function NoticeListScreen({ navigation }: NoticeListFromHomeScreenProps) 
 }
 
 export default NoticeListScreen;
+

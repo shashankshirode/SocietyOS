@@ -138,6 +138,7 @@ export const residentDashboardMockData: ResidentDashboardData = {
     billAmount: 4850,
     dueInDays: 4,
     status: 'unpaid',
+    billId: 'bill-jul-2026-001',
     chargeTags: ['Maintenance', 'Sinking Fund', 'Water', 'Parking'],
     lastPaidAmount: 4600,
     lastPaidDate: '5 Jun 2026',

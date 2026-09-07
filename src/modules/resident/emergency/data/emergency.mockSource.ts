@@ -5,6 +5,34 @@ import { emergencyRoutingService, type EmergencyCategory, type EmergencyIncident
 import { getCurrentSession } from '../../../../core/auth/sessionStore';
 import { MOCK_PERSONAS } from '../../../../core/identity/personaRegistry';
 
+interface SosParams {
+  location?: string;
+}
+
+interface MedicalEmergencyParams {
+  location?: string;
+}
+
+interface FireAlertParams {
+  location?: string;
+}
+
+interface LiftStuckAlertParams {
+  location?: string;
+}
+
+interface AcknowledgeParams {
+  incidentId: string;
+}
+
+interface TimelineParams {
+  limit?: number;
+}
+
+interface VolunteerParams {
+  limit?: number;
+}
+
 function getActivePersonaContext() {
   const session = getCurrentSession();
   const personaKey = (session?.personaKey ?? 'rohan') as keyof typeof MOCK_PERSONAS;
@@ -17,49 +45,52 @@ export const emergencyMockSource = {
     return repositorySuccess(mockEmergencyContacts);
   },
 
-  async triggerSosAlert(params?: any): Promise<RepositoryResult<EmergencyIncident>> {
+  async triggerSosAlert(params?: SosParams): Promise<RepositoryResult<EmergencyIncident>> {
     await withMockDelay(300);
     const context = getActivePersonaContext();
-    const location = typeof params === 'object' && params?.location ? String(params.location) : undefined;
+    const location = params?.location;
     const incident = await emergencyRoutingService.triggerEmergency(context, 'GENERIC_SOS', location);
     return repositorySuccess(incident);
   },
 
-  async triggerMedicalEmergency(params?: any): Promise<RepositoryResult<EmergencyIncident>> {
+  async triggerMedicalEmergency(params?: MedicalEmergencyParams): Promise<RepositoryResult<EmergencyIncident>> {
     await withMockDelay(300);
     const context = getActivePersonaContext();
-    const incident = await emergencyRoutingService.triggerEmergency(context, 'MEDICAL', 'Medical Assistance Required');
+    const location = params?.location ?? 'Medical Assistance Required';
+    const incident = await emergencyRoutingService.triggerEmergency(context, 'MEDICAL', location);
     return repositorySuccess(incident);
   },
 
-  async triggerFireAlert(params?: any): Promise<RepositoryResult<EmergencyIncident>> {
+  async triggerFireAlert(params?: FireAlertParams): Promise<RepositoryResult<EmergencyIncident>> {
     await withMockDelay(300);
     const context = getActivePersonaContext();
-    const incident = await emergencyRoutingService.triggerEmergency(context, 'FIRE', 'Fire Alert Reported');
+    const location = params?.location ?? 'Fire Alert Reported';
+    const incident = await emergencyRoutingService.triggerEmergency(context, 'FIRE', location);
     return repositorySuccess(incident);
   },
 
-  async triggerLiftStuckAlert(params?: any): Promise<RepositoryResult<EmergencyIncident>> {
+  async triggerLiftStuckAlert(params?: LiftStuckAlertParams): Promise<RepositoryResult<EmergencyIncident>> {
     await withMockDelay(300);
     const context = getActivePersonaContext();
-    const incident = await emergencyRoutingService.triggerEmergency(context, 'LIFT', 'Passenger Trapped in Lift');
+    const location = params?.location ?? 'Passenger Trapped in Lift';
+    const incident = await emergencyRoutingService.triggerEmergency(context, 'LIFT', location);
     return repositorySuccess(incident);
   },
 
-  async acknowledgeEmergencyAlert(params?: any): Promise<RepositoryResult<EmergencyIncident | null>> {
+  async acknowledgeEmergencyAlert(params?: AcknowledgeParams): Promise<RepositoryResult<EmergencyIncident | null>> {
     await withMockDelay(300);
     const context = getActivePersonaContext();
-    const incidentId = typeof params === 'string' ? params : params?.incidentId ?? params?.id;
+    const incidentId = params?.incidentId ?? '';
     const updated = await emergencyRoutingService.acknowledgeEmergency(context, incidentId);
     return repositorySuccess(updated);
   },
 
-  async getIncidentTimeline(params?: any): Promise<RepositoryResult<readonly EmergencyIncident[]>> {
+  async getIncidentTimeline(params?: TimelineParams): Promise<RepositoryResult<readonly EmergencyIncident[]>> {
     await withMockDelay();
     return repositorySuccess(emergencyRoutingService.getActiveIncidents());
   },
 
-  async listEmergencyVolunteers(params?: any): Promise<RepositoryResult<any[]>> {
+  async listEmergencyVolunteers(params?: VolunteerParams): Promise<RepositoryResult<readonly { id: string; name: string; unit: string; phone: string; skills: string[]; isAvailable: boolean }[]>> {
     await withMockDelay();
     return repositorySuccess([
       {
@@ -73,7 +104,7 @@ export const emergencyMockSource = {
     ]);
   },
 
-  async submitSeniorDailyCheckIn(params?: any) {
+  async submitSeniorDailyCheckIn(): Promise<readonly { id: string; status: string; timestamp: string }[]> {
     return [{
       id: 'checkin-1',
       status: 'CONFIRMED',

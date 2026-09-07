@@ -2,13 +2,13 @@ import { darkPalette, lightPalette } from './colors';
 import { iconTokens } from './iconTokens';
 import { motionTokens } from './motion';
 
-const createSemanticColors = (palette: typeof lightPalette | typeof darkPalette) => ({
+const createSemanticColors = (palette: typeof lightPalette | typeof darkPalette, isDark: boolean) => ({
   surface: {
     canvas: palette.background,
     base: palette.surface,
     soft: palette.backgroundSoft,
     raised: palette.surfaceRaised,
-    inverse: darkPalette.background,
+    inverse: isDark ? lightPalette.surface : darkPalette.surface,
     focus: palette.surfaceAccent,
     attention: palette.warningSoft,
   },
@@ -17,7 +17,8 @@ const createSemanticColors = (palette: typeof lightPalette | typeof darkPalette)
     secondary: palette.textSecondary,
     tertiary: palette.textMuted,
     muted: palette.textDisabled,
-    inverse: darkPalette.textPrimary,
+    inverse: isDark ? lightPalette.textPrimary : '#FFFDF8',
+    onPrimary: isDark ? '#111612' : '#FFFDF8',
   },
   border: {
     subtle: palette.divider,
@@ -45,8 +46,8 @@ const createSemanticColors = (palette: typeof lightPalette | typeof darkPalette)
   },
 } as const);
 
-export const societySemanticLight = createSemanticColors(lightPalette);
-export const societySemanticDark = createSemanticColors(darkPalette);
+export const societySemanticLight = createSemanticColors(lightPalette, false);
+export const societySemanticDark = createSemanticColors(darkPalette, true);
 
 export const societyBorderWidths = {
   hairline: 0.5,
@@ -124,12 +125,12 @@ export const societyDismissTokens = {
 export const societySelectionTokens = {
   light: {
     background: lightPalette.primary,
-    foreground: darkPalette.textPrimary,
+    foreground: '#FFFDF8',
     border: lightPalette.primary,
   },
   dark: {
     background: darkPalette.primary,
-    foreground: darkPalette.background,
+    foreground: '#111612',
     border: darkPalette.primary,
   },
 } as const;

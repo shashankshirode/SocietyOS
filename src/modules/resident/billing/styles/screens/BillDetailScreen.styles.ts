@@ -8,10 +8,80 @@ export const styles = StyleSheet.create({
     metadataCard: { padding: 18, borderRadius: 18, borderWidth: 1, gap: 12 },
     metadataRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 },
     guidanceCard: { padding: 18, borderRadius: 18, borderWidth: 1, gap: 12 },
-    actions: { gap: 10 },
+    actions: { gap: 10, flexDirection: 'row', flexWrap: 'wrap' },
     loadingStack: { paddingVertical: 16, gap: 18 },
     loadingHero: { height: 210, borderRadius: 20 },
     loadingCard: { height: 170, borderRadius: 18 },
+    statusProgressContainer: {
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    statusProgressRing: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    progressInner: {
+        alignItems: 'center',
+    },
+    statusBadges: {
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 16,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    amountBadge: {
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    guidanceHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 4,
+    },
+    guidanceIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    primaryAction: {
+        flex: 1,
+        minWidth: '45%',
+    },
+    secondaryAction: {
+        flex: 1,
+        minWidth: '45%',
+    },
+    guidanceTitle: {
+        flex: 1,
+    },
+    guidanceContent: {
+        gap: 12,
+    },
+    guidanceHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    guidanceRows: {
+        gap: 8,
+    },
 });
 export function createSafeTextColorStyle(colorValue: string) {
     return {

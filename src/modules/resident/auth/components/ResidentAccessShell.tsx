@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, KeyboardAvoidingView, Platform, useWindowDimensions, Keyboard, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { useAppTheme } from "../../../../shared/theme/useAppTheme";
 import { useResponsiveLayout } from "../../../../shared/layout/useResponsiveLayout";
@@ -10,16 +11,18 @@ interface ResidentAccessShellProps {
     isPhoneValid?: boolean;
 }
 export function ResidentAccessShell({ children, isPhoneValid = false, }: ResidentAccessShellProps) {
+    const insets = useSafeAreaInsets();
     const { colors } = useAppTheme();
     const { isTablet } = useResponsiveLayout();
     const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const getInitialVisualHeight = () => {
+        const topInset = Math.max(insets.top, 20);
         if (screenHeight < 680)
-            return 270;
+            return 250 + topInset;
         if (screenHeight < 840)
-            return 320;
-        return 360;
+            return 290 + topInset;
+        return 320 + topInset;
     };
     const initialHeight = getInitialVisualHeight();
     const visualHeight = useSharedValue(initialHeight);

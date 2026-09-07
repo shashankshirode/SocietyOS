@@ -11,15 +11,18 @@ export function useReducedMotion() {
       if (isMounted) {
         setIsReducedMotionEnabled(enabled);
       }
-    });
+    }).catch(() => {});
 
-    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setIsReducedMotionEnabled);
+    const subscription = AccessibilityInfo.addEventListener?.('reduceMotionChanged', setIsReducedMotionEnabled);
 
     return () => {
       isMounted = false;
-      subscription.remove();
+      if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove();
+      }
     };
   }, []);
 
   return isReducedMotionEnabled;
 }
+

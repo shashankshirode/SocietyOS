@@ -5,6 +5,8 @@ import Constants from 'expo-constants';
 import type { NotificationSetupResult } from './notification.types';
 import { getErrorMessage } from '../errors/getErrorMessage';
 
+const isExpoGo = Constants.appOwnership === 'expo';
+
 export async function configureAndroidNotificationChannel(): Promise<void> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -43,7 +45,14 @@ export async function requestNotificationPermission(): Promise<NotificationSetup
 
     await configureAndroidNotificationChannel();
 
-    
+    if (isExpoGo) {
+      return {
+        status: 'granted',
+        expoPushToken: 'ExponentPushToken[expo-go-local-only]',
+        message: 'Permission granted. Push notifications require a development build. Local notifications will work.',
+      };
+    }
+
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
     if (!projectId) {
       return {

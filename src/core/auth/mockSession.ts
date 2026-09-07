@@ -5,8 +5,8 @@ import { MOCK_PERSONAS } from '../identity/personaRegistry';
 
 type AppRouteName = keyof RootStackParamList;
 
-export function createMockSessionForPersona(personaKey: keyof typeof MOCK_PERSONAS): AuthSession {
-  const p = MOCK_PERSONAS[personaKey] ?? MOCK_PERSONAS.rohan;
+export function createMockSessionForPersona(personaKey: string): AuthSession {
+  const p = (MOCK_PERSONAS as Record<string, typeof MOCK_PERSONAS.rohan>)[personaKey] ?? MOCK_PERSONAS.rohan;
   const displayName = p.person.preferredName ?? `${p.person.firstName} ${p.person.lastName}`;
 
   return {
@@ -16,11 +16,10 @@ export function createMockSessionForPersona(personaKey: keyof typeof MOCK_PERSON
     personaKey,
     societyId: p.membership.societyId,
     societyName: p.membership.societyName,
-    unitId: p.unitRelationship?.unitId,
-    unitLabel: p.unitRelationship?.unitNumber,
+    ...(p.unitRelationship?.unitId ? { unitId: p.unitRelationship.unitId } : {}),
+    ...(p.unitRelationship?.unitNumber ? { unitLabel: p.unitRelationship.unitNumber } : {}),
     isHouseholdAdmin: p.isHouseholdAdmin,
-    gateName: p.activeRole === 'SECURITY_GUARD' ? 'Main Gate' : undefined,
-    shiftLabel: p.activeRole === 'SECURITY_GUARD' ? 'Morning Shift' : undefined,
+    ...(p.activeRole === 'SECURITY_GUARD' ? { gateName: 'Main Gate', shiftLabel: 'Morning Shift' } : {}),
     token: `mock-token-${p.user.id}`,
     refreshToken: `mock-refresh-${p.user.id}`,
     isMockSession: true,

@@ -13,7 +13,7 @@ export function FacilityImageHeader({ name, height = 200 }: FacilityImageHeaderP
     const imageInfo = getFacilityImage(name);
     return (<View style={[styles.container, createViewHeightBackgroundColorStyle(height, colors.backgroundSoft)]}>
       <Image source={{ uri: imageInfo.url }} style={styles.image} accessibilityLabel={imageInfo.accessibilityLabel} onLoadStart={() => setLoading(true)} onLoadEnd={() => setLoading(false)}/>
-      {loading && (<View style={[StyleSheet.absoluteFillObject, styles.loader, createViewBackgroundColorStyle(colors.backgroundSoft)]}>
+      {loading && (<View style={[StyleSheet.absoluteFill, styles.loader, createViewBackgroundColorStyle(colors.backgroundSoft)]}>
           <ActivityIndicator size="small" color={colors.primary}/>
         </View>)}
     </View>);

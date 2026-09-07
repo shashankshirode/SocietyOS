@@ -29,6 +29,7 @@ import {
 import { BookingInfoRow } from '../components/BookingInfoRow';
 import { BookingPriceBreakdown } from '../components/BookingPriceBreakdown';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityBookingReview'>;
 
@@ -97,7 +98,7 @@ export function FacilityBookingReviewScreen({ navigation }: Props) {
 
   if (!validDraft || !draft || !facility || !slot) {
     return (
-      <FacilityScreenLayout title={labels.review.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.review.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingConsent', currentRouteName: 'FacilityBookingReview' })}>
         <ErrorState
           title={labels.review.residenceChangedTitle}
           message={labels.review.residenceChangedDescription}
@@ -134,7 +135,7 @@ export function FacilityBookingReviewScreen({ navigation }: Props) {
     <FacilityScreenLayout
       title={labels.review.title}
       subtitle={labels.review.subtitle}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'FacilityBookingConsent', currentRouteName: 'FacilityBookingReview' })}
       footer={footer}
       testID="facility-booking-review-screen"
     >

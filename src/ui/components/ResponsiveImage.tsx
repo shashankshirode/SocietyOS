@@ -51,7 +51,7 @@ export function ResponsiveImage({ image, style, containerStyle, aspectRatio = 16
     };
     return (<View style={[styles.container, createViewWidthAspectRatioStyle(width as DimensionValue, aspectRatio), containerStyle]}>
       <Image source={resolvedSource} style={[imageStyle, style]} onLoadStart={handleLoadStart} onLoadEnd={handleLoadEnd} onError={handleLoadError} accessibilityLabel={image.accessibilityLabel} resizeMode="cover"/>
-      {loading && (<View style={[StyleSheet.absoluteFillObject, styles.spinnerContainer]}>
+      {loading && (<View style={[StyleSheet.absoluteFill, styles.spinnerContainer]}>
           <ActivityIndicator size="small" color={colors.primary}/>
         </View>)}
     </View>);

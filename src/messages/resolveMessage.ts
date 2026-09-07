@@ -31,7 +31,8 @@ function findMessage(messages: EnglishMessagesType, key: string): MessageLeaf | 
 }
 
 function humanizeKey(key: string): string {
-  const lastSegment = key.split('.').at(-1) ?? key;
+  const parts = key.split('.');
+  const lastSegment = parts[parts.length - 1] ?? key;
   return lastSegment
     .replace(/([A-Z])/g, ' $1')
     .replace(/[_-]/g, ' ')

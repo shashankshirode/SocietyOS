@@ -7,12 +7,12 @@ export const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     gradientLayer1: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         opacity: 0.5,
         transform: [{ translateX: 100 }, { translateY: -40 }, { rotate: '-15deg' }, { scaleX: 1.5 }],
     },
     gradientLayer2: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         opacity: 0.25,
         transform: [{ translateX: -60 }, { translateY: 80 }, { rotate: '10deg' }, { scaleX: 1.3 }],
     },

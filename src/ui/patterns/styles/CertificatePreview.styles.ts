@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
         gap: 16,
     },
     innerBorder: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         margin: 6,
         borderWidth: 1,
         borderStyle: 'solid',

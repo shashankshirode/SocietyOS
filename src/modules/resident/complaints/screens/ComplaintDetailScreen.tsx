@@ -1,23 +1,25 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, SafeAreaView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
-import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
-import { ComplaintProgressPanel } from "../../../../ui/patterns/ComplaintProgressPanel";
-import { ResidentTimeline } from "../../../../ui/patterns/ResidentTimeline";
-import { SafeText } from "../../../../shared/components/SafeText";
-import { AppButton } from "../../../../shared/components/AppButton";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
-import type { ComplaintDetailScreenProps } from "../../../../app/navigation/navigation.types";
+import { useAppTheme } from "../../../../shared/theme/useAppTheme";
+import { Screen } from "../../../../design-system/layouts";
+import { Button } from "../../../../design-system/components";
+import { Card } from "../../../../design-system/components";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { ComplaintStatus } from "../data/complaints.enums";
+import { StackActions } from "@react-navigation/native";
+import { StyleSheet } from "react-native";
+import { formatResidentDate } from "../../../../core/localization/dateTimeFormatters";
+import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
+import { SafeText } from "../../../../shared/components/SafeText";
+import { useMockStore } from "../../../../core/mockStore/useMockStore";
+import type { ComplaintDetailScreenProps } from "../../../../app/navigation/navigation.types";
+import { ComplaintProgressPanel } from "../../../../ui/patterns/ComplaintProgressPanel";
+import { ResidentTimeline } from "../../../../ui/patterns/ResidentTimeline";
 import { ResidentProgressCoach, type ProgressStep } from "../../../../ui/patterns/ResidentProgressCoach";
 import type { ComplaintPriority as ProgressComplaintPriority } from "../../dashboard/data/dashboard.types";
-import { StackActions } from "@react-navigation/native";
-import { styles, createViewBackgroundColorStyle, createSafeTextColorStyle } from "../styles/screens/ComplaintDetailScreen.styles";
-import { formatUiLiteral } from "../../../../shared/localization/formatUiLiteral";
-import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
-function toProgressPriority(priority: string): ProgressComplaintPriority {
+
+function toProgressPriority(priority: string): 'critical' | 'high' | 'medium' | 'low' {
     if (priority === 'URGENT')
         return 'critical';
     if (priority === 'HIGH')
@@ -26,10 +28,12 @@ function toProgressPriority(priority: string): ProgressComplaintPriority {
         return 'medium';
     return 'low';
 }
+
 export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     const localizedUiText = useMessages().uiLiterals;
     const { navigation, route } = props;
-    const theme = useResidentTheme();
+    const { colors, dark } = useAppTheme();
+    const themeColors = require('../../../../design-system/tokens/premium-colors').getColors(dark ? 'dark' : 'light');
     const messages = useMessages();
     const focusCopy = messages.resident.experience.focus;
     const { complaint: initialComplaint } = route.params;
@@ -112,7 +116,7 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
                     : ('pending' as const),
         },
     ];
-    const coachSteps: ProgressStep[] = [
+    const coachSteps: { title: string; description: string; status: 'completed' | 'current' | 'pending' | 'blocked' }[] = [
         {
             title: messages.complaints.statusOpen,
             description: String(localizedUiText.m_2c2265169b74),
@@ -147,39 +151,122 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
         slaProgressPercent: complaint.status === ComplaintStatus.RESOLVED || complaint.status === ComplaintStatus.CLOSED ? 100 : 45,
         steps,
     };
-    return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
-      <ResidentPageHeader
-        contextLabel={focusCopy.issues}
-        title={complaint.assignedTo ? focusCopy.issueAssigned(complaint.title.toLowerCase()) : focusCopy.issueReported(complaint.title)}
-        subtitle={`${complaint.category} · ${complaint.status.replace(/_/g, ' ')}`}
-      />
+    return (
+        <Screen
+            title={messages.complaints.detailTitle || complaint.title}
+            subtitle={`${complaint.category} \u00b7 ${complaint.status.replace(/_/g, ' ')}`}
+            showBackButton
+            onBack={() => navigation.goBack()}
+        >
+        <SafeAreaView style={styles.root}>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <View style={styles.viewPaddingHorizontal}>
+                    <Card variant="elevated" padding="md">
+                        <ComplaintProgressPanel {...progressProps} interactive={false} />
+                    </Card>
+                </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.viewPaddingHorizontal}>
-          <ComplaintProgressPanel {...progressProps} interactive={false}/>
-        </View>
+                <View style={styles.viewPaddingHorizontal2}>
+                    <Card variant="elevated" padding="md">
+                        <ResidentProgressCoach steps={coachSteps} instruction={complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED
+                            ? getActiveUiLiteral("m_10abd13583ec") : getActiveUiLiteral("m_9cc813680d11")} />
+                    </Card>
+                </View>
 
-        <View style={styles.viewPaddingHorizontal2}>
-          <ResidentProgressCoach steps={coachSteps} instruction={complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED
-            ? getActiveUiLiteral("m_10abd13583ec") : getActiveUiLiteral("m_9cc813680d11")}/>
-        </View>
+                <View style={styles.section}>
+                    <SafeText variant="bodyStrong" style={styles.sectionTitle}>{messages.complaints.timelineSection}</SafeText>
+                    <ResidentTimeline items={timelineItems} />
+                </View>
 
-        <View style={styles.section}>
-          <SafeText variant="bodyStrong" style={[styles.sectionTitle, createSafeTextColorStyle(theme.textPrimary)]}>
-            {messages.complaints.timelineSection}
-          </SafeText>
-          <ResidentTimeline items={timelineItems}/>
-        </View>
+                <View style={styles.actions}>
+                    {complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED && (
+                        <Button
+                            title="Mark Done"
+                            onPress={handleResolve}
+                            variant="primary"
+                            leftIcon={<Ionicons name="checkmark-circle-outline" size={18} color={themeColors.text.inverse} />}
+                        />
+                    )}
 
-        <View style={styles.actions}>
-          {complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED && (<AppButton title={messages.common.done || localizedUiText.m_7ee5fb78c07d} onPress={handleResolve} iconLeft={<Ionicons name="checkmark-circle-outline" size={18} color={theme.selectedForeground}/>}/>)}
-
-          {complaint.status === ComplaintStatus.RESOLVED && (<View style={styles.buttonStack}>
-              <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} iconLeft={<Ionicons name="star-outline" size={18} color={theme.selectedForeground}/>}/>
-              <AppButton title={messages.complaints.reopenButton} variant="secondary" onPress={handleReopen} iconLeft={<Ionicons name="refresh-outline" size={18} color={theme.accent}/>}/>
-            </View>)}
-        </View>
-      </ScrollView>
-    </View>);
+                    {complaint.status === ComplaintStatus.RESOLVED && (
+                        <View style={styles.buttonStack}>
+                            <Button
+                                title="Feedback"
+                                onPress={handleFeedback}
+                                variant="primary"
+                                leftIcon={<Ionicons name="star-outline" size={18} color={themeColors.text.inverse} />}
+                            />
+                            <Button
+                                title="Reopen"
+                                variant="outline"
+                                onPress={handleReopen}
+                                leftIcon={<Ionicons name="refresh-outline" size={18} color="#3B82F6" />}
+                            />
+                        </View>
+                    )}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+        </Screen>
+    );
 }
+
+function formatUiLiteral(template: string, args: string[]): string {
+    return args.reduce((acc, arg, i) => acc.replace(`{${i}}`, arg), template);
+}
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+    },
+    safe: {
+        flex: 1,
+    },
+    safeArea: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 100,
+        gap: 16,
+    },
+    viewPaddingHorizontal: {
+        paddingHorizontal: 16,
+    },
+    viewPaddingHorizontal2: {
+        paddingHorizontal: 16,
+        marginTop: 16,
+    },
+    section: {
+        marginTop: 24,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 12,
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        marginTop: 24,
+    },
+    buttonStack: {
+        flexDirection: 'row',
+        gap: 12,
+        flexWrap: 'wrap',
+    },
+    card: {
+        borderRadius: 16,
+        overflow: 'hidden',
+    },
+    progressCard: {
+        marginBottom: 16,
+    },
+    coachCard: {
+        marginBottom: 16,
+    },
+});
+
 export default ComplaintDetailScreen;

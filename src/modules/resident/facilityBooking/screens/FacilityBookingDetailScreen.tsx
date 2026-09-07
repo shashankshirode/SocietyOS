@@ -26,6 +26,7 @@ import { BookingQrCard } from '../components/BookingQrCard';
 import { BookingStatusBadge } from '../components/BookingStatusBadge';
 import { BookingTimeline } from '../components/BookingTimeline';
 import { FacilityScreenLayout } from '../components/FacilityScreenLayout';
+import { performBackNavigation } from '../../../../shared/navigation/performBackNavigation';
 
 type Props = NativeStackScreenProps<FacilityStackParamList, 'FacilityBookingDetail'>;
 
@@ -40,14 +41,14 @@ export function FacilityBookingDetailScreen({ navigation, route }: Props) {
   const locale = activeContext.locale ?? 'en-IN';
   if (resource.isLoading || !booking && !resource.error) {
     return (
-      <FacilityScreenLayout title={labels.bookingDetail.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.bookingDetail.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'MyFacilityBookings', currentRouteName: 'FacilityBookingDetail' })}>
         <DetailBlockSkeleton /><DetailBlockSkeleton /><DetailBlockSkeleton />
       </FacilityScreenLayout>
     );
   }
   if (resource.error || !booking) {
     return (
-      <FacilityScreenLayout title={labels.bookingDetail.title} onBack={navigation.goBack}>
+      <FacilityScreenLayout title={labels.bookingDetail.title} onBack={() => performBackNavigation(navigation, { fallbackRoute: 'MyFacilityBookings', currentRouteName: 'FacilityBookingDetail' })}>
         <ErrorState title={labels.states.loadBookingTitle} message={labels.states.loadBookingDescription} onRetry={() => void resource.refresh()} />
       </FacilityScreenLayout>
     );
@@ -58,7 +59,7 @@ export function FacilityBookingDetailScreen({ navigation, route }: Props) {
     <FacilityScreenLayout
       title={labels.bookingDetail.title}
       subtitle={booking.bookingReference}
-      onBack={navigation.goBack}
+      onBack={() => performBackNavigation(navigation, { fallbackRoute: 'MyFacilityBookings', currentRouteName: 'FacilityBookingDetail' })}
       testID="facility-booking-detail-screen"
     >
       <AppCard variant="outlined" style={styles.summaryCard}>

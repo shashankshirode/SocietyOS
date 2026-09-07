@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { SafeText } from '../../../../shared/components/SafeText';
 import { useAppTheme } from '../../../../shared/theme/useAppTheme';
+import { residentColors } from '../../../../shared/theme/residentColors';
 import type { PulseSignalLayout } from './PulseLayoutEngine';
 import { createConnectorStyle, createHaloStyle, createLabelLayoutStyle, createLabelBackgroundStyle, createLabelSelectedStyle, createNodeLayoutStyle, createNodeStyle, createTextColorStyle, styles } from '../styles/components/PulseSignal.styles';
 
@@ -24,9 +25,21 @@ export function PulseSignal({ signal, selected = false, onPress }: PulseSignalPr
   return (
     <View style={styles.layer} pointerEvents="box-none">
       {signal.showLabel && signal.labelX !== undefined && signal.labelY !== undefined ? (
-        <View style={[styles.label, selected && styles.labelSelected, selected && createLabelSelectedStyle(semantic.border.strong), createLabelLayoutStyle(signal.labelX, signal.labelY, signal.labelWidth, signal.labelHeight), createLabelBackgroundStyle(semantic.surface.inverse)]} pointerEvents="none">
-          <SafeText variant="tiny" style={[styles.title, createTextColorStyle(semantic.text.inverse)]} numberOfLines={1}>{signal.shortTitle}</SafeText>
-          <SafeText variant="tiny" style={[styles.time, createTextColorStyle(color)]} numberOfLines={1}>{signal.timeLabel}</SafeText>
+        <View
+          style={[
+            styles.label,
+            selected && styles.labelSelected,
+            selected && createLabelSelectedStyle(semantic.accent.moss),
+            createLabelLayoutStyle(signal.labelX, signal.labelY, signal.labelWidth, signal.labelHeight),
+          ]}
+          pointerEvents="none"
+        >
+          <SafeText variant="tiny" style={[styles.title, createTextColorStyle(residentColors.brandInk)]} numberOfLines={1}>
+            {signal.shortTitle}
+          </SafeText>
+          <SafeText variant="tiny" style={[styles.time, createTextColorStyle(color)]} numberOfLines={1}>
+            {signal.timeLabel}
+          </SafeText>
         </View>
       ) : null}
       {signal.showLabel && signal.labelAnchor ? <View style={[styles.connector, selected && styles.connectorSelected, createConnectorStyle(signal.nodeX, signal.nodeY, signal.labelAnchor, signal.connectorLength, color)]} pointerEvents="none" /> : null}

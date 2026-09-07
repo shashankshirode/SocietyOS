@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  root: { gap: 12 },
-  rangeFields: { gap: 4 },
+  root: { gap: 8 },
+  horizontalRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rangeFields: { gap: 8, marginTop: 4 },
 });
 

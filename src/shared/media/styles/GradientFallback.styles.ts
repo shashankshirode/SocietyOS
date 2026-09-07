@@ -3,8 +3,8 @@ import { Radius } from "../../theme/radius";
 import type { Absent } from "../../types/absence.types";
 export const styles = StyleSheet.create({
     container: { borderRadius: Radius.card, overflow: 'hidden' },
-    layerOne: { ...StyleSheet.absoluteFillObject, opacity: 0.55, transform: [{ translateX: 80 }, { translateY: -40 }] },
-    layerTwo: { ...StyleSheet.absoluteFillObject, opacity: 0.32, transform: [{ translateX: -90 }, { translateY: 70 }] },
+    layerOne: { ...StyleSheet.absoluteFill, opacity: 0.55, transform: [{ translateX: 80 }, { translateY: -40 }] },
+    layerTwo: { ...StyleSheet.absoluteFill, opacity: 0.32, transform: [{ translateX: -90 }, { translateY: 70 }] },
     content: { flex: 1 },
 });
 export function createViewHeightBackgroundColorStyle(heightValue: number, backgroundColorValue: string | Absent) {

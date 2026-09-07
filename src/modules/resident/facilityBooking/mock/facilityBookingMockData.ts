@@ -159,7 +159,7 @@ function facility(
     ),
     requiresConsent: values.requiresConsent ?? true,
     rules: commonRules,
-    eligibilityPolicy: (values as any).eligibilityPolicy ?? eligibilityPolicy,
+    eligibilityPolicy: (values as unknown as { eligibilityPolicy?: typeof eligibilityPolicy }).eligibilityPolicy ?? eligibilityPolicy,
     cancellationPolicy,
   };
 }

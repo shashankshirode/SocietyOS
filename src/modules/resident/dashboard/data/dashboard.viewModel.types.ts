@@ -1,39 +1,25 @@
-
 import type { BadgeType } from '../../../../shared/utils/statusPresentation';
-
-
-export type DashboardHomeSummaryViewModel = {
-  greeting: string;
-  residentName: string;
-  unitLabel: string;
-  societyName: string;
-  roleLabel: string;
-  unreadNoticeCount: number;
-  pendingActionCount: number;
-};
-
+import type { PaymentMethod } from '../../../../shared/types/bill.types';
 
 export type DashboardReminderTone = 'info' | 'warning' | 'danger' | 'success';
 
-export type DashboardReminderViewModel = {
+export interface DashboardReminderViewModel {
   id: string;
   title: string;
   description: string;
   tone: DashboardReminderTone;
   actionLabel: string;
-};
+}
 
-
-export type DashboardPriorityActionViewModel = {
+export interface DashboardPriorityActionViewModel {
   id: string;
   label: string;
   description: string;
   iconName: string;
   isUrgent: boolean;
-};
+}
 
-
-export type DashboardVisitorViewModel = {
+export interface DashboardVisitorViewModel {
   id: string;
   visitorName: string;
   visitorType: string;
@@ -49,10 +35,9 @@ export type DashboardVisitorViewModel = {
     expectedExitAtIso: string;
     priority: string;
   };
-};
+}
 
-
-export type DashboardPaymentViewModel = {
+export interface DashboardPaymentViewModel {
   billingMonth: string;
   formattedAmount: string;
   rawAmount: number;
@@ -61,16 +46,16 @@ export type DashboardPaymentViewModel = {
   statusTone: BadgeType;
   chargeTags: string[];
   lastPaidLabel: string;
-};
+  billId?: string;
+}
 
-
-export type DashboardComplaintStepViewModel = {
+export interface DashboardComplaintStepViewModel {
   id: string;
   label: string;
   status: string;
-};
+}
 
-export type DashboardComplaintViewModel = {
+export interface DashboardComplaintViewModel {
   complaintId: string;
   title: string;
   priorityLabel: string;
@@ -79,27 +64,24 @@ export type DashboardComplaintViewModel = {
   slaRemainingLabel: string;
   slaProgressPercent: number;
   steps: DashboardComplaintStepViewModel[];
-};
+}
 
-
-export type DashboardContactRequestViewModel = {
+export interface DashboardContactRequestViewModel {
   id: string;
   fromFlat: string;
   subject: string;
   statusLabel: string;
   statusTone: BadgeType;
-};
+}
 
-
-export type DashboardChatViewModel = {
+export interface DashboardChatViewModel {
   id: string;
   label: string;
   unreadCount: number;
   iconName: string;
-};
+}
 
-
-export type DashboardNoticeViewModel = {
+export interface DashboardNoticeViewModel {
   id: string;
   categoryLabel: string;
   title: string;
@@ -107,22 +89,20 @@ export type DashboardNoticeViewModel = {
   formattedPublishedTime: string;
   attachmentLabel?: string;
   statusLabel?: string;
-  statusTone: 'neutral' | 'info' | 'warning' | 'success' | 'danger';
+  statusTone: BadgeType;
   acknowledgementRequired: boolean;
-};
+}
 
-
-export type DashboardDocumentViewModel = {
+export interface DashboardDocumentViewModel {
   id: string;
   title: string;
   categoryLabel: string;
   statusLabel: string;
   statusTone: BadgeType;
   sensitive: boolean;
-};
+}
 
-
-export type DashboardAmenityViewModel = {
+export interface DashboardAmenityViewModel {
   id: string;
   name: string;
   timingLabel: string;
@@ -131,34 +111,40 @@ export type DashboardAmenityViewModel = {
   imageUri?: string;
   availabilityLabel: string;
   availabilityTone: BadgeType;
-};
+}
 
-
-export type DashboardEmergencyViewModel = {
+export interface DashboardEmergencyViewModel {
   id: string;
   label: string;
   iconName: string;
-};
+}
 
-
-export type DashboardServiceViewModel = {
+export interface DashboardServiceViewModel {
   id: string;
   label: string;
   iconName: string;
   description: string;
-};
+}
 
-
-export type DashboardActivityViewModel = {
+export interface DashboardActivityViewModel {
   id: string;
   title: string;
   description: string;
   module: string;
   timestampLabel: string;
-};
+}
 
+export interface DashboardHomeSummaryViewModel {
+  greeting: string;
+  residentName: string;
+  unitLabel: string;
+  societyName: string;
+  roleLabel: string;
+  unreadNoticeCount: number;
+  pendingActionCount: number;
+}
 
-export type ResidentDashboardViewModel = {
+export interface ResidentDashboardViewModel {
   activeHome: DashboardHomeSummaryViewModel;
   reminders: DashboardReminderViewModel[];
   priorityActions: DashboardPriorityActionViewModel[];
@@ -175,4 +161,5 @@ export type ResidentDashboardViewModel = {
   activities: DashboardActivityViewModel[];
   isEmpty: boolean;
   hasRestrictedSections: boolean;
-};
+}
+

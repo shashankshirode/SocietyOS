@@ -1,10 +1,10 @@
 import { StyleSheet, Animated } from "react-native";
 export const styles = StyleSheet.create({
     backdrop: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
     },
     backdropPressable: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
     },
 });
 export function createAnimatedViewOpacityStyle(opacityValue: Animated.AnimatedInterpolation<string | number>) {

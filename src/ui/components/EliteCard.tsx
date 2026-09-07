@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { useReducedMotion } from '../../shared/motion/useReducedMotion';
 
-interface PremiumCardProps {
+interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
   accentColor?: string;
@@ -15,14 +15,14 @@ interface PremiumCardProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function PremiumCard({
+export function Card({
   children,
   onPress,
   accentColor,
   style,
   testID,
   disabled,
-}: PremiumCardProps) {
+}: CardProps) {
   const { colors } = useAppTheme();
   const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
@@ -119,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PremiumCard;
+export default Card;

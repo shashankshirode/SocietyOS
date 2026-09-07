@@ -97,7 +97,7 @@ jest.mock('../data/useParkingIncidents', () => ({
 }));
 
 describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
-  const mockNavigation: any = {
+  const mockNavigation = {
     navigate: jest.fn(),
     goBack: jest.fn(),
     canGoBack: jest.fn(() => true),
@@ -110,7 +110,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('renders global Society OS header with ResidenceBeacon and IdentityOrb', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     expect(screen.getByTestId('resident-header-container')).toBeTruthy();
@@ -120,7 +120,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('renders resident narrative headline and subtitle', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     expect(screen.getByText('Parking Incidents')).toBeTruthy();
@@ -131,7 +131,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('renders active incident cards with human narratives, vehicle numbers, and status indicators', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     expect(screen.getByText('Vehicle parked in your allocated slot')).toBeTruthy();
@@ -145,7 +145,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('filters incidents when switching to Resolved filter chip', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     await act(async () => {
@@ -159,7 +159,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('filters incidents via search query', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     const searchInput = screen.getByPlaceholderText('Search incident, vehicle, or location...');
@@ -173,7 +173,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
 
   it('navigates to incident detail on card press on phone', async () => {
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     fireEvent.press(screen.getByTestId('incident-object-inc-1'));
@@ -185,7 +185,7 @@ describe('ParkingIncidentListScreen UI & Navigation Correction', () => {
   it('renders split layout with side focus panel on tablet', async () => {
     mockIsTablet = true;
     const screen = await renderWithProviders(
-      <ParkingIncidentListScreen navigation={mockNavigation} route={{ params: { unitId: 'unit-1' } } as any} />
+      <ParkingIncidentListScreen navigation={mockNavigation as any} route={{ params: { unitId: 'unit-1' } } as any} />
     );
 
     expect(screen.getByText('Activity & Security Trace')).toBeTruthy();

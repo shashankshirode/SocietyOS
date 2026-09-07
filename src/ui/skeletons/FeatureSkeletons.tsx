@@ -1,583 +1,1136 @@
-import React from "react";
-import { View } from "react-native";
-import { ShimmerBlock, ShimmerProvider } from "../loading/ShimmerBlock";
-import { styles } from "./styles/FeatureSkeletons.styles";
+import React from 'react';
+import { View, ScrollView } from 'react-native';
+import { SocietySkeleton, SocietyShimmerProvider } from '../loading/SocietySkeleton';
+import { useAppTheme } from '../../shared/theme/useAppTheme';
+import { Radius } from '../../shared/theme/radius';
+import { styles } from './styles/FeatureSkeletons.styles';
+
+export function ResidencePulseSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.section} testID="residence-pulse-skeleton">
+        <View style={styles.greetingBlock}>
+          <SocietySkeleton width="65%" height={28} borderRadius={Radius.xs} />
+          <SocietySkeleton width="45%" height={16} borderRadius={Radius.xs} />
+        </View>
+        <View
+          style={[
+            styles.pulseCard,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={130} height={20} borderRadius={Radius.pill} />
+            <SocietySkeleton width={74} height={20} borderRadius={Radius.pill} />
+          </View>
+          <View style={{ gap: 6 }}>
+            <SocietySkeleton width="80%" height={22} borderRadius={Radius.xs} />
+            <SocietySkeleton width="55%" height={14} borderRadius={Radius.xs} />
+          </View>
+          <View style={styles.pulsePillsRow}>
+            <SocietySkeleton width={100} height={34} borderRadius={Radius.pill} />
+            <SocietySkeleton width={115} height={34} borderRadius={Radius.pill} />
+            <SocietySkeleton width={90} height={34} borderRadius={Radius.pill} />
+          </View>
+        </View>
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
 export function PriorityRailSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="priority-rail-skeleton">
         <View style={styles.rowBetween}>
-          <ShimmerBlock width={140} height={20}/>
-          <ShimmerBlock width={80} height={16}/>
+          <SocietySkeleton width={150} height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width={60} height={14} borderRadius={Radius.xs} />
         </View>
-        <View style={[styles.row, styles.viewGapMarginTop]}>
-          <ShimmerBlock width={260} height={120} borderRadius={18}/>
-          <ShimmerBlock width={260} height={120} borderRadius={18}/>
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function ResidencePulseSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.section} testID="residence-pulse-skeleton">
-        <ShimmerBlock width={120} height={18}/>
-        <View style={[styles.card, styles.viewMarginTopGap2]}>
-          <View style={[styles.row, styles.viewGap10]}>
-            <ShimmerBlock width={42} height={42} borderRadius={14}/>
-            <View style={styles.viewFlexGap}>
-              <ShimmerBlock width="40%" height={14}/>
-              <ShimmerBlock width="60%" height={18}/>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, marginTop: 12 }}
+        >
+          {[1, 2].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                { width: 260, height: 128, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 8 },
+              ]}
+            >
+              <View style={styles.rowBetween}>
+                <SocietySkeleton width={32} height={32} borderRadius={Radius.sm} />
+                <SocietySkeleton width={70} height={18} borderRadius={Radius.pill} />
+              </View>
+              <SocietySkeleton width="85%" height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width="60%" height={12} borderRadius={Radius.xs} />
             </View>
-          </View>
-          <View style={[styles.row, styles.viewFlexWrapGap]}>
-            <ShimmerBlock width={100} height={36} borderRadius={12}/>
-            <ShimmerBlock width={100} height={36} borderRadius={12}/>
-            <ShimmerBlock width={100} height={36} borderRadius={12}/>
-          </View>
-        </View>
+          ))}
+        </ScrollView>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function VisitorTimelineSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="visitor-timeline-skeleton">
         <View style={styles.rowBetween}>
-          <ShimmerBlock width={130} height={18}/>
-          <ShimmerBlock width={70} height={14}/>
+          <SocietySkeleton width={160} height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width={60} height={14} borderRadius={Radius.xs} />
         </View>
-        <View style={styles.viewMarginTopGap}>
-          {[1, 2].map((i) => (<View key={i} style={[styles.row, styles.viewGap11]}>
-              <View style={styles.viewAlignItems}>
-                <ShimmerBlock width={12} height={12} borderRadius={6}/>
-                <ShimmerBlock width={2} height={80} style={styles.shimmerBlockMarginVertical}/>
+        <View style={{ marginTop: 12, gap: 12 }}>
+          {[1, 2].map((i) => (
+            <View key={i} style={[styles.row, { gap: 12 }]}>
+              <View style={styles.timelineNode}>
+                <SocietySkeleton width={12} height={12} borderRadius={6} />
+                <SocietySkeleton width={2} height={50} style={styles.timelineLine} />
               </View>
-              <View style={[styles.card, styles.viewFlex]}>
-                <View style={[styles.row, styles.viewGap12]}>
-                  <ShimmerBlock width={32} height={32} borderRadius={10}/>
-                  <View style={styles.viewFlexGap2}>
-                    <ShimmerBlock width="50%" height={14}/>
-                    <ShimmerBlock width="30%" height={10}/>
+              <View
+                style={[
+                  styles.card,
+                  { flex: 1, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, padding: 12 },
+                ]}
+              >
+                <View style={[styles.row, { gap: 10 }]}>
+                  <SocietySkeleton width={38} height={38} borderRadius={19} />
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <SocietySkeleton width="65%" height={14} borderRadius={Radius.xs} />
+                    <SocietySkeleton width="40%" height={11} borderRadius={Radius.xs} />
                   </View>
-                  <ShimmerBlock width={60} height={18} borderRadius={8}/>
+                  <SocietySkeleton width={60} height={20} borderRadius={Radius.pill} />
                 </View>
               </View>
-            </View>))}
+            </View>
+          ))}
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function BillSummarySkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="bill-summary-skeleton">
-        <ShimmerBlock width={150} height={18} style={styles.shimmerBlockMarginBottom}/>
-        <View style={styles.card}>
-          <View style={[styles.rowBetween, styles.viewMarginBottom]}>
-            <View style={styles.viewGap}>
-              <ShimmerBlock width={120} height={20}/>
-              <ShimmerBlock width={80} height={12}/>
+        <SocietySkeleton width={160} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 14 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <View style={{ gap: 4 }}>
+              <SocietySkeleton width={100} height={12} borderRadius={Radius.xs} />
+              <SocietySkeleton width={140} height={26} borderRadius={Radius.xs} />
             </View>
-            <ShimmerBlock width={70} height={24} borderRadius={12}/>
+            <SocietySkeleton width={70} height={24} borderRadius={Radius.pill} />
           </View>
-          <ShimmerBlock width="100%" height={40} borderRadius={12}/>
+          <SocietySkeleton width="100%" height={44} borderRadius={Radius.md} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function ComplaintProgressSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="complaint-progress-skeleton">
-        <ShimmerBlock width={140} height={18} style={styles.shimmerBlockMarginBottom2}/>
-        <View style={styles.card}>
-          <View style={[styles.rowBetween, styles.viewMarginBottom2]}>
-            <ShimmerBlock width={100} height={14}/>
-            <ShimmerBlock width={60} height={18} borderRadius={8}/>
+        <SocietySkeleton width={150} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 10 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={90} height={14} borderRadius={Radius.xs} />
+            <SocietySkeleton width={70} height={20} borderRadius={Radius.pill} />
           </View>
-          <ShimmerBlock width="90%" height={16} style={styles.shimmerBlockMarginBottom3}/>
-          <View style={[styles.rowBetween, styles.viewMarginTop]}>
-            <ShimmerBlock width={80} height={12}/>
-            <ShimmerBlock width={120} height={12}/>
+          <SocietySkeleton width="85%" height={16} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={6} borderRadius={3} />
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={80} height={12} borderRadius={Radius.xs} />
+            <SocietySkeleton width={100} height={12} borderRadius={Radius.xs} />
           </View>
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function ResidentConnectSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="resident-connect-skeleton">
-        <ShimmerBlock width={160} height={18} style={styles.shimmerBlockMarginBottom4}/>
-        <View style={styles.card}>
-          <View style={[styles.row, styles.viewGap13]}>
-            <ShimmerBlock width={40} height={40} borderRadius={20}/>
-            <View style={styles.viewFlexGap3}>
-              <ShimmerBlock width="60%" height={14}/>
-              <ShimmerBlock width="40%" height={12}/>
+        <SocietySkeleton width={150} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+          ]}
+        >
+          <View style={[styles.row, { gap: 12 }]}>
+            <SocietySkeleton width={44} height={44} borderRadius={22} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SocietySkeleton width="65%" height={15} borderRadius={Radius.xs} />
+              <SocietySkeleton width="45%" height={12} borderRadius={Radius.xs} />
             </View>
+            <SocietySkeleton width={32} height={32} borderRadius={Radius.pill} />
           </View>
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function NoticeRailSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.section} testID="notice-rail-skeleton">
         <View style={styles.rowBetween}>
-          <ShimmerBlock width={120} height={18}/>
-          <ShimmerBlock width={60} height={14}/>
+          <SocietySkeleton width={130} height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width={60} height={14} borderRadius={Radius.xs} />
         </View>
-        <View style={[styles.row, styles.viewGapMarginTop2]}>
-          <ShimmerBlock width={280} height={140} borderRadius={18}/>
-          <ShimmerBlock width={280} height={140} borderRadius={18}/>
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function DocumentReadinessSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.section} testID="document-readiness-skeleton">
-        <ShimmerBlock width={150} height={18} style={styles.shimmerBlockMarginBottom5}/>
-        <View style={styles.card}>
-          <View style={[styles.row, styles.viewGap14]}>
-            <ShimmerBlock width={36} height={36} borderRadius={8}/>
-            <View style={styles.viewFlexGap4}>
-              <ShimmerBlock width="70%" height={14}/>
-              <ShimmerBlock width="50%" height={12}/>
-            </View>
-          </View>
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function AmenityRailSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.section} testID="amenity-rail-skeleton">
-        <ShimmerBlock width={130} height={18} style={styles.shimmerBlockMarginBottom6}/>
-        <View style={[styles.row, styles.viewGap15]}>
-          <ShimmerBlock width={180} height={150} borderRadius={16}/>
-          <ShimmerBlock width={180} height={150} borderRadius={16}/>
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function CommunityServicesSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.section} testID="community-services-skeleton">
-        <ShimmerBlock width={140} height={18} style={styles.shimmerBlockMarginBottom7}/>
-        <View style={[styles.row, styles.viewGapFlexWrap]}>
-          {[1, 2, 3].map((i) => (<ShimmerBlock key={i} width={100} height={80} borderRadius={14}/>))}
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function RecentActivitySkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.section} testID="recent-activity-skeleton">
-        <ShimmerBlock width={130} height={18} style={styles.shimmerBlockMarginBottom8}/>
-        <View style={styles.viewGap2}>
-          {[1, 2].map((i) => (<View key={i} style={[styles.row, styles.viewGap16]}>
-              <ShimmerBlock width={32} height={32} borderRadius={16}/>
-              <View style={styles.viewFlexGap5}>
-                <ShimmerBlock width="80%" height={12}/>
-                <ShimmerBlock width="40%" height={10}/>
-              </View>
-            </View>))}
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function ResidentDashboardSkeleton() {
-    return (<ScrollViewSkeleton>
-      <View style={styles.viewPaddingVertical}>
-        <PriorityRailSkeleton />
-        <ResidencePulseSkeleton />
-        <VisitorTimelineSkeleton />
-        <BillSummarySkeleton />
-        <ComplaintProgressSkeleton />
-        <NoticeRailSkeleton />
-      </View>
-    </ScrollViewSkeleton>);
-}
-export function ChatListSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="chat-list-skeleton">
-        {[1, 2, 3, 4].map((i) => (<View key={i} style={[styles.row, styles.viewGapPaddingVerticalBorderBottomWidthBorderBottomColor]}>
-            <ShimmerBlock width={48} height={48} borderRadius={24}/>
-            <View style={styles.viewFlexGap6}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, marginTop: 12 }}
+        >
+          {[1, 2].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                { width: 280, height: 130, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 8 },
+              ]}
+            >
               <View style={styles.rowBetween}>
-                <ShimmerBlock width="40%" height={16}/>
-                <ShimmerBlock width="15%" height={10}/>
+                <SocietySkeleton width={80} height={18} borderRadius={Radius.pill} />
+                <SocietySkeleton width={60} height={12} borderRadius={Radius.xs} />
               </View>
-              <ShimmerBlock width="70%" height={12}/>
+              <SocietySkeleton width="90%" height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width="100%" height={28} borderRadius={Radius.xs} />
             </View>
-          </View>))}
+          ))}
+        </ScrollView>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
-export function ChatConversationSkeleton() {
-    return (<ShimmerProvider>
-      <View style={[styles.listContainer, styles.viewPaddingBottom]} testID="chat-conversation-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={styles.viewGapMarginVertical}>
-            <View style={[styles.row, styles.viewAlignSelfGapMaxWidth]}>
-              <ShimmerBlock width={28} height={28} borderRadius={14}/>
-              <ShimmerBlock width={200} height={60} borderRadius={12}/>
+
+export function DocumentReadinessSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.section} testID="document-readiness-skeleton">
+        <SocietySkeleton width={160} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+          ]}
+        >
+          <View style={[styles.row, { gap: 12 }]}>
+            <SocietySkeleton width={40} height={40} borderRadius={Radius.sm} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SocietySkeleton width="70%" height={15} borderRadius={Radius.xs} />
+              <SocietySkeleton width="45%" height={12} borderRadius={Radius.xs} />
             </View>
-            <View style={styles.viewAlignSelfMaxWidth}>
-              <ShimmerBlock width={160} height={44} borderRadius={12}/>
-            </View>
-          </View>))}
-      </View>
-    </ShimmerProvider>);
-}
-export function FamilyFormSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.formContainer} testID="family-form-skeleton">
-        <View style={styles.viewGap3}>
-          <ShimmerBlock width={80} height={14}/>
-          <ShimmerBlock width="100%" height={48} borderRadius={12}/>
-        </View>
-        <View style={styles.viewGap4}>
-          <ShimmerBlock width={60} height={14}/>
-          <ShimmerBlock width="100%" height={48} borderRadius={12}/>
-        </View>
-        <View style={styles.viewGap5}>
-          <ShimmerBlock width={100} height={14}/>
-          <ShimmerBlock width="100%" height={48} borderRadius={12}/>
-        </View>
-        <ShimmerBlock width="100%" height={48} borderRadius={12} style={styles.shimmerBlockMarginTop}/>
-      </View>
-    </ShimmerProvider>);
-}
-export function ContactRequestFormSkeleton() {
-    return <FamilyFormSkeleton />;
-}
-export function TenantManagementSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="tenant-management-skeleton">
-        <ShimmerBlock width={180} height={22} style={styles.shimmerBlockMarginBottom9}/>
-        {[1, 2].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottom3]}>
-            <View style={[styles.rowBetween, styles.viewMarginBottom4]}>
-              <ShimmerBlock width="50%" height={16}/>
-              <ShimmerBlock width={60} height={18} borderRadius={8}/>
-            </View>
-            <ShimmerBlock width="35%" height={12} style={styles.shimmerBlockMarginBottom10}/>
-            <View style={styles.rowBetween}>
-              <ShimmerBlock width={80} height={32} borderRadius={8}/>
-              <ShimmerBlock width={80} height={32} borderRadius={8}/>
-            </View>
-          </View>))}
-      </View>
-    </ShimmerProvider>);
-}
-export function TenantStatusSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="tenant-status-skeleton">
-        <View style={[styles.card, styles.viewGap17]}>
-          <ShimmerBlock width="40%" height={18}/>
-          <ShimmerBlock width="80%" height={14}/>
-          <ShimmerBlock width="100%" height={10}/>
-          <ShimmerBlock width="100%" height={44} borderRadius={12}/>
-        </View>
-      </View>
-    </ShimmerProvider>);
-}
-export function BillsListSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="bills-list-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottom5]}>
-            <View style={[styles.rowBetween, styles.viewMarginBottom6]}>
-              <ShimmerBlock width="60%" height={18}/>
-              <ShimmerBlock width={80} height={22} borderRadius={12}/>
-            </View>
-            <ShimmerBlock width="30%" height={12} style={styles.shimmerBlockMarginBottom11}/>
-            <View style={[styles.rowBetween, styles.viewBorderTopWidthBorderTopColorPaddingTop]}>
-              <ShimmerBlock width={90} height={14}/>
-              <ShimmerBlock width={100} height={14}/>
-            </View>
-          </View>))}
-      </View>
-    </ShimmerProvider>);
-}
-export function BillDetailsSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="bill-details-skeleton">
-        <View style={[styles.card, styles.viewGap18]}>
-          <View style={styles.viewGap6}>
-            <ShimmerBlock width="30%" height={14}/>
-            <ShimmerBlock width="60%" height={24}/>
           </View>
-          <View style={styles.viewHeightBackgroundColor}/>
-          {[1, 2, 3].map((i) => (<View key={i} style={styles.rowBetween}>
-              <ShimmerBlock width="40%" height={14}/>
-              <ShimmerBlock width="25%" height={14}/>
-            </View>))}
-          <ShimmerBlock width="100%" height={44} borderRadius={12} style={styles.shimmerBlockMarginTop2}/>
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
-export function PaymentCheckoutSkeleton() {
-    return <BillDetailsSkeleton />;
-}
-export function ComplaintsListSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="complaints-list-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottomGap]}>
-            <View style={styles.rowBetween}>
-              <ShimmerBlock width={70} height={12}/>
-              <ShimmerBlock width={60} height={18} borderRadius={8}/>
+
+export function AmenityRailSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.section} testID="amenity-rail-skeleton">
+        <SocietySkeleton width={140} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12 }}
+        >
+          {[1, 2].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                { width: 180, height: 150, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, padding: 8, gap: 8 },
+              ]}
+            >
+              <SocietySkeleton width="100%" height={90} borderRadius={Radius.sm} />
+              <SocietySkeleton width="75%" height={14} borderRadius={Radius.xs} />
+              <SocietySkeleton width="45%" height={11} borderRadius={Radius.xs} />
             </View>
-            <ShimmerBlock width="80%" height={16}/>
-            <ShimmerBlock width="40%" height={12}/>
-          </View>))}
+          ))}
+        </ScrollView>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
-export function ComplaintDetailsSkeleton() {
-    return (<ShimmerProvider>
-      <View style={styles.listContainer} testID="complaint-details-skeleton">
-        <View style={[styles.card, styles.viewGapMarginBottom]}>
-          <View style={styles.rowBetween}>
-            <ShimmerBlock width="30%" height={12}/>
-            <ShimmerBlock width={60} height={18} borderRadius={8}/>
-          </View>
-          <ShimmerBlock width="90%" height={20}/>
-          <ShimmerBlock width="100%" height={40}/>
+
+export function CommunityServicesSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.section} testID="community-services-skeleton">
+        <SocietySkeleton width={150} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {[1, 2, 3].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                { flex: 1, height: 80, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, alignItems: 'center', justifyContent: 'center', gap: 6 },
+              ]}
+            >
+              <SocietySkeleton width={32} height={32} borderRadius={16} />
+              <SocietySkeleton width={60} height={10} borderRadius={Radius.xs} />
+            </View>
+          ))}
         </View>
-        <ShimmerBlock width={120} height={16} style={styles.shimmerBlockMarginLeftMarginBottom}/>
-        <View style={styles.viewGapPaddingLeft}>
-          {[1, 2].map((i) => (<View key={i} style={[styles.row, styles.viewGap19]}>
-              <ShimmerBlock width={8} height={8} borderRadius={4} style={styles.shimmerBlockMarginTop3}/>
-              <View style={styles.viewFlexGap7}>
-                <ShimmerBlock width="40%" height={12}/>
-                <ShimmerBlock width="70%" height={10}/>
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function RecentActivitySkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.section} testID="recent-activity-skeleton">
+        <SocietySkeleton width={140} height={18} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        <View style={{ gap: 10 }}>
+          {[1, 2].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, padding: 12 },
+              ]}
+            >
+              <View style={[styles.row, { gap: 12 }]}>
+                <SocietySkeleton width={36} height={36} borderRadius={18} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <SocietySkeleton width="75%" height={13} borderRadius={Radius.xs} />
+                  <SocietySkeleton width="40%" height={10} borderRadius={Radius.xs} />
+                </View>
               </View>
-            </View>))}
+            </View>
+          ))}
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
+export function ResidentDashboardSkeleton() {
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 12 }}>
+      <ResidencePulseSkeleton />
+      <PriorityRailSkeleton />
+      <VisitorTimelineSkeleton />
+      <BillSummarySkeleton />
+      <ComplaintProgressSkeleton />
+      <NoticeRailSkeleton />
+    </ScrollView>
+  );
+}
+
 export function NoticesListSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="notices-list-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottomGap2]}>
-            <View style={styles.rowBetween}>
-              <ShimmerBlock width={80} height={18} borderRadius={8}/>
-              <ShimmerBlock width={60} height={12}/>
+        {/* Search Bar */}
+        <View
+          style={{
+            height: 44,
+            borderRadius: Radius.md,
+            backgroundColor: semantic.surface.raised,
+            borderWidth: 1,
+            borderColor: semantic.border.subtle,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+            gap: 10,
+          }}
+        >
+          <SocietySkeleton width={18} height={18} borderRadius={9} />
+          <SocietySkeleton width="50%" height={14} borderRadius={Radius.xs} />
+        </View>
+
+        {/* Filter Chips */}
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={64} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={90} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={110} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={76} height={34} borderRadius={Radius.pill} />
+        </View>
+
+        {/* Important Notice Hero Card */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 8, padding: 16 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={90} height={18} borderRadius={Radius.pill} />
+            <SocietySkeleton width={70} height={12} borderRadius={Radius.xs} />
+          </View>
+          <SocietySkeleton width="85%" height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={32} borderRadius={Radius.xs} />
+          <SocietySkeleton width={95} height={14} borderRadius={Radius.xs} style={{ marginTop: 4 }} />
+        </View>
+
+        {/* Regular Notice Rows */}
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.noticeRow,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+            ]}
+          >
+            <View style={{ flex: 1, gap: 5 }}>
+              <SocietySkeleton width="40%" height={11} borderRadius={Radius.xs} />
+              <SocietySkeleton width="75%" height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width="95%" height={12} borderRadius={Radius.xs} />
             </View>
-            <ShimmerBlock width="85%" height={18}/>
-            <ShimmerBlock width="100%" height={32}/>
-          </View>))}
+            <SocietySkeleton width={18} height={18} borderRadius={Radius.xs} />
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function NoticeDetailsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="notice-details-skeleton">
-        <View style={styles.viewGap7}>
-          <View style={styles.rowBetween}>
-            <ShimmerBlock width={80} height={20} borderRadius={8}/>
-            <ShimmerBlock width={100} height={12}/>
+        <View style={styles.rowBetween}>
+          <SocietySkeleton width={90} height={20} borderRadius={Radius.pill} />
+          <SocietySkeleton width={100} height={14} borderRadius={Radius.xs} />
+        </View>
+        <SocietySkeleton width="90%" height={26} borderRadius={Radius.xs} />
+        <View style={[styles.divider, { backgroundColor: semantic.border.subtle }]} />
+        <View style={{ gap: 8 }}>
+          <SocietySkeleton width="100%" height={14} borderRadius={Radius.xs} />
+          <SocietySkeleton width="95%" height={14} borderRadius={Radius.xs} />
+          <SocietySkeleton width="90%" height={14} borderRadius={Radius.xs} />
+          <SocietySkeleton width="60%" height={14} borderRadius={Radius.xs} />
+        </View>
+        <View
+          style={[
+            styles.card,
+            { marginTop: 12, backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, flexDirection: 'row', alignItems: 'center', gap: 12 },
+          ]}
+        >
+          <SocietySkeleton width={36} height={36} borderRadius={Radius.sm} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <SocietySkeleton width="60%" height={14} borderRadius={Radius.xs} />
+            <SocietySkeleton width="30%" height={10} borderRadius={Radius.xs} />
           </View>
-          <ShimmerBlock width="100%" height={26}/>
-          <View style={styles.viewHeightBackgroundColorMarginVertical}/>
-          <ShimmerBlock width="100%" height={12}/>
-          <ShimmerBlock width="95%" height={12}/>
-          <ShimmerBlock width="90%" height={12}/>
-          <ShimmerBlock width="100%" height={12} style={styles.shimmerBlockMarginTop4}/>
-          <ShimmerBlock width="80%" height={12}/>
+          <SocietySkeleton width={24} height={24} borderRadius={Radius.xs} />
+        </View>
+        <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} style={{ marginTop: 16 }} />
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function BillsListSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="bills-list-skeleton">
+        {/* Stat Cards */}
+        <View style={styles.statGrid}>
+          {[1, 2, 3, 4].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.statCard,
+                { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+              ]}
+            >
+              <SocietySkeleton width={22} height={22} borderRadius={Radius.xs} />
+              <SocietySkeleton width="80%" height={18} borderRadius={Radius.xs} />
+              <SocietySkeleton width="60%" height={10} borderRadius={Radius.xs} />
+            </View>
+          ))}
+        </View>
+
+        {/* Filter Tabs */}
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={80} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={76} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={82} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={68} height={34} borderRadius={Radius.pill} />
+        </View>
+
+        {/* Summary Card */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 12 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={110} height={14} borderRadius={Radius.xs} />
+            <SocietySkeleton width={70} height={20} borderRadius={Radius.pill} />
+          </View>
+          <SocietySkeleton width="50%" height={28} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={42} borderRadius={Radius.md} />
+        </View>
+
+        {/* Bill List Items */}
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 10, padding: 14 },
+            ]}
+          >
+            <View style={styles.rowBetween}>
+              <View style={[styles.row, { gap: 10 }]}>
+                <SocietySkeleton width={36} height={36} borderRadius={Radius.sm} />
+                <View style={{ gap: 4 }}>
+                  <SocietySkeleton width={120} height={15} borderRadius={Radius.xs} />
+                  <SocietySkeleton width={80} height={11} borderRadius={Radius.xs} />
+                </View>
+              </View>
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                <SocietySkeleton width={70} height={16} borderRadius={Radius.xs} />
+                <SocietySkeleton width={55} height={18} borderRadius={Radius.pill} />
+              </View>
+            </View>
+          </View>
+        ))}
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function BillDetailsSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="bill-details-skeleton">
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 16 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <View style={{ gap: 4 }}>
+              <SocietySkeleton width={100} height={12} borderRadius={Radius.xs} />
+              <SocietySkeleton width={150} height={28} borderRadius={Radius.xs} />
+            </View>
+            <SocietySkeleton width={80} height={24} borderRadius={Radius.pill} />
+          </View>
+          <View style={[styles.divider, { backgroundColor: semantic.border.subtle }]} />
+          {[1, 2, 3, 4].map((i) => (
+            <View key={i} style={styles.rowBetween}>
+              <SocietySkeleton width="45%" height={14} borderRadius={Radius.xs} />
+              <SocietySkeleton width="25%" height={14} borderRadius={Radius.xs} />
+            </View>
+          ))}
+          <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} style={{ marginTop: 12 }} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
+export function PaymentCheckoutSkeleton() {
+  return <BillDetailsSkeleton />;
+}
+
+export function ComplaintsListSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="complaints-list-skeleton">
+        {/* Search */}
+        <View
+          style={{
+            height: 44,
+            borderRadius: Radius.md,
+            backgroundColor: semantic.surface.raised,
+            borderWidth: 1,
+            borderColor: semantic.border.subtle,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+            gap: 10,
+          }}
+        >
+          <SocietySkeleton width={18} height={18} borderRadius={9} />
+          <SocietySkeleton width="50%" height={14} borderRadius={Radius.xs} />
+        </View>
+
+        {/* Chips */}
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={64} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={85} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={90} height={34} borderRadius={Radius.pill} />
+        </View>
+
+        {/* Complaints Cards */}
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 8 },
+            ]}
+          >
+            <View style={styles.rowBetween}>
+              <SocietySkeleton width={80} height={12} borderRadius={Radius.xs} />
+              <SocietySkeleton width={75} height={20} borderRadius={Radius.pill} />
+            </View>
+            <SocietySkeleton width="85%" height={16} borderRadius={Radius.xs} />
+            <SocietySkeleton width="60%" height={12} borderRadius={Radius.xs} />
+            <View style={[styles.rowBetween, { marginTop: 4 }]}>
+              <SocietySkeleton width={70} height={18} borderRadius={Radius.pill} />
+              <SocietySkeleton width={90} height={11} borderRadius={Radius.xs} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function ComplaintDetailsSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="complaint-details-skeleton">
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 12 },
+          ]}
+        >
+          <View style={styles.rowBetween}>
+            <SocietySkeleton width={90} height={14} borderRadius={Radius.xs} />
+            <SocietySkeleton width={80} height={22} borderRadius={Radius.pill} />
+          </View>
+          <SocietySkeleton width="90%" height={22} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={40} borderRadius={Radius.xs} />
+        </View>
+
+        {/* Timeline Stepper */}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 12 },
+          ]}
+        >
+          <SocietySkeleton width={140} height={16} borderRadius={Radius.xs} />
+          {[1, 2, 3, 4].map((i) => (
+            <View key={i} style={[styles.row, { gap: 12 }]}>
+              <SocietySkeleton width={12} height={12} borderRadius={6} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <SocietySkeleton width="50%" height={14} borderRadius={Radius.xs} />
+                <SocietySkeleton width="70%" height={11} borderRadius={Radius.xs} />
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
 export function DocumentVaultSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="document-vault-skeleton">
-        <View style={[styles.row, styles.viewGapFlexWrapMarginBottom]}>
-          <ShimmerBlock width={100} height={40} borderRadius={20}/>
-          <ShimmerBlock width={100} height={40} borderRadius={20}/>
+        {/* Category Pills */}
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={70} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={95} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={85} height={34} borderRadius={Radius.pill} />
         </View>
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottom7]}>
-            <View style={[styles.row, styles.viewGap20]}>
-              <ShimmerBlock width={36} height={36} borderRadius={8}/>
-              <View style={styles.viewFlexGap8}>
-                <ShimmerBlock width="70%" height={14}/>
-                <ShimmerBlock width="40%" height={10}/>
-              </View>
-              <ShimmerBlock width={16} height={16}/>
+
+        {/* Documents */}
+        {[1, 2, 3, 4].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.noticeRow,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+            ]}
+          >
+            <SocietySkeleton width={42} height={42} borderRadius={Radius.sm} />
+            <View style={{ flex: 1, gap: 5 }}>
+              <SocietySkeleton width="75%" height={15} borderRadius={Radius.xs} />
+              <SocietySkeleton width="45%" height={11} borderRadius={Radius.xs} />
             </View>
-          </View>))}
+            <SocietySkeleton width={24} height={24} borderRadius={Radius.xs} />
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function DocumentDetailsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="document-details-skeleton">
-        <View style={[styles.card, styles.viewGap21]}>
-          <View style={[styles.row, styles.viewGap22]}>
-            <ShimmerBlock width={40} height={40} borderRadius={8}/>
-            <View style={styles.viewFlexGap9}>
-              <ShimmerBlock width="80%" height={16}/>
-              <ShimmerBlock width="40%" height={12}/>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 14 },
+          ]}
+        >
+          <View style={[styles.row, { gap: 12 }]}>
+            <SocietySkeleton width={44} height={44} borderRadius={Radius.sm} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SocietySkeleton width="80%" height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width="40%" height={12} borderRadius={Radius.xs} />
             </View>
           </View>
-          <ShimmerBlock width="100%" height={240} borderRadius={12}/>
+          <SocietySkeleton width="100%" height={220} borderRadius={Radius.md} />
           <View style={styles.rowBetween}>
-            <ShimmerBlock width={120} height={36} borderRadius={8}/>
-            <ShimmerBlock width={120} height={36} borderRadius={8}/>
+            <SocietySkeleton width={120} height={40} borderRadius={Radius.md} />
+            <SocietySkeleton width={120} height={40} borderRadius={Radius.md} />
           </View>
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function NocListSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="noc-list-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottomGap3]}>
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={70} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={90} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={80} height={34} borderRadius={Radius.pill} />
+        </View>
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 8 },
+            ]}
+          >
             <View style={styles.rowBetween}>
-              <ShimmerBlock width="60%" height={16}/>
-              <ShimmerBlock width={80} height={18} borderRadius={8}/>
+              <SocietySkeleton width={120} height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width={80} height={20} borderRadius={Radius.pill} />
             </View>
-            <ShimmerBlock width="40%" height={12}/>
-          </View>))}
+            <SocietySkeleton width="50%" height={12} borderRadius={Radius.xs} />
+            <SocietySkeleton width="100%" height={36} borderRadius={Radius.sm} style={{ marginTop: 6 }} />
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function NocDetailsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="noc-details-skeleton">
-        <View style={[styles.card, styles.viewGap23]}>
-          <ShimmerBlock width="30%" height={12}/>
-          <ShimmerBlock width="70%" height={18}/>
-          <ShimmerBlock width="50%" height={12}/>
-          <ShimmerBlock width="100%" height={1}/>
-          <ShimmerBlock width="100%" height={40}/>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 12 },
+          ]}
+        >
+          <SocietySkeleton width="35%" height={12} borderRadius={Radius.xs} />
+          <SocietySkeleton width="75%" height={20} borderRadius={Radius.xs} />
+          <SocietySkeleton width="50%" height={12} borderRadius={Radius.xs} />
+          <View style={[styles.divider, { backgroundColor: semantic.border.subtle }]} />
+          <SocietySkeleton width="100%" height={44} borderRadius={Radius.md} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function FacilityListSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="facility-list-skeleton">
-        {[1, 2].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottomGap4]}>
-            <ShimmerBlock width="100%" height={160} borderRadius={14}/>
+        <View style={styles.chipRow}>
+          <SocietySkeleton width={60} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={90} height={34} borderRadius={Radius.pill} />
+          <SocietySkeleton width={80} height={34} borderRadius={Radius.pill} />
+        </View>
+        {[1, 2].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.facilityCard,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+            ]}
+          >
+            <SocietySkeleton width="100%" height={140} borderRadius={Radius.md} />
             <View style={styles.rowBetween}>
-              <ShimmerBlock width="60%" height={18}/>
-              <ShimmerBlock width={80} height={14}/>
+              <SocietySkeleton width="60%" height={18} borderRadius={Radius.xs} />
+              <SocietySkeleton width={70} height={20} borderRadius={Radius.pill} />
             </View>
-            <ShimmerBlock width="40%" height={12}/>
-          </View>))}
+            <SocietySkeleton width="40%" height={12} borderRadius={Radius.xs} />
+            <SocietySkeleton width="100%" height={40} borderRadius={Radius.md} style={{ marginTop: 4 }} />
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function FacilityDetailsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="facility-details-skeleton">
-        <ShimmerBlock width="100%" height={200} borderRadius={16} style={styles.shimmerBlockMarginBottom12}/>
-        <View style={styles.viewGap8}>
-          <ShimmerBlock width="50%" height={24}/>
-          <ShimmerBlock width="80%" height={14}/>
-          <ShimmerBlock width="100%" height={1}/>
-          <ShimmerBlock width="100%" height={44} borderRadius={12}/>
+        <SocietySkeleton width="100%" height={200} borderRadius={Radius.lg} style={{ marginBottom: 16 }} />
+        <View style={{ gap: 10 }}>
+          <SocietySkeleton width="60%" height={24} borderRadius={Radius.xs} />
+          <SocietySkeleton width="80%" height={14} borderRadius={Radius.xs} />
+          <View style={styles.chipRow}>
+            <SocietySkeleton width={80} height={28} borderRadius={Radius.pill} />
+            <SocietySkeleton width={90} height={28} borderRadius={Radius.pill} />
+          </View>
+          <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} style={{ marginTop: 14 }} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function BookingCalendarSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="booking-calendar-skeleton">
-        <View style={[styles.card, styles.viewGap24]}>
-          <ShimmerBlock width="60%" height={18}/>
-          <View style={[styles.row, styles.viewGapJustifyContent]}>
-            {[1, 2, 3, 4, 5, 6, 7].map((i) => (<ShimmerBlock key={i} width={34} height={44} borderRadius={8}/>))}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 14 },
+          ]}
+        >
+          <SocietySkeleton width="50%" height={18} borderRadius={Radius.xs} />
+          <View style={[styles.row, { justifyContent: 'space-between' }]}>
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <SocietySkeleton key={i} width={38} height={48} borderRadius={Radius.sm} />
+            ))}
           </View>
-          <ShimmerBlock width="100%" height={44} borderRadius={12}/>
+          <SocietySkeleton width="100%" height={44} borderRadius={Radius.md} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function MarketplaceListSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="marketplace-list-skeleton">
-        <View style={[styles.row, styles.viewGapFlexWrap2]}>
-          {[1, 2, 3, 4].map((i) => (<View key={i} style={[styles.card, styles.viewWidthGap]}>
-              <ShimmerBlock width="100%" height={110} borderRadius={10}/>
-              <ShimmerBlock width="90%" height={14}/>
-              <ShimmerBlock width="50%" height={12}/>
-            </View>))}
+        <View style={styles.grid2Col}>
+          {[1, 2, 3, 4].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.gridItem,
+                { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+              ]}
+            >
+              <SocietySkeleton width="100%" height={110} borderRadius={Radius.sm} />
+              <SocietySkeleton width="85%" height={14} borderRadius={Radius.xs} />
+              <SocietySkeleton width="50%" height={12} borderRadius={Radius.xs} />
+            </View>
+          ))}
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function MarketplaceDetailsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="marketplace-details-skeleton">
-        <ShimmerBlock width="100%" height={240} borderRadius={16} style={styles.shimmerBlockMarginBottom13}/>
-        <View style={styles.viewGap9}>
+        <SocietySkeleton width="100%" height={240} borderRadius={Radius.lg} style={{ marginBottom: 16 }} />
+        <View style={{ gap: 10 }}>
           <View style={styles.rowBetween}>
-            <ShimmerBlock width="70%" height={22}/>
-            <ShimmerBlock width="25%" height={22}/>
+            <SocietySkeleton width="65%" height={22} borderRadius={Radius.xs} />
+            <SocietySkeleton width="25%" height={22} borderRadius={Radius.xs} />
           </View>
-          <ShimmerBlock width="40%" height={14}/>
-          <ShimmerBlock width="100%" height={60}/>
-          <ShimmerBlock width="100%" height={48} borderRadius={12}/>
+          <SocietySkeleton width="40%" height={14} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={60} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} style={{ marginTop: 12 }} />
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function VendorListSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="vendor-list-skeleton">
-        {[1, 2, 3].map((i) => (<View key={i} style={[styles.card, styles.viewMarginBottom8]}>
-            <View style={[styles.row, styles.viewGap25]}>
-              <ShimmerBlock width={48} height={48} borderRadius={24}/>
-              <View style={styles.viewFlexGap10}>
-                <ShimmerBlock width="60%" height={16}/>
-                <ShimmerBlock width="40%" height={12}/>
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, padding: 14 },
+            ]}
+          >
+            <View style={[styles.row, { gap: 12 }]}>
+              <SocietySkeleton width={48} height={48} borderRadius={24} />
+              <View style={{ flex: 1, gap: 5 }}>
+                <SocietySkeleton width="65%" height={16} borderRadius={Radius.xs} />
+                <SocietySkeleton width="40%" height={12} borderRadius={Radius.xs} />
               </View>
-              <ShimmerBlock width={50} height={18} borderRadius={8}/>
+              <SocietySkeleton width={56} height={26} borderRadius={Radius.pill} />
             </View>
-          </View>))}
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function ResidentDirectorySkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="resident-directory-skeleton">
-        {[1, 2, 3, 4].map((i) => (<View key={i} style={[styles.row, styles.viewGapPaddingVerticalBorderBottomWidthBorderBottomColor2]}>
-            <ShimmerBlock width={40} height={40} borderRadius={20}/>
-            <View style={styles.viewFlexGap11}>
-              <ShimmerBlock width="50%" height={14}/>
-              <ShimmerBlock width="30%" height={12}/>
+        <View
+          style={{
+            height: 44,
+            borderRadius: Radius.md,
+            backgroundColor: semantic.surface.raised,
+            borderWidth: 1,
+            borderColor: semantic.border.subtle,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+            gap: 10,
+          }}
+        >
+          <SocietySkeleton width={18} height={18} borderRadius={9} />
+          <SocietySkeleton width="50%" height={14} borderRadius={Radius.xs} />
+        </View>
+        {[1, 2, 3, 4].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.noticeRow,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+            ]}
+          >
+            <SocietySkeleton width={44} height={44} borderRadius={22} />
+            <View style={{ flex: 1, gap: 4 }}>
+              <SocietySkeleton width="55%" height={15} borderRadius={Radius.xs} />
+              <SocietySkeleton width="35%" height={12} borderRadius={Radius.xs} />
             </View>
-          </View>))}
+            <SocietySkeleton width={32} height={32} borderRadius={16} />
+          </View>
+        ))}
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function SettingsSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="settings-skeleton">
-        <View style={[styles.card, styles.viewGap26]}>
-          {[1, 2, 3].map((i) => (<View key={i} style={[styles.row, styles.viewGap27]}>
-              <ShimmerBlock width={20} height={20} borderRadius={4}/>
-              <ShimmerBlock width="70%" height={14}/>
-            </View>))}
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 14 },
+          ]}
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <View key={i} style={styles.rowBetween}>
+              <View style={[styles.row, { gap: 12 }]}>
+                <SocietySkeleton width={24} height={24} borderRadius={Radius.xs} />
+                <SocietySkeleton width={130} height={14} borderRadius={Radius.xs} />
+              </View>
+              <SocietySkeleton width={18} height={18} borderRadius={Radius.xs} />
+            </View>
+          ))}
         </View>
       </View>
-    </ShimmerProvider>);
+    </SocietyShimmerProvider>
+  );
 }
+
 export function ProfileSkeleton() {
-    return (<ShimmerProvider>
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
       <View style={styles.listContainer} testID="profile-skeleton">
-        <View style={styles.viewAlignItemsGapMarginBottom}>
-          <ShimmerBlock width={80} height={80} borderRadius={40}/>
-          <ShimmerBlock width={140} height={18}/>
-          <ShimmerBlock width={100} height={12}/>
+        <View style={{ alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <SocietySkeleton width={80} height={80} borderRadius={40} />
+          <SocietySkeleton width={150} height={20} borderRadius={Radius.xs} />
+          <SocietySkeleton width={100} height={13} borderRadius={Radius.xs} />
         </View>
         <FamilyFormSkeleton />
       </View>
-    </ShimmerProvider>);
-}
-function ScrollViewSkeleton({ children }: {
-    children: React.ReactNode;
-}) {
-    return <View>{children}</View>;
+    </SocietyShimmerProvider>
+  );
 }
 
+export function ChatListSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="chat-list-skeleton">
+        {[1, 2, 3, 4].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.noticeRow,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle },
+            ]}
+          >
+            <SocietySkeleton width={48} height={48} borderRadius={24} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <View style={styles.rowBetween}>
+                <SocietySkeleton width="45%" height={16} borderRadius={Radius.xs} />
+                <SocietySkeleton width="15%" height={10} borderRadius={Radius.xs} />
+              </View>
+              <SocietySkeleton width="70%" height={12} borderRadius={Radius.xs} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function ChatConversationSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="chat-conversation-skeleton">
+        {[1, 2, 3].map((i) => (
+          <View key={i} style={{ gap: 14, marginVertical: 6 }}>
+            <View style={[styles.row, { gap: 8, alignSelf: 'flex-start', maxWidth: '75%' }]}>
+              <SocietySkeleton width={28} height={28} borderRadius={14} />
+              <SocietySkeleton width={200} height={56} borderRadius={Radius.md} />
+            </View>
+            <View style={{ alignSelf: 'flex-end', maxWidth: '75%' }}>
+              <SocietySkeleton width={160} height={44} borderRadius={Radius.md} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function FamilyFormSkeleton() {
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.formContainer} testID="family-form-skeleton">
+        {[80, 60, 100].map((width, i) => (
+          <View key={i} style={{ gap: 6 }}>
+            <SocietySkeleton width={width} height={14} borderRadius={Radius.xs} />
+            <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} />
+          </View>
+        ))}
+        <SocietySkeleton width="100%" height={48} borderRadius={Radius.md} style={{ marginTop: 12 }} />
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function ContactRequestFormSkeleton() {
+  return <FamilyFormSkeleton />;
+}
+
+export function TenantManagementSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="tenant-management-skeleton">
+        <SocietySkeleton width={180} height={22} borderRadius={Radius.xs} style={{ marginBottom: 12 }} />
+        {[1, 2].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 10 },
+            ]}
+          >
+            <View style={styles.rowBetween}>
+              <SocietySkeleton width="50%" height={16} borderRadius={Radius.xs} />
+              <SocietySkeleton width={70} height={20} borderRadius={Radius.pill} />
+            </View>
+            <SocietySkeleton width="35%" height={12} borderRadius={Radius.xs} />
+            <View style={styles.rowBetween}>
+              <SocietySkeleton width={80} height={32} borderRadius={Radius.sm} />
+              <SocietySkeleton width={80} height={32} borderRadius={Radius.sm} />
+            </View>
+          </View>
+        ))}
+      </View>
+    </SocietyShimmerProvider>
+  );
+}
+
+export function TenantStatusSkeleton() {
+  const { semantic } = useAppTheme();
+  return (
+    <SocietyShimmerProvider>
+      <View style={styles.listContainer} testID="tenant-status-skeleton">
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: semantic.surface.raised, borderColor: semantic.border.subtle, gap: 12 },
+          ]}
+        >
+          <SocietySkeleton width="45%" height={18} borderRadius={Radius.xs} />
+          <SocietySkeleton width="80%" height={14} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={10} borderRadius={Radius.xs} />
+          <SocietySkeleton width="100%" height={44} borderRadius={Radius.md} />
+        </View>
+      </View>
+    </SocietyShimmerProvider>
+  );
+}

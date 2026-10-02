@@ -5,13 +5,14 @@ export type WorkOrderType =
 export type WorkOrderStatus = 'DRAFT' | 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'VERIFIED' | 'CLOSED' | 'CANCELLED' | 'OVERDUE';
 export type WorkOrderPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type BreakdownSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type OperationalImpact = 'NO_IMPACT' | 'PARTIAL_IMPACT' | 'SERVICE_DOWN' | 'SAFETY_RISK';
+export type OperationalImpact = 'NO_IMPACT' | 'PARTIAL_IMPACT' | 'SERVICE_DOWN' | 'SAFETY_RISK' | 'MAJOR_DISRUPTION';
 
 export type WorkOrderTimelineItem = {
   id: string;
   title: string;
   note: string;
   createdAt: string;
+  event?: string;
 };
 
 export type WorkOrder = {
@@ -35,6 +36,12 @@ export type WorkOrder = {
   completionProofLabel?: string;
   verificationStatus: string;
   linkedComplaintId?: string;
+  linkedEmergencyIncidentId?: string;
+  maintenancePlanId?: string;
+  maintenanceOccurrenceId?: string;
+  evidenceDocumentIds?: string[];
+  serviceReportDocumentId?: string;
+  holdReason?: string;
   timeline: WorkOrderTimelineItem[];
 };
 

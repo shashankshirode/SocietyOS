@@ -42,7 +42,8 @@ function TabBarItem({
   const iconConfig = isResidentPrimaryTabRoute(route) ? residentTabIcons[route] : residentTabIcons.HomeTab;
   const iconName = isFocused ? iconConfig.filled : iconConfig.outline;
   const styles = useMemo(() => createResidentTabBarStyles(theme), [theme]);
-  const color = isFocused ? theme.semantic.text.primary : inactiveColor;
+  const color = isFocused ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)';
+  const displayLabel = route === 'HomeTab' ? 'Home' : route === 'ActivityTab' ? 'Updates' : route === 'CommunityTab' ? 'Community' : 'You';
 
   const animatedIconStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -72,7 +73,7 @@ function TabBarItem({
       style={styles.tabItem}
     >
       <Animated.View style={animatedIconStyle}>
-        <View>
+        <View style={{ alignItems: 'center' }}>
           <Ionicons
             name={iconName as keyof typeof Ionicons.glyphMap}
             size={22}
@@ -85,6 +86,9 @@ function TabBarItem({
               </SafeText>
             </View>
           )}
+          {isFocused && route === 'HomeTab' && (
+            <View style={styles.activeDot} />
+          )}
         </View>
       </Animated.View>
       <SafeText
@@ -92,7 +96,7 @@ function TabBarItem({
         style={[styles.label, createColorStyle(color)]}
         numberOfLines={1}
       >
-        {label}
+        {displayLabel}
       </SafeText>
     </Pressable>
   );
@@ -181,7 +185,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
           });
         };
 
-        return (
+        const tabItemElement = (
           <TabBarItem
             key={route.key}
             route={route.name}
@@ -194,6 +198,30 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
             {...(badge !== undefined ? { badge } : {})}
           />
         );
+
+        if (route.name === 'ActivityTab') {
+          return (
+            <React.Fragment key={route.key}>
+              {tabItemElement}
+              <Pressable
+                key="center-actions-btn"
+                style={styles.centerActionItem}
+                accessibilityRole="button"
+                accessibilityLabel="Actions"
+                onPress={() => {
+                  navigation.navigate('HomeTab');
+                }}
+              >
+                <View style={styles.centerActionButton}>
+                  <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+                </View>
+                <SafeText style={styles.centerActionLabel}>Actions</SafeText>
+              </Pressable>
+            </React.Fragment>
+          );
+        }
+
+        return tabItemElement;
       })}
     </View>
   </>);

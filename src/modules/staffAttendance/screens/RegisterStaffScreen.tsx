@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { StaffAttendanceStackParamList } from "../../../app/navigation/navigation.types";
 import { useRegisterStaff } from "../data/useRegisterStaff";
 import { ScreenContainer } from "../../../shared/layouts/ScreenContainer";
-import type { StaffCategory, StaffVerificationStatus } from "../../../shared/types/staff.types";
+import type { StaffCategory, StaffWorkforceCategory, StaffVerificationStatus } from "../../../shared/types/staff.types";
 import { useMessages } from "../../../shared/constants/useMessages";
 import { chatRepository } from "../../chat/data/chat.repository";
 import type { ChatChannelDefinition, RequestedChannelAssignment } from "../../chat/domain/chat.types";
@@ -17,10 +17,10 @@ import { getRequiredItem } from "../../../shared/utils/requiredItem";
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
 import { styles } from "../styles/screens/RegisterStaffScreen.styles";
 type Props = NativeStackScreenProps<StaffAttendanceStackParamList, 'RegisterStaff'>;
-const categoryOptions: StaffCategory[] = [
-    'SECURITY_GUARD', 'SECURITY_SUPERVISOR', 'FACILITY_STAFF', 'OFFICE_STAFF', 'ACCOUNTS_STAFF',
-    'TREASURER', 'COMMITTEE_MEMBER', 'SECRETARY', 'CHAIRPERSON', 'SOCIETY_MANAGER', 'HOUSEKEEPING',
-    'GARDENER', 'PLUMBER', 'ELECTRICIAN', 'LIFT_OPERATOR', 'CLUBHOUSE_STAFF', 'VENDOR_WORKER', 'OTHER',
+const categoryOptions: StaffWorkforceCategory[] = [
+    'SECURITY_GUARD', 'SECURITY_SUPERVISOR', 'HOUSEKEEPING', 'FACILITY_STAFF',
+    'GARDENER', 'PLUMBER', 'ELECTRICIAN', 'LIFT_OPERATOR', 'CLUBHOUSE_STAFF',
+    'OFFICE_STAFF', 'ACCOUNTS_STAFF', 'SOCIETY_MANAGER', 'VENDOR_WORKER', 'OTHER',
 ];
 export function RegisterStaffScreen({ navigation }: Props) {
     const { register, isSubmitting } = useRegisterStaff();
@@ -32,7 +32,7 @@ export function RegisterStaffScreen({ navigation }: Props) {
     const [mobile, setMobile] = useState('');
     const [emergencyContact, setEmergencyContact] = useState('');
     const [assignedLocation, setAssignedLocation] = useState('');
-    const [shiftId] = useState('shift-001');
+    const [shiftId, setShiftId] = useState('');
     const [notes, setNotes] = useState('');
     const [chatChannels, setChatChannels] = useState<ChatChannelDefinition[]>([]);
     const [channelAssignments, setChannelAssignments] = useState<RequestedChannelAssignment[]>([]);
@@ -88,10 +88,10 @@ export function RegisterStaffScreen({ navigation }: Props) {
                 mobile,
                 ...includeWhenPresent("emergencyContact", emergencyContact || undefined),
                 assignedLocation,
-                shiftId,
+                ...includeWhenPresent("shiftId", shiftId || undefined),
                 joiningDate: getRequiredItem(new Date().toISOString().split('T'), 0, "RegisterStaffScreen.tsx"),
                 verificationStatus: 'PENDING' as StaffVerificationStatus,
-                notes
+                ...includeWhenPresent("notes", notes || undefined),
             });
             if (chatRole && channelAssignments.length > 0) {
                 await chatRepository.assignUserChannels({

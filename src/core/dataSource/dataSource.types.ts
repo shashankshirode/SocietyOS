@@ -36,7 +36,11 @@ export type AppModuleKey =
   | 'admin'
   | 'treasurer'
   | 'facility'
-  | 'superAdmin';
+  | 'superAdmin'
+  | 'staffAttendance'
+  | 'biometricAttendance'
+  | 'hardwareIntegration';
+
 
 export type DataSourceConfig = {
   globalMode: DataSourceMode;

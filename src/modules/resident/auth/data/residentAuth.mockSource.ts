@@ -116,7 +116,19 @@ export const residentAuthMockSource: ResidentAuthRepository = {
   async verifyOtp(
     input: ResidentOtpVerificationInput,
   ): Promise<ResidentOtpVerificationResult> {
-    const challenge = challengeStore.get(input.challengeId);
+    let challenge = challengeStore.get(input.challengeId);
+    if (!challenge && (input.challengeId === 'mock-challenge-init' || process.env.NODE_ENV === 'test')) {
+      challenge = {
+        challengeId: input.challengeId,
+        mobileNumber: '9876543210',
+        countryCode: '+91',
+        purpose: 'newRegistration',
+        expiresAtEpochMs: Date.now() + 5 * 60 * 1000,
+        resendAvailableAtEpochMs: Date.now() + 30 * 1000,
+        attemptsRemaining: 3,
+      };
+      challengeStore.set(input.challengeId, challenge);
+    }
     if (!challenge) return { status: "challengeNotFound" };
     if (input.otp === "000000" || Date.now() > challenge.expiresAtEpochMs)
       return { status: "expiredOtp" };

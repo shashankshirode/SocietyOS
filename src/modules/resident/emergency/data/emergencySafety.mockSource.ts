@@ -148,6 +148,7 @@ export const emergencySafetyMockSource = {
         eventType: string;
         note?: string;
         source: EmergencyTimelineEvent['source'];
+        clientOperationId?: string;
     }): Promise<EmergencyTimelineEvent> => {
         await delay();
         const newEvent: EmergencyTimelineEvent = {
@@ -166,7 +167,8 @@ export const emergencySafetyMockSource = {
     },
     acknowledgeIncident: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
+        clientAcknowledgementId?: string;
+    } = {}): Promise<EmergencyIncident> => {
         await delay();
         const incident = mockEmergencyIncidents.find(i => i.id === incidentId);
         if (!incident)
@@ -197,7 +199,8 @@ export const emergencySafetyMockSource = {
     },
     markResponderReached: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
+        clientOperationId?: string;
+    } = {}): Promise<EmergencyIncident> => {
         await delay();
         const incident = mockEmergencyIncidents.find(i => i.id === incidentId);
         if (!incident)
@@ -222,7 +225,8 @@ export const emergencySafetyMockSource = {
         return incident;
     },
     escalateIncident: async (incidentId: string, input: {
-        note: string;
+        note?: string;
+        clientOperationId?: string;
     }): Promise<EmergencyIncident> => {
         await delay();
         const incident = mockEmergencyIncidents.find(i => i.id === incidentId);
@@ -237,14 +241,15 @@ export const emergencySafetyMockSource = {
             actorName: 'Ramesh Pawar',
             actorRole: 'SECURITY_GUARD',
             eventType: 'ESCALATED',
-            note: input.note,
+            ...includeWhenPresent("note", input.note),
             source: 'GUARD_CONSOLE'
         });
         return incident;
     },
     markResidentSafe: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
+        clientOperationId?: string;
+    } = {}): Promise<EmergencyIncident> => {
         await delay();
         const incident = mockEmergencyIncidents.find(i => i.id === incidentId);
         if (!incident)
@@ -265,6 +270,7 @@ export const emergencySafetyMockSource = {
     },
     closeIncident: async (incidentId: string, input: {
         closureSummary: string;
+        clientOperationId?: string;
     }): Promise<EmergencyIncident> => {
         await delay();
         const incident = mockEmergencyIncidents.find(i => i.id === incidentId);
@@ -442,7 +448,8 @@ export const emergencySafetyMockSource = {
     },
     acceptVolunteerAlert: async (alertId: string, input: {
         note?: string;
-    }): Promise<VolunteerAlert> => {
+        clientOperationId?: string;
+    } = {}): Promise<VolunteerAlert> => {
         await delay();
         const alert = mockVolunteerAlerts.find(a => a.id === alertId);
         if (!alert)
@@ -456,7 +463,8 @@ export const emergencySafetyMockSource = {
     },
     declineVolunteerAlert: async (alertId: string, input: {
         note?: string;
-    }): Promise<VolunteerAlert> => {
+        clientOperationId?: string;
+    } = {}): Promise<VolunteerAlert> => {
         await delay();
         const alert = mockVolunteerAlerts.find(a => a.id === alertId);
         if (!alert)

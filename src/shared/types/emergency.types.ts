@@ -8,6 +8,8 @@ export type EmergencyType =
   | 'SENIOR_HELP'
   | 'CHILD_SAFETY'
   | 'PET_EMERGENCY'
+  | 'WATER'
+  | 'ELECTRICAL'
   | 'OTHER';
 
 export type EmergencySeverity =
@@ -25,9 +27,12 @@ export type EmergencyStatus =
   | 'RESPONDER_REACHED'
   | 'ESCALATED'
   | 'UNDER_CONTROL'
+  | 'RESOLVED'
   | 'CLOSED'
   | 'CANCELLED'
   | 'FALSE_ALARM';
+
+export type EmergencyTimelineEventType = string;
 
 export type EmergencyResponderRole =
   | 'GUARD'

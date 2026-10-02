@@ -28,6 +28,9 @@ export type AmcContract = {
   documents: string[];
   renewalStatus: AmcReminderStatus;
   notes: string;
+  version?: number;
+  previousVersionId?: string;
+  supersededBy?: string;
 };
 
 export type AmcRenewalReminder = {

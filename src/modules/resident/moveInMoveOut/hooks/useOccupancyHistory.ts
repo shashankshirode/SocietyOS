@@ -24,11 +24,22 @@ const fallbackRows: OccupancyHistoryRow[] = [
     },
 ];
 async function loadOccupancyHistory(input?: OccupancyHistoryInput): Promise<RepositoryResult<OccupancyHistoryRow[]>> {
-    const response = await occupancyRepository.listOccupancyHistoryByUnit(input);
-    if (response && typeof response === 'object' && 'ok' in response && 'data' in response) {
-        return response as RepositoryResult<OccupancyHistoryRow[]>;
+    const payload = input ? (input as JsonObject) : undefined;
+    const response = await occupancyRepository.listOccupancyHistoryByUnit(payload);
+    if (response.ok) {
+        if (Array.isArray(response.data)) {
+            const rows: OccupancyHistoryRow[] = response.data.map(item => ({
+                id: typeof item.id === 'string' ? item.id : 'unknown',
+                flatNumber: typeof item.flatNumber === 'string' ? item.flatNumber : '',
+                occupantName: typeof item.occupantName === 'string' ? item.occupantName : (typeof item.name === 'string' ? item.name : ''),
+                occupantType: (item.occupantType === 'TENANT' ? 'TENANT' : 'OWNER') as OccupancyHistoryRow['occupantType'],
+                documentStatus: (item.documentStatus === 'APPROVED' || item.documentStatus === 'REJECTED' ? item.documentStatus : 'PENDING') as OccupancyHistoryRow['documentStatus'],
+            }));
+            return { ok: true, data: rows };
+        }
+        return { ok: true, data: fallbackRows };
     }
-    return { ok: true, data: fallbackRows };
+    return response;
 }
 export function useOccupancyHistory(input?: OccupancyHistoryInput) {
     const result = useRepositoryResult(() => loadOccupancyHistory(input), [input?.unitId]);

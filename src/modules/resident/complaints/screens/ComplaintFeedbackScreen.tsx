@@ -11,7 +11,6 @@ import { SafeText } from "../../../../shared/components/SafeText";
 import { useComplaintFeedback } from "../hooks/useComplaintFeedback";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { ComplaintStatus } from "../data/complaints.enums";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
 import { styles, createSafeTextColorStyle, createViewBackgroundColorStyle, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/ComplaintFeedbackScreen.styles";
 type Props = {
     navigation: {
@@ -32,7 +31,6 @@ export function ComplaintFeedbackScreen({ navigation, route }: Props) {
     const [rating, setRating] = useState(0);
     const [comments, setComments] = useState('');
     const { submit, isSubmitting } = useComplaintFeedback();
-    const { updateComplaint } = useMockStore();
     const complaintId = route?.params?.complaintId || 'CMP-MOCK';
     const handleFeedback = async () => {
         if (rating === 0) {
@@ -41,12 +39,6 @@ export function ComplaintFeedbackScreen({ navigation, route }: Props) {
         }
         const res = await submit({ complaintId, rating, comments });
         if (res.ok) {
-            updateComplaint(complaintId, {
-                status: ComplaintStatus.CLOSED,
-                feedbackRating: rating,
-                feedbackComment: comments,
-                updatedAt: new Date().toISOString(),
-            });
             AppAlert.alert(messages.complaints.feedbackSuccessTitle, messages.complaints.feedbackSuccessMessage, [
                 { text: messages.common.ok || String(localizedUiText.m_565339bc4d33), onPress: () => navigation.navigate('ComplaintList') },
             ]);

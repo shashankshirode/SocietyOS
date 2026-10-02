@@ -71,7 +71,7 @@ export const staffAttendanceMockSource = {
             ...includeWhenPresent("vendorName", input.vendorId ? 'Registered Vendor' : undefined),
             assignedLocation: input.assignedLocation,
             assignedAreas: [input.assignedLocation],
-            shiftId: input.shiftId,
+            ...includeWhenPresent("shiftId", input.shiftId),
             shiftName: mockShifts.find(s => s.id === input.shiftId)?.shiftName || 'General Shift',
             mobileMasked: input.mobile.replace(/.(?=.{4})/g, '*'),
             joiningDate: input.joiningDate,
@@ -118,7 +118,8 @@ export const staffAttendanceMockSource = {
             if (input.checklistItemKey === 'id_proof') {
                 help.idDocumentStatus = input.status === 'VERIFIED' ? 'VERIFIED' : 'REJECTED';
             }
-            help.verificationStatus = 'VERIFIED';
+            const allVerified = help.policeVerificationStatus === 'VERIFIED' && help.idDocumentStatus === 'VERIFIED';
+            help.verificationStatus = allVerified ? 'VERIFIED' : 'PENDING';
         }
         return withMockDelay({ success: true });
     },
@@ -208,7 +209,7 @@ export const staffAttendanceMockSource = {
             ...includeWhenPresent("existingValue", input.existingValue),
             requestedCorrection: input.requestedCorrection,
             reason: input.reason,
-            requestedBy: 'Suresh Patil',
+            requestedBy: 'Authorized Facility Manager',
             requestedByRole: 'FACILITY_MANAGER',
             status: 'PENDING',
             createdAt: new Date().toISOString(),
@@ -223,7 +224,7 @@ export const staffAttendanceMockSource = {
         const req = mockCorrectionRequests.find(c => c.id === correctionRequestId);
         if (req) {
             req.status = 'APPROVED';
-            req.reviewedBy = 'Suresh Patil';
+            req.reviewedBy = 'Authorized HR Admin';
             req.reviewedAt = new Date().toISOString();
             if (input.auditNote !== undefined) {
                 req.auditNote = input.auditNote;
@@ -237,7 +238,7 @@ export const staffAttendanceMockSource = {
         const req = mockCorrectionRequests.find(c => c.id === correctionRequestId);
         if (req) {
             req.status = 'REJECTED';
-            req.reviewedBy = 'Suresh Patil';
+            req.reviewedBy = 'Authorized HR Admin';
             req.reviewedAt = new Date().toISOString();
             req.rejectionReason = input.rejectionReason;
         }
@@ -293,7 +294,7 @@ export const staffAttendanceMockSource = {
             ...includeWhenPresent("staffCode", staff?.staffCode),
             status: 'ACTIVE',
             effectiveFrom: input.effectiveFrom,
-            createdBy: 'Suresh Patil',
+            createdBy: 'Authorized Staff Admin',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             ...includeWhenPresent("notes", input.notes)
@@ -309,7 +310,7 @@ export const staffAttendanceMockSource = {
         const err = mockBiometricSyncErrors.find(e => e.id === syncErrorId);
         if (err) {
             err.status = input.action === 'RESOLVE' ? 'RESOLVED' : 'IGNORED';
-            err.resolvedBy = 'Suresh Patil';
+            err.resolvedBy = 'Authorized Staff Admin';
             err.resolvedAt = new Date().toISOString();
             err.resolutionNote = input.resolutionNote;
         }

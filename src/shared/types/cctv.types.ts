@@ -9,6 +9,12 @@ export type CctvAccessLevel =
   | 'EMERGENCY_ONLY'
   | 'DISABLED';
 
+export type CctvPurpose =
+  | 'SECURITY_INCIDENT'
+  | 'SAFETY_INVESTIGATION'
+  | 'GATE_INCIDENT'
+  | 'COMPLAINT_VERIFICATION';
+
 export interface CctvCamera {
   id: string;
   name: string;
@@ -19,6 +25,8 @@ export interface CctvCamera {
   recordingEnabled: boolean;
   accessLevel: CctvAccessLevel;
   lastHealthCheck: string;
+  societyId?: string;
+  rtspUrlMasked?: string;
 }
 
 export interface CctvAccessRequest {
@@ -27,9 +35,17 @@ export interface CctvAccessRequest {
   cameraName: string;
   requesterName: string;
   requesterRole: string;
+  requesterId?: string;
   reason: string;
+  purpose?: CctvPurpose;
   durationMinutes: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
   requestedAt: string;
   approvedAt?: string;
+  approvedBy?: string;
+  expiresAt?: string;
+  incidentReferenceId?: string;
+  evidenceReference?: string;
+  evidenceChecksum?: string;
+  accessToken?: string;
 }

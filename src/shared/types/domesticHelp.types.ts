@@ -76,8 +76,35 @@ export interface DomesticHelp {
   societyApprovalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
 
   photoPlaceholder?: string;
+  photoDocumentVaultId?: string;
   notes?: string;
   registeredAt: string;
+  updatedAt: string;
+}
+
+export type DomesticHelpLinkStatus =
+  | 'ACTIVE'
+  | 'REVOKED'
+  | 'EXPIRED'
+  | 'PENDING_APPROVAL';
+
+export interface ResidentDomesticHelpLink {
+  id: string;
+  domesticHelpId: string;
+  societyId: string;
+  unitId: string;
+  unitNumber: string;
+  residentId: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  allowedDays: string[];
+  allowedTimeFrom?: string;
+  allowedTimeTo?: string;
+  linkStatus: DomesticHelpLinkStatus;
+  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  revocationReason?: string;
+  revokedAt?: string;
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -102,8 +129,6 @@ export interface DomesticHelpVerificationItem {
   isMandatory: boolean;
 }
 
-
-
 export interface VerifyDomesticHelpInput {
   checklistItemKey: string;
   status: 'VERIFIED' | 'REJECTED';
@@ -118,4 +143,21 @@ export interface ApproveDomesticHelpInput {
 export interface BlockDomesticHelpInput {
   reason: string;
   confirmationChecked: boolean;
+  incidentReference?: string;
+}
+
+export interface CreateDomesticHelpLinkInput {
+  domesticHelpId: string;
+  unitId: string;
+  unitNumber: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  allowedDays: string[];
+  allowedTimeFrom?: string;
+  allowedTimeTo?: string;
+}
+
+export interface RevokeDomesticHelpLinkInput {
+  linkId: string;
+  reason: string;
 }

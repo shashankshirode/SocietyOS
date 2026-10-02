@@ -1,6 +1,4 @@
-
-
-
+import type { ResidentScopedEntity } from './residentScope.types';
 
 export type BiometricDeviceStatus =
   | 'ACTIVE'
@@ -49,9 +47,14 @@ export type SyncErrorStatus =
   | 'RESOLVED'
   | 'IGNORED';
 
+export type BiometricDeviceHealth =
+  | 'ONLINE'
+  | 'OFFLINE'
+  | 'DEGRADED'
+  | 'DISCONNECTED'
+  | 'UNKNOWN';
 
-
-export interface BiometricDevice {
+export interface BiometricDevice extends ResidentScopedEntity {
   id: string;
   deviceCode: string;
   deviceName: string;
@@ -61,6 +64,7 @@ export interface BiometricDevice {
   gate?: string;
   syncType: BiometricSyncType;
   status: BiometricDeviceStatus;
+  health?: BiometricDeviceHealth;
   lastSyncTime?: string;
   lastSyncJobId?: string;
   lastSyncStatus?: BiometricSyncJobStatus;
@@ -72,9 +76,11 @@ export interface BiometricDevice {
   notes?: string;
   installedAt?: string;
   lastMaintenanceAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface BiometricMapping {
+export interface BiometricMapping extends ResidentScopedEntity {
   id: string;
   deviceId: string;
   deviceName: string;
@@ -93,7 +99,7 @@ export interface BiometricMapping {
   notes?: string;
 }
 
-export interface BiometricSyncJob {
+export interface BiometricSyncJob extends ResidentScopedEntity {
   id: string;
   deviceId: string;
   deviceName: string;
@@ -110,9 +116,11 @@ export interface BiometricSyncJob {
   triggeredBy: string;
   syncType: BiometricSyncType;
   notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface BiometricSyncError {
+export interface BiometricSyncError extends ResidentScopedEntity {
   id: string;
   syncJobId: string;
   deviceId: string;
@@ -128,9 +136,10 @@ export interface BiometricSyncError {
   resolvedAt?: string;
   resolutionNote?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
-export interface DuplicatePunchCandidate {
+export interface DuplicatePunchCandidate extends ResidentScopedEntity {
   id: string;
   staffId?: string;
   staffName?: string;
@@ -148,7 +157,7 @@ export interface DuplicatePunchCandidate {
   createdAt: string;
 }
 
-export interface MissingCheckoutRecord {
+export interface MissingCheckoutRecord extends ResidentScopedEntity {
   id: string;
   staffId: string;
   staffName: string;
@@ -163,8 +172,6 @@ export interface MissingCheckoutRecord {
   createdAt: string;
 }
 
-
-
 export interface CreateBiometricMappingInput {
   deviceId: string;
   biometricEmployeeCode: string;  
@@ -177,14 +184,11 @@ export interface CreateBiometricMappingInput {
 export interface ResolveSyncErrorInput {
   resolutionNote: string;
   action: 'RESOLVE' | 'IGNORE';
+  resolvedBy: string;
 }
 
-export interface ResolveDuplicatePunchInput {
-  action: 'KEEP_EXISTING' | 'KEEP_NEWER' | 'IGNORE';
-  notes?: string;
-}
-
-export interface AttendanceSettings {
+export interface AttendanceSettings extends ResidentScopedEntity {
+  id?: string;
   shiftGracePeriodMinutes: number;
   lateMarkingThresholdMinutes: number;
   missingCheckoutWindowHours: number;
@@ -194,4 +198,19 @@ export interface AttendanceSettings {
   vendorReportLockDayOfMonth: number;
   biometricSyncSchedule?: string;
   dataRetentionMonths: number;
+}
+
+export interface UnknownEmployeeCodeRecord extends ResidentScopedEntity {
+  id: string;
+  deviceId: string;
+  deviceCode: string;
+  employeeCode: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  punchCount: number;
+  resolutionStatus: 'OPEN' | 'MAPPED' | 'IGNORED';
+  mappedStaffId?: string;
+  mappedStaffName?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
 }

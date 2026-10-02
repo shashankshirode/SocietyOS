@@ -34,6 +34,9 @@ export type Asset = {
   serviceHistorySummary: string;
   breakdownCount: number;
   notes: string;
+  lifecycleStatus?: string;
+  operationalCondition?: string;
+  replacementAssetId?: string;
 };
 
 export type AssetDocument = {

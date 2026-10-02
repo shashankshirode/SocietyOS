@@ -36,7 +36,7 @@ export function RootNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <StatusBar style={colors.statusBarStyle === 'light-content' ? 'light' : 'dark'} />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="ResidentApp" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="AppModeSelector" component={AppModeNavigator} />
         <Stack.Screen name="ResidentApp" component={ResidentEntryNavigator} />
         <Stack.Screen name="GuardApp" component={GuardNavigator} />

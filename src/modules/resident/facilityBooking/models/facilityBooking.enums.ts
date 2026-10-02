@@ -27,24 +27,47 @@ export enum FacilitySlotStatus {
   Blackout = 'BLACKOUT',
 }
 
-export enum FacilityBookingStatus {
-  Draft = 'DRAFT',
-  SlotHeld = 'SLOT_HELD',
-  PaymentPending = 'PAYMENT_PENDING',
-  Confirmed = 'CONFIRMED',
-  Waitlisted = 'WAITLISTED',
-  CheckedIn = 'CHECKED_IN',
-  InUse = 'IN_USE',
-  Completed = 'COMPLETED',
-  CancelledByResident = 'CANCELLED_BY_RESIDENT',
-  CancelledBySociety = 'CANCELLED_BY_SOCIETY',
-  Rejected = 'REJECTED',
-  NoShow = 'NO_SHOW',
-  Expired = 'EXPIRED',
-  RefundPending = 'REFUND_PENDING',
-  Refunded = 'REFUNDED',
-  PartiallyRefunded = 'PARTIALLY_REFUNDED',
-}
+export const FacilityBookingStatus = {
+  Draft: 'DRAFT',
+  SlotHeld: 'SLOT_HELD',
+  PaymentPending: 'PAYMENT_PENDING',
+  Confirmed: 'CONFIRMED',
+  Waitlisted: 'WAITLISTED',
+  CheckedIn: 'CHECKED_IN',
+  InUse: 'IN_USE',
+  Completed: 'COMPLETED',
+  CancelledByResident: 'CANCELLED_BY_RESIDENT',
+  CancelledBySociety: 'CANCELLED_BY_SOCIETY',
+  Rejected: 'REJECTED',
+  NoShow: 'NO_SHOW',
+  Expired: 'EXPIRED',
+  RefundPending: 'REFUND_PENDING',
+  Refunded: 'REFUNDED',
+  PartiallyRefunded: 'PARTIALLY_REFUNDED',
+  Failed: 'FAILED',
+  Rescheduled: 'RESCHEDULED',
+} as const;
+
+export type FacilityBookingStatus =
+  | 'DRAFT'
+  | 'SLOT_HELD'
+  | 'PAYMENT_PENDING'
+  | 'CONFIRMED'
+  | 'WAITLISTED'
+  | 'CHECKED_IN'
+  | 'IN_USE'
+  | 'COMPLETED'
+  | 'CANCELLED_BY_RESIDENT'
+  | 'CANCELLED_BY_SOCIETY'
+  | 'REJECTED'
+  | 'NO_SHOW'
+  | 'EXPIRED'
+  | 'REFUND_PENDING'
+  | 'REFUNDED'
+  | 'PARTIALLY_REFUNDED'
+  | 'FAILED'
+  | 'RESCHEDULED';
+
 
 export enum FacilityPaymentStatus {
   NotRequired = 'NOT_REQUIRED',

@@ -39,3 +39,18 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Environment files (production secrets)
+.env
+.env.*
+!.env.example
+
+# Generated coverage reports
+coverage/
+*.lcov
+coverage-final.json
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo

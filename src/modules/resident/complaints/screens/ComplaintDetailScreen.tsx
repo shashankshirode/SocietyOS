@@ -1,10 +1,10 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { View, ScrollView, SafeAreaView } from "react-native";
+import { View, Text, ScrollView, SafeAreaView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useAppTheme } from "../../../../shared/theme/useAppTheme";
-import { Screen } from "../../../../design-system/layouts";
 import { Button } from "../../../../design-system/components";
 import { Card } from "../../../../design-system/components";
+import { Screen } from "../../../../design-system/layouts";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { ComplaintStatus } from "../data/complaints.enums";
 import { StackActions } from "@react-navigation/native";
@@ -12,7 +12,9 @@ import { StyleSheet } from "react-native";
 import { formatResidentDate } from "../../../../core/localization/dateTimeFormatters";
 import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
 import { SafeText } from "../../../../shared/components/SafeText";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
+import { LoadingState } from "../../../../shared/feedback/LoadingState";
+import { useComplaintDetail } from "../data/useComplaintDetail";
+import { useUpdateComplaintStatus } from "../hooks/useUpdateComplaintStatus";
 import type { ComplaintDetailScreenProps } from "../../../../app/navigation/navigation.types";
 import { ComplaintProgressPanel } from "../../../../ui/patterns/ComplaintProgressPanel";
 import { ResidentTimeline } from "../../../../ui/patterns/ResidentTimeline";
@@ -37,15 +39,20 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     const messages = useMessages();
     const focusCopy = messages.resident.experience.focus;
     const { complaint: initialComplaint } = route.params;
-    const { state, updateComplaint } = useMockStore();
-    const complaint = state.complaints.find((c) => c.id === initialComplaint.id) || initialComplaint;
-    const handleResolve = () => {
-        updateComplaint(complaint.id, {
-            status: ComplaintStatus.RESOLVED,
-            updatedAt: new Date().toISOString(),
-            resolutionNote: getActiveUiLiteral("m_6b4b88ea9f43"),
-        });
-        AppAlert.alert(messages.common.update || String(localizedUiText.m_8b2d0675b4b0), messages.resident.success.updated || String(localizedUiText.m_8522d7a3d99b));
+    const { data: complaint, isLoading, error } = useComplaintDetail(initialComplaint.id);
+    const updateComplaintStatus = useUpdateComplaintStatus();
+
+    if (isLoading || !complaint) {
+        return <LoadingState message="Loading complaint..." />;
+      }
+      if (error) {
+        return <View style={{flex:1,justifyContent:'center',alignItems:'center'}}><Text style={{color:'red'}}>Failed to load complaint</Text></View>;
+      }
+    const handleResolve = async () => {
+        await updateComplaintStatus.submit({ complaintId: complaint.id, status: ComplaintStatus.RESOLVED, note: getActiveUiLiteral("m_6b4b88ea9f43") });
+        if (!updateComplaintStatus.error) {
+            AppAlert.alert(messages.common.update || String(localizedUiText.m_8b2d0675b4b0), messages.resident.success.updated || String(localizedUiText.m_8522d7a3d99b));
+        }
     };
     const handleReopen = () => {
         navigation.dispatch(StackActions.push('ComplaintReopen', { complaintId: complaint.id }));

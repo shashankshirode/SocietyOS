@@ -17,7 +17,7 @@ export function ShiftAssignmentScreen({ route, navigation }: Props) {
     const { staffId: routeStaffId, shiftId: routeShiftId } = route.params || {};
     const { assign, isSubmitting } = useShiftAssignment();
     const [staffId, setStaffId] = useState(routeStaffId || '');
-    const [shiftId, setShiftId] = useState(routeShiftId || 'shift-001');
+    const [shiftId, setShiftId] = useState(routeShiftId || '');
     const [effectiveFrom, setEffectiveFrom] = useState(getRequiredItem(new Date().toISOString().split('T'), 0, "ShiftAssignmentScreen.tsx"));
     const [location, setLocation] = useState('');
     const [notes, setNotes] = useState('');

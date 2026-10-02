@@ -1,11 +1,16 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Image, Pressable, RefreshControl, ScrollView, useWindowDimensions, View } from 'react-native';
+
+const HERO_IMAGE = require('../../../../../assets/images/community-feature.png');
+const AVATAR_IMAGE = require('../../../../../assets/images/shashank-avatar.png');
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { ResidentHomeScreenProps, RootTabParamList } from '../../../../app/navigation/navigation.types';
 import { SafeText } from '../../../../shared/components/SafeText';
+import { SocietyOSLogoMark } from '../../../../shared/components/SocietyOSLogo';
 import { useAppTheme } from '../../../../shared/theme/useAppTheme';
+import { isDevelopmentMode } from "../../../../shared/utils/isDevelopmentMode";
 import { useMessages } from '../../../../shared/constants/useMessages';
 import { ErrorState } from '../../../../shared/feedback/ErrorState';
 import { FloatingSosButton } from '../../../../ui/patterns/FloatingSosButton';
@@ -18,24 +23,17 @@ import { useResidentGreeting } from '../hooks/useResidentGreeting';
 import { useAuthSession } from '../../../../core/auth/useAuthSession';
 import { createResidentDashboardPersonalization } from '../hooks/useResidentDashboardPersonalization';
 import { PriorityOverviewSheet } from '../components/PriorityOverviewSheet';
-import { ContextCommand } from '../components/ContextCommand';
-import { HomeAttentionField } from '../components/HomeAttentionField';
-import { LivingTimeline } from '../components/LivingTimeline';
 import { ResidencePulseExpanded } from '../components/ResidencePulseExpanded';
-import { ResidencePulseField, type ResidencePulseState } from '../components/ResidencePulseField';
-import type { HomeActivityItem, ResidentPriorityItem, VisitorAccessItem } from '../data/dashboard.types';
+import type { ResidencePulseState } from '../components/ResidencePulseField';
+import type { HomeActivityItem, VisitorAccessItem } from '../data/dashboard.types';
 import { createResidencePulseSignals } from '../data/pulseSignal.model';
 import { SocietyExperienceFrame } from '../../experience/SocietyExperienceFrame';
-import { ResidenceBeacon } from '../../experience/ResidenceBeacon';
-import { IdentityOrb } from '../../experience/IdentityOrb';
 import { PartyPassModal } from '../../visitors/components/PartyPassModal';
 import { UpiPaymentSheet } from '../../billing/components/UpiPaymentSheet';
 import { ConnectHomeView } from '../../homeContext/components/ConnectHomeView';
 import { ScenarioLabDrawer } from '../../../../core/scenario/ScenarioLabDrawer';
 import { ResidencePulseSkeleton, VisitorTimelineSkeleton, BillSummarySkeleton } from '../../../../ui/skeletons/FeatureSkeletons';
 import {
-  createCommunityBorderStyle,
-  createContextSocietyStyle,
   createRootStyle,
   createScrollContentStyle,
   styles,
@@ -62,6 +60,7 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
   const [partyPassVisible, setPartyPassVisible] = useState(false);
   const [upiSheetVisible, setUpiSheetVisible] = useState(false);
   const [scenarioLabVisible, setScenarioLabVisible] = useState(false);
+  const isDev = isDevelopmentMode();
   const copy = messages.resident.dashboard.homeExperience;
 
   const handleRefresh = useCallback(async () => {
@@ -111,7 +110,7 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
             <Ionicons name="flask-outline" size={14} color={colors.primary} />
             <SafeText variant="tiny" style={{ color: colors.primary, fontWeight: '700' }}>Lab</SafeText>
           </Pressable>
-          {scenarioLabVisible ? (
+          {isDev && scenarioLabVisible ? (
             <ScenarioLabDrawer visible={scenarioLabVisible} onClose={() => setScenarioLabVisible(false)} />
           ) : null}
         </View>
@@ -193,27 +192,6 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
       : copy.activeSupport;
 
   const actionable = experience.priorities.filter((item) => item.actionId).slice(0, 3);
-  const nextAction: ResidentPriorityItem = waitingVisitor
-    ? {
-        id: 'waiting-visitor',
-        actionId: 'act-visitor',
-        title: copy.viewAtGate(waitingVisitor.visitorName),
-        description: copy.waitingNow(waitingVisitor.gateName),
-        metaLabel: copy.rightNow,
-        actionLabel: copy.viewVisitor,
-        iconName: 'person-outline',
-        tone: 'warning',
-      }
-    : actionable[0] ?? {
-        id: 'add-visitor',
-        actionId: 'act-visitor',
-        title: copy.addVisitor,
-        description: copy.addVisitorDescription,
-        metaLabel: copy.doNext,
-        actionLabel: copy.addVisitor,
-        iconName: 'person-add-outline',
-        tone: 'success',
-      };
 
   const handleAction = (actionId?: string) => {
     if (actionId === 'act-pay') setUpiSheetVisible(true);
@@ -268,74 +246,209 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
             />
           }
         >
-          {/* Large Canvas-Level Human Greeting */}
-          <View style={styles.greetingBlock}>
-            <SafeText testID="resident-dashboard-name" variant="h1" color="primary" style={{ fontSize: 28, fontWeight: '700', lineHeight: 34, marginBottom: 2 }}>
-              {greeting}, {residentFirstName}.
-            </SafeText>
-            <SafeText variant="body" color="secondary" style={{ fontSize: 16, lineHeight: 22 }}>
-              {supportingCopy}
-            </SafeText>
+          {/* 1. Header Bar: SocietyOS Logo + Greenwood Heights v + Unit Subtitle + Bell + Avatar */}
+          <View style={styles.headerBar}>
+            <Pressable
+              style={styles.societyHeaderLeft}
+              accessibilityRole="button"
+              accessibilityLabel="Switch Residence"
+              onPress={() => setScenarioLabVisible(true)}
+            >
+              <View style={styles.societyLogoBox}>
+                <SocietyOSLogoMark size={24} color="#0F172A" />
+              </View>
+              <View style={styles.societyTextCol}>
+                <View style={styles.societyTitleRow}>
+                  <SafeText style={styles.societyName}>{activeContext.societyName || 'Greenwood Heights'}</SafeText>
+                  <Ionicons name="chevron-down" size={14} color="#0F172A" />
+                </View>
+                <SafeText style={styles.societyUnitText}>{activeContext.displayUnitName || 'A-1204 • Tower A • Pune'}</SafeText>
+              </View>
+            </Pressable>
+
+            <View style={styles.headerActionsRight}>
+              <Pressable
+                style={styles.notificationBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Notifications"
+                onPress={() => navigation.navigate('NoticeListFromHome')}
+              >
+                <Ionicons name="notifications-outline" size={20} color="#1E293B" />
+                <View style={styles.notificationBadge}>
+                  <SafeText style={styles.notificationBadgeText}>1</SafeText>
+                </View>
+              </Pressable>
+
+              <Pressable
+                style={styles.avatarContainer}
+                accessibilityRole="button"
+                accessibilityLabel="Profile"
+                onPress={() => setScenarioLabVisible(true)}
+              >
+                <Image
+                  source={AVATAR_IMAGE}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              </Pressable>
+            </View>
           </View>
 
-          {/* 3. Hero Residence Pulse */}
-          <ResidencePulseField
-            state={pulseState}
-            eyebrow={copy.pulseTitle}
-            title={pulseTitle}
-            subtitle={pulseSubtitle}
-            signals={pulseSignals}
-            accessibilityLabel={copy.openPulse(pulseTitle)}
-            onPress={() => setPulseVisible(true)}
-          />
+          {/* 2. Greeting & Weather Row */}
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTextCol}>
+              <SafeText style={styles.greetingIntro}>Good morning,</SafeText>
+              <SafeText testID="resident-dashboard-name" style={styles.greetingName}>
+                {residentFirstName}
+              </SafeText>
+              <SafeText style={styles.greetingTagline}>
+                {pulseState === 'attention' ? supportingCopy : 'A brighter day at home.'}
+              </SafeText>
+            </View>
 
-          {/* 4. Needs Your Attention */}
-          <HomeAttentionField
-            title={copy.needsAttention}
-            viewAllLabel={copy.viewAll}
-            accessibilityLabel={attentionLabel}
-            items={actionable}
-            totalCount={experience.priorities.length}
-            onViewAll={() => setPrioritiesVisible(true)}
-            onAction={handleAction}
-          />
+            <View style={styles.weatherPill}>
+              <Ionicons name="sunny" size={18} color="#F59E0B" />
+              <SafeText style={styles.weatherTemp}>24°C</SafeText>
+              <SafeText style={styles.weatherCondition}>Sunny ›</SafeText>
+            </View>
+          </View>
 
-          {/* 5. What Should I Do Next? */}
-          <ContextCommand
-            sectionLabel={copy.doNext}
-            item={nextAction}
-            onPress={() => handleAction(nextAction.actionId)}
-          />
-
-          {/* 6. Today Around Home (Chronological Moments) */}
-          <LivingTimeline
-            title={copy.todayAroundHome}
-            quietTitle={copy.homeQuiet}
-            quietDescription={copy.quietTimelineDescription}
-            moments={moments}
-            onMomentPress={handleMomentPress}
-          />
-
-          {/* Contextual Community Event Notice (if active) */}
-          {communityNotice ? (
-            <Pressable
-              onPress={() => navigation.navigate('NoticeListFromHome')}
-              style={[styles.communityRow, createCommunityBorderStyle(colors.border)]}
-            >
-              <View style={{ flex: 1 }}>
-                <SafeText variant="tiny" style={createContextSocietyStyle(colors.success)}>
-                  {copy.inYourCommunity}
-                </SafeText>
-                <SafeText variant="bodyStrong" color="primary">
-                  {communityNotice.title}
-                </SafeText>
-                <SafeText variant="caption" color="muted">
-                  {communityNotice.publishedAtLabel}
-                </SafeText>
+          {/* 3. Hero Spotlight Card */}
+          <Pressable
+            style={styles.heroContainer}
+            accessibilityRole="button"
+            accessibilityLabel="Community Spotlight"
+            onPress={() => tabNavigation?.navigate('CommunityTab', { screen: 'CommunityHome' })}
+          >
+            <Image
+              source={HERO_IMAGE}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+            <View style={styles.heroOverlay}>
+              <View style={styles.heroContentRow}>
+                <View style={styles.heroTextCol}>
+                  <SafeText style={styles.heroTitle}>Together{'\n'}for a better{'\n'}community</SafeText>
+                  <SafeText style={styles.heroSubtitle}>Events • Amenities • People • Updates</SafeText>
+                </View>
+                <View style={styles.heroArrowBtn}>
+                  <Ionicons name="arrow-forward" size={18} color="#041B17" />
+                </View>
               </View>
-              <Ionicons name="arrow-forward" size={20} color={colors.textSecondary} />
+            </View>
+          </Pressable>
+
+          {/* 4. Section: Needs your attention */}
+          <View style={styles.sectionHeaderRow}>
+            <SafeText style={styles.sectionHeading}>{copy.needsAttention}</SafeText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={attentionLabel}
+              onPress={() => setPrioritiesVisible(true)}
+            >
+              <SafeText style={styles.sectionLink}>View all ({experience.priorities.length || 2}) ›</SafeText>
             </Pressable>
-          ) : null}
+          </View>
+
+          {/* Attention Cards (Maintenance Due & Visitor Arriving) */}
+          <View style={styles.attentionCardsRow}>
+            {/* Card 1: Maintenance Due */}
+            <View style={styles.attentionCard}>
+              <View>
+                <View style={styles.attentionTopRow}>
+                  <View style={[styles.attentionIconBox, { backgroundColor: '#FEE2E2' }]}>
+                    <SafeText style={{ color: '#DC2626', fontWeight: '700', fontSize: 13 }}>₹</SafeText>
+                  </View>
+                  <SafeText style={styles.attentionCategoryText}>Maintenance Due</SafeText>
+                </View>
+                <SafeText style={styles.attentionValueText}>
+                  {formatAmount(dashboard.maintenancePayment.totalOutstanding ?? dashboard.maintenancePayment.billAmount ?? 4250)}
+                </SafeText>
+                <SafeText style={styles.attentionDueText}>Due in 3 days</SafeText>
+              </View>
+              <Pressable
+                style={styles.payNowBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Pay now"
+                onPress={() => setUpiSheetVisible(true)}
+              >
+                <SafeText style={styles.payNowBtnText}>Pay now</SafeText>
+              </Pressable>
+            </View>
+
+            {/* Card 2: Visitor Arriving */}
+            <View style={styles.attentionCard}>
+              <View>
+                <View style={styles.attentionTopRow}>
+                  <View style={[styles.attentionIconBox, { backgroundColor: '#DCFCE7' }]}>
+                    <Ionicons name="person" size={14} color="#16A34A" />
+                  </View>
+                  <SafeText style={styles.attentionCategoryText}>Visitor Arriving</SafeText>
+                </View>
+                <SafeText style={styles.attentionValueText} numberOfLines={1}>
+                  {waitingVisitor?.visitorName || 'Rahul Kulkarni'}
+                </SafeText>
+                <SafeText style={styles.attentionVisitorTime}>Today, 7:30 PM</SafeText>
+              </View>
+              <Pressable
+                style={styles.viewPassBtn}
+                accessibilityRole="button"
+                accessibilityLabel="View pass"
+                onPress={openVisitors}
+              >
+                <SafeText style={styles.viewPassBtnText}>View pass</SafeText>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* 5. Section: Today at a glance */}
+          <View style={styles.sectionHeaderRow}>
+            <SafeText style={styles.sectionHeading}>Today at a glance</SafeText>
+            <Pressable onPress={() => setPulseVisible(true)}>
+              <SafeText style={styles.sectionLink}>See details ›</SafeText>
+            </Pressable>
+          </View>
+
+          {/* 4 Metric Capsules */}
+          <View style={styles.glanceRow}>
+            <Pressable style={styles.glanceCard} accessibilityRole="button" accessibilityLabel="Visitors" onPress={openVisitors}>
+              <Ionicons name="people-outline" size={20} color="#10B981" />
+              <SafeText style={styles.glanceValue}>{dashboard.visitorTimeline.length || 2}</SafeText>
+              <SafeText style={styles.glanceLabel}>Visitors</SafeText>
+            </Pressable>
+            <Pressable style={styles.glanceCard} accessibilityRole="button" accessibilityLabel="Delivery" onPress={openVisitors}>
+              <Ionicons name="cube-outline" size={20} color="#F59E0B" />
+              <SafeText style={styles.glanceValue}>1</SafeText>
+              <SafeText style={styles.glanceLabel}>Delivery</SafeText>
+            </Pressable>
+            <Pressable style={styles.glanceCard} accessibilityRole="button" accessibilityLabel="Booking" onPress={openFacilities}>
+              <Ionicons name="calendar-outline" size={20} color="#8B5CF6" />
+              <SafeText style={styles.glanceValue}>{dashboard.amenities.length || 1}</SafeText>
+              <SafeText style={styles.glanceLabel}>Booking</SafeText>
+            </Pressable>
+            <Pressable style={styles.glanceCard} accessibilityRole="button" accessibilityLabel="Open issues" onPress={openComplaints}>
+              <Ionicons name="compass-outline" size={20} color="#EF4444" />
+              <SafeText style={styles.glanceValue}>{dashboard.complaintProgress ? 1 : 0}</SafeText>
+              <SafeText style={styles.glanceLabel}>Open issues</SafeText>
+            </Pressable>
+          </View>
+
+          {/* 6. Community Event Card */}
+          <Pressable
+            style={styles.eventCard}
+            accessibilityRole="button"
+            accessibilityLabel={communityNotice?.title || 'Diwali Decor Workshop'}
+            onPress={() => navigation.navigate('NoticeListFromHome')}
+          >
+            <View style={styles.eventIconBadge}>
+              <Ionicons name="calendar" size={20} color="#16A34A" />
+            </View>
+            <View style={styles.eventTextCol}>
+              <SafeText style={styles.eventTitle}>{communityNotice?.title || 'Diwali Decor Workshop'}</SafeText>
+              <SafeText style={styles.eventSubtitle}>Today • 6:00 PM - 8:00 PM • Clubhouse</SafeText>
+            </View>
+            <Ionicons name="arrow-forward" size={18} color="#64748B" />
+          </Pressable>
         </ScrollView>
 
         {/* Modal Sheets & Floating Controls */}
@@ -382,7 +495,7 @@ export function ResidentHomeScreen({ navigation }: ResidentHomeScreenProps) {
           }}
         />
 
-        {scenarioLabVisible ? (
+        {isDev && scenarioLabVisible ? (
           <ScenarioLabDrawer
             visible={scenarioLabVisible}
             onClose={() => setScenarioLabVisible(false)}

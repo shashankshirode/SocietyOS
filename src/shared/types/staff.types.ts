@@ -2,7 +2,10 @@
 
 
 
-export type StaffCategory =
+import type { StaffDocument, StaffAssignment, StaffVerificationRecord } from './workforcePhase11.types';
+import type { ResidentScopedEntity } from './residentScope.types';
+
+export type StaffWorkforceCategory =
   | 'SECURITY_GUARD'
   | 'SECURITY_SUPERVISOR'
   | 'HOUSEKEEPING'
@@ -14,13 +17,19 @@ export type StaffCategory =
   | 'CLUBHOUSE_STAFF'
   | 'OFFICE_STAFF'
   | 'ACCOUNTS_STAFF'
-  | 'TREASURER'
-  | 'COMMITTEE_MEMBER'
-  | 'SECRETARY'
-  | 'CHAIRPERSON'
   | 'SOCIETY_MANAGER'
   | 'VENDOR_WORKER'
   | 'OTHER';
+
+export type GovernanceRole =
+  | 'TREASURER'
+  | 'COMMITTEE_MEMBER'
+  | 'SECRETARY'
+  | 'CHAIRPERSON';
+
+export type StaffCategory = StaffWorkforceCategory | GovernanceRole;
+
+export type StaffEngagementType = 'DIRECT_SOCIETY_STAFF' | 'VENDOR_WORKER';
 
 export type StaffEmploymentStatus =
   | 'ACTIVE'
@@ -28,7 +37,12 @@ export type StaffEmploymentStatus =
   | 'ON_LEAVE'
   | 'SUSPENDED'
   | 'EXITED'
-  | 'BLOCKED';
+  | 'BLOCKED'
+  | 'DRAFT'
+  | 'INVITED'
+  | 'VERIFICATION_PENDING'
+  | 'EXIT_REQUESTED'
+  | 'REJECTED';
 
 export type StaffVerificationStatus =
   | 'NOT_STARTED'
@@ -57,7 +71,37 @@ export type ShiftStatus =
   | 'DRAFT'
   | 'ARCHIVED';
 
+export interface StaffEngagement {
+  id: string;
+  staffId: string;
+  societyId: string;
+  engagementType: StaffEngagementType;
+  vendorId?: string;
+  vendorName?: string;
+  roleCategory: StaffWorkforceCategory;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  status: StaffEmploymentStatus;
+  assignedLocation: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface StaffAccessCredential {
+  credentialId: string;
+  staffId: string;
+  societyId: string;
+  type: 'PHYSICAL_CARD' | 'DIGITAL_QR' | 'NFC_BADGE';
+  signedQrToken?: string;
+  validFrom: string;
+  validTo?: string;
+  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'SUSPENDED';
+  allowedGates: string[];
+  revocationReason?: string;
+  revokedAt?: string;
+  createdAt: string;
+}
 
 export interface StaffProfile {
   id: string;
@@ -69,36 +113,33 @@ export interface StaffProfile {
   policeVerificationStatus: PoliceVerificationStatus;
   idDocumentStatus: IdDocumentStatus;
 
-  
   vendorId?: string;
   vendorName?: string;
   isVendorWorker: boolean;
 
-  
   assignedLocation: string;
   assignedAreas: string[];
   shiftId?: string;
   shiftName?: string;
 
-  
   mobileMasked: string;
   emergencyContactMasked?: string;
 
-  
   biometricEmployeeCode?: string;
   biometricDeviceId?: string;
 
-  
   joiningDate: string;
   exitDate?: string;
   verificationExpiryDate?: string;
 
-  
   todayStatus?: string;
   lastPunchTime?: string;
   lastPunchType?: string;
 
   photoPlaceholder?: string;
+  photoDocumentVaultId?: string;
+  accessCredentialId?: string;
+  signedQrToken?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -173,21 +214,23 @@ export interface StaffIdCard {
   validTo?: string;
   emergencyContactMasked?: string;
   photoPlaceholder?: string;
+  photoDocumentVaultId?: string;
   qrPlaceholder?: string;
+  accessCredentialId?: string;
+  signedQrToken?: string;
   isActive: boolean;
 }
-
-
 
 export interface RegisterStaffInput {
   name: string;
   category: StaffCategory;
   staffCode: string;
+  engagementType?: StaffEngagementType;
   vendorId?: string;
   mobile: string;
   emergencyContact?: string;
   assignedLocation: string;
-  shiftId: string;
+  shiftId?: string;
   joiningDate: string;
   verificationStatus: StaffVerificationStatus;
   notes?: string;
@@ -228,16 +271,47 @@ export type StaffAttendanceStatusCompat =
   | 'CHECKED_OUT'
   | 'ABSENT';
 
-export interface StaffMember {
+export interface StaffMember extends ResidentScopedEntity {
   id: string;
   name: string;
-  staffType: StaffType;
-  linkedFlats: string[];
-  verificationStatus: StaffVerificationStatusCompat;
-  attendanceStatus: StaffAttendanceStatusCompat;
+  staffType?: StaffType;
+  linkedFlats?: string[];
+  verificationStatus?: StaffVerificationStatusCompat | StaffVerificationStatus;
+  attendanceStatus?: StaffAttendanceStatusCompat;
   lastCheckIn?: string;
-  idBadgeNumber: string;
+  idBadgeNumber?: string;
   phone?: string;
   photoUrl?: string;
   expiryDate?: string;
+  societyId?: string;
+  staffCode?: string;
+  biometricEmployeeCode?: string;
+  biometricDeviceId?: string;
+  category?: StaffCategory;
+  employmentStatus?: StaffEmploymentStatus;
+  employmentType?: string;
+  assignedLocation?: string;
+  assignedAreas?: string[];
+  shiftId?: string;
+  shiftName?: string;
+  notes?: string;
+  documents?: StaffDocument[];
+  assignments?: StaffAssignment[];
+  verificationRecord?: StaffVerificationRecord;
+  joiningDate?: string;
+  effectiveFrom?: string;
+  effectiveTo?: string;
+  exitDate?: string;
+  verificationExpiryDate?: string;
+  isVendorWorker?: boolean;
+  vendorId?: string;
+  vendorName?: string;
+  mobile?: string;
+  mobileMasked?: string;
+  emergencyContact?: string;
+  emergencyContactMasked?: string;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+

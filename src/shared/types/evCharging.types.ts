@@ -29,6 +29,8 @@ export interface EvCharger {
   currentSessionId?: string;
   totalEnergyDeliveredKwh: number;
   billingReadiness: 'READY' | 'DISABLED';
+  societyId?: string;
+  locationId?: string;
 }
 
 export interface EvChargingSession {
@@ -44,6 +46,12 @@ export interface EvChargingSession {
   costEstimateAmount?: number;
   billingStatus: 'PENDING' | 'BILLED' | 'FREE_LIMIT' | 'FAILED';
   status: EvChargingSessionStatus;
+  externalSessionId?: string;
+  sourceTimestamp?: string;
+  receivedAt?: string;
+  meterStartKwh?: number;
+  meterEndKwh?: number;
+  deduplicationKey?: string;
 }
 
 export interface EvChargingDashboardData {

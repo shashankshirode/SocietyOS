@@ -1,17 +1,140 @@
-import type { StaffProfile, ShiftDefinition, ShiftAssignment, } from '../../../shared/types/staff.types';
-import type { DomesticHelp, } from '../../../shared/types/domesticHelp.types';
-import type { AttendancePunch, DailyAttendanceSummary, CorrectionRequest, MonthlyAttendanceRow, VendorAttendanceRow, } from '../../../shared/types/attendance.types';
-import type { BiometricDevice, BiometricMapping, BiometricSyncJob, BiometricSyncError, DuplicatePunchCandidate, MissingCheckoutRecord, } from '../../../shared/types/biometric.types';
-import type { StaffProfileDTO, ShiftDefinitionDTO, ShiftAssignmentDTO, DomesticHelpDTO, AttendancePunchDTO, DailyAttendanceSummaryDTO, CorrectionRequestDTO, MonthlyAttendanceRowDTO, VendorAttendanceRowDTO, BiometricDeviceDTO, BiometricMappingDTO, BiometricSyncJobDTO, BiometricSyncErrorDTO, DuplicatePunchCandidateDTO, MissingCheckoutRecordDTO, } from './staffAttendance.dto';
+import type {
+  StaffCategory,
+  StaffEmploymentStatus,
+  StaffVerificationStatus,
+  PoliceVerificationStatus,
+  IdDocumentStatus,
+  ShiftStatus,
+  StaffProfile,
+  ShiftDefinition,
+  ShiftAssignment,
+} from '../../../shared/types/staff.types';
+import type {
+  DomesticHelp,
+  DomesticHelpType,
+  DomesticHelpAccessStatus,
+  DomesticHelpVerificationStatus,
+  DomesticHelpPoliceVerificationStatus,
+} from '../../../shared/types/domesticHelp.types';
+import type {
+  AttendanceStatus,
+  PunchType,
+  PunchSource,
+  AttendancePunch,
+  DailyAttendanceSummary,
+  CorrectionRequest,
+  MonthlyAttendanceRow,
+  VendorAttendanceRow,
+} from '../../../shared/types/attendance.types';
+import type {
+  BiometricDevice,
+  BiometricMapping,
+  BiometricSyncJob,
+  BiometricSyncError,
+  DuplicatePunchCandidate,
+  MissingCheckoutRecord,
+} from '../../../shared/types/biometric.types';
+import type {
+  StaffProfileDTO,
+  ShiftDefinitionDTO,
+  ShiftAssignmentDTO,
+  DomesticHelpDTO,
+  AttendancePunchDTO,
+  DailyAttendanceSummaryDTO,
+  CorrectionRequestDTO,
+  MonthlyAttendanceRowDTO,
+  VendorAttendanceRowDTO,
+  BiometricDeviceDTO,
+  BiometricMappingDTO,
+  BiometricSyncJobDTO,
+  BiometricSyncErrorDTO,
+  DuplicatePunchCandidateDTO,
+  MissingCheckoutRecordDTO,
+} from './staffAttendance.dto';
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
+
+export function normalizeAttendanceStatus(raw?: string): AttendanceStatus {
+  const allowed: AttendanceStatus[] = [
+    'PRESENT', 'ABSENT', 'LATE', 'HALF_DAY', 'ON_LEAVE', 'WEEKLY_OFF', 'HOLIDAY', 'MISSING_CHECKOUT', 'PENDING_CORRECTION'
+  ];
+  if (raw && allowed.includes(raw as AttendanceStatus)) {
+    return raw as AttendanceStatus;
+  }
+  return 'ABSENT';
+}
+
+export function normalizePunchSource(raw?: string): PunchSource {
+  const allowed: PunchSource[] = [
+    'BIOMETRIC_DEVICE', 'MANUAL', 'GUARD_APP', 'IMPORT_FILE', 'API_CONNECTOR'
+  ];
+  if (raw && allowed.includes(raw as PunchSource)) {
+    return raw as PunchSource;
+  }
+  return 'MANUAL';
+}
+
+export function normalizePunchType(raw?: string): PunchType {
+  const allowed: PunchType[] = [
+    'IN', 'OUT', 'BREAK_IN', 'BREAK_OUT', 'UNKNOWN'
+  ];
+  if (raw && allowed.includes(raw as PunchType)) {
+    return raw as PunchType;
+  }
+  return 'UNKNOWN';
+}
+
+export function normalizeStaffCategory(raw?: string): StaffCategory {
+  const allowed: StaffCategory[] = [
+    'SECURITY_GUARD', 'SECURITY_SUPERVISOR', 'HOUSEKEEPING', 'FACILITY_STAFF', 'GARDENER', 'PLUMBER', 'ELECTRICIAN',
+    'LIFT_OPERATOR', 'CLUBHOUSE_STAFF', 'OFFICE_STAFF', 'ACCOUNTS_STAFF', 'SOCIETY_MANAGER', 'VENDOR_WORKER', 'OTHER',
+    'TREASURER', 'COMMITTEE_MEMBER', 'SECRETARY', 'CHAIRPERSON'
+  ];
+  if (raw && allowed.includes(raw as StaffCategory)) {
+    return raw as StaffCategory;
+  }
+  return 'OTHER';
+}
+
+export function normalizeStaffEmploymentStatus(raw?: string): StaffEmploymentStatus {
+  const allowed: StaffEmploymentStatus[] = ['ACTIVE', 'INACTIVE', 'ON_LEAVE', 'SUSPENDED', 'EXITED', 'BLOCKED'];
+  if (raw && allowed.includes(raw as StaffEmploymentStatus)) {
+    return raw as StaffEmploymentStatus;
+  }
+  return 'INACTIVE';
+}
+
+export function normalizeStaffVerificationStatus(raw?: string): StaffVerificationStatus {
+  const allowed: StaffVerificationStatus[] = ['NOT_STARTED', 'PENDING', 'VERIFIED', 'REJECTED', 'EXPIRED'];
+  if (raw && allowed.includes(raw as StaffVerificationStatus)) {
+    return raw as StaffVerificationStatus;
+  }
+  return 'NOT_STARTED';
+}
+
+export function normalizePoliceVerificationStatus(raw?: string): PoliceVerificationStatus {
+  const allowed: PoliceVerificationStatus[] = ['NOT_SUBMITTED', 'SUBMITTED', 'VERIFIED', 'REJECTED', 'EXPIRED'];
+  if (raw && allowed.includes(raw as PoliceVerificationStatus)) {
+    return raw as PoliceVerificationStatus;
+  }
+  return 'NOT_SUBMITTED';
+}
+
+export function normalizeIdDocumentStatus(raw?: string): IdDocumentStatus {
+  const allowed: IdDocumentStatus[] = ['NOT_COLLECTED', 'COLLECTED', 'VERIFIED', 'REJECTED', 'EXPIRED'];
+  if (raw && allowed.includes(raw as IdDocumentStatus)) {
+    return raw as IdDocumentStatus;
+  }
+  return 'NOT_COLLECTED';
+}
+
 export const staffAttendanceMappers = {
     toStaff: (dto: StaffProfileDTO): StaffProfile => ({
         id: dto.id, staffCode: dto.staff_code, name: dto.name,
-        category: dto.category as StaffProfile['category'],
-        employmentStatus: dto.employment_status as StaffProfile['employmentStatus'],
-        verificationStatus: dto.verification_status as StaffProfile['verificationStatus'],
-        policeVerificationStatus: dto.police_verification_status as StaffProfile['policeVerificationStatus'],
-        idDocumentStatus: dto.id_document_status as StaffProfile['idDocumentStatus'],
+        category: normalizeStaffCategory(dto.category),
+        employmentStatus: normalizeStaffEmploymentStatus(dto.employment_status),
+        verificationStatus: normalizeStaffVerificationStatus(dto.verification_status),
+        policeVerificationStatus: normalizePoliceVerificationStatus(dto.police_verification_status),
+        idDocumentStatus: normalizeIdDocumentStatus(dto.id_document_status),
         ...includeWhenPresent("vendorId", dto.vendor_id),
         ...includeWhenPresent("vendorName", dto.vendor_name),
         isVendorWorker: dto.is_vendor_worker,
@@ -32,6 +155,7 @@ export const staffAttendanceMappers = {
         ...includeWhenPresent("notes", dto.notes),
         createdAt: dto.created_at, updatedAt: dto.updated_at
     }),
+
     toDomesticHelp: (dto: DomesticHelpDTO): DomesticHelp => ({
         id: dto.id, name: dto.name,
         helpType: dto.help_type as DomesticHelp['helpType'],

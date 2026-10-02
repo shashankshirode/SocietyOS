@@ -29,6 +29,13 @@ let mockSettingsStore: ResidentSettings = {
     chat: true,
     communityUpdates: true,
   },
+  temporal: {
+    dateFormat: 'DD_MMM_YYYY',
+    timeFormat: 'TWELVE_HOUR',
+    displayTimezoneMode: 'DUAL_WHEN_DIFFERENT',
+    customTimeZone: null,
+    locale: 'en-IN',
+  },
 };
 
 export const settingsMockSource: ResidentSettingsRepository = {

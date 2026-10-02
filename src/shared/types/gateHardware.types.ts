@@ -1,6 +1,8 @@
 
 
 
+import type { BarrierCommandState } from './hardware.types';
+
 export type RfidAccessResult =
   | 'ALLOWED'
   | 'DENIED'
@@ -45,6 +47,11 @@ export interface RfidEvent {
   timestamp: string;
   accessResult: RfidAccessResult;
   gateLocation: string;
+  correlationId?: string;
+  sourceTimestamp?: string;
+  receivedAt?: string;
+  stalePolicyDetected?: boolean;
+  deduplicationKey?: string;
 }
 
 export interface RfidTagMapping {
@@ -58,6 +65,10 @@ export interface RfidTagMapping {
   accessZone: string;
   status: RfidTagStatus;
   notes?: string;
+  vehicleId?: string;
+  unitId?: string;
+  staffCredentialId?: string;
+  societyId?: string;
 }
 
 export interface AnprEvent {
@@ -71,6 +82,14 @@ export interface AnprEvent {
   gateLocation: string;
   timestamp: string;
   status: 'MATCHED' | 'UNMATCHED' | 'LOW_CONFIDENCE' | 'DENIED';
+  vehicleId?: string;
+  captureImageUrl?: string;
+  reviewStatus?: 'PENDING_REVIEW' | 'REVIEWED' | 'NOT_REQUIRED';
+  reviewedBy?: string;
+  reviewDecision?: AnprReviewDecision;
+  sourceTimestamp?: string;
+  receivedAt?: string;
+  deduplicationKey?: string;
 }
 
 export interface AnprVehicleMatchReview {
@@ -80,6 +99,7 @@ export interface AnprVehicleMatchReview {
   confidenceScore: number;
   reviewerDecision: AnprReviewDecision;
   notes: string;
+  matchedVehicleId?: string;
 }
 
 export interface BoomBarrierDevice {
@@ -91,6 +111,24 @@ export interface BoomBarrierDevice {
   lastOpenTime?: string;
   lastCloseTime?: string;
   deniedCount: number;
+  lastCommandState?: BarrierCommandState;
+  controllerState?: BoomBarrierStatus;
+  positionSensorState?: BoomBarrierStatus;
+  stateDiscrepancy?: boolean;
+}
+
+export interface BarrierCommandRecord {
+  commandId: string;
+  barrierId: string;
+  commandType: 'OPEN' | 'CLOSE';
+  state: BarrierCommandState;
+  requestedBy: string;
+  reason?: string;
+  emergencyIncidentId?: string;
+  sentAt: string;
+  acknowledgedAt?: string;
+  confirmedAt?: string;
+  idempotencyKey: string;
 }
 
 export interface GateHardwareDashboardData {

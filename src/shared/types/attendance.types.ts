@@ -219,3 +219,84 @@ export interface RejectCorrectionInput {
   rejectionReason: string;
   confirmationChecked: boolean;
 }
+
+export interface AttendanceDay {
+  date: string;
+  staffId: string;
+  staffName: string;
+  staffCode: string;
+  shiftId?: string;
+  shiftName?: string;
+  status: AttendanceStatus;
+  firstPunchIn?: string;
+  lastPunchOut?: string;
+  totalWorkingMinutes?: number;
+  minutesLate?: number;
+  earlyCheckoutMinutes?: number;
+  punches: AttendancePunch[];
+  isManual: boolean;
+  correctionApplied: boolean;
+  notes?: string;
+}
+
+export interface VendorAttendanceVerification {
+  id: string;
+  societyId: string;
+  vendorId: string;
+  vendorName: string;
+  billingPeriodMonth: string;
+  totalWorkersAssigned: number;
+  expectedManDays: number;
+  verifiedPresentManDays: number;
+  disputedDays: number;
+  absentDays: number;
+  lateArrivalsCount: number;
+  missingPunchDays: number;
+  status: VendorAttendanceVerificationStatus;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  lockedAt?: string;
+  lockHash?: string;
+  auditNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollInputSnapshot {
+  id: string;
+  societyId: string;
+  month: string;
+  year: number;
+  version: number;
+  policyVersion: string;
+  totalStaffCount: number;
+  totalExpectedDays: number;
+  totalPresentDays: number;
+  totalAbsentDays: number;
+  totalLateInstances: number;
+  totalHalfDays: number;
+  totalApprovedLeaveDays: number;
+  totalApprovedOvertimeHours: number;
+  unresolvedExceptionsCount: number;
+  generatedBy: string;
+  generatedAt: string;
+  isLocked: boolean;
+  lockedAt?: string;
+  snapshotDataRevision: string;
+  records: {
+    staffId: string;
+    staffName: string;
+    staffCode: string;
+    category: string;
+    vendorId?: string;
+    expectedDays: number;
+    presentDays: number;
+    absentDays: number;
+    lateInstances: number;
+    halfDays: number;
+    approvedLeaveDays: number;
+    approvedOvertimeHours: number;
+    correctionCount: number;
+  }[];
+}
+

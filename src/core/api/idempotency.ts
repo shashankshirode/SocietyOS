@@ -3,3 +3,8 @@ export function createIdempotencyKey(prefix: string): string {
   return `${safePrefix || 'request'}_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
 }
 
+export function generateOperationId(prefix: string): string {
+  return createIdempotencyKey(prefix);
+}
+
+

@@ -1,9 +1,43 @@
 import type { RepositoryResult } from '../../../core/repositories/repository.types';
-import type { HardwareDevice, DeviceLocationMapping, HardwareSyncJob, HardwareEvent, HardwareErrorRecord, IntegrationHealthRow, HardwareAuditLogEntry, HardwareSettingGroup, HardwareHomeData, DevicePermissionRow, HardwarePrivacyRule } from '../../../shared/types/hardware.types';
+import type {
+  HardwareDevice,
+  DeviceLocationMapping,
+  HardwareSyncJob,
+  HardwareEvent,
+  HardwareErrorRecord,
+  IntegrationHealthRow,
+  HardwareAuditLogEntry,
+  HardwareSettingGroup,
+  HardwareHomeData,
+  DevicePermissionRow,
+  HardwarePrivacyRule,
+  HardwareReadinessRecord,
+  IntegrationHealthLogRecord,
+  RegisterHardwareDeviceCommand,
+  UpdateHardwareDeviceCommand,
+  MapDeviceLocationCommand,
+  CreateRfidTagMappingCommand,
+  UpdateRfidTagMappingCommand,
+  RequestBarrierOverrideCommand,
+  RequestCctvAccessCommand,
+  ImportMeterReadingsCommand,
+  ResolveHardwareErrorCommand,
+  IgnoreHardwareErrorCommand,
+  EscalateHardwareErrorCommand,
+  UpdateHardwareSettingsCommand,
+} from '../../../shared/types/hardware.types';
 import type { RfidEvent, RfidTagMapping, AnprEvent, AnprVehicleMatchReview, BoomBarrierDevice, GateHardwareDashboardData } from '../../../shared/types/gateHardware.types';
-import type { CctvCamera, CctvAccessRequest } from '../../../shared/types/cctv.types';
-import type { SmartMeter, SmartMeterReading, SmartMeterDashboardData } from '../../../shared/types/smartMeter.types';
-import type { EvCharger, EvChargingSession, EvChargingDashboardData } from '../../../shared/types/evCharging.types';
+import type { CctvCamera } from '../../../shared/types/cctv.types';
+import type {
+  SmartMeter,
+  SmartMeterReading,
+  SmartMeterDashboardData,
+} from '../../../shared/types/smartMeter.types';
+import type {
+  EvCharger,
+  EvChargingSession,
+  EvChargingDashboardData,
+} from '../../../shared/types/evCharging.types';
 import { mockHardwareHome } from '../../../shared/mock/hardwareDashboard.mock';
 import { mockHardwareDevices } from '../../../shared/mock/hardwareDevices.mock';
 import { mockDeviceLocationMappings } from '../../../shared/mock/deviceLocationMappings.mock';
@@ -22,8 +56,32 @@ import { mockHardwareEvents } from '../../../shared/mock/hardwareEvents.mock';
 import { mockHardwareErrors } from '../../../shared/mock/hardwareErrors.mock';
 import { mockIntegrationHealth } from '../../../shared/mock/integrationHealth.mock';
 import { mockHardwareAuditLogs } from '../../../shared/mock/hardwareAuditLogs.mock';
-import { anprIntegrationReadinessMockData, boomBarrierReadinessMockData, cctvAccessReadinessMockData, evChargingReadinessMockData, integrationHealthLogsMockData, rfidIntegrationReadinessMockData, smartMeterReadinessMockData, type HardwareReadinessRecord, type IntegrationHealthLogRecord, } from './hardwareIntegration.mockData';
+import { anprIntegrationReadinessMockData, boomBarrierReadinessMockData, cctvAccessReadinessMockData, evChargingReadinessMockData, integrationHealthLogsMockData, rfidIntegrationReadinessMockData, smartMeterReadinessMockData } from './hardwareIntegration.mockData';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
+import {
+  deviceRegistryService,
+  rfidIntegrationService,
+  anprIntegrationService,
+  boomBarrierService,
+  cctvIntegrationService,
+  smartMeterConnectorService,
+  evChargingConnectorService,
+  hardwareHealthObservabilityService,
+} from '../services';
+
+deviceRegistryService.seedInitialDevices(mockHardwareDevices);
+deviceRegistryService.seedInitialMappings(mockDeviceLocationMappings);
+rfidIntegrationService.seedInitialMappings(mockRfidTagMappings);
+rfidIntegrationService.seedInitialEvents(mockRfidEvents);
+anprIntegrationService.seedInitialEvents(mockAnprEvents);
+boomBarrierService.seedInitialBarriers(mockBoomBarriers);
+cctvIntegrationService.seedInitialCameras(mockCctvCameras);
+smartMeterConnectorService.seedInitialMeters(mockSmartMeters);
+smartMeterConnectorService.seedInitialReadings(mockSmartMeterReadings);
+evChargingConnectorService.seedInitialChargers(mockEvChargers);
+evChargingConnectorService.seedInitialSessions(mockEvChargingSessions);
+hardwareHealthObservabilityService.seedInitialErrors(mockHardwareErrors);
+
 const delay = (ms = 400) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const ok = <T>(data: T): RepositoryResult<T> => ({ ok: true, data });
 type BiometricConnectorStatus = {
@@ -31,7 +89,7 @@ type BiometricConnectorStatus = {
     lastSync: string;
 };
 type AnprReviewInput = Pick<AnprVehicleMatchReview, 'reviewerDecision' | 'notes'>;
-type CctvRequestInput = Pick<CctvAccessRequest, 'cameraId' | 'reason' | 'durationMinutes'>;
+
 export const hardwareIntegrationMockSource = {
     getHardwareHome: async (): Promise<RepositoryResult<HardwareHomeData>> => {
         await delay();
@@ -48,31 +106,46 @@ export const hardwareIntegrationMockSource = {
             return { ok: false, error: { message: 'Device not found', code: 'NOT_FOUND' } };
         return ok(d);
     },
-    registerHardwareDevice: async (input: Partial<HardwareDevice>): Promise<RepositoryResult<HardwareDevice>> => {
+    registerHardwareDevice: async (input: RegisterHardwareDeviceCommand): Promise<RepositoryResult<HardwareDevice>> => {
         await delay();
         return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: `dev-${Date.now()}`, ...input });
     },
-    updateHardwareDevice: async (deviceId: string, input: Partial<HardwareDevice>): Promise<RepositoryResult<HardwareDevice>> => {
+    updateHardwareDevice: async (deviceId: string, input: UpdateHardwareDeviceCommand): Promise<RepositoryResult<HardwareDevice>> => {
         await delay();
         return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: deviceId, ...input });
     },
-    markDeviceInactive: async (deviceId: string): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    activateHardwareDevice: async (deviceId: string): Promise<RepositoryResult<HardwareDevice>> => {
         await delay();
-        return ok({ success: true });
+        return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: deviceId, status: 'ONLINE', lifecycleState: 'ACTIVE', healthState: 'ONLINE' });
     },
-    testDeviceSyncPlaceholder: async (deviceId: string): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    suspendHardwareDevice: async (deviceId: string, reason: string): Promise<RepositoryResult<HardwareDevice>> => {
         await delay();
-        return ok({ success: true });
+        return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: deviceId, status: 'DISABLED', lifecycleState: 'SUSPENDED' });
+    },
+    decommissionHardwareDevice: async (deviceId: string, reason: string): Promise<RepositoryResult<HardwareDevice>> => {
+        await delay();
+        return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: deviceId, status: 'DISABLED', lifecycleState: 'DECOMMISSIONED', decommissionedAt: new Date().toISOString() });
+    },
+    replaceHardwareDevice: async (oldDeviceId: string, newDeviceCommand: RegisterHardwareDeviceCommand): Promise<RepositoryResult<{ oldDevice: HardwareDevice; newDevice: HardwareDevice }>> => {
+        await delay();
+        return ok({
+            oldDevice: getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"),
+            newDevice: { ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: `dev-${Date.now()}`, ...newDeviceCommand, replacedDeviceId: oldDeviceId }
+        });
+    },
+    rotateDeviceCredential: async (deviceId: string, newCredentialRef: string): Promise<RepositoryResult<HardwareDevice>> => {
+        await delay();
+        return ok({ ...getRequiredItem(mockHardwareDevices, 0, "hardwareIntegration.mockSource.ts"), id: deviceId, credentialReference: newCredentialRef });
+    },
+    testDeviceSync: async (deviceId: string): Promise<RepositoryResult<{ success: boolean; lastHeartbeat: string }>> => {
+        await delay();
+        return ok({ success: true, lastHeartbeat: new Date().toISOString() });
     },
     getDeviceLocationMappings: async (): Promise<RepositoryResult<DeviceLocationMapping[]>> => {
         await delay();
         return ok([...mockDeviceLocationMappings]);
     },
-    createDeviceLocationMapping: async (input: Partial<DeviceLocationMapping>): Promise<RepositoryResult<DeviceLocationMapping>> => {
+    createDeviceLocationMapping: async (input: MapDeviceLocationCommand): Promise<RepositoryResult<DeviceLocationMapping>> => {
         await delay();
         return ok({ ...getRequiredItem(mockDeviceLocationMappings, 0, "hardwareIntegration.mockSource.ts"), id: `dlm-${Date.now()}`, ...input });
     },
@@ -96,11 +169,11 @@ export const hardwareIntegrationMockSource = {
         await delay();
         return ok([...mockRfidTagMappings]);
     },
-    createRfidTagMapping: async (input: Partial<RfidTagMapping>): Promise<RepositoryResult<RfidTagMapping>> => {
+    createRfidTagMapping: async (input: CreateRfidTagMappingCommand): Promise<RepositoryResult<RfidTagMapping>> => {
         await delay();
         return ok({ ...getRequiredItem(mockRfidTagMappings, 0, "hardwareIntegration.mockSource.ts"), id: `rtm-${Date.now()}`, ...input });
     },
-    updateRfidTagMapping: async (mappingId: string, input: Partial<RfidTagMapping>): Promise<RepositoryResult<RfidTagMapping>> => {
+    updateRfidTagMapping: async (mappingId: string, input: UpdateRfidTagMappingCommand): Promise<RepositoryResult<RfidTagMapping>> => {
         await delay();
         return ok({ ...getRequiredItem(mockRfidTagMappings, 0, "hardwareIntegration.mockSource.ts"), id: mappingId, ...input });
     },
@@ -116,9 +189,7 @@ export const hardwareIntegrationMockSource = {
         await delay();
         return ok([...mockAnprEvents]);
     },
-    reviewAnprVehicleMatch: async (eventId: string, input: AnprReviewInput): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    reviewAnprVehicleMatch: async (eventId: string, input: AnprReviewInput): Promise<RepositoryResult<{ success: boolean }>> => {
         await delay();
         return ok({ success: true });
     },
@@ -137,13 +208,28 @@ export const hardwareIntegrationMockSource = {
             return { ok: false, error: { message: 'Barrier not found', code: 'NOT_FOUND' } };
         return ok(b);
     },
-    requestBoomBarrierManualOverridePlaceholder: async (barrierId: string, input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    issueBarrierCommand: async (input: {
+        barrierId: string;
+        commandType: 'OPEN' | 'CLOSE';
+        idempotencyKey: string;
+        reason?: string;
+        emergencyIncidentId?: string;
+    }): Promise<RepositoryResult<{ commandId: string; state: string }>> => {
         await delay();
-        return ok({ success: true });
+        return ok({ commandId: `cmd-${Date.now()}`, state: 'CONFIRMED' });
     },
-    getCctvAccessPlaceholder: async (): Promise<RepositoryResult<CctvAccessRequest[]>> => {
+    requestBoomBarrierManualOverride: async (input: RequestBarrierOverrideCommand): Promise<RepositoryResult<{ commandId: string; state: string }>> => {
+        await delay();
+        return ok({ commandId: `cmd-${Date.now()}`, state: 'CONFIRMED' });
+    },
+    reconcileBarrierState: async (barrierId: string, controllerState: string, positionSensorState: string): Promise<RepositoryResult<BoomBarrierDevice>> => {
+        await delay();
+        const b = mockBoomBarriers.find(x => x.id === barrierId);
+        if (!b)
+            return { ok: false, error: { message: 'Barrier not found', code: 'NOT_FOUND' } };
+        return ok({ ...b, controllerState: controllerState as any, positionSensorState: positionSensorState as any });
+    },
+    getCctvAccessRequests: async (): Promise<RepositoryResult<CctvAccessRequest[]>> => {
         await delay();
         return ok([]);
     },
@@ -162,19 +248,65 @@ export const hardwareIntegrationMockSource = {
             return { ok: false, error: { message: 'Camera not found', code: 'NOT_FOUND' } };
         return ok(c);
     },
-    createCctvAccessRequestPlaceholder: async (input: CctvRequestInput): Promise<RepositoryResult<CctvAccessRequest>> => {
+    createCctvAccessRequest: async (input: RequestCctvAccessCommand): Promise<RepositoryResult<CctvAccessRequest>> => {
         await delay();
         return ok({
             id: `car-${Date.now()}`,
             cameraId: input.cameraId,
             cameraName: 'CCTV Camera',
-            requesterName: 'Suresh Patil',
+            requesterName: 'Authorized Operator',
             requesterRole: 'FACILITY_MANAGER',
+            requesterId: 'user-01',
             reason: input.reason,
+            purpose: input.purpose,
             durationMinutes: input.durationMinutes,
             status: 'PENDING',
             requestedAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + input.durationMinutes * 60000).toISOString(),
+            incidentReferenceId: input.incidentReferenceId,
         });
+    },
+    approveCctvAccess: async (requestId: string): Promise<RepositoryResult<CctvAccessRequest>> => {
+        await delay();
+        return ok({
+            id: requestId,
+            cameraId: 'cam-01',
+            cameraName: 'CCTV Camera',
+            requesterName: 'Authorized Operator',
+            requesterRole: 'FACILITY_MANAGER',
+            requesterId: 'user-01',
+            reason: 'Test',
+            purpose: 'SECURITY_INCIDENT',
+            durationMinutes: 30,
+            status: 'APPROVED',
+            requestedAt: new Date().toISOString(),
+            approvedAt: new Date().toISOString(),
+            approvedBy: 'Admin',
+            accessToken: `cctv-token-${Date.now()}`,
+            evidenceReference: `cctv://vault/evidence/cam-01/${Date.now()}`,
+            evidenceChecksum: 'sha256-test',
+            expiresAt: new Date(Date.now() + 30 * 60000).toISOString(),
+        });
+    },
+    rejectCctvAccess: async (requestId: string, reason: string): Promise<RepositoryResult<CctvAccessRequest>> => {
+        await delay();
+        return ok({
+            id: requestId,
+            cameraId: 'cam-01',
+            cameraName: 'CCTV Camera',
+            requesterName: 'Authorized Operator',
+            requesterRole: 'FACILITY_MANAGER',
+            requesterId: 'user-01',
+            reason: 'Test',
+            purpose: 'SECURITY_INCIDENT',
+            durationMinutes: 30,
+            status: 'REJECTED',
+            requestedAt: new Date().toISOString(),
+        });
+    },
+    verifyCctvAccessToken: async (requestId: string, token: string): Promise<RepositoryResult<{ valid: boolean; evidenceReference?: string }>> => {
+        await delay();
+        return ok({ valid: true, evidenceReference: `cctv://vault/evidence/cam-01/${Date.now()}` });
     },
     getSmartMeterDashboard: async (): Promise<RepositoryResult<SmartMeterDashboardData>> => {
         await delay();
@@ -199,11 +331,35 @@ export const hardwareIntegrationMockSource = {
         await delay();
         return ok([...mockSmartMeterReadings]);
     },
-    importMeterReadingsPlaceholder: async (input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    ingestMeterReading: async (input: {
+        meterId: string;
+        currentValue: number;
+        readingDate: string;
+        source: 'AUTOMATIC' | 'MANUAL' | 'IMPORT' | 'ESTIMATED';
+        unitNumber?: string;
+    }): Promise<RepositoryResult<SmartMeterReading>> => {
         await delay();
-        return ok({ success: true });
+        return ok({
+            id: `smr-${Date.now()}`,
+            meterId: input.meterId,
+            meterCode: 'WM-TEST',
+            unitNumber: input.unitNumber || 'A-101',
+            type: 'WATER',
+            previousReadingValue: 100,
+            currentReadingValue: input.currentValue,
+            consumptionValue: input.currentValue - 100,
+            readingDate: input.readingDate,
+            source: input.source,
+            status: 'VALIDATED',
+            billingReadiness: 'READY',
+            sourceTimestamp: input.readingDate,
+            receivedAt: new Date().toISOString(),
+            deduplicationKey: `meter_${input.meterId}_${input.currentValue}_${input.readingDate}`,
+        });
+    },
+    importMeterReadings: async (input: ImportMeterReadingsCommand): Promise<RepositoryResult<{ imported: number; failed: number }>> => {
+        await delay();
+        return ok({ imported: input.readings.length, failed: 0 });
     },
     getEvChargingDashboard: async (): Promise<RepositoryResult<EvChargingDashboardData>> => {
         await delay();
@@ -235,6 +391,36 @@ export const hardwareIntegrationMockSource = {
             return { ok: false, error: { message: 'Session not found', code: 'NOT_FOUND' } };
         return ok(s);
     },
+    processEvSessionEvent: async (input: {
+        chargerId: string;
+        externalSessionId: string;
+        eventType: 'START' | 'UPDATE' | 'STOP';
+        timestamp: string;
+        energyConsumedKwh?: number;
+        meterStartKwh?: number;
+        meterEndKwh?: number;
+        claimedResidentName?: string;
+        claimedUnitNumber?: string;
+        vehicleNumberMasked?: string;
+    }): Promise<RepositoryResult<EvChargingSession>> => {
+        await delay();
+        return ok({
+            id: `sess-${Date.now()}`,
+            chargerId: input.chargerId,
+            chargerName: 'Test Charger',
+            residentName: input.claimedResidentName || 'Test User',
+            unitNumber: input.claimedUnitNumber || 'A-101',
+            vehicleNumberMasked: input.vehicleNumberMasked || 'EV-**-****',
+            startTime: input.timestamp,
+            energyConsumedKwh: input.energyConsumedKwh || 0,
+            billingStatus: 'PENDING',
+            status: input.eventType === 'STOP' ? 'COMPLETED' : 'IN_PROGRESS',
+            externalSessionId: input.externalSessionId,
+            sourceTimestamp: input.timestamp,
+            receivedAt: new Date().toISOString(),
+            deduplicationKey: `ev_${input.chargerId}_${input.externalSessionId}_${input.eventType}_${input.timestamp}`,
+        });
+    },
     getBiometricConnectorAlignment: async (): Promise<RepositoryResult<BiometricConnectorStatus>> => {
         await delay();
         return ok({ syncHealth: 'HEALTHY', lastSync: new Date().toISOString() });
@@ -265,23 +451,50 @@ export const hardwareIntegrationMockSource = {
         await delay();
         return ok([...mockHardwareErrors]);
     },
-    resolveHardwareErrorPlaceholder: async (errorId: string, input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    resolveHardwareError: async (input: ResolveHardwareErrorCommand): Promise<RepositoryResult<HardwareErrorRecord>> => {
         await delay();
-        return ok({ success: true });
+        return ok({
+            id: input.errorId,
+            deviceId: 'dev-01',
+            deviceName: 'Test Device',
+            errorType: 'VENDOR_API_ERROR',
+            message: 'Test error',
+            createdAt: new Date().toISOString(),
+            status: 'RESOLVED',
+            suggestedAction: 'Test',
+            resolutionNotes: `[${input.resolutionAction}] ${input.notes}`,
+            resolvedBy: 'Admin',
+            resolvedAt: new Date().toISOString(),
+            correctiveWorkOrderId: input.correctiveWorkOrderId,
+        });
     },
-    ignoreHardwareErrorPlaceholder: async (errorId: string, input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    ignoreHardwareError: async (input: IgnoreHardwareErrorCommand): Promise<RepositoryResult<HardwareErrorRecord>> => {
         await delay();
-        return ok({ success: true });
+        return ok({
+            id: input.errorId,
+            deviceId: 'dev-01',
+            deviceName: 'Test Device',
+            errorType: 'VENDOR_API_ERROR',
+            message: 'Test error',
+            createdAt: new Date().toISOString(),
+            status: 'IGNORED',
+            suggestedAction: 'Test',
+            resolutionNotes: `Ignored: ${input.reason}`,
+        });
     },
-    escalateHardwareErrorPlaceholder: async (errorId: string, input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    escalateHardwareError: async (input: EscalateHardwareErrorCommand): Promise<RepositoryResult<HardwareErrorRecord>> => {
         await delay();
-        return ok({ success: true });
+        return ok({
+            id: input.errorId,
+            deviceId: 'dev-01',
+            deviceName: 'Test Device',
+            errorType: 'VENDOR_API_ERROR',
+            message: 'Test error',
+            createdAt: new Date().toISOString(),
+            status: 'ESCALATED',
+            suggestedAction: `Escalated to ${input.targetDepartment}: ${input.escalationNotes}`,
+            correctiveWorkOrderId: input.createWorkOrder ? `wo-hw-${Date.now()}` : undefined,
+        });
     },
     getIntegrationHealth: async (): Promise<RepositoryResult<IntegrationHealthRow[]>> => {
         await delay();
@@ -307,11 +520,8 @@ export const hardwareIntegrationMockSource = {
         await delay();
         return ok([]);
     },
-    updateHardwareSettings: async (input: JsonObject): Promise<RepositoryResult<{
-        success: boolean;
-    }>> => {
+    updateHardwareSettings: async (input: UpdateHardwareSettingsCommand): Promise<RepositoryResult<{ success: boolean }>> => {
         await delay();
         return ok({ success: true });
     },
 };
-

@@ -1,7 +1,8 @@
-import { appConfig } from '../../../core/config/appConfig';
+import { resolveStaffAttendanceSourceMode } from '../../staffAttendance/data/staffAttendanceSourceGuard';
 import { biometricApiSource } from './biometricAttendance.apiSource';
 import { biometricMockSource } from './biometricAttendance.mockSource';
 
 export const biometricRepository =
-  appConfig.dataSourceMode === 'api' ? biometricApiSource : biometricMockSource;
+  resolveStaffAttendanceSourceMode() === 'api' ? biometricApiSource : biometricMockSource;
 export default biometricRepository;
+

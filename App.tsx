@@ -7,6 +7,7 @@ import { ModalProvider } from './src/ui/modal';
 import { LanguageProvider } from './src/shared/localization';
 import { ExperienceRuntimeProvider } from './src/core/experience';
 import { SocietyShimmerProvider } from './src/ui/loading';
+import { AuthProvider } from './src/core/auth/AuthProvider';
 
 export default function App() {
   return (
@@ -15,13 +16,15 @@ export default function App() {
         <ExperienceRuntimeProvider>
           <MockStoreProvider>
             <ResidentHomeContextProvider>
-              <ThemeProvider>
-                <ModalProvider>
-                  <SocietyShimmerProvider>
-                    <RootNavigator />
-                  </SocietyShimmerProvider>
-                </ModalProvider>
-              </ThemeProvider>
+              <AuthProvider>
+                <ThemeProvider>
+                  <ModalProvider>
+                    <SocietyShimmerProvider>
+                      <RootNavigator />
+                    </SocietyShimmerProvider>
+                  </ModalProvider>
+                </ThemeProvider>
+              </AuthProvider>
             </ResidentHomeContextProvider>
           </MockStoreProvider>
         </ExperienceRuntimeProvider>

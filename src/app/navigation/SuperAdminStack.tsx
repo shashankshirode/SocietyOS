@@ -91,7 +91,7 @@ import { EvChargingReadinessScreen } from '../../modules/hardwareIntegration/scr
 import { IntegrationHealthLogsScreen } from '../../modules/hardwareIntegration/screens/IntegrationHealthLogsScreen';
 import { RfidIntegrationReadinessScreen } from '../../modules/hardwareIntegration/screens/RfidIntegrationReadinessScreen';
 import { SmartMeterReadinessScreen } from '../../modules/hardwareIntegration/screens/SmartMeterReadinessScreen';
-import { AutomatedNoticeDraftingPlaceholderScreen, AutomationAuditLogScreen, BillExplanationAssistantPlaceholderScreen, MaintenanceRiskAlertsPlaceholderScreen, MeetingSummaryGeneratorPlaceholderScreen, SmartComplaintRoutingPlaceholderScreen, SmartDocumentSearchPlaceholderScreen } from '../../modules/automation';
+import { AutomationDashboardScreen, BillExplanationAssistantPlaceholderScreen, MaintenanceRiskAlertsPlaceholderScreen, MeetingSummaryGeneratorPlaceholderScreen, SmartComplaintRoutingPlaceholderScreen, SmartDocumentSearchPlaceholderScreen } from '../../modules/automation';
 import { SocietyFeatureFlagManagementScreen } from '../../modules/superAdmin/screens/SocietyFeatureFlagManagementScreen';
 import { SocietyListScreen } from '../../modules/superAdmin/screens/SocietyListScreen';
 
@@ -323,12 +323,13 @@ export function SuperAdminStack() {
       <Stack.Screen name="EV_CHARGING_READINESS" component={EvChargingReadinessScreen} />
       <Stack.Screen name="INTEGRATION_HEALTH_LOGS" component={IntegrationHealthLogsScreen} />
       <Stack.Screen name="SMART_COMPLAINT_ROUTING" component={SmartComplaintRoutingPlaceholderScreen} />
-      <Stack.Screen name="AUTOMATED_NOTICE_DRAFTING" component={AutomatedNoticeDraftingPlaceholderScreen} />
+      <Stack.Screen name="AUTOMATED_NOTICE_DRAFTING" component={SmartComplaintRoutingPlaceholderScreen} />
       <Stack.Screen name="SMART_DOCUMENT_SEARCH" component={SmartDocumentSearchPlaceholderScreen} />
       <Stack.Screen name="BILL_EXPLANATION_ASSISTANT" component={BillExplanationAssistantPlaceholderScreen} />
       <Stack.Screen name="MEETING_SUMMARY_GENERATOR" component={MeetingSummaryGeneratorPlaceholderScreen} />
       <Stack.Screen name="MAINTENANCE_RISK_ALERTS" component={MaintenanceRiskAlertsPlaceholderScreen} />
-      <Stack.Screen name="AUTOMATION_AUDIT_LOG" component={AutomationAuditLogScreen} />
+      <Stack.Screen name="AUTOMATION_AUDIT_LOG" component={AutomationDashboardScreen} />
+      <Stack.Screen name="AUTOMATION_DASHBOARD" component={AutomationDashboardScreen} />
       <Stack.Screen name="SOCIETY_ONBOARDING" component={SocietyOnboardingScreen as React.ComponentType} />
       <Stack.Screen name="SOCIETY_LIST" component={SocietyListScreen} />
       <Stack.Screen name="SOCIETY_FEATURE_FLAG_MANAGEMENT" component={SocietyFeatureFlagManagementScreen} />

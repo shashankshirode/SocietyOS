@@ -11,7 +11,6 @@ import { SafeText } from "../../../../shared/components/SafeText";
 import { useReopenComplaint } from "../hooks/useReopenComplaint";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { ComplaintStatus } from "../data/complaints.enums";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
 import { styles, createSafeTextColorStyle, createViewBackgroundColorStyle, createViewBackgroundColorBorderColorStyle, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/ComplaintReopenScreen.styles";
 type Props = {
     navigation: {
@@ -31,7 +30,6 @@ export function ComplaintReopenScreen({ navigation, route }: Props) {
     const messages = useMessages();
     const [reason, setReason] = useState('');
     const { submit, isSubmitting } = useReopenComplaint();
-    const { updateComplaint } = useMockStore();
     const complaintId = route?.params?.complaintId || 'CMP-MOCK';
     const handleReopen = async () => {
         if (!reason.trim()) {
@@ -40,11 +38,6 @@ export function ComplaintReopenScreen({ navigation, route }: Props) {
         }
         const res = await submit({ complaintId, note: reason });
         if (res.ok) {
-            updateComplaint(complaintId, {
-                status: ComplaintStatus.REOPENED,
-                updatedAt: new Date().toISOString(),
-                resolutionNote: `Reopened reason: ${reason}`,
-            });
             AppAlert.alert(messages.complaints.complaintReopenedTitle, messages.complaints.complaintReopenedMessage, [
                 { text: messages.common.ok || String(localizedUiText.m_565339bc4d33), onPress: () => navigation.navigate('ComplaintList') },
             ]);

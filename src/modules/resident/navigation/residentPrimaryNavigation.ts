@@ -14,9 +14,9 @@ export const residentPrimaryTabRoutes: readonly ResidentPrimaryTabRoute[] = [
 
 export const residentTabIcons: Record<ResidentTabRoute, { filled: IconName; outline: IconName }> = {
   HomeTab: { filled: 'home', outline: 'home-outline' },
-  ActivityTab: { filled: 'pulse', outline: 'pulse-outline' },
-  CommunityTab: { filled: 'people-circle', outline: 'people-circle-outline' },
-  ServicesTab: { filled: 'grid', outline: 'grid-outline' },
+  ActivityTab: { filled: 'list', outline: 'list-outline' },
+  CommunityTab: { filled: 'people', outline: 'people-outline' },
+  ServicesTab: { filled: 'person', outline: 'person-outline' },
   VisitorTab: { filled: 'shield-checkmark', outline: 'shield-checkmark-outline' },
   ComplaintTab: { filled: 'construct', outline: 'construct-outline' },
   BillTab: { filled: 'wallet', outline: 'wallet-outline' },

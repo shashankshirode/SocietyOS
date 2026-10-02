@@ -9,6 +9,13 @@ const fontFamily = fontFamilyFallback;
 
 export const FONT_FAMILY = fontFamily;
 export const FONT_FAMILY_FALLBACK = fontFamilyFallback;
+export const FONT_FAMILY_INTER = fontFamily;
+export const FONT_FAMILY_INTER_MEDIUM = fontFamily;
+export const FONT_FAMILY_INTER_SEMIBOLD = fontFamily;
+export const FONT_FAMILY_INTER_BOLD = fontFamily;
+export const FONT_FAMILY_SERIF = fontFamily;
+export const FONT_FAMILY_SERIF_BOLD = fontFamily;
+export const FONT_FAMILY_SERIF_ITALIC = fontFamily;
 
 export const typographyScale = {
   display: {

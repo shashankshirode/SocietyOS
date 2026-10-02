@@ -2,7 +2,7 @@ export type InventoryCategory =
   | 'ELECTRICAL' | 'PLUMBING' | 'CLEANING' | 'SAFETY' | 'GARDENING' | 'STATIONERY' | 'SPARE_PARTS' | 'TOOLS' | 'OTHER';
 
 export type StockStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'OVERSTOCKED';
-export type InventoryTransactionType = 'ISSUE' | 'RETURN' | 'ADJUSTMENT';
+export type InventoryTransactionType = 'ISSUE' | 'RETURN' | 'ADJUSTMENT' | 'RECEIPT';
 export type PurchaseRequestStatus = 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'ORDERED' | 'RECEIVED' | 'CANCELLED';
 
 export type InventoryItem = {
@@ -25,6 +25,7 @@ export type InventoryTransaction = {
   transactionType: InventoryTransactionType;
   quantity: number;
   actor: string;
+  actorId?: string;
   purpose: string;
   linkedWorkOrderId?: string;
   notes?: string;
@@ -35,7 +36,8 @@ export type InventoryTransactionInput = {
   itemId: string;
   transactionType: InventoryTransactionType;
   quantity: number;
-  actor: string;
+  actor?: string;
+  actorId?: string;
   purpose: string;
   linkedWorkOrderId?: string;
   notes?: string;

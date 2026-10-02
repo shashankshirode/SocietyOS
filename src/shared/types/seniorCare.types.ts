@@ -28,6 +28,8 @@ export interface SeniorCareProfile {
   securityCheckCallPreference?: string; 
   consentConfirmed: boolean;
   consentDate?: string;
+  checkInHour?: number;
+  missedCheckInEscalationMinutes?: number;
   createdAt: string;
   updatedAt?: string;
 }

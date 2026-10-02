@@ -4,7 +4,7 @@ import type { AttendancePunch, AttendanceDashboard, CorrectionRequest, MonthlyAt
 import type { BiometricDevice, BiometricMapping, BiometricSyncJob, BiometricSyncError, DuplicatePunchCandidate, MissingCheckoutRecord, CreateBiometricMappingInput, ResolveSyncErrorInput, ResolveDuplicatePunchInput, AttendanceSettings, } from '../../../shared/types/biometric.types';
 import { apiClient } from '../../../core/api/apiClient';
 import { apiEndpoints } from '../../../core/api/apiEndpoints';
-import { staffAttendanceMappers } from './staffAttendance.mapper';
+import { staffAttendanceMappers, normalizeAttendanceStatus, normalizePunchSource } from './staffAttendance.mapper';
 import type { StaffProfileDTO, ShiftDefinitionDTO, ShiftAssignmentDTO, DomesticHelpDTO, AttendancePunchDTO, DailyAttendanceSummaryDTO, CorrectionRequestDTO, MonthlyAttendanceRowDTO, VendorAttendanceRowDTO, BiometricDeviceDTO, BiometricMappingDTO, BiometricSyncJobDTO, BiometricSyncErrorDTO, DuplicatePunchCandidateDTO, MissingCheckoutRecordDTO, } from './staffAttendance.dto';
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
 export const staffAttendanceApiSource = {
@@ -19,7 +19,7 @@ export const staffAttendanceApiSource = {
             on_leave?: number;
             missing_checkout?: number;
             pending_corrections?: number;
-            biometric_sync_status?: 'OK';
+            biometric_sync_status?: StaffAttendanceHomeSummary['biometricSyncStatus'];
             last_sync_time?: string;
             vendor_summary?: {
                 vendor_name: string;
@@ -45,7 +45,7 @@ export const staffAttendanceApiSource = {
             onLeave: res.on_leave || 0,
             missingCheckout: res.missing_checkout || 0,
             pendingCorrections: res.pending_corrections || 0,
-            biometricSyncStatus: res.biometric_sync_status || 'OK',
+            biometricSyncStatus: res.biometric_sync_status || 'NOT_CONFIGURED',
             ...includeWhenPresent("lastSyncTime", res.last_sync_time),
             vendorSummary: (res.vendor_summary || []).map(v => ({
                 vendorName: v.vendor_name,
@@ -300,11 +300,11 @@ export const staffAttendanceApiSource = {
             summary: staffAttendanceMappers.toMonthlyAttendanceRow(res.summary),
             dailyRecords: (res.daily_records || []).map(r => ({
                 date: r.date,
-                status: r.status as AttendanceStatus,
+                status: normalizeAttendanceStatus(r.status),
                 ...includeWhenPresent("checkInTime", r.check_in_time),
                 ...includeWhenPresent("checkOutTime", r.check_out_time),
                 ...includeWhenPresent("minutesLate", r.minutes_late),
-                source: r.source as PunchSource,
+                source: normalizePunchSource(r.source),
                 correctionApplied: r.correction_applied
             })),
             corrections: (res.corrections || []).map(staffAttendanceMappers.toCorrectionRequest)

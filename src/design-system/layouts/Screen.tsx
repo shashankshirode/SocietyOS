@@ -40,7 +40,7 @@ export function Screen({
   style,
   contentStyle,
   edges = ["bottom"],
-}: ScreenProps) {
+}: ScreenProps): React.ReactElement {
   const { dark } = useAppTheme();
   const navigation = useNavigation<{ canGoBack?: () => boolean; goBack?: () => void; navigate?: (name: string, params?: object) => void }>();
   let currentRouteName: string | Absent = undefined;
@@ -93,3 +93,5 @@ export function Screen({
   );
   return layoutContent;
 }
+
+Screen.displayName = 'Screen';

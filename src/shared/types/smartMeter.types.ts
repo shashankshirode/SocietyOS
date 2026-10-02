@@ -25,6 +25,9 @@ export interface SmartMeter {
   lastReadingValue: number;
   lastReadingDate: string;
   billingReadiness: 'READY' | 'PENDING' | 'ERROR';
+  societyId?: string;
+  unitId?: string;
+  locationId?: string;
 }
 
 export interface SmartMeterReading {
@@ -36,10 +39,17 @@ export interface SmartMeterReading {
   currentReadingValue: number;
   consumptionValue: number;
   readingDate: string;
-  source: 'AUTOMATIC' | 'MANUAL' | 'ESTIMATED';
+  source: 'AUTOMATIC' | 'MANUAL' | 'ESTIMATED' | 'IMPORT';
   status: MeterReadingStatus;
   billingReadiness: 'READY' | 'PENDING_VALIDATION' | 'ERROR';
   errorNote?: string;
+  meterCode?: string;
+  sourceTimestamp?: string;
+  receivedAt?: string;
+  isOutlier?: boolean;
+  isDecreasingReset?: boolean;
+  reconciliationNote?: string;
+  deduplicationKey?: string;
 }
 
 export interface SmartMeterDashboardData {

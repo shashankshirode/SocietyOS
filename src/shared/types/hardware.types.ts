@@ -22,6 +22,48 @@ export type HardwareDeviceStatus =
   | 'DISABLED'
   | 'UNKNOWN';
 
+export type HardwareLifecycleState =
+  | 'REGISTERED'
+  | 'CONFIGURING'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'DECOMMISSIONED';
+
+export type HardwareHealthState =
+  | 'ONLINE'
+  | 'DEGRADED'
+  | 'OFFLINE'
+  | 'ERROR'
+  | 'UNKNOWN';
+
+export type HardwareCapability =
+  | 'READ_RFID'
+  | 'CAPTURE_PLATE'
+  | 'OPEN_BARRIER'
+  | 'CLOSE_BARRIER'
+  | 'QUERY_BARRIER_STATUS'
+  | 'CCTV_LIVE_VIEW'
+  | 'CCTV_EVIDENCE_RETRIEVAL'
+  | 'INGEST_METER_READING'
+  | 'EV_SESSION_LIFECYCLE'
+  | 'BIOMETRIC_PUNCH_INGESTION'
+  | 'FIRMWARE_MANAGEMENT';
+
+export type BarrierCommandState =
+  | 'REQUESTED'
+  | 'AUTHORIZED'
+  | 'SENT'
+  | 'ACKNOWLEDGED'
+  | 'CONFIRMED'
+  | 'TIMED_OUT'
+  | 'FAILED'
+  | 'RECONCILIATION_REQUIRED';
+
+export type CircuitState =
+  | 'CLOSED'
+  | 'OPEN'
+  | 'HALF_OPEN';
+
 export type HardwareConnectionType =
   | 'API_CONNECTOR'
   | 'LOCAL_AGENT'
@@ -104,6 +146,22 @@ export type HardwareRiskLevel =
   | 'HIGH'
   | 'CRITICAL';
 
+export interface HardwareReadinessRecord {
+  id: string;
+  title: string;
+  readinessStatus: 'FRONTEND_READY_INTEGRATION_REQUIRED' | 'FRONTEND_READY_BACKEND_REQUIRED';
+  summary: string;
+  nextStep: string;
+}
+
+export interface IntegrationHealthLogRecord {
+  id: string;
+  integrationName: string;
+  status: 'SUCCESS' | 'WARNING' | 'FAILED';
+  timestamp: string;
+  detail: string;
+}
+
 export interface HardwareDevice {
   id: string;
   name: string;
@@ -116,6 +174,18 @@ export interface HardwareDevice {
   lastSync?: string;
   linkedModule: HardwareLinkedModule;
   connectionType?: HardwareConnectionType;
+  societyId?: string;
+  lifecycleState?: HardwareLifecycleState;
+  healthState?: HardwareHealthState;
+  capabilities?: HardwareCapability[];
+  configurationVersion?: string;
+  serialNumber?: string;
+  credentialReference?: string;
+  locationId?: string;
+  replacedDeviceId?: string;
+  decommissionedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DeviceLocationMapping {
@@ -141,6 +211,10 @@ export interface HardwareSyncJob {
   failedRecords: number;
   duplicateRecords: number;
   triggeredBy: string;
+  connectorId?: string;
+  schemaVersion?: string;
+  correlationId?: string;
+  reviewRequiredRecords?: number;
 }
 
 export interface HardwareEvent {
@@ -154,6 +228,10 @@ export interface HardwareEvent {
   matchedEntityReference?: string;
   riskLevel: HardwareRiskLevel;
   safeMetadata: Record<string, string>;
+  sourceEventId?: string;
+  correlationId?: string;
+  receivedAt?: string;
+  deduplicationKey?: string;
 }
 
 export interface HardwareErrorRecord {
@@ -165,6 +243,12 @@ export interface HardwareErrorRecord {
   createdAt: string;
   status: HardwareErrorStatus;
   suggestedAction: string;
+  occurrences?: number;
+  lastOccurredAt?: string;
+  resolutionNotes?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  correctiveWorkOrderId?: string;
 }
 
 export interface IntegrationHealthRow {
@@ -224,4 +308,148 @@ export interface HardwareHomeData {
   offlineDevices: number;
   errorDevices: number;
   lastSyncTime?: string;
+}
+
+export interface DeadLetterRecord {
+  id: string;
+  deviceId: string;
+  eventType: string;
+  payload: Record<string, string>;
+  errorReason: string;
+  failedAt: string;
+  retryCount: number;
+  replayStatus: 'PENDING' | 'REPLAYED' | 'DISCARDED';
+  replayedAt?: string;
+  replayedBy?: string;
+}
+
+export interface HardwareCommandAttempt {
+  attemptId: string;
+  commandId: string;
+  sentAt: string;
+  responseCode?: number;
+  errorMessage?: string;
+  durationMs: number;
+  success: boolean;
+}
+
+export interface HardwareCommandAcknowledgement {
+  ackId: string;
+  commandId: string;
+  deviceId: string;
+  receivedAt: string;
+  status: 'ACCEPTED' | 'REJECTED' | 'EXECUTED';
+  hardwareDetail?: string;
+}
+
+export interface RegisterHardwareDeviceCommand {
+  name: string;
+  type: HardwareDeviceType;
+  deviceCode: string;
+  vendor: string;
+  location: string;
+  locationId?: string;
+  linkedModule: HardwareLinkedModule;
+  connectionType?: HardwareConnectionType;
+  credentialReference?: string;
+  configurationVersion?: string;
+  serialNumber?: string;
+  capabilities?: HardwareCapability[];
+}
+
+export interface UpdateHardwareDeviceCommand {
+  name?: string;
+  location?: string;
+  locationId?: string;
+  status?: HardwareDeviceStatus;
+  connectionType?: HardwareConnectionType;
+  configurationVersion?: string;
+}
+
+export interface MapDeviceLocationCommand {
+  deviceId: string;
+  deviceName: string;
+  location: string;
+  accessZone: string;
+  responsibleRole: string;
+  visibilityRules: string;
+}
+
+export interface CreateRfidTagMappingCommand {
+  tagCode: string;
+  vehicleId?: string;
+  vehicleNumber?: string;
+  unitId?: string;
+  unitNumber?: string;
+  residentName?: string;
+  staffCredentialId?: string;
+  validFrom: string;
+  validUntil: string;
+  accessZone: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'LOST' | 'EXPIRED' | 'BLOCKED' | 'PENDING_MAPPING';
+  notes?: string;
+}
+
+export interface UpdateRfidTagMappingCommand {
+  status?: 'ACTIVE' | 'INACTIVE' | 'LOST' | 'EXPIRED' | 'BLOCKED' | 'PENDING_MAPPING';
+  validUntil?: string;
+  notes?: string;
+  accessZone?: string;
+}
+
+export interface ReviewAnprMatchCommand {
+  eventId: string;
+  reviewerDecision: 'MATCH_TO_VEHICLE' | 'MARK_UNKNOWN' | 'MARK_VISITOR' | 'MARK_FALSE_READ' | 'BLOCKED_REVIEW' | 'ESCALATE_TO_SECURITY';
+  notes: string;
+  matchedVehicleId?: string;
+  suggestedVehicleNumber?: string;
+}
+
+export interface RequestBarrierOverrideCommand {
+  barrierId: string;
+  reason: string;
+  overrideType: 'MANUAL_SUPERVISOR' | 'EMERGENCY_AMBULANCE' | 'EMERGENCY_FIRE' | 'MAINTENANCE';
+  emergencyIncidentId?: string;
+  operatorNotes?: string;
+}
+
+export interface RequestCctvAccessCommand {
+  cameraId: string;
+  reason: string;
+  purpose: 'SECURITY_INCIDENT' | 'SAFETY_INVESTIGATION' | 'GATE_INCIDENT' | 'COMPLAINT_VERIFICATION';
+  durationMinutes: number;
+  incidentReferenceId?: string;
+}
+
+export interface ImportMeterReadingsCommand {
+  readings: Array<{
+    meterCode: string;
+    readingValue: number;
+    readingDate: string;
+    source: 'AUTOMATIC' | 'MANUAL' | 'IMPORT';
+  }>;
+  batchId?: string;
+}
+
+export interface ResolveHardwareErrorCommand {
+  errorId: string;
+  resolutionAction: string;
+  notes: string;
+  correctiveWorkOrderId?: string;
+}
+
+export interface IgnoreHardwareErrorCommand {
+  errorId: string;
+  reason: string;
+}
+
+export interface EscalateHardwareErrorCommand {
+  errorId: string;
+  targetDepartment: 'FACILITY' | 'SECURITY' | 'VENDOR_AMC';
+  escalationNotes: string;
+  createWorkOrder?: boolean;
+}
+
+export interface UpdateHardwareSettingsCommand {
+  settings: Array<{ key: string; value: string }>;
 }

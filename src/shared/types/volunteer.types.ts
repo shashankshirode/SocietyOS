@@ -65,4 +65,5 @@ export interface RegisterVolunteerInput {
   skillsNote?: string;
   contactVisibilityConsent: boolean;
   effectiveFrom?: string;
+  clientOperationId?: string;
 }

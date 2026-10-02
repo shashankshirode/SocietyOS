@@ -1,5 +1,5 @@
 import type { Absent } from "./absence.types";
-export type EmergencyBroadcastType = 'FIRE_ALERT' | 'LIFT_OUTAGE' | 'SECURITY_ALERT' | 'WATER_EMERGENCY' | 'WEATHER_ALERT' | 'EVACUATION_NOTICE' | 'DRILL_NOTICE' | 'OTHER';
+export type EmergencyBroadcastType = 'FIRE_ALERT' | 'LIFT_OUTAGE' | 'SECURITY_ALERT' | 'WATER_EMERGENCY' | 'WEATHER_ALERT' | 'EVACUATION_NOTICE' | 'DRILL_NOTICE' | 'SENIOR_HELP' | 'OTHER';
 export type EmergencyBroadcastStatus = 'DRAFT' | 'SENT' | 'CANCELLED' | 'FAILED' | 'EXPIRED';
 export type SafetyInstructionCategory = 'MEDICAL' | 'FIRE' | 'LIFT' | 'EARTHQUAKE' | 'SECURITY' | 'SENIOR_HELP' | 'CHILD_SAFETY' | 'PET_EMERGENCY' | 'OTHER';
 export type SafetyDrillType = 'FIRE_DRILL' | 'EVACUATION_DRILL' | 'LIFT_RESCUE_DRILL' | 'MEDICAL_RESPONSE_DRILL' | 'SECURITY_DRILL';
@@ -80,6 +80,7 @@ export interface CreateSafetyDrillInput {
     drillName: string;
     scheduledDate: string;
     targetArea: string;
+    clientOperationId?: string;
 }
 export interface CreatePostIncidentReviewInput {
     incidentId: string;
@@ -90,5 +91,6 @@ export interface CreatePostIncidentReviewInput {
     followUpActions: string;
     responsiblePerson: string;
     dueDate?: string;
+    clientOperationId?: string;
 }
 

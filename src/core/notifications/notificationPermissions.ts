@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 import type { NotificationPermissionResult } from './notification.types';
+import { configureAndroidNotificationChannel } from './notificationService';
 
 export async function getNotificationPermissionStatus(): Promise<NotificationPermissionResult> {
   const settings = await Notifications.getPermissionsAsync();
@@ -10,15 +10,8 @@ export async function getNotificationPermissionStatus(): Promise<NotificationPer
   };
 }
 
-export async function requestNotificationPermission(): Promise<NotificationPermissionResult> {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
+export async function requestSystemNotificationPermission(): Promise<NotificationPermissionResult> {
+  await configureAndroidNotificationChannel();
 
   const settings = await Notifications.requestPermissionsAsync({
     ios: {
@@ -33,3 +26,5 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     canAskAgain: settings.canAskAgain,
   };
 }
+
+export const requestNotificationPermission = requestSystemNotificationPermission;

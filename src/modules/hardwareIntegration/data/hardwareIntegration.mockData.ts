@@ -1,18 +1,5 @@
-export type HardwareReadinessRecord = {
-  id: string;
-  title: string;
-  readinessStatus: 'FRONTEND_READY_INTEGRATION_REQUIRED' | 'FRONTEND_READY_BACKEND_REQUIRED';
-  summary: string;
-  nextStep: string;
-};
+import type { HardwareReadinessRecord, IntegrationHealthLogRecord } from '../../../shared/types/hardware.types';
 
-export type IntegrationHealthLogRecord = {
-  id: string;
-  integrationName: string;
-  status: 'SUCCESS' | 'WARNING' | 'FAILED';
-  timestamp: string;
-  detail: string;
-};
 
 export const rfidIntegrationReadinessMockData: HardwareReadinessRecord[] = [
   { id: 'rfid-int-1', title: 'RFID tag mapping readiness', readinessStatus: 'FRONTEND_READY_INTEGRATION_REQUIRED', summary: 'Tag assignment, masked tag display and audit trail UI are ready.', nextStep: 'Connect RFID controller API and webhook events.' },

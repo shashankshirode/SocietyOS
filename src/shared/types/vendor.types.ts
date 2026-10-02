@@ -9,6 +9,7 @@ export type ComplianceStatus = 'COMPLIANT' | 'PENDING' | 'EXPIRING_SOON' | 'EXPI
 export type Vendor = {
   id: string;
   name: string;
+  vendorName?: string;
   category: VendorCategory;
   contactPerson: string;
   maskedPhone: string;

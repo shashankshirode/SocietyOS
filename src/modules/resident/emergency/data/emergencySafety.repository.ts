@@ -40,37 +40,37 @@ export const emergencySafetyRepository = {
       : emergencySafetyApiSource.getEmergencyTimeline(incidentId);
   },
 
-  addEmergencyTimelineEvent: (incidentId: string, input: { eventType: string; note?: string; source: EmergencyTimelineEvent['source'] }) => {
+  addEmergencyTimelineEvent: (incidentId: string, input: { eventType: string; note?: string; source: EmergencyTimelineEvent['source']; clientOperationId?: string }) => {
     return isMock
       ? emergencySafetyMockSource.addEmergencyTimelineEvent(incidentId, input)
       : emergencySafetyApiSource.addEmergencyTimelineEvent(incidentId, input);
   },
 
-  acknowledgeIncident: (incidentId: string, input: { note?: string } = {}) => {
+  acknowledgeIncident: (incidentId: string, input: { note?: string; clientAcknowledgementId?: string } = {}) => {
     return isMock
       ? emergencySafetyMockSource.acknowledgeIncident(incidentId, input)
       : emergencySafetyApiSource.acknowledgeIncident(incidentId, input);
   },
 
-  markResponderReached: (incidentId: string, input: { note?: string } = {}) => {
+  markResponderReached: (incidentId: string, input: { note?: string; clientOperationId?: string } = {}) => {
     return isMock
       ? emergencySafetyMockSource.markResponderReached(incidentId, input)
       : emergencySafetyApiSource.markResponderReached(incidentId, input);
   },
 
-  escalateIncident: (incidentId: string, input: { note: string }) => {
+  escalateIncident: (incidentId: string, input: { note?: string; clientOperationId?: string }) => {
     return isMock
       ? emergencySafetyMockSource.escalateIncident(incidentId, input)
       : emergencySafetyApiSource.escalateIncident(incidentId, input);
   },
 
-  markResidentSafe: (incidentId: string, input: { note?: string } = {}) => {
+  markResidentSafe: (incidentId: string, input: { note?: string; clientOperationId?: string } = {}) => {
     return isMock
       ? emergencySafetyMockSource.markResidentSafe(incidentId, input)
       : emergencySafetyApiSource.markResidentSafe(incidentId, input);
   },
 
-  closeIncident: (incidentId: string, input: { closureSummary: string }) => {
+  closeIncident: (incidentId: string, input: { closureSummary: string; clientOperationId?: string }) => {
     return isMock
       ? emergencySafetyMockSource.closeIncident(incidentId, input)
       : emergencySafetyApiSource.closeIncident(incidentId, input);
@@ -178,13 +178,13 @@ export const emergencySafetyRepository = {
       : emergencySafetyApiSource.getVolunteerAlertDetail(alertId);
   },
 
-  acceptVolunteerAlert: (alertId: string, input: { note?: string }) => {
+  acceptVolunteerAlert: (alertId: string, input: { note?: string; clientOperationId?: string } = {}) => {
     return isMock
       ? emergencySafetyMockSource.acceptVolunteerAlert(alertId, input)
       : emergencySafetyApiSource.acceptVolunteerAlert(alertId, input);
   },
 
-  declineVolunteerAlert: (alertId: string, input: { note?: string }) => {
+  declineVolunteerAlert: (alertId: string, input: { note?: string; clientOperationId?: string } = {}) => {
     return isMock
       ? emergencySafetyMockSource.declineVolunteerAlert(alertId, input)
       : emergencySafetyApiSource.declineVolunteerAlert(alertId, input);

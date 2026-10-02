@@ -1,21 +1,22 @@
 import { useState } from "react";
-import { ScrollView, View, Pressable, TextInput } from "react-native";
+import { ScrollView, View, Text, Pressable, TextInput } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
 import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
 import { VisitorPassPanel } from "../../../../ui/patterns/VisitorPassPanel";
 import { ResidentTimeline } from "../../../../ui/patterns/ResidentTimeline";
 import { SafeText } from "../../../../shared/components/SafeText";
+import { LoadingState } from "../../../../shared/feedback/LoadingState";
 import type { Visitor } from "../../../../shared/types/visitor.types";
 import { VisitorPassCancellationReason } from "../../../../shared/types/visitor.types";
 import { useMessages } from "../../../../shared/constants/useMessages";
 import { VisitorStatus } from "../data/visitors.enums";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
 import { StatusModal } from "../../../../ui/modal/StatusModal";
 import { AppModal } from "../../../../ui/modal/AppModal";
 import { ModalHeader } from "../../../../ui/modal/ModalHeader";
 import { ModalFooter } from "../../../../ui/modal/ModalFooter";
 import { useActiveResidentHome } from "../../homeContext/hooks/useActiveResidentHome";
+import { useVisitorDetail } from "../data/useVisitorDetail";
 import { VisitorExitTrackingPanel } from "../components/VisitorExitTrackingPanel";
 import { VisitorOverstayAlertCard } from "../components/VisitorOverstayAlertCard";
 import { VisitorExitConfirmationSheet } from "../components/VisitorExitConfirmationSheet";
@@ -43,9 +44,17 @@ export function VisitorDetailScreen({ navigation, route }: Props) {
     const theme = useResidentTheme();
     const messages = useMessages();
     const focusCopy = messages.resident.experience.focus;
-    const { state, updateVisitor } = useMockStore();
     const routeVisitor = getVisitor(route);
-    const visitor = state.visitors.find((item) => item.id === routeVisitor.id) || routeVisitor;
+    const { data: fetchedVisitor, isLoading, error } = useVisitorDetail(routeVisitor.id);
+    const visitor = fetchedVisitor ?? routeVisitor;
+
+    if (!visitor) {
+      return <LoadingState message="Loading visitor..." />;
+    }
+    if (error && !visitor) {
+      return <View style={{flex:1,justifyContent:'center',alignItems:'center'}}><Text style={{color:'red'}}>Failed to load visitor</Text></View>;
+    }
+
     const visitorExitTracking = ensureVisitorExitTracking(visitor);
     const exitAlert = deriveVisitorExitAlert(visitor);
     const { activeContext } = useActiveResidentHome();
@@ -82,8 +91,7 @@ export function VisitorDetailScreen({ navigation, route }: Props) {
         }
     };
     const handleRegenOtp = () => {
-        const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        updateVisitor(visitor.id, { otp: newOtp });
+        // OTP regeneration requires backend API support - not available in current release
         setRegenOtpVisible(true);
     };
     const handleConfirmLeft = async () => {

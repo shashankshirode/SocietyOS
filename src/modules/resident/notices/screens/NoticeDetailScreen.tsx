@@ -3,7 +3,6 @@ import { Pressable, ScrollView, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { NoticeDetailFromHomeScreenProps } from "../../../../app/navigation/navigation.types";
 import { formatResidentDate } from "../../../../core/localization/dateTimeFormatters";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
 import { AppButton } from "../../../../shared/components/AppButton";
 import { SafeText } from "../../../../shared/components/SafeText";
 import { useMessages } from "../../../../shared/constants/useMessages";
@@ -17,19 +16,16 @@ export function NoticeDetailScreen({ route }: NoticeDetailFromHomeScreenProps) {
     const theme = useResidentTheme();
     const messages = useMessages();
     const noticeMessages = messages.resident.notices;
-    const { notice } = route.params;
-    const { state, updateNotice } = useMockStore();
-    const currentNotice = state.notices.find((item) => item.id === notice.id) ?? notice;
+    const { notice: currentNotice } = route.params;
     const [acknowledged, setAcknowledged] = useState(currentNotice.acknowledged ?? false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showAttachment, setShowAttachment] = useState(false);
     const { submit: acknowledgeNotice, isSubmitting } = useAcknowledgeNotice();
     const dateLabel = formatResidentDate(currentNotice.date);
     const handleAcknowledge = async () => {
-        const result = await acknowledgeNotice(notice.id);
+        const result = await acknowledgeNotice(currentNotice.id);
         if (!result.ok)
             return;
-        updateNotice(notice.id, { acknowledged: true, status: 'READ' });
         setAcknowledged(true);
         setShowSuccess(true);
     };

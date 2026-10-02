@@ -59,36 +59,42 @@ export const emergencySafetyApiSource = {
         eventType: string;
         note?: string;
         source: string;
+        clientOperationId?: string;
     }): Promise<EmergencyTimelineEvent> => {
-        const dto = await apiClient.post<EmergencyTimelineEventDTO>(apiEndpoints.emergency.addTimelineEvent(incidentId), { event_type: input.eventType, note: input.note, source: input.source }, { idempotencyKey: `timeline-${Date.now()}` });
+        const dto = await apiClient.post<EmergencyTimelineEventDTO>(apiEndpoints.emergency.addTimelineEvent(incidentId), { event_type: input.eventType, note: input.note, source: input.source }, { idempotencyKey: input.clientOperationId || `timeline-${Date.now()}` });
         return emergencyMappers.toTimelineEvent(dto);
     },
     acknowledgeIncident: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
-        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.acknowledgeIncident(incidentId), { note: input.note }, { idempotencyKey: `ack-${Date.now()}` });
+        clientAcknowledgementId?: string;
+    } = {}): Promise<EmergencyIncident> => {
+        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.acknowledgeIncident(incidentId), { note: input.note }, { idempotencyKey: input.clientAcknowledgementId || `ack-${Date.now()}` });
         return emergencyMappers.toIncident(dto);
     },
     markResponderReached: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
-        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.markReached(incidentId), { note: input.note }, { idempotencyKey: `reached-${Date.now()}` });
+        clientOperationId?: string;
+    } = {}): Promise<EmergencyIncident> => {
+        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.markReached(incidentId), { note: input.note }, { idempotencyKey: input.clientOperationId || `reached-${Date.now()}` });
         return emergencyMappers.toIncident(dto);
     },
     escalateIncident: async (incidentId: string, input: {
-        note: string;
+        note?: string;
+        clientOperationId?: string;
     }): Promise<EmergencyIncident> => {
-        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.escalate(incidentId), { note: input.note }, { idempotencyKey: `escalate-${Date.now()}` });
+        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.escalate(incidentId), { note: input.note }, { idempotencyKey: input.clientOperationId || `escalate-${Date.now()}` });
         return emergencyMappers.toIncident(dto);
     },
     markResidentSafe: async (incidentId: string, input: {
         note?: string;
-    }): Promise<EmergencyIncident> => {
-        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.markSafe(incidentId), { note: input.note }, { idempotencyKey: `safe-${Date.now()}` });
+        clientOperationId?: string;
+    } = {}): Promise<EmergencyIncident> => {
+        const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.markSafe(incidentId), { note: input.note }, { idempotencyKey: input.clientOperationId || `safe-${Date.now()}` });
         return emergencyMappers.toIncident(dto);
     },
     closeIncident: async (incidentId: string, input: {
         closureSummary: string;
+        clientOperationId?: string;
     }): Promise<EmergencyIncident> => {
         const dto = await apiClient.post<EmergencyIncidentDTO>(apiEndpoints.emergency.close(incidentId), { closure_summary: input.closureSummary }, { idempotencyKey: `close-${Date.now()}` });
         return emergencyMappers.toIncident(dto);
@@ -213,14 +219,16 @@ export const emergencySafetyApiSource = {
     },
     acceptVolunteerAlert: async (alertId: string, input: {
         note?: string;
-    }): Promise<VolunteerAlert> => {
-        const dto = await apiClient.post<VolunteerAlertDTO>(apiEndpoints.emergency.acceptVolunteerAlert(alertId), { note: input.note }, { idempotencyKey: `vol-accept-${Date.now()}` });
+        clientOperationId?: string;
+    } = {}): Promise<VolunteerAlert> => {
+        const dto = await apiClient.post<VolunteerAlertDTO>(apiEndpoints.emergency.acceptVolunteerAlert(alertId), { note: input.note }, { idempotencyKey: input.clientOperationId || `vol-accept-${Date.now()}` });
         return emergencyMappers.toVolunteerAlert(dto);
     },
     declineVolunteerAlert: async (alertId: string, input: {
         note?: string;
-    }): Promise<VolunteerAlert> => {
-        const dto = await apiClient.post<VolunteerAlertDTO>(apiEndpoints.emergency.declineVolunteerAlert(alertId), { note: input.note }, { idempotencyKey: `vol-decline-${Date.now()}` });
+        clientOperationId?: string;
+    } = {}): Promise<VolunteerAlert> => {
+        const dto = await apiClient.post<VolunteerAlertDTO>(apiEndpoints.emergency.declineVolunteerAlert(alertId), { note: input.note }, { idempotencyKey: input.clientOperationId || `vol-decline-${Date.now()}` });
         return emergencyMappers.toVolunteerAlert(dto);
     },
     getGuardEmergencyConsole: async (): Promise<JsonValue> => {

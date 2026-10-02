@@ -12,7 +12,7 @@ import { SafeText } from "../../../../shared/components/SafeText";
 import { PrivacyNoticePanel } from "../../../../ui/patterns/PrivacyNoticePanel";
 import { StatusModal } from "../../../../ui/modal/StatusModal";
 import { SocietySwitch } from "../../../../ui/controls/SocietySwitch";
-import { useMockStore } from "../../../../core/mockStore/useMockStore";
+import { useCreateDocument } from "../hooks/useCreateDocument";
 import type { DocumentCategory } from "../../../../shared/types/document.types";
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import { styles, createSafeTextColorStyle, createSafeTextColorStyle2, createSafeTextColorStyle3, createSafeTextColorStyle4, createSafeTextColorStyle5, createSafeTextColorStyle6, createSafeTextColorStyle7, createSafeTextColorStyle8, createSafeTextColorStyle9, createSafeTextColorStyle10, createSafeTextColorStyle11, createSafeTextColorStyle12, createSafeTextColorStyle13, createViewBackgroundColorStyle, createViewBackgroundColorBorderColorStyle, createViewBorderColorStyle, createViewBackgroundColorStyle2, createViewBorderColorBackgroundColorStyle, createViewBorderColorBackgroundColorStyle2, createViewBackgroundColorBorderColorStyle2, createViewBorderColorStyle2, createViewBackgroundColorBorderColorStyle3, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/UploadDocumentScreen.styles";
@@ -46,7 +46,7 @@ export function UploadDocumentScreen({ navigation }: NavigationOnlyScreenProps) 
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
     const theme = useResidentTheme();
     const insets = useSafeAreaInsets();
-    const { addDocument } = useMockStore();
+    const createDocument = useCreateDocument();
     const [stepIndex, setStepIndex] = useState(0);
     const [fileRequiredVisible, setFileRequiredVisible] = useState(false);
     const [successVisible, setSuccessVisible] = useState(false);
@@ -74,21 +74,21 @@ export function UploadDocumentScreen({ navigation }: NavigationOnlyScreenProps) 
             setStepIndex(stepIndex - 1);
         }
     };
-    const handleSubmit = () => {
-        addDocument({
-            id: `doc-${Date.now()}`,
+    const handleSubmit = async () => {
+        await createDocument.submit({
             title: form.title,
             category: form.category,
             flatNumber: form.flatNumber,
             status: 'PENDING_VERIFICATION',
-            ...includeWhenPresent("uploadedDate", new Date().toISOString().split('T')[0]),
             uploadedBy: 'Shashank',
             fileType: 'pdf',
             fileSize: form.fileSize,
             sensitivity: form.isSensitive ? 'OWNER_ONLY' : 'PUBLIC',
             ...includeWhenPresent("expiryDate", form.expiryDate || undefined)
         });
-        setSuccessVisible(true);
+        if (!createDocument.error) {
+            setSuccessVisible(true);
+        }
     };
     return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
       <ResidentPageHeader title={localizedUiText.m_c4e3a37dbf22} {...includeWhenPresent("onBackPress", stepIndex > 0 ? prevStep : undefined)}/>

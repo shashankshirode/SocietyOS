@@ -40,7 +40,42 @@ export type SuperAdminStackParamList = {
     PlatformSocietyDetail: {
         societyId: string;
     };
-    SocietyOnboarding: Absent;
+    SocietyOnboarding: {
+        societyId?: string;
+        mode?: string;
+    } | Absent;
+    SOCIETY_VALIDATION: {
+        societyId: string;
+    };
+    SOCIETY_ACTIVATION: {
+        societyId: string;
+    };
+    PROPERTY_HIERARCHY: {
+        societyId?: string;
+        phaseId?: string;
+        towerId?: string;
+    };
+    SOCIETY_ADMIN_ASSIGNMENT: {
+        societyId?: string;
+    };
+    UNIT_OCCUPANCY: {
+        societyId?: string;
+        unitId?: string;
+        unitNumber?: string;
+    };
+    NOTIFICATION_DEFAULTS: {
+        societyId?: string;
+    };
+    FACILITY_FOUNDATION: {
+        societyId?: string;
+    };
+    PARKING_FOUNDATION: {
+        societyId?: string;
+    };
+    FEATURE_CONFIGURATION: {
+        societyId?: string;
+    };
+    SOCIETY_LIST: Absent;
     SocietyOnboardingReview: {
         draftId: string;
     };
@@ -313,8 +348,8 @@ export type SuperAdminStackParamList = {
     MEETING_SUMMARY_GENERATOR: Absent;
     MAINTENANCE_RISK_ALERTS: Absent;
     AUTOMATION_AUDIT_LOG: Absent;
+    AUTOMATION_DASHBOARD: Absent;
     SOCIETY_ONBOARDING: Absent;
-    SOCIETY_LIST: Absent;
     SOCIETY_FEATURE_FLAG_MANAGEMENT: Absent;
     SUPPORT_CONSOLE: Absent;
     HIDDEN_COMMERCIAL_CONTROLS: {
@@ -1290,6 +1325,27 @@ export type HardwareIntegrationStackParamList = {
     HardwarePrivacyRules: Absent;
     HardwareAuditLog: Absent;
     HardwareSettings: Absent;
+};
+
+export type AutomationStackParamList = {
+    AutomationDashboard: Absent;
+    RuleBuilder: Absent;
+    RuleDetail: {
+        ruleId: string;
+    };
+    ExecutionHistory: Absent;
+    ExecutionDetail: {
+        executionId: string;
+    };
+    ApprovalQueue: Absent;
+    DeadLetter: Absent;
+    DryRun: Absent;
+    ComplaintRouting: Absent;
+    NoticeDrafting: Absent;
+    DocumentSearch: Absent;
+    BillExplanation: Absent;
+    MeetingSummary: Absent;
+    MaintenanceRisk: Absent;
 };
 export type SocietyAdminStackParamList = {
     SocietyAdminHome: Absent;

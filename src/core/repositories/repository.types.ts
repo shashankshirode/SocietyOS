@@ -1,3 +1,6 @@
+import type { JsonValue, JsonObject } from '../api/api.types';
+export type { JsonValue, JsonObject };
+
 export type RepositoryErrorCategory =
   | 'OFFLINE'
   | 'TIMEOUT'
@@ -14,6 +17,7 @@ export type RepositoryErrorCategory =
   | 'UNKNOWN';
 
 export type RepositoryError = {
+
   code: string;
   message: string;
   category?: RepositoryErrorCategory;

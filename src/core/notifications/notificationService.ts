@@ -1,11 +1,13 @@
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import type { NotificationSetupResult } from './notification.types';
 import { getErrorMessage } from '../errors/getErrorMessage';
-
-const isExpoGo = Constants.appOwnership === 'expo';
+import {
+  canUseRemotePushNotifications,
+  isExpoGo,
+  logRemotePushUnavailableReason,
+} from './notificationCapabilities';
 
 export async function configureAndroidNotificationChannel(): Promise<void> {
   if (Platform.OS === 'android') {
@@ -19,14 +21,6 @@ export async function configureAndroidNotificationChannel(): Promise<void> {
 }
 
 export async function requestNotificationPermission(): Promise<NotificationSetupResult> {
-  if (!Device.isDevice) {
-    return {
-      status: 'unavailable',
-      expoPushToken: 'ExponentPushToken[mock_simulator_token]',
-      message: 'Push notifications are not available on virtual devices/simulators.',
-    };
-  }
-
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -45,15 +39,28 @@ export async function requestNotificationPermission(): Promise<NotificationSetup
 
     await configureAndroidNotificationChannel();
 
-    if (isExpoGo) {
+    if (!canUseRemotePushNotifications) {
+      logRemotePushUnavailableReason();
+
+      if (isExpoGo) {
+        return {
+          status: 'granted',
+          expoPushToken: 'ExponentPushToken[expo-go-local-only]',
+          message: 'Permission granted. Remote push notifications are disabled in Expo Go. Local notifications are active.',
+        };
+      }
+
       return {
-        status: 'granted',
-        expoPushToken: 'ExponentPushToken[expo-go-local-only]',
-        message: 'Permission granted. Push notifications require a development build. Local notifications will work.',
+        status: 'unavailable',
+        expoPushToken: 'ExponentPushToken[mock_simulator_token]',
+        message: 'Push notifications are not available on virtual devices/simulators.',
       };
     }
 
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ||
+      Constants.easConfig?.projectId;
+
     if (!projectId) {
       return {
         status: 'granted',
@@ -73,6 +80,30 @@ export async function requestNotificationPermission(): Promise<NotificationSetup
       status: 'error',
       message: getErrorMessage(error, 'An error occurred during push notification setup.'),
     };
+  }
+}
+
+export async function getExpoPushTokenSafely(): Promise<string | null> {
+  if (!canUseRemotePushNotifications) {
+    logRemotePushUnavailableReason();
+    return null;
+  }
+
+  const projectId =
+    Constants.expoConfig?.extra?.eas?.projectId ||
+    Constants.easConfig?.projectId;
+
+  if (!projectId) {
+    console.warn('[Notifications] EAS project ID is missing in expo config.');
+    return null;
+  }
+
+  try {
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+  } catch (error) {
+    console.warn('[Notifications] Failed to retrieve Expo push token:', getErrorMessage(error, 'Failed to retrieve Expo push token'));
+    return null;
   }
 }
 

@@ -4,8 +4,7 @@ import Svg, { Path } from 'react-native-svg';
 import { OnboardingShell } from '../../components/OnboardingShell';
 import { SocietyCard } from '../../components/SocietyCard';
 import { OnboardingSociety } from '../../data/residentOnboarding.types';
-import { MOCK_SOCIETIES } from '../../data/residentOnboarding.mockData';
-import { isDevelopmentMode } from '../../../../../shared/utils/isDevelopmentMode';
+import { useOnboardingSocieties } from '../../hooks/useOnboardingSocieties';
 import {
   FONT_FAMILY_INTER,
   FONT_FAMILY_INTER_BOLD,
@@ -27,19 +26,7 @@ export function FindSocietyStep({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string>('society-gw');
 
-  const filteredSocieties = useMemo(() => {
-    if (!isDevelopmentMode()) {
-      throw new Error('Society search requires backend API - not implemented for production');
-    }
-    if (!searchQuery.trim()) return MOCK_SOCIETIES;
-    const q = searchQuery.toLowerCase().trim();
-    return MOCK_SOCIETIES.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.city.toLowerCase().includes(q) ||
-        s.state.toLowerCase().includes(q),
-    );
-  }, [searchQuery]);
+  const filteredSocieties = useOnboardingSocieties(searchQuery);
 
   const selectedSociety = filteredSocieties.find((s) => s.id === selectedId) || filteredSocieties[0];
 

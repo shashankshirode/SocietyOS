@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { useAppTheme } from '../theme/useAppTheme';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { safeLog } from '../../core/logging/safeLog';
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-  errorInfo: React.ErrorInfo | null;
+  diagnosticId?: string;
 }
 
 interface ErrorBoundaryProps {
@@ -16,35 +16,40 @@ interface ErrorBoundaryProps {
   onReset?: () => void;
 }
 
+function generateDiagnosticId(): string {
+  return `ERR-${Date.now().toString(36).toUpperCase().slice(-4)}-${Math.random().toString(36).toUpperCase().slice(2, 6)}`;
+}
+
 function DefaultErrorFallback({
   error,
-  errorInfo,
+  diagnosticId,
   onReset,
 }: {
   error: Error | null;
-  errorInfo: React.ErrorInfo | null;
+  diagnosticId?: string;
   onReset: () => void;
 }) {
-  const { colors } = useAppTheme();
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <Text style={[styles.title, { color: colors.danger }]}>
+    <View style={styles.container}>
+      <Text style={styles.title}>
         Something went wrong
       </Text>
-      <Text style={[styles.message, { color: colors.textSecondary }]}>
-        {error?.message ?? 'An unexpected error occurred'}
+      <Text style={styles.message}>
+        {error?.message ?? 'An unexpected error occurred while loading this view.'}
       </Text>
-      <Text style={[styles.stack, { color: colors.textMuted }]}>
-        {errorInfo?.componentStack ?? ''}
-      </Text>
+      {diagnosticId ? (
+        <Text style={styles.diagnosticRef}>
+          Reference: {diagnosticId}
+        </Text>
+      ) : null}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.primarySoft }]}
+          style={styles.button}
           onPress={onReset}
           accessible
           accessibilityRole="button"
         >
-          <Text style={[styles.buttonText, { color: colors.primary }]}>Try Again</Text>
+          <Text style={styles.buttonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -54,22 +59,28 @@ function DefaultErrorFallback({
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null, diagnosticId: undefined };
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    return { hasError: true, error };
+    return {
+      hasError: true,
+      error,
+      diagnosticId: generateDiagnosticId(),
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    this.setState({ error, errorInfo });
+    safeLog.error('[ErrorBoundary] Caught unhandled exception', {
+      error: error.message,
+      stack: errorInfo.componentStack ?? error.stack,
+      diagnosticId: this.state.diagnosticId,
+    });
     this.props.onError?.(error, errorInfo);
-
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
   }
 
   handleReset = (): void => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    this.setState({ hasError: false, error: null, diagnosticId: undefined });
     this.props.onReset?.();
   };
 
@@ -81,12 +92,71 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return (
         <DefaultErrorFallback
           error={this.state.error}
-          errorInfo={this.state.errorInfo}
+          diagnosticId={this.state.diagnosticId}
           onReset={this.handleReset}
         />
       );
     }
 
+    return this.props.children;
+  }
+}
+
+export class AppErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null; diagnosticId?: string }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null, diagnosticId: undefined };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return {
+      hasError: true,
+      error,
+      diagnosticId: generateDiagnosticId(),
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    safeLog.error('[AppErrorBoundary] Top-level app crash caught', {
+      error: error.message,
+      stack: errorInfo.componentStack ?? error.stack,
+      diagnosticId: this.state.diagnosticId,
+    });
+  }
+
+  handleRestart = () => {
+    this.setState({ hasError: false, error: null, diagnosticId: undefined });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>SocietyOS encountered a problem</Text>
+          <Text style={styles.message}>
+            The application experienced an unexpected issue. Tap below to reload.
+          </Text>
+          {this.state.diagnosticId ? (
+            <Text style={styles.diagnosticRef}>
+              Diagnostic Ref: {this.state.diagnosticId}
+            </Text>
+          ) : null}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={this.handleRestart}
+              accessible
+              accessibilityRole="button"
+            >
+              <Text style={styles.buttonText}>Reload Application</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
     return this.props.children;
   }
 }
@@ -103,18 +173,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
     textAlign: 'center',
+    color: '#DC2626',
   },
   message: {
     fontSize: 14,
     marginBottom: 16,
     textAlign: 'center',
+    color: '#4B5563',
   },
-  stack: {
-    fontSize: 11,
-    fontFamily: Platform.select({ ios: 'Courier', default: 'monospace' }),
-    marginBottom: 24,
+  diagnosticRef: {
+    fontSize: 12,
+    marginBottom: 16,
     textAlign: 'center',
-    maxWidth: '90%',
+    color: '#9CA3AF',
+    fontFamily: 'monospace',
   },
   buttonContainer: {
     marginTop: 16,

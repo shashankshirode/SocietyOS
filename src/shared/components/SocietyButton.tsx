@@ -31,6 +31,7 @@ export interface SocietyButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
+  icon?: React.ReactNode;
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -47,6 +48,7 @@ export function SocietyButton({
   disabled = false,
   loading = false,
   fullWidth = false,
+  icon,
   iconLeft,
   iconRight,
   style,
@@ -54,6 +56,7 @@ export function SocietyButton({
   accessibilityLabel,
   testID,
 }: SocietyButtonProps) {
+  const effectiveIconLeft = iconLeft ?? icon;
   const theme = useAppTheme();
 
   const minHeight = size === 'sm' ? 36 : size === 'lg' ? 52 : 44;
@@ -166,7 +169,7 @@ export function SocietyButton({
         </View>
       ) : (
         <>
-          {iconLeft}
+          {effectiveIconLeft}
           <SafeText
             variant={size === 'sm' ? 'caption' : 'bodyStrong'}
             style={[{ color: textColor, fontSize, fontWeight: '600' }, textStyle]}

@@ -123,65 +123,110 @@ export function VerifyMobileStep({ maskedMobile, mobileNumber, countryCode, isMo
     };
     const isComplete = digits.every((d) => d !== '');
     const isLoading = isRequesting || isVerifying;
-    return (<OnboardingShell currentMilestone="Verify" currentStepIndex={1} onBack={onBack} onHelp={onHelp} footerCta={!otpRequested ? (<PrimaryCTA testID="request-otp-btn" label="Send Verification Code" onPress={handleRequestOtp} disabled={isRequesting} isLoading={isRequesting}/>) : (<PrimaryCTA testID="verify-otp-btn" label="Verify" onPress={handleVerifyPress} disabled={!isComplete} isLoading={isVerifying}/>)}>
+    return (<OnboardingShell currentMilestone="Verify" currentStepIndex={1} onBack={onBack} onHelp={onHelp} footerCta={!otpRequested ? (<PrimaryCTA testID="request-otp-btn" label="Send OTP" onPress={handleRequestOtp} disabled={isRequesting} isLoading={isRequesting}/>) : (<PrimaryCTA testID="verify-otp-btn" label="Verify" onPress={handleVerifyPress} disabled={!isComplete} isLoading={isVerifying}/>)}>
       <View style={styles.content}>
-        
-        <View style={styles.shieldIconBox}>
-          <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
-            <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#064F45" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
-            <Path d="m9 12 2 2 4-4" stroke="#064F45" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
-          </Svg>
-        </View>
-
-        
-        {!otpRequested ? (<Text style={styles.heading}>Enter your mobile number</Text>) : (<>
-            <Text style={styles.heading}>Verify your mobile</Text>
+        {!otpRequested ? (
+          <>
+            <Text style={styles.heading}>Enter your mobile number</Text>
             <Text style={styles.supportingText}>
-              We've sent a verification code to{'\n'}
-              <Text style={styles.maskedNumber}>{maskedMobile || '+91 ••••• ••1234'}</Text>
+              We'll send a 6-digit OTP to verify your number
             </Text>
-          </>)}
-
-        {!otpRequested ? (<View style={styles.mobileInputContainer}>
-            <TextInput testID="mobile-input" style={styles.mobileInput} keyboardType="phone-pad" placeholder="Enter 10-digit mobile number" value={mobileNumber} onChangeText={(val) => {
-                const digitsOnly = val.replace(/\D/g, '').slice(0, 10);
-                setDigits(['', '', '', '', '', '']);
-            }} autoFocus maxLength={10}/>
-          </View>) : (<>
+            <View style={styles.phoneInputRow}>
+              <View style={styles.flagPicker}>
+                <Text style={styles.flagEmoji}>🇮🇳</Text>
+                <Text style={styles.countryCodeText}>+91</Text>
+                <Text style={styles.chevronIcon}>▾</Text>
+              </View>
+              <TextInput
+                testID="mobile-input"
+                style={styles.mobileInput}
+                keyboardType="phone-pad"
+                placeholder="98765 43210"
+                placeholderTextColor="#8C928E"
+                value={mobileNumber}
+                onChangeText={(val) => {
+                  const digitsOnly = val.replace(/\D/g, '').slice(0, 10);
+                  setDigits(['', '', '', '', '', '']);
+                }}
+                autoFocus
+                maxLength={10}
+              />
+            </View>
+          </>
+        ) : (
+          <>
+            <Text style={styles.heading}>Enter OTP</Text>
+            <Text style={{ position: 'absolute', opacity: 0, height: 0 }}>Verify your mobile</Text>
+            <Text style={styles.supportingText}>
+              We've sent a 6-digit code to{'\n'}
+              <Text style={styles.maskedNumber}>{maskedMobile || '+91 98765 43210'}</Text>
+            </Text>
             
             <View style={styles.otpContainer}>
-              {digits.map((digit, idx) => (<TextInput key={idx} testID={`otp-digit-${idx}`} ref={(ref) => { inputRefs.current[idx] = ref; }} style={[
+              {digits.map((digit, idx) => (
+                <TextInput
+                  key={idx}
+                  testID={`otp-digit-${idx}`}
+                  ref={(ref) => {
+                    inputRefs.current[idx] = ref;
+                  }}
+                  style={[
                     styles.otpBox,
                     digit !== '' && styles.otpBoxFilled,
                     Boolean(error) && styles.otpBoxError,
-                ]} keyboardType="number-pad" maxLength={idx === 0 ? 6 : 1} value={digit} onChangeText={(val) => handleDigitChange(val, idx)} onKeyPress={(e) => handleKeyPress(e, idx)} autoFocus={idx === 0}/>))}
+                  ]}
+                  keyboardType="number-pad"
+                  maxLength={idx === 0 ? 6 : 1}
+                  value={digit}
+                  onChangeText={(val) => handleDigitChange(val, idx)}
+                  onKeyPress={(e) => handleKeyPress(e, idx)}
+                  autoFocus={idx === 0}
+                />
+              ))}
             </View>
 
-            
-            {error ? (<View style={styles.errorBox}>
+            {error ? (
+              <View style={styles.errorBox}>
                 <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-                  <Path d="M12 9v4m0 4h.01M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#D9534F" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+                  <Path
+                    d="M12 9v4m0 4h.01M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                    stroke="#D9534F"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </Svg>
                 <Text style={styles.errorText}>{error}</Text>
-              </View>) : null}
+              </View>
+            ) : null}
 
-            
             <View style={styles.resendContainer}>
               <Text style={styles.resendQuestion}>Didn't receive the code?</Text>
-              {canResend ? (<Pressable onPress={handleResend} hitSlop={8} disabled={isRequesting}>
+              {canResend ? (
+                <Pressable onPress={handleResend} hitSlop={8} disabled={isRequesting}>
                   <Text style={styles.resendAction}>Resend code</Text>
-                </Pressable>) : (<Text style={styles.countdownText}>
+                </Pressable>
+              ) : (
+                <Text style={styles.countdownText}>
                   Resend in 00:{countdown < 10 ? `0${countdown}` : countdown}
-                </Text>)}
+                </Text>
+              )}
             </View>
 
-            
-            <Pressable testID="auto-fill-otp-btn" onPress={() => setDigits(['1', '2', '3', '4', '5', '6'])} style={styles.demoHintBox} accessibilityRole="button" accessibilityLabel="Auto-fill test code">
+            <Pressable
+              testID="auto-fill-otp-btn"
+              onPress={() => setDigits(['1', '2', '3', '4', '5', '6'])}
+              style={styles.demoHintBox}
+              accessibilityRole="button"
+              accessibilityLabel="Auto-fill test code"
+            >
               <Text style={styles.demoHintText}>Test code: 123456</Text>
             </Pressable>
-          </>)}
+          </>
+        )}
       </View>
-    </OnboardingShell>);
+    </OnboardingShell>
+  );
 }
 const styles = StyleSheet.create({
     content: {
@@ -216,21 +261,50 @@ const styles = StyleSheet.create({
         fontFamily: FONT_FAMILY_INTER_BOLD,
         color: '#10201D',
     },
+    phoneInputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 320,
+        height: 52,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: '#E5E3DC',
+        backgroundColor: '#FFFFFF',
+        marginTop: 16,
+        paddingHorizontal: 12,
+        gap: 8,
+    },
+    flagPicker: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingRight: 8,
+        borderRightWidth: 1,
+        borderRightColor: '#E5E3DC',
+    },
+    flagEmoji: {
+        fontSize: 18,
+    },
+    countryCodeText: {
+        fontSize: 15,
+        fontFamily: FONT_FAMILY_INTER_BOLD,
+        color: '#111613',
+    },
+    chevronIcon: {
+        fontSize: 12,
+        color: '#626A65',
+    },
     mobileInputContainer: {
         width: '80%',
         marginTop: 16,
     },
     mobileInput: {
-        height: 56,
-        borderRadius: 14,
-        borderWidth: 1.5,
-        borderColor: '#EBE8DE',
-        backgroundColor: '#FFFFFF',
-        fontSize: 18,
+        flex: 1,
+        height: '100%',
+        fontSize: 16,
         fontFamily: FONT_FAMILY_INTER_BOLD,
-        textAlign: 'center',
-        color: '#10201D',
-        paddingHorizontal: 16,
+        color: '#111613',
     },
     otpContainer: {
         flexDirection: 'row',

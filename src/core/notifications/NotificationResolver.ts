@@ -1,7 +1,11 @@
 import { domainEventBus } from '../events/DomainEventBus';
 import type { DomainEvent } from '../events/DomainEventBus';
-import { getHouseholdNotificationPolicy, type NotificationCategory, type DeliveryMode } from './HouseholdNotificationPolicy';
-import { MOCK_PERSONAS } from '../identity/personaRegistry';
+import type { NotificationCategory, DeliveryMode } from './HouseholdNotificationPolicy';
+import type { JsonObject } from '../api/api.types';
+import { notificationPolicyRegistry } from './policies/notificationPolicyRegistry';
+import { resolveHouseholdRecipients } from './recipientResolver';
+import { getIdGenerator } from '../id/idGenerator';
+
 export interface UserNotificationItem {
     readonly id: string;
     readonly recipientUserId: string;
@@ -14,7 +18,7 @@ export interface UserNotificationItem {
     readonly eventId: string;
     readonly deepLink?: string;
 }
-import type { JsonObject } from '../api/api.types';
+
 export interface ActivityItem {
     readonly id: string;
     readonly unitId: string;
@@ -27,20 +31,25 @@ export interface ActivityItem {
     readonly eventType: string;
     readonly metadata?: JsonObject;
 }
+
 class NotificationResolver {
     private userInboxes: Map<string, UserNotificationItem[]> = new Map();
     private unitActivities: Map<string, ActivityItem[]> = new Map();
+
     constructor() {
         domainEventBus.subscribeAll((event) => {
             void this.handleEvent(event);
         });
     }
+
     public getUserNotifications(userId: string): readonly UserNotificationItem[] {
         return this.userInboxes.get(userId) || [];
     }
+
     public getUnitActivities(unitId: string): readonly ActivityItem[] {
         return this.unitActivities.get(unitId) || [];
     }
+
     public markNotificationAsRead(userId: string, notifId: string): void {
         const list = this.userInboxes.get(userId);
         if (list) {
@@ -50,81 +59,38 @@ class NotificationResolver {
             }
         }
     }
+
+    public clearAll(): void {
+        this.userInboxes.clear();
+        this.unitActivities.clear();
+    }
+
+    public clearNotifications(): void {
+        this.clearAll();
+    }
+
     public clear(): void {
         this.userInboxes.clear();
         this.unitActivities.clear();
     }
+
     private async handleEvent(event: DomainEvent<JsonObject>): Promise<void> {
-        const { eventType, actor, unitId, payload } = event;
-        const actorFirstName = actor.displayName.split(' ')[0] ?? actor.displayName;
-        let category: NotificationCategory = 'COMMUNITY';
-        let activityText = '';
-        let actorNotifTitle = '';
-        let actorNotifBody = '';
-        let householdNotifTitle = '';
-        let householdNotifBody = '';
-        switch (eventType) {
-            case 'facility.booking.confirmed': {
-                category = 'FACILITIES';
-                const facilityName = payload.facilityName ?? 'Facility';
-                const slotTime = payload.slotTime ?? 'Scheduled Slot';
-                activityText = `${actorFirstName} booked ${facilityName} for ${slotTime}`;
-                actorNotifTitle = 'Booking Confirmed';
-                actorNotifBody = `Your reservation for ${facilityName} (${slotTime}) is confirmed.`;
-                householdNotifTitle = 'Household Facility Booking';
-                householdNotifBody = `${actorFirstName} booked ${facilityName} for ${slotTime}.`;
-                break;
-            }
-            case 'visitor.pass.issued': {
-                category = 'VISITORS_AND_ACCESS';
-                const visitorName = payload.visitorName ?? 'Visitor';
-                activityText = `${actorFirstName} created visitor access for ${visitorName}`;
-                actorNotifTitle = 'Visitor Pass Created';
-                actorNotifBody = `Pass for ${visitorName} has been created and is ready for gate check-in.`;
-                householdNotifTitle = 'New Visitor Pass';
-                householdNotifBody = `${actorFirstName} created visitor access for ${visitorName}.`;
-                break;
-            }
-            case 'billing.payment.settled': {
-                category = 'MONEY';
-                const amount = payload.amount ? `₹${payload.amount}` : 'payment';
-                const billTitle = payload.billTitle ?? 'Maintenance';
-                activityText = `${actorFirstName} paid ${amount} toward ${billTitle}`;
-                actorNotifTitle = 'Payment Successful';
-                actorNotifBody = `Receipt generated for your payment of ${amount}.`;
-                householdNotifTitle = 'Maintenance Payment Completed';
-                householdNotifBody = `${actorFirstName} paid ${amount} toward ${billTitle}.`;
-                break;
-            }
-            case 'helpdesk.ticket.created': {
-                category = 'ISSUES';
-                const issueTitle = payload.title ?? payload.category ?? 'Issue';
-                activityText = `${actorFirstName} reported ${issueTitle}`;
-                actorNotifTitle = 'Complaint Registered';
-                actorNotifBody = `Your ticket for "${issueTitle}" has been queued for technician assignment.`;
-                householdNotifTitle = 'New Household Complaint';
-                householdNotifBody = `${actorFirstName} reported ${issueTitle}.`;
-                break;
-            }
-            case 'emergency.sos.triggered': {
-                category = 'SAFETY';
-                const sosCategory = payload.category ?? 'Emergency';
-                activityText = `${actorFirstName} triggered ${sosCategory} SOS`;
-                actorNotifTitle = 'SOS Dispatched';
-                actorNotifBody = 'Your emergency alert has been sent to Main Gate Security and society responders.';
-                householdNotifTitle = 'URGENT: Emergency Alert';
-                householdNotifBody = `${actorFirstName} requested urgent help (${sosCategory}).`;
-                break;
-            }
-            default:
-                return;
+        const policyResolution = notificationPolicyRegistry.resolvePolicy(event);
+        if (!policyResolution) {
+            return;
         }
+
+        const { category, activityText, actorNotification, householdNotification } = policyResolution;
+        const { actor, unitId } = event;
+        const actorFirstName = actor.displayName.split(' ')[0] ?? actor.displayName;
+        const idGen = getIdGenerator();
+
         if (unitId && activityText) {
             if (!this.unitActivities.has(unitId)) {
                 this.unitActivities.set(unitId, []);
             }
             this.unitActivities.get(unitId)!.unshift({
-                id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                id: idGen.nextActivityId(),
                 unitId,
                 actorDisplayName: actor.displayName,
                 actorFirstName,
@@ -132,16 +98,17 @@ class NotificationResolver {
                 description: activityText,
                 category,
                 createdAtIso: event.createdAtIso,
-                eventType,
-                metadata: payload,
+                eventType: event.eventType,
+                metadata: event.payload,
             });
         }
-        if (actor.userId && actorNotifTitle) {
+
+        if (actor.userId && actorNotification) {
             this.pushToUserInbox(actor.userId, {
                 id: `notif-${Date.now()}-actor`,
                 recipientUserId: actor.userId,
-                title: actorNotifTitle,
-                body: actorNotifBody,
+                title: actorNotification.title,
+                body: actorNotification.body,
                 category,
                 deliveryMode: 'IMMEDIATE',
                 isRead: false,
@@ -149,45 +116,25 @@ class NotificationResolver {
                 eventId: event.eventId,
             });
         }
-        if (unitId && householdNotifTitle) {
-            const policy = await getHouseholdNotificationPolicy(unitId);
-            const deliveryMode = policy.categories[category] ?? 'IMMEDIATE';
-            if (deliveryMode !== 'OFF') {
-                const isUnitMatch = (pUnit?: string, eUnit?: string) => {
-                    if (!pUnit || !eUnit)
-                        return false;
-                    if (pUnit === eUnit)
-                        return true;
-                    const p = pUnit.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const e = eUnit.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    if (p === e)
-                        return true;
-                    const isSeedUnitP = p.includes('b804') || p.includes('1204') || p.includes('804');
-                    const isSeedUnitE = e.includes('b804') || e.includes('1204') || e.includes('804');
-                    if (isSeedUnitP && isSeedUnitE)
-                        return true;
-                    return p.includes(e) || e.includes(p);
-                };
-                Object.values(MOCK_PERSONAS).forEach((persona) => {
-                    if (isUnitMatch(persona.unitRelationship?.unitId, unitId) &&
-                        persona.user.id !== actor.userId &&
-                        (persona.isHouseholdAdmin || deliveryMode === 'REQUIRED' || category === 'SAFETY')) {
-                        this.pushToUserInbox(persona.user.id, {
-                            id: `notif-${Date.now()}-${persona.user.id}`,
-                            recipientUserId: persona.user.id,
-                            title: householdNotifTitle,
-                            body: householdNotifBody,
-                            category,
-                            deliveryMode,
-                            isRead: false,
-                            createdAtIso: event.createdAtIso,
-                            eventId: event.eventId,
-                        });
-                    }
+
+        if (unitId && householdNotification) {
+            const recipients = await resolveHouseholdRecipients(unitId, actor.userId, category);
+            recipients.forEach((recipient) => {
+                this.pushToUserInbox(recipient.userId, {
+                    id: `notif-${Date.now()}-${recipient.userId}`,
+                    recipientUserId: recipient.userId,
+                    title: householdNotification.title,
+                    body: householdNotification.body,
+                    category,
+                    deliveryMode: recipient.deliveryMode,
+                    isRead: false,
+                    createdAtIso: event.createdAtIso,
+                    eventId: event.eventId,
                 });
-            }
+            });
         }
     }
+
     private pushToUserInbox(userId: string, item: UserNotificationItem): void {
         if (!this.userInboxes.has(userId)) {
             this.userInboxes.set(userId, []);
@@ -195,5 +142,5 @@ class NotificationResolver {
         this.userInboxes.get(userId)!.unshift(item);
     }
 }
-export const notificationResolver = new NotificationResolver();
 
+export const notificationResolver = new NotificationResolver();

@@ -3,6 +3,21 @@ import { Complaint } from '../types/complaint.types';
 
 export const mockComplaints: Complaint[] = [
   {
+    id: 'comp-1024',
+    title: 'Water leakage in bathroom',
+    description:
+      'There is continuous water leakage from the ceiling of the bathroom. The plaster is getting damaged and water is dripping onto the floor. This needs urgent attention.',
+    category: 'PLUMBING',
+    status: 'IN_PROGRESS',
+    priority: 'HIGH',
+    location: 'A-1204, Bathroom',
+    flatNumber: 'A-1204',
+    residentName: 'Shashank',
+    createdAt: '2026-10-02T10:15:00Z',
+    updatedAt: '2026-10-02T14:45:00Z',
+    slaText: 'Technician assigned — in progress',
+  },
+  {
     id: 'comp-001',
     title: 'Water leakage in master bathroom',
     description:

@@ -193,6 +193,13 @@ const residentBillingMockRepository: ResidentBillingRepository = {
         
         if (!isAdvance && !isTotalOutstanding && bill) {
             const billOutstanding = bill.amount - (bill.paidAmount ?? 0);
+            if (bill.status === 'PAID' || billOutstanding <= 0) {
+                return repositoryFailure({
+                    code: 'RESIDENT_BILL_ALREADY_PAID',
+                    message: 'This bill has already been fully paid.',
+                    category: 'VALIDATION',
+                });
+            }
             const allocateToThisBill = Math.min(remainingAmount, billOutstanding);
             remainingAmount -= allocateToThisBill;
             allocations.push({ billId: bill.id, amountAllocated: allocateToThisBill });
@@ -208,57 +215,59 @@ const residentBillingMockRepository: ResidentBillingRepository = {
             }
         }
         
-        for (const alloc of allocations) {
-            const targetBill = mockStore.getState().bills.find(b => b.id === alloc.billId)!;
-            const newPaidAmount = (targetBill.paidAmount ?? 0) + alloc.amountAllocated;
-            const newOutstanding = targetBill.amount - newPaidAmount;
-            const newStatus: BillStatus = newOutstanding <= 0 ? 'PAID' : 'PARTIALLY_PAID';
-            
-            mockStore.updateBill(alloc.billId, {
-                paidAmount: newPaidAmount,
-                status: newStatus,
-                paidDate: paymentDate,
-                transactionId,
-                receiptNumber,
-                payments: [
-                    ...(targetBill.payments ?? []),
-                    {
-                        id: `${alloc.billId}:payment:${Date.now()}`,
-                        amountPaid: alloc.amountAllocated,
-                        paymentDate,
-                        paymentMethod: input.paymentMethod,
-                        transactionId,
-                        receiptNumber,
-                    }
-                ]
-            });
-        }
-        
-        if (remainingAmount > 0) {
-            const currentAdvance = mockStore.getState().advanceBalances[residenceId] ?? 0;
-            mockStore.updateAdvanceBalance(residenceId, currentAdvance + remainingAmount);
-            
-            mockStore.addLedgerEntry({
-                id: `advance:${transactionId}`,
-                date: paymentDate,
-                type: 'CREDIT' as const,
-                unitId: residenceId,
-                description: `Advance Maintenance Credit Received`,
-                amount: remainingAmount,
-            });
-        }
-        
         const session = getCurrentSession();
         const actorName = session?.name ?? 'Resident';
         const actorId = session?.userId ?? 'usr-resident-01';
 
-        mockStore.addLedgerEntry({
-            id: `payment:${transactionId}`,
-            date: paymentDate,
-            type: 'CREDIT' as const,
-            unitId: residenceId,
-            description: isAdvance ? `Advance Maintenance Payment by ${actorName}` : `Maintenance Payment Received from ${actorName}`,
-            amount: input.amount,
+        mockStore.runTransaction((store) => {
+            for (const alloc of allocations) {
+                const targetBill = store.getState().bills.find(b => b.id === alloc.billId)!;
+                const newPaidAmount = (targetBill.paidAmount ?? 0) + alloc.amountAllocated;
+                const newOutstanding = targetBill.amount - newPaidAmount;
+                const newStatus: BillStatus = newOutstanding <= 0 ? 'PAID' : 'PARTIALLY_PAID';
+                
+                store.updateBill(alloc.billId, {
+                    paidAmount: newPaidAmount,
+                    status: newStatus,
+                    paidDate: paymentDate,
+                    transactionId,
+                    receiptNumber,
+                    payments: [
+                        ...(targetBill.payments ?? []),
+                        {
+                            id: `${alloc.billId}:payment:${Date.now()}`,
+                            amountPaid: alloc.amountAllocated,
+                            paymentDate,
+                            paymentMethod: input.paymentMethod,
+                            transactionId,
+                            receiptNumber,
+                        }
+                    ]
+                });
+            }
+            
+            if (remainingAmount > 0) {
+                const currentAdvance = store.getState().advanceBalances[residenceId] ?? 0;
+                store.updateAdvanceBalance(residenceId, currentAdvance + remainingAmount);
+                
+                store.addLedgerEntry({
+                    id: `advance:${transactionId}`,
+                    date: paymentDate,
+                    type: 'CREDIT' as const,
+                    unitId: residenceId,
+                    description: `Advance Maintenance Credit Received`,
+                    amount: remainingAmount,
+                });
+            }
+
+            store.addLedgerEntry({
+                id: `payment:${transactionId}`,
+                date: paymentDate,
+                type: 'CREDIT' as const,
+                unitId: residenceId,
+                description: isAdvance ? `Advance Maintenance Payment by ${actorName}` : `Maintenance Payment Received from ${actorName}`,
+                amount: input.amount,
+            });
         });
 
         void domainEventBus.emit({

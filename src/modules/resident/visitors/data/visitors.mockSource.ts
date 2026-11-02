@@ -11,6 +11,7 @@ import { getCurrentSession } from '../../../../core/auth/sessionStore';
 import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
+import type { ResidentVisitorsRepository } from './residentVisitors.repository.types';
 function generateOtp(visitorPassId: string): string {
     let hash = 17;
     for (const character of visitorPassId) {
@@ -37,18 +38,14 @@ function appendExitTimeline(visitor: Visitor, status: VisitorExitStatus, titleKe
         }
     };
 }
-function findVisitorOrThrow(visitorPassId: string): Visitor {
-    const visitor = mockStore.getState().visitors.find((item) => item.id === visitorPassId);
-    if (!visitor) {
-        throw new Error('Visitor not found');
-    }
-    return visitor;
+function findVisitorById(visitorPassId: string): Visitor | null {
+    return mockStore.getState().visitors.find((item) => item.id === visitorPassId) ?? null;
 }
 function persistVisitor(visitor: Visitor): Visitor {
     mockStore.updateVisitor(visitor.id, visitor);
-    return findVisitorOrThrow(visitor.id);
+    return findVisitorById(visitor.id) ?? visitor;
 }
-export const visitorsMockSource = {
+export const visitorsMockSource: ResidentVisitorsRepository = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Visitor[]>> {
         await withMockDelay();
         const ctx = resolveRequestContext(context);
@@ -153,7 +150,11 @@ export const visitorsMockSource = {
         mockStore.updateVisitor(actualId, { status: actualStatus });
         const updated = mockStore.getState().visitors.find((v) => v.id === actualId);
         if (!updated) {
-            throw new Error('Visitor not found');
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor not found.',
+                category: 'NOT_FOUND',
+            });
         }
         return repositorySuccess(updated);
     },
@@ -166,9 +167,31 @@ export const visitorsMockSource = {
     async confirmVisitorLeft(context: ResidentRepositoryRequestContext | ConfirmVisitorLeftInput, input?: ConfirmVisitorLeftInput): Promise<RepositoryResult<Visitor>> {
         await withMockDelay();
         const actualInput = input || (context as ConfirmVisitorLeftInput);
-        const visitor = findVisitorOrThrow(actualInput.visitorPassId);
+        const visitor = findVisitorById(actualInput.visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor pass not found.',
+                category: 'NOT_FOUND',
+            });
+        }
+        if (visitor.status === 'CANCELLED') {
+            return repositoryFailure({
+                code: 'INVALID_TRANSITION',
+                message: 'Cancelled visitor cannot be exited.',
+                category: 'CONFLICT',
+            });
+        }
+        if (visitor.status === 'COMPLETED' || visitor.exitTracking?.exitStatus === 'residentConfirmedLeft') {
+            return repositoryFailure({
+                code: 'ALREADY_COMPLETED',
+                message: 'Completed visitor cannot be exited again.',
+                category: 'CONFLICT',
+            });
+        }
         const updated = appendExitTimeline({
             ...visitor,
+            status: 'COMPLETED',
             exitTracking: {
                 ...visitor.exitTracking!,
                 exitStatus: 'residentConfirmedLeft',
@@ -182,7 +205,14 @@ export const visitorsMockSource = {
     async confirmVisitorStillInside(context: ResidentRepositoryRequestContext | ConfirmVisitorStillInsideInput, input?: ConfirmVisitorStillInsideInput): Promise<RepositoryResult<Visitor>> {
         await withMockDelay();
         const actualInput = input || (context as ConfirmVisitorStillInsideInput);
-        const visitor = findVisitorOrThrow(actualInput.visitorPassId);
+        const visitor = findVisitorById(actualInput.visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor pass not found.',
+                category: 'NOT_FOUND',
+            });
+        }
         const updated = appendExitTimeline({
             ...visitor,
             exitTracking: {
@@ -198,7 +228,14 @@ export const visitorsMockSource = {
     async extendVisitorExpectedExit(context: ResidentRepositoryRequestContext | ExtendVisitorExpectedExitInput, input?: ExtendVisitorExpectedExitInput): Promise<RepositoryResult<Visitor>> {
         await withMockDelay();
         const actualInput = input || (context as ExtendVisitorExpectedExitInput);
-        const visitor = findVisitorOrThrow(actualInput.visitorPassId);
+        const visitor = findVisitorById(actualInput.visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor pass not found.',
+                category: 'NOT_FOUND',
+            });
+        }
         const updated = appendExitTimeline({
             ...visitor,
             exitTracking: {
@@ -217,7 +254,14 @@ export const visitorsMockSource = {
     async contactSecurityForVisitorExit(context: ResidentRepositoryRequestContext | ContactSecurityForVisitorExitInput, input?: ContactSecurityForVisitorExitInput): Promise<RepositoryResult<VisitorExitEscalationResult>> {
         await withMockDelay();
         const actualInput = input || (context as ContactSecurityForVisitorExitInput);
-        const visitor = findVisitorOrThrow(actualInput.visitorPassId);
+        const visitor = findVisitorById(actualInput.visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor pass not found.',
+                category: 'NOT_FOUND',
+            });
+        }
         const updated = appendExitTimeline({
             ...visitor,
             exitTracking: {
@@ -239,9 +283,20 @@ export const visitorsMockSource = {
     async cancelVisitorPass(context: ResidentRepositoryRequestContext | CancelVisitorPassRequest, request?: CancelVisitorPassRequest): Promise<RepositoryResult<CancelVisitorPassResult>> {
         await withMockDelay();
         const actualRequest = request || (context as CancelVisitorPassRequest);
-        const visitor = findVisitorOrThrow(actualRequest.visitorPassId);
+        const visitor = findVisitorById(actualRequest.visitorPassId);
+        if (!visitor) {
+            return repositoryFailure({
+                code: 'VISITOR_NOT_FOUND',
+                message: 'Visitor pass not found.',
+                category: 'NOT_FOUND',
+            });
+        }
         if (visitor.status !== 'EXPECTED' && visitor.status !== 'APPROVED' && visitor.status !== 'WAITING_APPROVAL') {
-            throw new Error('Visitor pass cannot be cancelled in this status');
+            return repositoryFailure({
+                code: 'INVALID_TRANSITION',
+                message: 'Visitor pass cannot be cancelled in this status.',
+                category: 'CONFLICT',
+            });
         }
         const cancelledAt = new Date().toISOString();
         const updated = {
@@ -275,6 +330,12 @@ export const visitorsMockSource = {
         }
         if (visitor.status === 'CANCELLED') {
             return repositoryFailure({ code: 'PASS_CANCELLED', message: 'This visitor pass has been cancelled and cannot be used for entry.' });
+        }
+        if (visitor.status === 'EXPIRED') {
+            return repositoryFailure({ code: 'PASS_EXPIRED', message: 'This visitor pass has expired and cannot be used for entry.' });
+        }
+        if (visitor.status === 'COMPLETED' || visitor.status === 'CHECKED_OUT') {
+            return repositoryFailure({ code: 'PASS_ALREADY_USED', message: 'This visitor pass has already been completed.' });
         }
         if (visitor.otp && visitor.otp !== otp) {
             return repositoryFailure({ code: 'INVALID_OTP', message: 'Invalid visitor entry code.' });

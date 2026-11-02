@@ -1,6 +1,16 @@
 import { getAccessToken } from '../auth/tokenStore';
 import { apiConfig } from './apiConfig';
-import { ApiClientError, toApiClientError } from './apiError';
+import {
+  ApiClientError,
+  toApiClientError,
+  AuthenticationExpiredError,
+  PermissionDeniedError,
+  NotFoundError,
+  ConflictError,
+  RequestValidationError,
+  RateLimitedError,
+  ServiceUnavailableError,
+} from './apiError';
 import type { ApiResponse, JsonObject } from './api.types';
 import { createCorrelationId, getMockRequestContext, type RequestContext } from './requestContext';
 import { includeWhenPresent } from "../../shared/utils/presentProperty";
@@ -87,6 +97,29 @@ async function request<T>(method: HttpMethod, path: string, options: RequestOpti
                     message: response.statusText || 'Request failed.'
                 }
                 : payload.error;
+            if (response.status === 401) {
+                throw new AuthenticationExpiredError(error.message, payload.traceId);
+            }
+            if (response.status === 403) {
+                throw new PermissionDeniedError(error.message, payload.traceId);
+            }
+            if (response.status === 404) {
+                throw new NotFoundError(error.message, payload.traceId);
+            }
+            if (response.status === 409) {
+                throw new ConflictError(error.message, payload.traceId);
+            }
+            if (response.status === 422 || response.status === 400) {
+                throw new RequestValidationError(error.message, error.fieldErrors, payload.traceId);
+            }
+            if (response.status === 429) {
+                const retryAfterHeader = response.headers.get('Retry-After');
+                const retryAfterSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+                throw new RateLimitedError(error.message, retryAfterSeconds, payload.traceId);
+            }
+            if (response.status >= 500) {
+                throw new ServiceUnavailableError(error.message, response.status, payload.traceId);
+            }
             throw new ApiClientError({
                 code: error.code,
                 message: error.message,

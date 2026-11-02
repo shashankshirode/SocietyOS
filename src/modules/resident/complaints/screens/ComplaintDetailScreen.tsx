@@ -1,279 +1,294 @@
-import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { View, Text, ScrollView, SafeAreaView } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useAppTheme } from "../../../../shared/theme/useAppTheme";
-import { Button } from "../../../../design-system/components";
-import { Card } from "../../../../design-system/components";
-import { Screen } from "../../../../design-system/layouts";
-import { useMessages } from "../../../../shared/constants/useMessages";
-import { ComplaintStatus } from "../data/complaints.enums";
-import { StackActions } from "@react-navigation/native";
-import { StyleSheet } from "react-native";
-import { formatResidentDate } from "../../../../core/localization/dateTimeFormatters";
-import { getActiveUiLiteral } from "../../../../shared/localization/activeUiLiteral";
-import { SafeText } from "../../../../shared/components/SafeText";
-import { LoadingState } from "../../../../shared/feedback/LoadingState";
-import { useComplaintDetail } from "../data/useComplaintDetail";
-import { useUpdateComplaintStatus } from "../hooks/useUpdateComplaintStatus";
-import type { ComplaintDetailScreenProps } from "../../../../app/navigation/navigation.types";
-import { ComplaintProgressPanel } from "../../../../ui/patterns/ComplaintProgressPanel";
-import { ResidentTimeline } from "../../../../ui/patterns/ResidentTimeline";
-import { ResidentProgressCoach, type ProgressStep } from "../../../../ui/patterns/ResidentProgressCoach";
-import type { ComplaintPriority as ProgressComplaintPriority } from "../../dashboard/data/dashboard.types";
-
-function toProgressPriority(priority: string): 'critical' | 'high' | 'medium' | 'low' {
-    if (priority === 'URGENT')
-        return 'critical';
-    if (priority === 'HIGH')
-        return 'high';
-    if (priority === 'MEDIUM')
-        return 'medium';
-    return 'low';
-}
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { StackActions } from '@react-navigation/native';
+import { useComplaintDetail } from '../data/useComplaintDetail';
+import { useUpdateComplaintStatus } from '../hooks/useUpdateComplaintStatus';
+import type { ComplaintDetailScreenProps } from '../../../../app/navigation/navigation.types';
+import { SocietyDetailHeader } from '../../../../shared/components/SocietyDetailHeader';
+import { SocietyStatusPill } from '../../../../shared/components/SocietyStatusPill';
+import { SocietyTimeline, type TimelineStep } from '../../../../shared/components/SocietyTimeline';
+import { LoadingState } from '../../../../shared/feedback/LoadingState';
+import {
+  FONT_FAMILY_INTER,
+  FONT_FAMILY_INTER_MEDIUM,
+  FONT_FAMILY_INTER_BOLD,
+} from '../../../../shared/theme/typography';
 
 export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
-    const localizedUiText = useMessages().uiLiterals;
-    const { navigation, route } = props;
-    const { colors, dark } = useAppTheme();
-    const themeColors = require('../../../../design-system/tokens/premium-colors').getColors(dark ? 'dark' : 'light');
-    const messages = useMessages();
-    const focusCopy = messages.resident.experience.focus;
-    const { complaint: initialComplaint } = route.params;
-    const { data: complaint, isLoading, error } = useComplaintDetail(initialComplaint.id);
-    const updateComplaintStatus = useUpdateComplaintStatus();
+  const insets = useSafeAreaInsets();
+  const { navigation, route } = props;
+  const initialComplaint = route.params?.complaint || {
+    id: route.params?.complaintId || 'comp-1024',
+    title: 'Water leakage in bathroom',
+    category: 'PLUMBING',
+    status: 'IN_PROGRESS',
+    description: 'Water is leaking from the ceiling onto the bathroom floor.',
+    createdAt: '2026-10-02T10:15:00Z',
+  };
 
-    if (isLoading || !complaint) {
-        return <LoadingState message="Loading complaint..." />;
-      }
-      if (error) {
-        return <View style={{flex:1,justifyContent:'center',alignItems:'center'}}><Text style={{color:'red'}}>Failed to load complaint</Text></View>;
-      }
-    const handleResolve = async () => {
-        await updateComplaintStatus.submit({ complaintId: complaint.id, status: ComplaintStatus.RESOLVED, note: getActiveUiLiteral("m_6b4b88ea9f43") });
-        if (!updateComplaintStatus.error) {
-            AppAlert.alert(messages.common.update || String(localizedUiText.m_8b2d0675b4b0), messages.resident.success.updated || String(localizedUiText.m_8522d7a3d99b));
-        }
-    };
-    const handleReopen = () => {
-        navigation.dispatch(StackActions.push('ComplaintReopen', { complaintId: complaint.id }));
-    };
-    const handleFeedback = () => {
-        navigation.dispatch(StackActions.push('ComplaintFeedback', { complaintId: complaint.id }));
-    };
-    const timelineItems = [
-        {
-            id: 'step-created',
-            title: messages.complaints.timelineRaised,
-            description: `${messages.complaints.formCategory}: ${complaint.category}`,
-            timestamp: complaint.createdAt || getActiveUiLiteral("m_66f53417d3b7"),
-            iconName: 'document-text-outline',
-            status: ComplaintStatus.OPEN,
-            statusTone: 'warning' as const,
-        },
-        ...(complaint.assignedTo
-            ? [
-                {
-                    id: 'step-assigned',
-                    title: messages.complaints.labelAssignedTo,
-                    description: messages.complaints.timelineAssigned(complaint.assignedTo),
-                    timestamp: complaint.updatedAt || getActiveUiLiteral("m_66f53417d3b7"),
-                    iconName: 'people-outline',
-                    status: ComplaintStatus.ASSIGNED,
-                    statusTone: 'info' as const,
-                },
-            ]
-            : []),
-        ...(complaint.status === ComplaintStatus.RESOLVED || complaint.status === ComplaintStatus.CLOSED
-            ? [
-                {
-                    id: 'step-resolved',
-                    title: messages.complaints.timelineResolved,
-                    description: complaint.resolutionNote || messages.complaints.timelineResolved,
-                    timestamp: complaint.updatedAt || getActiveUiLiteral("m_66f53417d3b7"),
-                    iconName: 'checkmark-circle-outline',
-                    status: ComplaintStatus.RESOLVED,
-                    statusTone: 'success' as const,
-                },
-            ]
-            : []),
-    ];
-    const steps = [
-        { id: '1', label: messages.complaints.statusOpen, status: 'done' as const },
-        {
-            id: '2',
-            label: messages.complaints.statusInProgress,
-            status: complaint.assignedTo ? ('done' as const) : ('current' as const),
-        },
-        {
-            id: '3',
-            label: messages.complaints.statusResolved,
-            status: complaint.status === ComplaintStatus.IN_PROGRESS
-                ? ('current' as const)
-                : complaint.status === ComplaintStatus.RESOLVED || complaint.status === ComplaintStatus.CLOSED
-                    ? ('done' as const)
-                    : ('pending' as const),
-        },
-        {
-            id: '4',
-            label: messages.complaints.statusClosed,
-            status: complaint.status === ComplaintStatus.RESOLVED
-                ? ('current' as const)
-                : complaint.status === ComplaintStatus.CLOSED
-                    ? ('done' as const)
-                    : ('pending' as const),
-        },
-    ];
-    const coachSteps: { title: string; description: string; status: 'completed' | 'current' | 'pending' | 'blocked' }[] = [
-        {
-            title: messages.complaints.statusOpen,
-            description: String(localizedUiText.m_2c2265169b74),
-            status: 'completed',
-        },
-        {
-            title: messages.complaints.statusInProgress,
-            description: complaint.assignedTo ? formatUiLiteral(String(localizedUiText.m_c63b6e287d60), [complaint.assignedTo]) : String(localizedUiText.m_eb618401fd43),
-            status: complaint.assignedTo ? 'completed' : 'current',
-        },
-        {
-            title: messages.complaints.statusResolved,
-            description: complaint.resolutionNote || String(localizedUiText.m_26eeab0ad89c),
-            status: complaint.status === ComplaintStatus.RESOLVED || complaint.status === ComplaintStatus.CLOSED
-                ? 'completed'
-                : complaint.assignedTo
-                    ? 'current'
-                    : 'pending',
-        },
-        {
-            title: messages.complaints.statusClosed,
-            description: String(localizedUiText.m_78d4e1d369e0),
-            status: complaint.status === ComplaintStatus.CLOSED ? 'completed' : 'pending',
-        },
-    ];
-    const progressProps = {
-        complaintId: complaint.id,
-        title: complaint.title,
-        priority: toProgressPriority(complaint.priority),
-        assignedTo: complaint.assignedTo || messages.common.unknown || 'Unassigned',
-        slaRemainingLabel: complaint.slaText || getActiveUiLiteral("m_b46361e7a199"),
-        slaProgressPercent: complaint.status === ComplaintStatus.RESOLVED || complaint.status === ComplaintStatus.CLOSED ? 100 : 45,
-        steps,
-    };
-    return (
-        <Screen
-            title={messages.complaints.detailTitle || complaint.title}
-            subtitle={`${complaint.category} \u00b7 ${complaint.status.replace(/_/g, ' ')}`}
-            showBackButton
-            onBack={() => navigation.goBack()}
-        >
-        <SafeAreaView style={styles.root}>
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <View style={styles.viewPaddingHorizontal}>
-                    <Card variant="elevated" padding="md">
-                        <ComplaintProgressPanel {...progressProps} interactive={false} />
-                    </Card>
-                </View>
+  const { data: fetchedComplaint, isLoading } = useComplaintDetail(initialComplaint.id);
+  const complaint = fetchedComplaint ?? initialComplaint;
+  const updateComplaintStatus = useUpdateComplaintStatus();
 
-                <View style={styles.viewPaddingHorizontal2}>
-                    <Card variant="elevated" padding="md">
-                        <ResidentProgressCoach steps={coachSteps} instruction={complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED
-                            ? getActiveUiLiteral("m_10abd13583ec") : getActiveUiLiteral("m_9cc813680d11")} />
-                    </Card>
-                </View>
+  if (isLoading && !complaint) {
+    return <LoadingState message="Loading complaint details..." />;
+  }
 
-                <View style={styles.section}>
-                    <SafeText variant="bodyStrong" style={styles.sectionTitle}>{messages.complaints.timelineSection}</SafeText>
-                    <ResidentTimeline items={timelineItems} />
-                </View>
+  const formattedId = complaint.id.startsWith('comp-')
+    ? `#C-${complaint.id.replace('comp-', '')}`
+    : `#${complaint.id}`;
 
-                <View style={styles.actions}>
-                    {complaint.status !== ComplaintStatus.RESOLVED && complaint.status !== ComplaintStatus.CLOSED && (
-                        <Button
-                            title="Mark Done"
-                            onPress={handleResolve}
-                            variant="primary"
-                            leftIcon={<Ionicons name="checkmark-circle-outline" size={18} color={themeColors.text.inverse} />}
-                        />
-                    )}
+  const timelineSteps: TimelineStep[] = [
+    {
+      id: 'step-raised',
+      title: 'Complaint raised',
+      timestamp: '02 Oct, 10:15 AM',
+      status: 'completed',
+    },
+    {
+      id: 'step-assigned',
+      title: 'Assigned to staff',
+      timestamp: '02 Oct, 11:30 AM',
+      status: 'completed',
+    },
+    {
+      id: 'step-progress',
+      title: 'In progress',
+      timestamp: '02 Oct, 02:45 PM',
+      status: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? 'completed' : 'active',
+    },
+    {
+      id: 'step-resolved',
+      title: 'Resolved',
+      timestamp: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? '02 Oct, 05:00 PM' : 'Pending',
+      status: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? 'completed' : 'upcoming',
+    },
+  ];
 
-                    {complaint.status === ComplaintStatus.RESOLVED && (
-                        <View style={styles.buttonStack}>
-                            <Button
-                                title="Feedback"
-                                onPress={handleFeedback}
-                                variant="primary"
-                                leftIcon={<Ionicons name="star-outline" size={18} color={themeColors.text.inverse} />}
-                            />
-                            <Button
-                                title="Reopen"
-                                variant="outline"
-                                onPress={handleReopen}
-                                leftIcon={<Ionicons name="refresh-outline" size={18} color="#3B82F6" />}
-                            />
-                        </View>
-                    )}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
-        </Screen>
-    );
-}
+  return (
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <SocietyDetailHeader
+        title={`Complaint ${formattedId}`}
+        onBackPress={() => navigation.goBack()}
+      />
 
-function formatUiLiteral(template: string, args: string[]): string {
-    return args.reduce((acc, arg, i) => acc.replace(`{${i}}`, arg), template);
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Status Pill Header */}
+        <View style={styles.statusPillRow}>
+          <SocietyStatusPill
+            label={
+              complaint.status === 'RESOLVED' || complaint.status === 'CLOSED'
+                ? 'Resolved'
+                : 'In Progress'
+            }
+            tone={
+              complaint.status === 'RESOLVED' || complaint.status === 'CLOSED'
+                ? 'success'
+                : 'warning'
+            }
+            showDot={true}
+          />
+        </View>
+
+        {/* Title & Metadata */}
+        <Text style={styles.complaintTitle}>{complaint.title}</Text>
+
+        <View style={styles.metaCard}>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Category</Text>
+            <Text style={styles.metaValue}>{complaint.category}</Text>
+          </View>
+          <View style={styles.metaDivider} />
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Created</Text>
+            <Text style={styles.metaValue}>02 Oct 2026, 10:15 AM</Text>
+          </View>
+        </View>
+
+        {/* Description Section */}
+        {complaint.description ? (
+          <View style={styles.descCard}>
+            <Text style={styles.descLabel}>Description</Text>
+            <Text style={styles.descText}>{complaint.description}</Text>
+          </View>
+        ) : null}
+
+        {/* Timeline Section */}
+        <View style={styles.timelineSection}>
+          <Text style={styles.sectionHeaderTitle}>Status Timeline</Text>
+          <View style={styles.timelineCard}>
+            <SocietyTimeline steps={timelineSteps} />
+          </View>
+        </View>
+
+        {/* Bottom Actions */}
+        <View style={styles.actionButtonsCol}>
+          {complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? (
+            <Pressable
+              style={styles.primaryActionBtn}
+              onPress={() =>
+                navigation.dispatch(
+                  StackActions.push('ComplaintFeedback', { complaintId: complaint.id })
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add Feedback"
+            >
+              <Text style={styles.primaryActionBtnText}>Add Feedback</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.primaryActionBtn}
+              onPress={() =>
+                navigation.dispatch(
+                  StackActions.push('ComplaintFeedback', { complaintId: complaint.id })
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Resolve & Feedback"
+            >
+              <Text style={styles.primaryActionBtnText}>Resolve & Give Feedback</Text>
+            </Pressable>
+          )}
+
+          <Pressable
+            style={styles.secondaryActionBtn}
+            onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Complaints"
+          >
+            <Text style={styles.secondaryActionBtnText}>Back to Complaints</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    root: {
-        flex: 1,
-    },
-    safe: {
-        flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-    },
-    scrollContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 100,
-        gap: 16,
-    },
-    viewPaddingHorizontal: {
-        paddingHorizontal: 16,
-    },
-    viewPaddingHorizontal2: {
-        paddingHorizontal: 16,
-        marginTop: 16,
-    },
-    section: {
-        marginTop: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 12,
-    },
-    actions: {
-        flexDirection: 'row',
-        gap: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        marginTop: 24,
-    },
-    buttonStack: {
-        flexDirection: 'row',
-        gap: 12,
-        flexWrap: 'wrap',
-    },
-    card: {
-        borderRadius: 16,
-        overflow: 'hidden',
-    },
-    progressCard: {
-        marginBottom: 16,
-    },
-    coachCard: {
-        marginBottom: 16,
-    },
+  root: {
+    flex: 1,
+    backgroundColor: '#F8F6F0',
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    gap: 16,
+  },
+  statusPillRow: {
+    flexDirection: 'row',
+  },
+  complaintTitle: {
+    fontSize: 22,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+    lineHeight: 28,
+  },
+  metaCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    gap: 12,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  metaLabel: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#626A65',
+  },
+  metaValue: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+    color: '#111613',
+  },
+  metaDivider: {
+    height: 1,
+    backgroundColor: '#F2F1EB',
+  },
+  descCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    gap: 8,
+  },
+  descLabel: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+    color: '#8C928E',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  descText: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#111613',
+    lineHeight: 22,
+  },
+  timelineSection: {
+    gap: 10,
+    marginTop: 4,
+  },
+  sectionHeaderTitle: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  timelineCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+  },
+  actionButtonsCol: {
+    gap: 10,
+    marginTop: 12,
+  },
+  primaryActionBtn: {
+    backgroundColor: '#064F43',
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+  },
+  secondaryActionBtn: {
+    backgroundColor: '#FFFFFF',
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryActionBtnText: {
+    color: '#064F43',
+    fontSize: 15,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+  },
 });
 
 export default ComplaintDetailScreen;

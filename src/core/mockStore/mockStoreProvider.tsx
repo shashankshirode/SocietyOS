@@ -4,6 +4,7 @@ import type { MockStoreState } from './mockStore.types';
 
 type MockStoreContextValue = {
   state: MockStoreState;
+  isHydrated: boolean;
   reset: () => void;
   addVisitor: typeof mockStore.addVisitor;
   updateVisitor: typeof mockStore.updateVisitor;
@@ -39,17 +40,23 @@ export const MockStoreContext = createContext<MockStoreContextValue | null>(null
 
 export function MockStoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MockStoreState>(mockStore.getState());
+  const [isHydrated, setIsHydrated] = useState<boolean>(mockStore.getIsHydrated());
 
   useEffect(() => {
-    void mockStore.hydrate();
+    void mockStore.hydrate().then(() => {
+      setIsHydrated(true);
+      setState({ ...mockStore.getState() });
+    });
     const unsubscribe = mockStore.subscribe(() => {
       setState({ ...mockStore.getState() });
+      setIsHydrated(mockStore.getIsHydrated());
     });
     return unsubscribe;
   }, []);
 
   const value = {
     state,
+    isHydrated,
     reset: () => mockStore.reset(),
     addVisitor: (visitor: Parameters<typeof mockStore.addVisitor>[0]) => mockStore.addVisitor(visitor),
     updateVisitor: (id: string, updates: Parameters<typeof mockStore.updateVisitor>[1]) => mockStore.updateVisitor(id, updates),

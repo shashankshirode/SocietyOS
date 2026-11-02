@@ -1,0 +1,10 @@
+appId: com.societyos.mobile
+---
+- launchApp
+- tapOn: "Complaints"
+- tapOn: "File a Complaint"
+- inputText: "Corridor light flickering"
+  into: "Title"
+- tapOn: "Submit Complaint"
+- assertVisible: "Corridor light flickering"
+- assertVisible: "OPEN"

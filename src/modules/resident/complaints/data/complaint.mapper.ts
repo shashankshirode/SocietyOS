@@ -16,7 +16,8 @@ export function mapComplaintDtoToDomain(dto: ComplaintDto): Complaint {
         updatedAt: dto.updatedAt ?? new Date().toISOString(),
         slaText: dto.slaText ?? '',
         ...includeWhenPresent("assignedTo", dto.assignedTo),
-        ...includeWhenPresent("resolutionNote", dto.resolutionNote)
+        ...includeWhenPresent("resolutionNote", dto.resolutionNote),
+        ...includeWhenPresent("updates", dto.updates ? [...dto.updates] : undefined)
     };
 }
 export function mapCreateComplaintPayloadToDto(payload: CreateComplaintPayload): CreateComplaintRequestDto {

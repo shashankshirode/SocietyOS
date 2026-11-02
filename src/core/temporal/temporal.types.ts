@@ -215,9 +215,10 @@ export interface RelativeTimeContext {
   readonly locale: SupportedLocale;
 }
 
-/** Clock interface for testing */
+/** Clock interface for testing and deterministic runtime */
 export interface Clock {
   readonly now: () => UtcInstant;
   readonly nowUtc: () => Date;
+  readonly nowIso: () => string;
 }
 

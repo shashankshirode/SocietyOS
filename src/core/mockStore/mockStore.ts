@@ -26,9 +26,12 @@ import {
   residentScopedVehicles,
 } from '../../modules/resident/mock/residentMockDomainBuilders';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CURRENT_SCHEMA_VERSION, safeParsePersistedMockStore } from './mockStoreMigrations';
+import { safeLog } from '../logging/safeLog';
 
-export const MOCK_DATA_VERSION = 4;
-export const MOCK_STORE_STORAGE_KEY = 'society-os.mock.resident-state.v4';
+export { CURRENT_SCHEMA_VERSION };
+export const MOCK_DATA_VERSION = CURRENT_SCHEMA_VERSION;
+export const MOCK_STORE_STORAGE_KEY = `society-os.mock.resident-state.v${CURRENT_SCHEMA_VERSION}`;
 const obsoleteMockStoreKeys = [
   'society-os.mock.resident-state.v1',
   'society-os.mock.sos-events.v1',
@@ -337,6 +340,12 @@ class MockStore {
     };
   }
 
+  private isHydrated = false;
+
+  getIsHydrated(): boolean {
+    return this.isHydrated;
+  }
+
   hydrate(): Promise<void> {
     if (!this.hydration) {
       this.hydration = AsyncStorage.getItem(MOCK_STORE_STORAGE_KEY).then(async (raw) => {
@@ -345,31 +354,67 @@ class MockStore {
           const legacyKeys = storedKeys.filter((key) => obsoleteMockStoreKeys.includes(key) || key.startsWith('societyos.resident.facilityBooking.v2.chunk'));
           if (legacyKeys.length) await AsyncStorage.multiRemove(legacyKeys);
           this.persist();
+          this.isHydrated = true;
           return;
         }
-        const saved = JSON.parse(raw) as PersistedMockStore;
-        if (saved.version !== MOCK_DATA_VERSION) {
-          await AsyncStorage.removeItem(MOCK_STORE_STORAGE_KEY);
-          this.state = cloneInitialStoreState();
-          this.persist();
-          this.listeners.forEach((listener) => listener());
-          return;
+
+        const { state: hydratedState, corrupted } = safeParsePersistedMockStore(raw, cloneInitialStoreState());
+        if (corrupted) {
+          const quarantineKey = `${MOCK_STORE_STORAGE_KEY}.quarantine.${Date.now()}`;
+          void AsyncStorage.setItem(quarantineKey, raw);
         }
-        this.state = { ...cloneInitialStoreState(), ...saved.state };
+
+        this.state = hydratedState;
+        this.isHydrated = true;
+        this.persist();
         this.listeners.forEach((listener) => listener());
-      }).catch(() => undefined);
+      }).catch((err) => {
+        this.isHydrated = true;
+        safeLog.error('[MockStore] Hydration failure', { error: String(err) });
+      });
     }
     return this.hydration;
   }
 
+  private isBatching = false;
+
   private persist() {
-    const persisted: PersistedMockStore = { version: MOCK_DATA_VERSION, state: this.state };
+    if (this.isBatching) return;
+    const persisted = {
+      version: CURRENT_SCHEMA_VERSION,
+      persistedAtIso: new Date().toISOString(),
+      state: this.state,
+    };
     void AsyncStorage.setItem(MOCK_STORE_STORAGE_KEY, JSON.stringify(persisted));
   }
 
   notify() {
+    if (this.isBatching) return;
     this.persist();
     this.listeners.forEach((listener) => listener());
+  }
+
+  /**
+   * Run multiple mutations atomically.
+   * If the mutator throws, state changes are rolled back to the pre-transaction snapshot.
+   * If the mutator succeeds, listeners are notified once at the end and state is persisted.
+   */
+  runTransaction<R>(mutator: (store: MockStore) => R): R {
+    const snapshot = JSON.stringify(this.state);
+    const wasBatching = this.isBatching;
+    this.isBatching = true;
+    try {
+      const result = mutator(this);
+      this.isBatching = wasBatching;
+      if (!this.isBatching) {
+        this.notify();
+      }
+      return result;
+    } catch (error) {
+      this.state = JSON.parse(snapshot);
+      this.isBatching = wasBatching;
+      throw error;
+    }
   }
 
   reset() {

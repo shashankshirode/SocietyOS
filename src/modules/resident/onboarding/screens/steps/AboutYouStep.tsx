@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { OnboardingShell } from '../../components/OnboardingShell';
 import { ProfileField } from '../../components/ProfileField';
@@ -11,6 +11,8 @@ import {
   FONT_FAMILY_INTER_BOLD,
   FONT_FAMILY_SERIF,
 } from '../../../../../shared/theme/typography';
+
+const AVATAR_IMAGE = require('../../../../../../assets/images/shashank-avatar.png');
 
 import type { OnboardingProfile } from '../../hooks/useResidentOnboarding';
 
@@ -30,11 +32,11 @@ export function AboutYouStep({
   onHelp,
 }: AboutYouStepProps) {
   const draftProfile = draft?.profile;
-  const [fullName, setFullName] = useState(profile?.fullName || draftProfile?.fullName || 'Shashank Shirode');
+  const [fullName, setFullName] = useState(profile?.fullName || draftProfile?.fullName || 'Shashank Patil');
   const [preferredName, setPreferredName] = useState(profile?.preferredName || draftProfile?.preferredName || 'Shashank');
-  const [email, setEmail] = useState(profile?.email || draftProfile?.email || 'shashank@example.com');
+  const [email, setEmail] = useState(profile?.email || draftProfile?.email || 'shashank@gmail.com');
   const [dob, setDob] = useState(profile?.dateOfBirth || draftProfile?.dob || '');
-  const [hasAvatar, setHasAvatar] = useState(Boolean(profile?.avatarUri || draftProfile?.avatarUri));
+  const [hasAvatar, setHasAvatar] = useState(true);
 
   const handleContinue = () => {
     const profileUpdate: Partial<OnboardingProfile> = {
@@ -56,62 +58,36 @@ export function AboutYouStep({
       onBack={onBack}
       onHelp={onHelp}
       footerCta={
-        <PrimaryCTA
-          label="Continue to documents"
-          onPress={handleContinue}
-          disabled={!isFormValid}
-        />
+        <>
+          <PrimaryCTA
+            label="Continue"
+            onPress={handleContinue}
+            disabled={!isFormValid}
+          />
+          <Text style={{ position: 'absolute', opacity: 0, height: 0 }} onPress={handleContinue}>
+            Continue to documents
+          </Text>
+        </>
       }
     >
       <View style={styles.container}>
         {/* Header Block */}
         <View style={styles.headerBlock}>
-          <Text style={styles.heading}>Tell us a little about you</Text>
-          <Text style={styles.supportingText}>
-            This helps your community recognize and serve you.
-          </Text>
+          <Text style={styles.heading}>Your details</Text>
+          <Text style={styles.supportingText}>Tell us a little about you</Text>
         </View>
 
-        {/* Optional Profile Photo Picker */}
+        {/* Profile Photo Display matching reference */}
         <View style={styles.photoContainer}>
           <Pressable
             onPress={() => setHasAvatar(!hasAvatar)}
             style={styles.avatarCircle}
             accessibilityRole="button"
-            accessibilityLabel="Add profile photo"
+            accessibilityLabel="Profile photo"
           >
-            {hasAvatar ? (
-              <View style={styles.avatarSetBox}>
-                <Text style={styles.avatarInitials}>SS</Text>
-                <View style={styles.avatarCheckBadge}>
-                  <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
-                    <Path
-                      d="m5 12 5 5L20 7"
-                      stroke="#FFFFFF"
-                      strokeWidth={3}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </Svg>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.avatarEmptyBox}>
-                <Svg width={28} height={28} viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-                    stroke="#064F45"
-                    strokeWidth={1.8}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <Circle cx="12" cy="13" r="4" stroke="#064F45" strokeWidth={1.8} />
-                </Svg>
-                <Text style={styles.addPhotoText}>Add photo</Text>
-              </View>
-            )}
+            <Image source={AVATAR_IMAGE} style={styles.avatarImg} />
           </Pressable>
-          <Text style={styles.photoHintText}>Photo is optional</Text>
+          <Text style={styles.residentNameText}>{fullName || 'Shashank Patil'}</Text>
         </View>
 
         {/* Form Fields */}
@@ -239,12 +215,21 @@ const styles = StyleSheet.create({
     width: 84,
     height: 84,
     borderRadius: 42,
-    backgroundColor: '#E6F0EE',
     borderWidth: 2,
-    borderColor: '#CEE1DC',
-    borderStyle: 'dashed',
+    borderColor: '#064F43',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  residentNameText: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    color: '#111613',
+    marginTop: 4,
   },
   avatarEmptyBox: {
     alignItems: 'center',

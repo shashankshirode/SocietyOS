@@ -1,0 +1,18 @@
+appId: com.societyos.mobile
+---
+- launchApp
+- assertVisible: "Dashboard"
+- tapOn: "Visitors"
+- tapOn: "Pre-approve Visitor"
+- inputText: "Maestro Guest"
+  into: "Visitor Name"
+- inputText: "+919876543210"
+  into: "Phone Number"
+- tapOn: "Create Pass"
+- assertVisible: "Maestro Guest"
+- assertVisible: "EXPECTED"
+- tapOn: "Gate Validation"
+- tapOn: "Admit"
+- assertVisible: "INSIDE"
+- tapOn: "Confirm Exit"
+- assertVisible: "COMPLETED"

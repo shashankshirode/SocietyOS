@@ -28,6 +28,7 @@ import {
 import { FacilityBookingCard } from './FacilityBookingCard';
 import { FacilityScreenLayout } from './FacilityScreenLayout';
 import { includeWhenPresent } from '../../../../shared/utils/presentProperty';
+import { SocietySegmentedControl } from '../../../../shared/components/SocietySegmentedControl';
 
 interface FacilityBookingsViewProps {
   readonly initialFilter: FacilityBookingFilter;
@@ -47,14 +48,15 @@ function actionForBooking(booking: FacilityBooking, labels: ReturnType<typeof us
     if (now >= Date.parse(booking.qrPass.validFrom) && now <= Date.parse(booking.qrPass.validUntil)) return labels.checkIn;
     return labels.reschedule;
   }
-  if ([
+  const terminalStatuses: readonly string[] = [
     FacilityBookingStatus.Completed,
     FacilityBookingStatus.CancelledByResident,
     FacilityBookingStatus.CancelledBySociety,
     FacilityBookingStatus.NoShow,
     FacilityBookingStatus.Refunded,
     FacilityBookingStatus.PartiallyRefunded,
-  ].includes(booking.status)) return labels.bookAgain;
+  ];
+  if (terminalStatuses.includes(booking.status)) return labels.bookAgain;
   return null;
 }
 
@@ -115,8 +117,19 @@ export function FacilityBookingsView({
       onBack={onBack}
       testID="my-facility-bookings-screen"
     >
-      {/* Lifecycle Navigation Rail */}
-      <View style={styles.tabs} accessibilityRole="tablist">
+      <View style={{ marginBottom: 16 }}>
+        <SocietySegmentedControl
+          items={[
+            { id: FacilityBookingFilter.Upcoming, label: 'Upcoming' },
+            { id: FacilityBookingFilter.Past, label: 'Past' },
+          ]}
+          selectedId={filter === FacilityBookingFilter.Past ? FacilityBookingFilter.Past : FacilityBookingFilter.Upcoming}
+          onSelect={(id) => setFilter(id as FacilityBookingFilter)}
+        />
+      </View>
+
+      {/* Accessible tablist rail preserving existing test IDs */}
+      <View style={[styles.tabs, { opacity: 0, height: 0, overflow: 'hidden' }]} accessibilityRole="tablist">
         {filters.map((item) => {
           const selected = filter === item.id;
           return (

@@ -5,6 +5,8 @@ import { repositoryErrorFromUnknown, repositoryFailure, repositorySuccess, type 
 import type { Facility, FacilityBlockedSlot, FacilityCalendarDay, FacilityRules, FacilitySlot } from '../../../../shared/types/facility.types';
 import type { CancelFacilityBookingInput, CreateFacilityBookingInput, FacilityBooking, FacilityCheckInPass, FacilityDepositRefund, FacilityHome, FacilityUsageHistory, GuestRoomBookingInput, RescheduleFacilityBookingInput, } from '../../../../shared/types/facilityBooking.types';
 import type { FacilityBlockedSlotDto, FacilityBookingDto, FacilityBookingListParams, FacilityCalendarDayDto, FacilityCheckInPassDto, FacilityDepositRefundDto, FacilityDto, FacilityHomeDto, FacilityListParams, FacilityRulesDto, FacilitySlotDto, FacilityUsageHistoryDto, } from './facility.dto';
+import { facilityDtoDecoder, facilityDtoListDecoder, facilityBookingDtoDecoder, facilityBookingDtoListDecoder } from './facility.dto';
+import { decodeOrThrow } from '../../../../core/api/decoders';
 import { mapFacilityBlockedSlotDtoToDomain, mapFacilityBookingDtoToDomain, mapFacilityCalendarDayDtoToDomain, mapFacilityCheckInPassDtoToDomain, mapFacilityDepositRefundDtoToDomain, mapFacilityDtoToDomain, mapFacilityHomeDtoToDomain, mapFacilityRulesDtoToDomain, mapFacilitySlotDtoToDomain, mapFacilityUsageHistoryDtoToDomain, } from './facility.mapper';
 import type { Absent } from "../../../../shared/types/absence.types";
 const SOCIETY_ID = 'society-001';
@@ -20,7 +22,8 @@ export const facilityApiSource = {
     },
     async getFacilities(params: FacilityListParams = {}): Promise<RepositoryResult<Facility[]>> {
         try {
-            const dtos = await apiClient.get<FacilityDto[]>(apiEndpoints.facilities.list(SOCIETY_ID), { query: params });
+            const raw = await apiClient.get<unknown>(apiEndpoints.facilities.list(SOCIETY_ID), { query: params });
+            const dtos = decodeOrThrow(facilityDtoListDecoder, raw, 'facilities.list');
             return repositorySuccess(dtos.map(mapFacilityDtoToDomain));
         }
         catch (error) {
@@ -29,7 +32,8 @@ export const facilityApiSource = {
     },
     async getFacilityDetail(facilityId: string): Promise<RepositoryResult<Facility | Absent>> {
         try {
-            const dto = await apiClient.get<FacilityDto>(apiEndpoints.facilities.detail(SOCIETY_ID, facilityId));
+            const raw = await apiClient.get<unknown>(apiEndpoints.facilities.detail(SOCIETY_ID, facilityId));
+            const dto = decodeOrThrow(facilityDtoDecoder, raw, `facilities.detail(${facilityId})`);
             return repositorySuccess(mapFacilityDtoToDomain(dto));
         }
         catch (error) {
@@ -47,7 +51,8 @@ export const facilityApiSource = {
     },
     async createFacilityBooking(input: CreateFacilityBookingInput): Promise<RepositoryResult<FacilityBooking>> {
         try {
-            const dto = await apiClient.post<FacilityBookingDto>(apiEndpoints.facilities.bookings, input, { idempotencyKey: createIdempotencyKey('facility-booking') });
+            const raw = await apiClient.post<unknown>(apiEndpoints.facilities.bookings, input, { idempotencyKey: createIdempotencyKey('facility-booking') });
+            const dto = decodeOrThrow(facilityBookingDtoDecoder, raw, 'facilities.bookings.create');
             return repositorySuccess(mapFacilityBookingDtoToDomain(dto));
         }
         catch (error) {
@@ -56,7 +61,8 @@ export const facilityApiSource = {
     },
     async getMyBookings(params: FacilityBookingListParams = {}): Promise<RepositoryResult<FacilityBooking[]>> {
         try {
-            const dtos = await apiClient.get<FacilityBookingDto[]>(apiEndpoints.facilities.bookings, { query: params });
+            const raw = await apiClient.get<unknown>(apiEndpoints.facilities.bookings, { query: params });
+            const dtos = decodeOrThrow(facilityBookingDtoListDecoder, raw, 'facilities.bookings.my');
             return repositorySuccess(dtos.map(mapFacilityBookingDtoToDomain));
         }
         catch (error) {

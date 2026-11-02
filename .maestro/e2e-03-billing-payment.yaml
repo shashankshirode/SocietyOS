@@ -1,0 +1,9 @@
+appId: com.societyos.mobile
+---
+- launchApp
+- tapOn: "Bills & Payments"
+- assertVisible: "Maintenance"
+- tapOn: "Pay Now"
+- tapOn: "Confirm Payment"
+- assertVisible: "Payment Successful"
+- assertVisible: "PAID"

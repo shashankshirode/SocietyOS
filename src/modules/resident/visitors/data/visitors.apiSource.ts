@@ -5,13 +5,17 @@ import { getMockRequestContext } from '../../../../core/api/requestContext';
 import { repositoryErrorFromUnknown, repositoryFailure, repositorySuccess, type RepositoryResult } from '../../../../core/repositories/repository.types';
 import type { ConfirmVisitorLeftInput, ConfirmVisitorStillInsideInput, ContactSecurityForVisitorExitInput, CreateVisitorPayload, ExtendVisitorExpectedExitInput, Visitor, VisitorExitAlert, VisitorExitEscalationResult, CancelVisitorPassRequest, CancelVisitorPassResult } from '../../../../shared/types/visitor.types';
 import type { VisitorDto } from './visitor.dto';
+import { visitorDtoDecoder, visitorDtoListDecoder } from './visitor.dto';
+import { decodeOrThrow } from '../../../../core/api/decoders';
 import { mapCreateVisitorPayloadToDto, mapVisitorDtoToDomain } from './visitor.mapper';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import type { Absent } from "../../../../shared/types/absence.types";
-export const visitorsApiSource = {
+import type { ResidentVisitorsRepository } from './residentVisitors.repository.types';
+export const visitorsApiSource: ResidentVisitorsRepository = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Visitor[]>> {
         try {
-            const dtos = await apiClient.get<VisitorDto[]>(apiEndpoints.visitors.list);
+            const raw = await apiClient.get<unknown>(apiEndpoints.visitors.list);
+            const dtos = decodeOrThrow(visitorDtoListDecoder, raw, 'visitors.list');
             return repositorySuccess(dtos.map(mapVisitorDtoToDomain));
         }
         catch (error) {
@@ -27,7 +31,8 @@ export const visitorsApiSource = {
             else {
                 actualPassId = visitorPassId || '';
             }
-            const dto = await apiClient.get<VisitorDto>(apiEndpoints.visitors.detail(actualPassId));
+            const raw = await apiClient.get<unknown>(apiEndpoints.visitors.detail(actualPassId));
+            const dto = decodeOrThrow(visitorDtoDecoder, raw, `visitors.detail(${actualPassId})`);
             return repositorySuccess(mapVisitorDtoToDomain(dto));
         }
         catch (error) {
@@ -44,10 +49,11 @@ export const visitorsApiSource = {
                 actualPayload = context as CreateVisitorPayload;
             }
             const reqContext = getMockRequestContext();
-            const dto = await apiClient.post<VisitorDto>(apiEndpoints.visitors.preapprove, mapCreateVisitorPayloadToDto(actualPayload, {
+            const raw = await apiClient.post<unknown>(apiEndpoints.visitors.preapprove, mapCreateVisitorPayloadToDto(actualPayload, {
                 flatNumber: reqContext.unitId ?? '',
                 societyName: reqContext.societyId ?? '',
             }), { idempotencyKey: createIdempotencyKey('visitor-preapprove') });
+            const dto = decodeOrThrow(visitorDtoDecoder, raw, 'visitors.preapprove');
             return repositorySuccess(mapVisitorDtoToDomain(dto));
         }
         catch (error) {
@@ -56,7 +62,8 @@ export const visitorsApiSource = {
     },
     async updateStatus(id: string, status: string): Promise<RepositoryResult<Visitor>> {
         try {
-            const dto = await apiClient.post<VisitorDto>(apiEndpoints.visitors.detail(id) + '/status', { status });
+            const raw = await apiClient.post<unknown>(apiEndpoints.visitors.detail(id) + '/status', { status });
+            const dto = decodeOrThrow(visitorDtoDecoder, raw, `visitors.status(${id})`);
             return repositorySuccess(mapVisitorDtoToDomain(dto));
         }
         catch (error) {

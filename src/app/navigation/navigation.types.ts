@@ -361,7 +361,8 @@ export type HomeStackParamList = {
     CreateVisitorFromHome: Absent;
     CreateComplaintFromHome: Absent;
     ComplaintDetailFromHome: {
-        complaint: Complaint;
+        complaint?: Complaint;
+        complaintId?: string;
     };
     ComplaintReopen: {
         complaintId: string;
@@ -673,7 +674,8 @@ export type VisitorStackParamList = {
 export type ComplaintStackParamList = {
     ComplaintList: Absent;
     ComplaintDetail: {
-        complaint: Complaint;
+        complaint?: Complaint;
+        complaintId?: string;
     };
     CreateComplaint: Absent;
     ComplaintReopen: {
@@ -701,6 +703,15 @@ export type BillStackParamList = {
         transactionId: string;
         receiptNumber: string;
         paymentDate: string;
+    };
+    AutoPaySetup: Absent;
+    ReceiptDetail: {
+        receiptNumber?: string | undefined;
+        billingMonth?: string | undefined;
+        amountPaid?: number | undefined;
+        paymentDate?: string | undefined;
+        paymentMethod?: string | undefined;
+        transactionId?: string | undefined;
     };
 };
 export type ChatStackParamList = {
@@ -772,11 +783,11 @@ export type NoticeDetailFromHomeScreenProps = NativeStackScreenProps<HomeStackPa
 export type EmergencySosScreenProps = NativeStackScreenProps<HomeStackParamList, 'EmergencySos'>;
 export type HelpdeskScreenProps = NativeStackScreenProps<HomeStackParamList, 'Helpdesk'>;
 export type VisitorListScreenProps = CompositeScreenProps<NativeStackScreenProps<VisitorStackParamList, 'VisitorList'>, BottomTabScreenProps<RootTabParamList>>;
-export type VisitorDetailScreenProps = NativeStackScreenProps<VisitorStackParamList, 'VisitorDetail'>;
-export type CreateVisitorPassScreenProps = NativeStackScreenProps<VisitorStackParamList, 'CreateVisitorPass'>;
+export type VisitorDetailScreenProps = NativeStackScreenProps<VisitorStackParamList, 'VisitorDetail'> | NativeStackScreenProps<HomeStackParamList, 'VisitorDetailFromHome'>;
+export type CreateVisitorPassScreenProps = NativeStackScreenProps<VisitorStackParamList, 'CreateVisitorPass'> | NativeStackScreenProps<HomeStackParamList, 'CreateVisitorFromHome'>;
 export type ComplaintListScreenProps = CompositeScreenProps<NativeStackScreenProps<ComplaintStackParamList, 'ComplaintList'>, BottomTabScreenProps<RootTabParamList>>;
 export type ComplaintDetailScreenProps = NativeStackScreenProps<ComplaintStackParamList, 'ComplaintDetail'> | NativeStackScreenProps<HomeStackParamList, 'ComplaintDetailFromHome'>;
-export type CreateComplaintScreenProps = NativeStackScreenProps<ComplaintStackParamList, 'CreateComplaint'>;
+export type CreateComplaintScreenProps = NativeStackScreenProps<ComplaintStackParamList, 'CreateComplaint'> | NativeStackScreenProps<HomeStackParamList, 'CreateComplaintFromHome'>;
 export type BillListScreenProps = CompositeScreenProps<NativeStackScreenProps<BillStackParamList, 'BillList'>, BottomTabScreenProps<RootTabParamList>>;
 export type BillDetailScreenProps = NativeStackScreenProps<BillStackParamList, 'BillDetail'>;
 export type BillDetailFromHomeScreenProps = NativeStackScreenProps<HomeStackParamList, 'BillDetailFromHome'>;

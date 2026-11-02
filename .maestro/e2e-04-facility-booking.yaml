@@ -1,0 +1,11 @@
+appId: com.societyos.mobile
+---
+- launchApp
+- tapOn: "Facilities"
+- tapOn: "Tennis Court"
+- tapOn: "Book Slot"
+- tapOn: "Confirm Booking"
+- assertVisible: "Booking Confirmed"
+- tapOn: "My Bookings"
+- tapOn: "Cancel Booking"
+- assertVisible: "Cancelled"

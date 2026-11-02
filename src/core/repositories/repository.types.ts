@@ -61,7 +61,7 @@ function categoryFromCode(code: string, status?: number, message = ''): Reposito
   if (status === 403 || normalized.includes('FORBIDDEN')) return 'FORBIDDEN';
   if (status === 404 || normalized.includes('NOT_FOUND')) return 'NOT_FOUND';
   if (status === 409 || normalized.includes('CONFLICT') || normalized.includes('DUPLICATE')) return 'CONFLICT';
-  if (status === 422 || normalized.includes('VALIDATION')) return 'VALIDATION';
+  if (status === 422 || normalized.includes('VALIDATION') || normalized.includes('CONTRACT') || /contract violation/i.test(message)) return 'VALIDATION';
   if (status === 429 || normalized.includes('RATE_LIMIT')) return 'RATE_LIMIT';
   if ((status !== undefined && status >= 500) || normalized.includes('SERVER')) return 'SERVER_ERROR';
   return 'UNKNOWN';
@@ -84,7 +84,7 @@ export function repositoryErrorFromUnknown(error: Error | JsonValue): Repository
       fieldErrors?: { field: string; message: string }[];
       traceId?: string;
     };
-    const code = candidate.code ?? 'REPOSITORY_ERROR';
+    const code = candidate.code ?? (error.name === 'ApiContractError' ? 'CONTRACT_VIOLATION' : 'REPOSITORY_ERROR');
     const category = categoryFromCode(code, candidate.status, candidate.message);
     return {
       code,

@@ -34,7 +34,19 @@ import { SupportedLocale } from '../../shared/localization/language.models';
 export const systemClock: Clock = {
   now: () => new Date().toISOString() as UtcInstant,
   nowUtc: () => new Date(),
+  nowIso: () => new Date().toISOString(),
 };
+
+/** Fixed clock factory for deterministic runtime and testing */
+export function createFixedClock(fixedTime: string | Date = '2026-10-02T12:00:00.000Z'): Clock {
+  const date = typeof fixedTime === 'string' ? new Date(fixedTime) : fixedTime;
+  const iso = date.toISOString() as UtcInstant;
+  return {
+    now: () => iso,
+    nowUtc: () => new Date(date.getTime()),
+    nowIso: () => iso,
+  };
+}
 
 /** Default society timezone (India) */
 export const DEFAULT_SOCIETY_TIMEZONE: IanaTimeZone = 'Asia/Kolkata' as IanaTimeZone;

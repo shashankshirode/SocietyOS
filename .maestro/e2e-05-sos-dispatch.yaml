@@ -1,0 +1,8 @@
+appId: com.societyos.mobile
+---
+- launchApp
+- tapOn: "Emergency SOS"
+- tapOn: "MEDICAL"
+- tapOn: "Confirm SOS"
+- assertVisible: "SOS Dispatched"
+- assertVisible: "Main Gate Security"

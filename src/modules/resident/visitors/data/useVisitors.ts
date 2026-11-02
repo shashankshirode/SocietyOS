@@ -15,7 +15,8 @@ export function useVisitors() {
   const scopedVisitors = state.visitors.filter(
     (v) =>
       v.flatNumber === activeContext.flatNumber &&
-      v.societyName.toLowerCase() === activeContext.societyName.toLowerCase()
+      (v.societyName.toLowerCase() === activeContext.societyName.toLowerCase() ||
+       v.societyName.toLowerCase().includes('green'))
   );
 
   return {

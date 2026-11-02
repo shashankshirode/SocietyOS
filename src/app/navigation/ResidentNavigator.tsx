@@ -19,6 +19,8 @@ import { MockPaymentConfirmationScreen } from "../../modules/resident/billing/sc
 import { AdvancePaymentScreen } from "../../modules/resident/billing/screens/AdvancePaymentScreen";
 import { PaymentSuccessScreen } from "../../modules/resident/billing/screens/PaymentSuccessScreen";
 import { FlatLedgerScreen } from "../../modules/resident/billing/screens/FlatLedgerScreen";
+import { AutoPaySetupScreen } from "../../modules/resident/billing/screens/AutoPaySetupScreen";
+import { ReceiptDetailScreen } from "../../modules/resident/billing/screens/ReceiptDetailScreen";
 import { NoticeListScreen } from "../../modules/resident/notices/screens/NoticeListScreen";
 import { NoticeDetailScreen } from "../../modules/resident/notices/screens/NoticeDetailScreen";
 import { EmergencySosScreen } from "../../modules/resident/emergency/screens/EmergencySosScreen";
@@ -94,7 +96,7 @@ const stackScreenOptions = {
 
 function CreateVisitorFromHomeAdapter(props: NativeStackScreenProps<HomeStackParamList, 'CreateVisitorFromHome'>) {
     return (<ResidentCapabilityGuard capabilityId="resident.visitors">
-      <CreateVisitorPassScreen navigation={props.navigation as never} route={props.route as never}/>
+      <CreateVisitorPassScreen navigation={props.navigation} route={props.route}/>
     </ResidentCapabilityGuard>);
 }
 function FamilyMembersCompatibilityAdapter(props: NativeStackScreenProps<HomeStackParamList, 'FamilyMembers'>) {
@@ -261,6 +263,8 @@ function BillStackNavigator() {
       <BillStack.Screen name="AdvancePayment" component={AdvancePaymentScreen}/>
       <BillStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen}/>
       <BillStack.Screen name="FlatLedger" component={FlatLedgerScreen}/>
+      <BillStack.Screen name="AutoPaySetup" component={AutoPaySetupScreen}/>
+      <BillStack.Screen name="ReceiptDetail" component={ReceiptDetailScreen}/>
     </BillStack.Navigator>);
 }
 function ChatStackNavigator() {

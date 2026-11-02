@@ -8,27 +8,30 @@ import { LanguageProvider } from './src/shared/localization';
 import { ExperienceRuntimeProvider } from './src/core/experience';
 import { SocietyShimmerProvider } from './src/ui/loading';
 import { AuthProvider } from './src/core/auth/AuthProvider';
+import { AppErrorBoundary } from './src/shared/components/ErrorBoundary';
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <LanguageProvider>
-        <ExperienceRuntimeProvider>
-          <MockStoreProvider>
-            <ResidentHomeContextProvider>
-              <AuthProvider>
-                <ThemeProvider>
-                  <ModalProvider>
-                    <SocietyShimmerProvider>
-                      <RootNavigator />
-                    </SocietyShimmerProvider>
-                  </ModalProvider>
-                </ThemeProvider>
-              </AuthProvider>
-            </ResidentHomeContextProvider>
-          </MockStoreProvider>
-        </ExperienceRuntimeProvider>
-      </LanguageProvider>
-    </SafeAreaProvider>
+    <AppErrorBoundary>
+      <SafeAreaProvider>
+        <LanguageProvider>
+          <ExperienceRuntimeProvider>
+            <MockStoreProvider>
+              <ResidentHomeContextProvider>
+                <AuthProvider>
+                  <ThemeProvider>
+                    <ModalProvider>
+                      <SocietyShimmerProvider>
+                        <RootNavigator />
+                      </SocietyShimmerProvider>
+                    </ModalProvider>
+                  </ThemeProvider>
+                </AuthProvider>
+              </ResidentHomeContextProvider>
+            </MockStoreProvider>
+          </ExperienceRuntimeProvider>
+        </LanguageProvider>
+      </SafeAreaProvider>
+    </AppErrorBoundary>
   );
 }

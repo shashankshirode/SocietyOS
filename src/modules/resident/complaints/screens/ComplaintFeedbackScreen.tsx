@@ -1,84 +1,201 @@
-import { AppAlert } from "../../../../ui/modal/AppAlert";
-import { useState } from "react";
-import { View, ScrollView, Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useResidentTheme } from "../../../../ui/foundation/residentTheme";
-import { ResidentPageHeader } from "../../../../ui/patterns/ResidentPageHeader";
-import { FormField } from "../../../../shared/forms/FormField";
-import { AppButton } from "../../../../shared/components/AppButton";
-import { SafeText } from "../../../../shared/components/SafeText";
-import { useComplaintFeedback } from "../hooks/useComplaintFeedback";
-import { useMessages } from "../../../../shared/constants/useMessages";
-import { ComplaintStatus } from "../data/complaints.enums";
-import { styles, createSafeTextColorStyle, createViewBackgroundColorStyle, createViewPaddingBottomBorderTopColorStyle } from "../styles/screens/ComplaintFeedbackScreen.styles";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { SocietyDetailHeader } from '../../../../shared/components/SocietyDetailHeader';
+import { useComplaintFeedback } from '../hooks/useComplaintFeedback';
+import {
+  FONT_FAMILY_INTER,
+  FONT_FAMILY_INTER_MEDIUM,
+  FONT_FAMILY_INTER_BOLD,
+} from '../../../../shared/theme/typography';
+
 type Props = {
-    navigation: {
-        navigate: (screen: string, params?: JsonObject) => void;
-        goBack: () => void;
+  navigation: {
+    navigate: (screen: string, params?: unknown) => void;
+    goBack: () => void;
+  };
+  route?: {
+    params?: {
+      complaintId?: string;
     };
-    route: {
-        params?: {
-            complaintId?: string;
-        };
-    };
+  };
 };
+
 export function ComplaintFeedbackScreen({ navigation, route }: Props) {
-    const localizedUiText = useMessages().uiLiterals;
-    const theme = useResidentTheme();
-    const insets = useSafeAreaInsets();
-    const messages = useMessages();
-    const [rating, setRating] = useState(0);
-    const [comments, setComments] = useState('');
-    const { submit, isSubmitting } = useComplaintFeedback();
-    const complaintId = route?.params?.complaintId || 'CMP-MOCK';
-    const handleFeedback = async () => {
-        if (rating === 0) {
-            AppAlert.alert(messages.complaints.ratingRequiredTitle, messages.complaints.ratingRequiredMessage);
-            return;
-        }
-        const res = await submit({ complaintId, rating, comments });
-        if (res.ok) {
-            AppAlert.alert(messages.complaints.feedbackSuccessTitle, messages.complaints.feedbackSuccessMessage, [
-                { text: messages.common.ok || String(localizedUiText.m_565339bc4d33), onPress: () => navigation.navigate('ComplaintList') },
-            ]);
-        }
-        else {
-            AppAlert.alert(messages.resident.errors.generic || String(localizedUiText.m_54a0e8c17ebb), res.error.message || String(localizedUiText.m_6545199ec32c));
-        }
-    };
-    return (<View style={[styles.root, createViewBackgroundColorStyle(theme.background)]}>
-      <ResidentPageHeader titleKey="complaints.feedbackTitle" title={localizedUiText.m_f9f33b667ca8}/>
+  const insets = useSafeAreaInsets();
+  const [rating, setRating] = useState(5);
+  const [comments, setComments] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const { submit, isSubmitting } = useComplaintFeedback();
+  const complaintId = route?.params?.complaintId || 'comp-1024';
+  const displayId = complaintId.startsWith('comp-')
+    ? `#C-${complaintId.replace('comp-', '')}`
+    : `#${complaintId}`;
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
-          <SafeText variant="bodyStrong" style={createSafeTextColorStyle(theme.textPrimary)} align="center">
-            {messages.complaints.feedbackRating}
-          </SafeText>
-          <SafeText variant="caption" color="muted" align="center">
-            {messages.complaints.ratingHelperText}
-          </SafeText>
+  const handleSubmit = async () => {
+    await submit({ complaintId, rating, comments });
+    setIsSubmitted(true);
+  };
 
-          
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => {
-            const active = rating >= star;
-            return (<Pressable key={star} onPress={() => setRating(star)} style={styles.starItem}>
-                  <Ionicons name={active ? 'star' : 'star-outline'} size={36} color={active ? theme.warning : theme.textSecondary}/>
-                </Pressable>);
-        })}
+  return (
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <SocietyDetailHeader
+        title=""
+        onBackPress={() => navigation.goBack()}
+      />
+
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.centerCard}>
+          {/* Green Check Circle */}
+          <View style={styles.checkCircle}>
+            <Ionicons name="checkmark" size={36} color="#FFFFFF" />
           </View>
-        </View>
 
-        <View style={styles.form}>
-          <FormField label={messages.complaints.commentsLabel} value={comments} onChangeText={setComments} placeholder={messages.complaints.commentsPlaceholder} multiline numberOfLines={4}/>
+          {/* Headline */}
+          <Text style={styles.resolvedTitle}>Complaint resolved!</Text>
+          <Text style={styles.complaintIdSubtitle}>{displayId}</Text>
+
+          <Text style={styles.questionText}>How was the resolution?</Text>
+
+          {/* Star Rating Row */}
+          <View style={styles.starsRow}>
+            {[1, 2, 3, 4, 5].map((star) => {
+              const active = rating >= star;
+              return (
+                <Pressable
+                  key={star}
+                  onPress={() => setRating(star)}
+                  hitSlop={8}
+                  style={styles.starPressable}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${star} stars`}
+                >
+                  <Ionicons
+                    name={active ? 'star' : 'star-outline'}
+                    size={36}
+                    color={active ? '#F59E0B' : '#D0D5DD'}
+                  />
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Feedback Comments */}
+          <View style={styles.commentsBox}>
+            <TextInput
+              style={styles.commentsInput}
+              value={comments}
+              onChangeText={setComments}
+              placeholder="Add optional notes about the service..."
+              placeholderTextColor="#8C928E"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          {/* Submit CTA */}
+          <Pressable
+            style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+            onPress={isSubmitted ? () => navigation.navigate('ComplaintList') : handleSubmit}
+            disabled={isSubmitting}
+            accessibilityRole="button"
+            accessibilityLabel={isSubmitted ? 'Done' : 'Submit'}
+          >
+            <Text style={styles.submitBtnText}>
+              {isSubmitting ? 'Submitting...' : isSubmitted ? 'Done' : 'Submit'}
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
-
-      
-      <View style={[styles.bottomBar, createViewPaddingBottomBorderTopColorStyle(insets.bottom + 12, theme.border)]}>
-        <AppButton title={messages.complaints.feedbackButton} onPress={handleFeedback} loading={isSubmitting} iconLeft={<Ionicons name="star-outline" size={18} color={theme.selectedForeground}/>}/>
-      </View>
-    </View>);
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#F8F6F0',
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    alignItems: 'center',
+  },
+  centerCard: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 12,
+  },
+  checkCircle: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#064F43',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  resolvedTitle: {
+    fontSize: 24,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  complaintIdSubtitle: {
+    fontSize: 15,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    color: '#626A65',
+    marginBottom: 16,
+  },
+  questionText: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+    color: '#111613',
+    marginBottom: 4,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  starPressable: {
+    padding: 4,
+  },
+  commentsBox: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    padding: 14,
+    minHeight: 90,
+    marginBottom: 16,
+  },
+  commentsInput: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#111613',
+    textAlignVertical: 'top',
+  },
+  submitBtn: {
+    width: '100%',
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#064F43',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+  },
+});
+
 export default ComplaintFeedbackScreen;

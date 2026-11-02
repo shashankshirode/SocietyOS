@@ -7,15 +7,6 @@ import type {
 
 export const MOCK_SOCIETIES: OnboardingSociety[] = [
   {
-    id: 'society-gv',
-    name: 'Green Valley Heights',
-    city: 'Nashik',
-    state: 'Maharashtra',
-    category: 'Residential Community',
-    totalUnits: 240,
-    isVerified: true,
-  },
-  {
     id: 'society-gw',
     name: 'Greenwood Heights',
     city: 'Pune',
@@ -25,8 +16,26 @@ export const MOCK_SOCIETIES: OnboardingSociety[] = [
     isVerified: true,
   },
   {
-    id: 'society-sky',
-    name: 'Skyline Towers',
+    id: 'society-gv',
+    name: 'Green Valley Heights',
+    city: 'Pune',
+    state: 'Maharashtra',
+    category: 'Residential Community',
+    totalUnits: 180,
+    isVerified: true,
+  },
+  {
+    id: 'society-sr',
+    name: 'Sunrise Residency',
+    city: 'Nashik',
+    state: 'Maharashtra',
+    category: 'Residential Community',
+    totalUnits: 240,
+    isVerified: true,
+  },
+  {
+    id: 'society-la',
+    name: 'Lakeview Apartments',
     city: 'Mumbai',
     state: 'Maharashtra',
     category: 'Residential Community',
@@ -36,13 +45,14 @@ export const MOCK_SOCIETIES: OnboardingSociety[] = [
 ];
 
 export const MOCK_UNITS_GREEN_VALLEY: OnboardingUnit[] = [
-  { id: 'u-a1201', societyId: 'society-gv', unitNumber: 'A-1201', tower: 'Tower A', wing: 'East Wing', floor: 12 },
-  { id: 'u-a1202', societyId: 'society-gv', unitNumber: 'A-1202', tower: 'Tower A', wing: 'East Wing', floor: 12 },
-  { id: 'u-a1203', societyId: 'society-gv', unitNumber: 'A-1203', tower: 'Tower A', wing: 'East Wing', floor: 12 },
-  { id: 'u-a1204', societyId: 'society-gv', unitNumber: 'A-1204', tower: 'Tower A', wing: 'East Wing', floor: 12 },
-  { id: 'u-a1205', societyId: 'society-gv', unitNumber: 'A-1205', tower: 'Tower A', wing: 'East Wing', floor: 12 },
-  { id: 'u-b401', societyId: 'society-gv', unitNumber: 'B-401', tower: 'Tower B', wing: 'West Wing', floor: 4 },
-  { id: 'u-b402', societyId: 'society-gv', unitNumber: 'B-402', tower: 'Tower B', wing: 'West Wing', floor: 4 },
+  { id: 'u-a1204', societyId: 'society-gw', unitNumber: 'A-1204', tower: 'Tower A', wing: 'East Wing', floor: 12 },
+  { id: 'u-b503', societyId: 'society-gw', unitNumber: 'B-503', tower: 'Tower B', wing: 'West Wing', floor: 5 },
+  { id: 'u-a1201', societyId: 'society-gw', unitNumber: 'A-1201', tower: 'Tower A', wing: 'East Wing', floor: 12 },
+  { id: 'u-a1202', societyId: 'society-gw', unitNumber: 'A-1202', tower: 'Tower A', wing: 'East Wing', floor: 12 },
+  { id: 'u-a1203', societyId: 'society-gw', unitNumber: 'A-1203', tower: 'Tower A', wing: 'East Wing', floor: 12 },
+  { id: 'u-a1205', societyId: 'society-gw', unitNumber: 'A-1205', tower: 'Tower A', wing: 'East Wing', floor: 12 },
+  { id: 'u-b401', societyId: 'society-gw', unitNumber: 'B-401', tower: 'Tower B', wing: 'West Wing', floor: 4 },
+  { id: 'u-b402', societyId: 'society-gw', unitNumber: 'B-402', tower: 'Tower B', wing: 'West Wing', floor: 4 },
 ];
 
 export const DEFAULT_DOCUMENTS: OnboardingDocument[] = [

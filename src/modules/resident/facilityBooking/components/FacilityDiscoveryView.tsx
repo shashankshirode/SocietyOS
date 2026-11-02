@@ -19,6 +19,8 @@ import { FacilityHero } from './FacilityHero';
 import { SpaceHorizon } from './SpaceHorizon';
 import { SpaceObject } from './SpaceObject';
 import { FacilityScreenLayout } from './FacilityScreenLayout';
+import { SocietySegmentedControl } from '../../../../shared/components/SocietySegmentedControl';
+
 interface FacilityDiscoveryViewProps {
     readonly onBack: () => void;
     readonly onOpenFacility: (facilityId: string) => void;
@@ -69,6 +71,18 @@ export function FacilityDiscoveryView({ onBack, onOpenFacility, onOpenBookings }
     const featuredSpace = facilities.facilities[0] || null;
     const otherSpaces = facilities.facilities.slice(1);
     return (<FacilityScreenLayout title={msg.title} subtitle={msg.subtitle} onBack={onBack} showBackButton={true} testID="facility-discovery-screen">
+      <View style={{ marginBottom: 14 }}>
+        <SocietySegmentedControl
+          items={[
+            { id: 'book', label: 'Book a Facility' },
+            { id: 'bookings', label: 'My Bookings' },
+          ]}
+          selectedId="book"
+          onSelect={(id) => {
+            if (id === 'bookings') onOpenBookings();
+          }}
+        />
+      </View>
       
       <FacilityHero image={residentImageCatalog.facilities.clubhouse} title={heroTitle} subtitle={heroSubtitle} badgeLabel={msg.badge} actionLabel={dashboard.data?.upcomingCount ? `${labels.myBookingsTitle} (${dashboard.data.upcomingCount})` : `${labels.myBookingsTitle} →`} onAction={onOpenBookings} nextBookingSummary={dashboard.data?.upcomingCount ? 'Badminton Court · Today 7 PM' : undefined}/>
 

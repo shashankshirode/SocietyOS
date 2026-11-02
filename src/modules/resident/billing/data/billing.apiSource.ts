@@ -3,18 +3,16 @@ import { apiEndpoints } from '../../../../core/api/apiEndpoints';
 import { createIdempotencyKey } from '../../../../core/api/idempotency';
 import { repositoryErrorFromUnknown, repositoryFailure, repositorySuccess, type RepositoryResult, } from '../../../../core/repositories/repository.types';
 import type { Bill } from '../../../../shared/types/bill.types';
-import type { BillDto, MockPaymentConfirmation } from './bill.dto';
+import type { BillDto, MockPaymentConfirmation, ResidentBillListPageDto } from './bill.dto';
+import { billDtoDecoder, residentBillListPageDtoDecoder, mockPaymentConfirmationDecoder } from './bill.dto';
+import { decodeOrThrow } from '../../../../core/api/decoders';
 import { mapBillDtoToDomain } from './bill.mapper';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import type { AppRole } from '../../../../core/permissions/permission.types';
 import type { ResidentBillingRepository } from './residentBilling.repository.types';
 import type { ResidentBillListPage, ResidentBillingSummary, ResidentLedgerPage, } from './residentBilling.types';
 import type { Absent } from "../../../../shared/types/absence.types";
-type ResidentBillListPageDto = {
-    bills: BillDto[];
-    nextCursor: string | null;
-    hasMore: boolean;
-};
+
 function requestContext(context: ResidentRepositoryRequestContext) {
     const role: AppRole = context.activeHome.residentRole === 'tenant'
         ? 'RESIDENT_TENANT'
@@ -39,7 +37,7 @@ const residentBillingApiRepository: ResidentBillingRepository = {
     },
     async getBillsPage(context, request) {
         try {
-            const page = await apiClient.get<ResidentBillListPageDto>(apiEndpoints.billing.residentBills, {
+            const raw = await apiClient.get<unknown>(apiEndpoints.billing.residentBills, {
                 context: requestContext(context),
                 query: {
                     filter: request.filter,
@@ -47,6 +45,7 @@ const residentBillingApiRepository: ResidentBillingRepository = {
                     pageSize: request.pageSize,
                 },
             });
+            const page = decodeOrThrow(residentBillListPageDtoDecoder, raw, 'billing.residentBills');
             const result: ResidentBillListPage = {
                 bills: page.bills.map(mapBillDtoToDomain),
                 nextCursor: page.nextCursor,
@@ -60,7 +59,8 @@ const residentBillingApiRepository: ResidentBillingRepository = {
     },
     async getBillDetail(context, billId) {
         try {
-            const dto = await apiClient.get<BillDto>(apiEndpoints.billing.residentBillDetail(billId), { context: requestContext(context) });
+            const raw = await apiClient.get<unknown>(apiEndpoints.billing.residentBillDetail(billId), { context: requestContext(context) });
+            const dto = decodeOrThrow(billDtoDecoder, raw, `billing.detail(${billId})`);
             return repositorySuccess(mapBillDtoToDomain(dto));
         }
         catch (error) {
@@ -84,10 +84,11 @@ const residentBillingApiRepository: ResidentBillingRepository = {
     },
     async mockPayment(context, input) {
         try {
-            const confirmation = await apiClient.post<MockPaymentConfirmation>(apiEndpoints.billing.residentMockPayment, input, {
+            const raw = await apiClient.post<unknown>(apiEndpoints.billing.residentMockPayment, input, {
                 context: requestContext(context),
                 idempotencyKey: createIdempotencyKey('resident-payment'),
             });
+            const confirmation = decodeOrThrow(mockPaymentConfirmationDecoder, raw, 'billing.payment');
             return repositorySuccess(confirmation);
         }
         catch (error) {

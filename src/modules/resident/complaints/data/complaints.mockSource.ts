@@ -1,4 +1,4 @@
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../../core/repositories/repository.types';
+import { repositoryFailure, repositorySuccess, withMockDelay, type RepositoryResult } from '../../../../core/repositories/repository.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
 import type { Complaint, ComplaintStatus, CreateComplaintPayload } from '../../../../shared/types/complaint.types';
 import { resolveRequestContext } from '../../homeContext/utils/resolveRequestContext';
@@ -7,7 +7,8 @@ import { matchesResidentRepositoryContext } from '../../homeContext/utils/matche
 import { getCurrentSession } from '../../../../core/auth/sessionStore';
 import { domainEventBus } from '../../../../core/events/DomainEventBus';
 import type { Absent } from "../../../../shared/types/absence.types";
-export const complaintMockSource = {
+import type { ResidentComplaintsRepository } from './residentComplaints.repository.types';
+export const complaintMockSource: ResidentComplaintsRepository = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Complaint[]>> {
         await withMockDelay();
         const ctx = resolveRequestContext(context);
@@ -106,7 +107,11 @@ export const complaintMockSource = {
         await withMockDelay();
         const complaint = mockStore.getState().complaints.find((item) => item.id === id);
         if (!complaint) {
-            throw new Error('Complaint not found');
+            return repositoryFailure({
+                code: 'COMPLAINT_NOT_FOUND',
+                message: 'Complaint not found.',
+                category: 'NOT_FOUND',
+            });
         }
         const newUpdates = [
             ...(complaint.updates || []),

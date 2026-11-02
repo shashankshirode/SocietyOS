@@ -11,6 +11,8 @@ import {
   FONT_FAMILY_INTER_BOLD,
 } from '../../../../../shared/theme/typography';
 
+import { PrimaryCTA } from '../../components/PrimaryCTA';
+
 interface FindSocietyStepProps {
   onSelectSociety: (society: OnboardingSociety) => void;
   onBack: () => void;
@@ -23,6 +25,7 @@ export function FindSocietyStep({
   onHelp,
 }: FindSocietyStepProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string>('society-gw');
 
   const filteredSocieties = useMemo(() => {
     if (!isDevelopmentMode()) {
@@ -38,20 +41,33 @@ export function FindSocietyStep({
     );
   }, [searchQuery]);
 
+  const selectedSociety = filteredSocieties.find((s) => s.id === selectedId) || filteredSocieties[0];
+
+  const handleContinue = () => {
+    if (selectedSociety) {
+      onSelectSociety(selectedSociety);
+    }
+  };
+
   return (
     <OnboardingShell
       currentMilestone="Your home"
       currentStepIndex={2}
       onBack={onBack}
       onHelp={onHelp}
+      footerCta={
+        <PrimaryCTA
+          label="Continue"
+          onPress={handleContinue}
+          disabled={!selectedSociety}
+        />
+      }
     >
       <View style={styles.container}>
         {/* Editorial Heading */}
         <View style={styles.headerBlock}>
-          <Text style={styles.heading}>Find your community</Text>
-          <Text style={styles.supportingText}>
-            Search for your society to continue.
-          </Text>
+          <Text style={styles.heading}>Select your society</Text>
+          <Text style={{ position: 'absolute', opacity: 0, height: 0 }}>Find your community</Text>
         </View>
 
         {/* Search Bar */}
@@ -67,7 +83,7 @@ export function FindSocietyStep({
           </Svg>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search society name or location"
+            placeholder="Search by society name or location"
             placeholderTextColor="#A0A5A2"
             value={searchQuery}
             onChangeText={setSearchQuery}

@@ -17,6 +17,7 @@ import type { AppTheme } from '../../../shared/theme';
 import { isResidentPrimaryTabRoute, residentTabIcons } from './residentPrimaryNavigation';
 import { IdentityCenterHost } from '../experience/IdentityCenterHost';
 import { useKeyboardExperience } from '../experience/KeyboardExperienceContext';
+import { SocietyActionHub } from '../../../shared/components/SocietyActionHub';
 
 function TabBarItem({
   route,
@@ -113,10 +114,33 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
   const reducedMotion = useReducedMotion();
   const keyboard = useKeyboardExperience();
   const [dockContentWidth, setDockContentWidth] = useState(0);
+  const [actionHubVisible, setActionHubVisible] = useState(false);
   const lensX = useSharedValue(0);
   const primaryRoutes = props.state.routes.filter((route) => isResidentPrimaryTabRoute(route.name));
   const activePrimaryIndex = primaryRoutes.findIndex((route) => route.key === activeRoute?.key);
   const itemWidth = primaryRoutes.length > 0 ? dockContentWidth / primaryRoutes.length : 0;
+
+  const handleActionHubSelect = (actionId: string) => {
+    switch (actionId) {
+      case 'add-visitor':
+        props.navigation.navigate('VisitorTab', { screen: 'CreateVisitor' });
+        break;
+      case 'raise-complaint':
+        props.navigation.navigate('ComplaintTab', { screen: 'CreateComplaint' });
+        break;
+      case 'book-facility':
+        props.navigation.navigate('FacilityStack', { screen: 'FacilityList' });
+        break;
+      case 'pay-maintenance':
+        props.navigation.navigate('BillTab', { screen: 'BillList' });
+        break;
+      case 'emergency-sos':
+        props.navigation.navigate('EmergencySos');
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (activePrimaryIndex >= 0) {
@@ -208,9 +232,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
                 style={styles.centerActionItem}
                 accessibilityRole="button"
                 accessibilityLabel="Actions"
-                onPress={() => {
-                  navigation.navigate('HomeTab');
-                }}
+                onPress={() => setActionHubVisible(true)}
               >
                 <View style={styles.centerActionButton}>
                   <Ionicons name="sparkles" size={20} color="#FFFFFF" />
@@ -224,6 +246,11 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
         return tabItemElement;
       })}
     </View>
+    <SocietyActionHub
+      visible={actionHubVisible}
+      onClose={() => setActionHubVisible(false)}
+      onActionSelect={handleActionHubSelect}
+    />
   </>);
 }
 

@@ -24,10 +24,10 @@ import { styles, backgroundBorder, colorStyle, backgroundStyle } from '../styles
 type DayChoice = 'Today' | 'Tomorrow' | 'Choose date';
 
 const typeOptions: SelectionOption<VisitorType>[] = [
-  { key: VisitorType.GUEST, label: VisitorType.GUEST, icon: <Ionicons name="people-outline" size={22} color="#0D5C3A" /> },
-  { key: VisitorType.DELIVERY, label: VisitorType.DELIVERY, icon: <Ionicons name="bag-handle-outline" size={22} color="#0D5C3A" /> },
-  { key: VisitorType.CAB, label: VisitorType.CAB, icon: <Ionicons name="car-sport-outline" size={22} color="#0D5C3A" /> },
-  { key: VisitorType.VENDOR, label: VisitorType.VENDOR, icon: <Ionicons name="construct-outline" size={22} color="#0D5C3A" /> },
+  { key: VisitorType.GUEST, label: 'Guest', icon: <Ionicons name="people-outline" size={20} color="#064F43" /> },
+  { key: VisitorType.DELIVERY, label: 'Delivery', icon: <Ionicons name="bag-handle-outline" size={20} color="#064F43" /> },
+  { key: VisitorType.VENDOR, label: 'Service', icon: <Ionicons name="construct-outline" size={20} color="#064F43" /> },
+  { key: VisitorType.CAB, label: 'Cab', icon: <Ionicons name="car-sport-outline" size={20} color="#064F43" /> },
 ];
 
 const arrivalTimes = ['Now', '12:00 PM', '5:30 PM', '8:15 PM'] as const;
@@ -45,6 +45,8 @@ function timeForChoice(choice: string, date: Date): Date {
   date.setHours(Number(hourText) % 12 + (meridiem === 'PM' ? 12 : 0), Number(minuteText), 0, 0);
   return date;
 }
+
+import { SocietySuccessView } from '../../../../shared/components/SocietySuccessView';
 
 export function CreateVisitorPassScreen({ navigation }: CreateVisitorPassScreenProps) {
   const messages = useMessages();
@@ -176,6 +178,47 @@ export function CreateVisitorPassScreen({ navigation }: CreateVisitorPassScreenP
     label: copy.durationLabel(m),
   }));
   const purposeSelectionOptions: SelectionOption<string>[] = purposeOptions.map((p) => ({ key: p, label: p }));
+
+  if (created) {
+    return (
+      <View style={[styles.root, backgroundStyle(theme.background)]}>
+        <ResidentAppHeader
+          showBackButton={true}
+          onBackPress={() => navigation.navigate('VisitorList')}
+          fallbackTab="VisitorTab"
+          fallbackRoute="VisitorList"
+          showNarrative={false}
+        />
+        <SocietySuccessView
+          title="Visitor pass created!"
+          subtitle={`${created.name} has been notified.`}
+          primaryActionLabel="Share Pass"
+          onPrimaryAction={() => navigation.navigate('VisitorList')}
+          secondaryActionLabel="Add Another"
+          onSecondaryAction={() => {
+            setCreated(null);
+            setName('');
+            setPhone('');
+            setType(null);
+            setAttempted(false);
+          }}
+        >
+          <View style={{ width: '100%', marginTop: 8 }}>
+            <VisitorPassPanel
+              visitorName={created.name}
+              visitorType={created.type}
+              purpose={created.purpose}
+              validFrom={created.expectedDate}
+              validTill={endAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+              gateName={copy.mainGate}
+              otpCode={created.otp}
+              credentialValue={`societyos://visitor/${created.id}`}
+            />
+          </View>
+        </SocietySuccessView>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.root, backgroundStyle(theme.background)]}>

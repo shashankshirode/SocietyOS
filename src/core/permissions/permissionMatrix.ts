@@ -23,6 +23,10 @@ const residentBase: Permission[] = [
     'GOVERNANCE_VIEW',
     'MEETING_RSVP',
     'POLL_RESULT_VIEW',
+    'INTER_FLAT_VIEW_OWN',
+    'INTER_FLAT_CREATE',
+    'INTER_FLAT_RESPOND',
+    'INTER_FLAT_VIEW_INVOLVED',
 ];
 const committeeBase: Permission[] = [
     ...residentBase,
@@ -37,6 +41,12 @@ const committeeBase: Permission[] = [
     'OWNER_TENANT_VIEW_RESTRICTED_DOCS',
     'FACILITY_BOOKING_APPROVE',
     'GOVERNANCE_AUDIT_VIEW',
+    'INTER_FLAT_VIEW_ALL',
+    'INTER_FLAT_ESCALATE',
+    'INTER_FLAT_CLOSE',
+    'INTER_FLAT_AUDIT_VIEW',
+    'DISPUTE_MEDIATION_VIEW',
+    'DISPUTE_MEDIATION_MANAGE',
 ];
 export const rolePermissionMatrix: Record<AppRole, Permission[]> = {
     RESIDENT_OWNER: [

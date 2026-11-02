@@ -216,7 +216,7 @@ export const interFlatRepository = new InterFlatRepository();
 export type { InterFlatRepository };
 
 export class DisputeSourceNotTrustedError extends Error {
-  constructor(message = 'Dispute data source is not trusted for production execution') {
+  constructor(message = 'Dispute data source is not trusted for production execution; requires an explicit demo build') {
     super(message);
     this.name = 'DisputeSourceNotTrustedError';
   }

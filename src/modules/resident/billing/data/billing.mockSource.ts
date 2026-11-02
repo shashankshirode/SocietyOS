@@ -314,5 +314,8 @@ export const billMockSource = {
         const resolvedBillId = typeof context === 'string' ? context : billId ?? '';
         return residentBillingMockRepository.getBillDetail(requestContext, resolvedBillId);
     },
+    async payBill(input: Parameters<typeof residentBillingMockRepository.mockPayment>[1], context?: ResidentRepositoryRequestContext) {
+        return residentBillingMockRepository.mockPayment(context, input);
+    },
 };
 export default billMockSource;

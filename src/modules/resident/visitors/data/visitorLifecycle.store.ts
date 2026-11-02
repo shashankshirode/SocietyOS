@@ -1,5 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Visitor, VisitorType, VisitorStatus } from '../../../../shared/types/visitor.types';
+import { mockStore } from '../../../../core/mockStore/mockStore';
+
+function mapStoreVisitorToActiveRecord(v: Visitor): ActiveVisitorRecord {
+    return {
+        id: v.id,
+        passCode: v.otp || v.id.slice(-6).toUpperCase(),
+        name: v.name,
+        phone: v.phone,
+        type: v.type,
+        purpose: v.purpose || 'Visit',
+        flatNumber: v.flatNumber || 'A-1204',
+        tower: v.flatNumber ? `Tower ${v.flatNumber[0] || 'A'}` : 'Tower A',
+        expectedWindow: `${v.expectedDate || 'Today'} · ${v.expectedTime || '10:00 AM'}`,
+        status: v.status,
+        entryTime: v.actualEntryTime,
+        exitTime: v.actualExitTime,
+        qrPayload: `SOC-OS:PASS:${v.otp || v.id}:${v.name.toUpperCase()}:${v.flatNumber || 'A-1204'}`,
+        createdAt: v.createdAt || new Date().toISOString(),
+        ...(v.vehicleNumber ? { vehicleNumber: v.vehicleNumber } : {}),
+    };
+}
 export interface VisitorPassDraft {
     id?: string;
     name: string;
@@ -145,28 +166,62 @@ function notifyListeners() {
     globalListeners.forEach((l) => l());
 }
 export const visitorLifecycleStore = {
-    getVisitors: () => [...globalVisitors],
+    getVisitors: () => {
+        const storeVisitors = mockStore.getState().visitors.map(mapStoreVisitorToActiveRecord);
+        const existingIds = new Set(globalVisitors.map(v => v.id));
+        const merged = [...globalVisitors];
+        for (const sv of storeVisitors) {
+            if (!existingIds.has(sv.id)) {
+                merged.push(sv);
+            } else {
+                const idx = merged.findIndex(v => v.id === sv.id);
+                if (idx !== -1) merged[idx] = { ...merged[idx], status: sv.status };
+            }
+        }
+        return merged;
+    },
     getGateLogs: () => [...globalGateLogs],
     getOfflineQueue: () => [...globalOfflineQueue],
     createPass: (draft: VisitorPassDraft): ActiveVisitorRecord => {
         const randomNum = Math.floor(100 + Math.random() * 900);
         const passCode = `GH-${randomNum}`;
+        const name = draft.name || (draft as unknown as { visitorName?: string }).visitorName || 'Visitor';
+        const rawType = (draft.type as string) || 'guest';
+        const type = rawType.toUpperCase() as ActiveVisitorRecord['type'];
+        const timeFrom = draft.expectedTimeFrom || '10:00 AM';
+        const timeTo = draft.expectedTimeTo || '12:00 PM';
+        const expectedDate = draft.expectedDate || '2026-07-15';
         const newRecord: ActiveVisitorRecord = {
             id: `vis-${Date.now()}`,
             passCode,
-            name: draft.name,
-            phone: draft.phone,
-            type: draft.type,
+            name,
+            phone: draft.phone || '9876543210',
+            type,
             purpose: draft.purpose || 'Visit',
             flatNumber: draft.flatNumber || 'A-1204',
             tower: draft.tower || 'Tower A',
-            expectedWindow: `${draft.expectedDate} · ${draft.expectedTimeFrom} – ${draft.expectedTimeTo}`,
+            expectedWindow: `${expectedDate} · ${timeFrom} – ${timeTo}`,
             ...(draft.hasVehicle && draft.vehicleNumber ? { vehicleNumber: draft.vehicleNumber } : {}),
             status: 'APPROVED',
-            qrPayload: `SOC-OS:PASS:${passCode}:${draft.name.toUpperCase()}:${draft.flatNumber || 'A-1204'}`,
+            qrPayload: `SOC-OS:PASS:${passCode}:${name.toUpperCase()}:${draft.flatNumber || 'A-1204'}`,
             createdAt: new Date().toISOString(),
         };
         globalVisitors = [newRecord, ...globalVisitors];
+        mockStore.addVisitor({
+            id: newRecord.id,
+            name: newRecord.name,
+            phone: newRecord.phone,
+            type: newRecord.type,
+            status: newRecord.status,
+            flatNumber: newRecord.flatNumber,
+            societyName: 'Greenwood Heights',
+            expectedDate,
+            expectedTime: `${timeFrom} – ${timeTo}`,
+            purpose: newRecord.purpose,
+            otp: newRecord.passCode,
+            createdAt: newRecord.createdAt,
+            ...(newRecord.vehicleNumber ? { vehicleNumber: newRecord.vehicleNumber } : {}),
+        });
         notifyListeners();
         return newRecord;
     },
@@ -179,17 +234,32 @@ export const visitorLifecycleStore = {
             }
             return v;
         });
+        mockStore.updateVisitor(passId, { status: 'CANCELLED' });
         notifyListeners();
         return found;
     },
     findPass: (query: string): ActiveVisitorRecord | null => {
         const clean = query.trim().toUpperCase();
-        return (globalVisitors.find((v) => v.id === query ||
+        const fromGlobal = globalVisitors.find((v) => v.id === query ||
             v.id.toUpperCase() === clean ||
             v.passCode.toUpperCase() === clean ||
             v.qrPayload.toUpperCase().includes(clean) ||
             v.name.toUpperCase().includes(clean) ||
-            v.phone.replace(/\D/g, '').includes(clean.replace(/\D/g, ''))) || null);
+            v.phone.replace(/\D/g, '').includes(clean.replace(/\D/g, '')));
+        if (fromGlobal) return fromGlobal;
+        const storeVisitor = mockStore.getState().visitors.find((v) =>
+            v.id === query ||
+            v.id.toUpperCase() === clean ||
+            (v.otp && v.otp.toUpperCase() === clean) ||
+            v.name.toUpperCase().includes(clean) ||
+            v.phone.replace(/\D/g, '').includes(clean.replace(/\D/g, ''))
+        );
+        if (storeVisitor) {
+            const record = mapStoreVisitorToActiveRecord(storeVisitor);
+            globalVisitors = [record, ...globalVisitors.filter(v => v.id !== record.id)];
+            return record;
+        }
+        return null;
     },
     allowEntry: (passId: string, options?: {
         gateId?: string;
@@ -255,6 +325,20 @@ export const visitorLifecycleStore = {
         else {
             globalGateLogs = [event, ...globalGateLogs];
         }
+        mockStore.updateVisitor(visitor.id, {
+            status: 'CHECKED_IN',
+            actualEntryTime: timeStr,
+        });
+        mockStore.addGateLog({
+            id: event.id,
+            visitorId: visitor.id,
+            visitorName: visitor.name,
+            entryTime: timeStr,
+            guardName,
+            gateNumber: gateId,
+            flatNumber: visitor.flatNumber,
+            visitorType: visitor.type,
+        });
         notifyListeners();
         return { success: true, record: updatedRecord, event };
     },
@@ -309,6 +393,21 @@ export const visitorLifecycleStore = {
         else {
             globalGateLogs = [event, ...globalGateLogs];
         }
+        mockStore.updateVisitor(visitor.id, {
+            status: 'CHECKED_OUT',
+            actualExitTime: exitTimeStr,
+        });
+        mockStore.addGateLog({
+            id: event.id,
+            visitorId: visitor.id,
+            visitorName: visitor.name,
+            entryTime: visitor.entryTime || exitTimeStr,
+            exitTime: exitTimeStr,
+            guardName,
+            gateNumber: gateId,
+            flatNumber: visitor.flatNumber,
+            visitorType: visitor.type,
+        });
         notifyListeners();
         return { success: true, record: updatedRecord, durationString: duration, event };
     },

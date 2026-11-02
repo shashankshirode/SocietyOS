@@ -38,7 +38,18 @@ export const visitorExitService = {
                     checkOutGateName: gateName,
                     updatedAt: now,
                 };
-                mockStore.getState().visitors[index] = updated;
+                mockStore.updateVisitor(visitor.id, updated);
+                mockStore.addGateLog({
+                    id: `gate-log-${Date.now()}`,
+                    visitorId: visitor.id,
+                    visitorName: visitor.name,
+                    entryTime: visitor.actualEntryTime || now,
+                    exitTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    guardName: guardName || 'Security Guard',
+                    gateNumber: gateName || gateId || 'Gate 1',
+                    flatNumber: visitor.flatNumber,
+                    visitorType: visitor.type,
+                });
                 const gateEvent = {
                     id: `gate-event-${Date.now()}`,
                     eventType: 'CHECK_OUT' as const,

@@ -53,10 +53,11 @@ export function buildScopedFacilities(context: ResidentRepositoryRequestContext)
         };
     });
 }
-function buildScopedFacilitySlots(context: ResidentRepositoryRequestContext, facilities: readonly Facility[]): FacilitySlot[] {
+function buildScopedFacilitySlots(context: ResidentRepositoryRequestContext, facilities: readonly Facility[], targetDate?: string): FacilitySlot[] {
     if (facilities.length === 0) {
         return [];
     }
+    const storeBookings = mockStore.getState().facilityBookings;
     const slots: FacilitySlot[] = [];
     const times = [
         '08:00 AM - 09:00 AM',
@@ -66,29 +67,36 @@ function buildScopedFacilitySlots(context: ResidentRepositoryRequestContext, fac
         '05:00 PM - 06:00 PM',
         '06:00 PM - 07:00 PM',
     ];
-    const statuses: FacilitySlot['status'][] = [
+    const defaultStatuses: FacilitySlot['status'][] = [
         'AVAILABLE',
         'AVAILABLE',
-        'BOOKED',
         'AVAILABLE',
-        'BOOKED',
+        'AVAILABLE',
+        'AVAILABLE',
         'MAINTENANCE',
     ];
-    const today = '2026-07-11';
+    const queryDate = targetDate || '2026-07-11';
     facilities.forEach((facility) => {
         times.forEach((time, index) => {
+            const hasStoreBooking = storeBookings.some(
+                (b) => b.facilityId === facility.id &&
+                       b.date === queryDate &&
+                       b.slot === time &&
+                       b.status !== 'CANCELLED'
+            );
+            const slotStatus: FacilitySlot['status'] = hasStoreBooking 
+                ? 'BOOKED' 
+                : getRequiredItem(defaultStatuses, index, 'facility slot statuses');
             slots.push({
                 id: `slot-${facility.id}-${index}`,
                 facilityId: facility.id,
                 facilityName: facility.name,
-                date: today,
+                date: queryDate,
                 timeRange: time,
-                status: getRequiredItem(statuses, index, 'facility slot statuses'),
+                status: slotStatus,
                 price: facility.chargeAmount,
                 depositRequired: facility.depositAmount,
-                capacityAvailable: getRequiredItem(statuses, index, 'facility slot statuses') === 'AVAILABLE'
-                    ? facility.capacity
-                    : 0
+                capacityAvailable: slotStatus === 'AVAILABLE' ? facility.capacity : 0
             });
         });
     });
@@ -148,7 +156,7 @@ export const facilityMockSource = {
         await withMockDelay();
         const context = resolveRequestContext();
         const facilities = buildScopedFacilities(context);
-        return repositorySuccess(buildScopedFacilitySlots(context, facilities).filter((slot) => slot.facilityId === facilityId && (!date || slot.date === date)));
+        return repositorySuccess(buildScopedFacilitySlots(context, facilities, date).filter((slot) => slot.facilityId === facilityId && (!date || slot.date === date)));
     },
     async createFacilityBooking(input: CreateFacilityBookingInput): Promise<RepositoryResult<FacilityBooking>> {
         await withMockDelay();

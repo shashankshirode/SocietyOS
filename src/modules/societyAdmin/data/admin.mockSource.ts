@@ -9,7 +9,15 @@ import type { NoticeCategory } from '../../../shared/types/notice.types';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
 const withMockDelay = <T>(data: T, ms = 600): Promise<T> => new Promise(resolve => setTimeout(() => resolve(data), ms));
 export const adminMockSource = {
-    getDashboard: (): Promise<AdminDashboardData> => withMockDelay(mockAdminDashboard),
+    getDashboard: (): Promise<AdminDashboardData> => {
+        const storeComplaints = mockStore.getState().complaints;
+        const openComplaints = storeComplaints.filter(c => c.status !== 'RESOLVED' && c.status !== 'CLOSED');
+        return withMockDelay({
+            ...mockAdminDashboard,
+            openComplaintsCount: openComplaints.length,
+            lastUpdatedAt: new Date().toISOString(),
+        });
+    },
     getUnits: (_filters?: Record<string, string>): Promise<AdminUnit[]> => withMockDelay(mockAdminUnits),
     getUnitDetail: (_unitId: string): Promise<AdminUnitDetail> => withMockDelay(mockAdminUnitDetail),
     getResidents: (_filters?: Record<string, string>): Promise<AdminResident[]> => withMockDelay(mockStore.getState().residents as AdminResident[]),
@@ -73,13 +81,75 @@ export const adminMockSource = {
         };
         return withMockDelay(created, 800);
     },
-    getComplaints: (_filters?: Record<string, string>): Promise<AdminComplaint[]> => withMockDelay(mockAdminComplaints),
-    assignComplaint: (_complaintId: string, _assignee: string): Promise<{
+    getComplaints: (_filters?: Record<string, string>): Promise<AdminComplaint[]> => {
+        const storeComplaints = mockStore.getState().complaints;
+        const mapped: AdminComplaint[] = storeComplaints.map((c) => {
+            const wingMatch = c.flatNumber?.match(/^([A-Za-z]+)-/);
+            const wing = wingMatch ? `${wingMatch[1]} Wing` : 'Main Wing';
+            const priority: AdminComplaint['priority'] =
+                c.priority === 'URGENT' ? 'CRITICAL' : (c.priority as AdminComplaint['priority']) || 'MEDIUM';
+            const status: AdminComplaintStatus =
+                (c.status as AdminComplaintStatus) || 'OPEN';
+
+            return {
+                id: c.id,
+                ticketNumber: c.id.startsWith('comp-') ? `CMP-${c.id.replace('comp-', '')}` : c.id,
+                category: c.category || 'General',
+                unitNumber: c.flatNumber || 'Common Area',
+                wing,
+                priority,
+                slaStatus: 'ON_TIME',
+                assigneeName: c.assignedTo || c.technicianName,
+                assigneeRole: c.assignedTo ? 'STAFF_USER' : undefined,
+                status,
+                isVendorLinked: false,
+                createdAt: c.createdAt || new Date().toISOString(),
+                updatedAt: c.updatedAt || new Date().toISOString(),
+            };
+        });
+        return withMockDelay(mapped);
+    },
+    assignComplaint: (complaintId: string, assignee: string): Promise<{
         success: boolean;
-    }> => withMockDelay({ success: true }, 800),
-    escalateComplaint: (_complaintId: string): Promise<{
+    }> => {
+        const existing = mockStore.getState().complaints.find(c => c.id === complaintId);
+        if (existing) {
+            const updates = existing.updates ? [...existing.updates] : [];
+            updates.push({
+                id: `update-${Date.now()}`,
+                status: 'ASSIGNED',
+                note: `Assigned to ${assignee}`,
+                timestamp: new Date().toISOString(),
+            });
+            mockStore.updateComplaint(complaintId, {
+                assignedTo: assignee,
+                status: 'ASSIGNED',
+                updatedAt: new Date().toISOString(),
+                updates,
+            });
+        }
+        return withMockDelay({ success: true }, 400);
+    },
+    escalateComplaint: (complaintId: string): Promise<{
         success: boolean;
-    }> => withMockDelay({ success: true }, 800),
+    }> => {
+        const existing = mockStore.getState().complaints.find(c => c.id === complaintId);
+        if (existing) {
+            const updates = existing.updates ? [...existing.updates] : [];
+            updates.push({
+                id: `update-${Date.now()}`,
+                status: 'IN_PROGRESS',
+                note: 'Complaint escalated to society administration.',
+                timestamp: new Date().toISOString(),
+            });
+            mockStore.updateComplaint(complaintId, {
+                priority: 'URGENT',
+                updatedAt: new Date().toISOString(),
+                updates,
+            });
+        }
+        return withMockDelay({ success: true }, 400);
+    },
     getAuditLogs: (_filters?: Record<string, string>): Promise<AdminAuditLog[]> => withMockDelay(mockAdminAuditLogs),
 };
 

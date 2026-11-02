@@ -9,15 +9,87 @@ import { mockDefaulters } from '../../../shared/mock/defaulters.mock';
 import { mockFlatLedger } from '../../../shared/mock/ledgers.mock';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
+import { mockStore } from '../../../core/mockStore/mockStore';
 let mutableBillingCycles = [...mockBillingCycles];
 let mutableDraftBills = [...mockDraftBills];
 export const accountingMockSource = {
     async getDashboard(): Promise<RepositoryResult<TreasurerDashboardData>> {
         await withMockDelay();
+        const bills = mockStore.getState().bills;
+        
+        let totalBilled = 0;
+        let totalCollected = 0;
+        let totalOutstanding = 0;
+        
+        for (const bill of bills) {
+            totalBilled += bill.amount;
+            const paid = bill.paidAmount ?? (bill.status === 'PAID' ? bill.amount : 0);
+            totalCollected += paid;
+            totalOutstanding += Math.max(0, bill.amount - paid);
+        }
+
+        const billPayments: ManualPaymentRecord[] = [];
+        for (const bill of bills) {
+            if (bill.payments && bill.payments.length > 0) {
+                for (const p of bill.payments) {
+                    const wingMatch = bill.flatNumber?.match(/^([A-Za-z]+)-/);
+                    const wing = wingMatch ? `${wingMatch[1]} Wing` : 'A Wing';
+                    billPayments.push({
+                        id: p.id,
+                        paymentNumber: p.receiptNumber || `PAY-${p.transactionId?.slice(-6) ?? '1001'}`,
+                        unitId: bill.unitId || 'unit-001',
+                        unitNumber: bill.flatNumber || 'A-1204',
+                        wing,
+                        residentName: bill.residentName || 'Resident',
+                        amount: p.amountPaid,
+                        paymentMode: (p.paymentMethod as PaymentMode) || 'UPI',
+                        paymentDate: p.paymentDate,
+                        referenceNumber: p.transactionId || 'TXN-DIRECT',
+                        receivedBy: 'Society Treasurer',
+                        status: 'RECEIPT_GENERATED',
+                        receiptId: `rcpt-${p.id}`,
+                        receiptNumber: p.receiptNumber,
+                        createdAt: p.paymentDate,
+                        requiresApproval: false,
+                    });
+                }
+            } else if (bill.status === 'PAID' && bill.paidAmount) {
+                const wingMatch = bill.flatNumber?.match(/^([A-Za-z]+)-/);
+                const wing = wingMatch ? `${wingMatch[1]} Wing` : 'A Wing';
+                billPayments.push({
+                    id: `pay-${bill.id}`,
+                    paymentNumber: bill.receiptNumber || `PAY-${bill.id}`,
+                    unitId: bill.unitId || 'unit-001',
+                    unitNumber: bill.flatNumber || 'A-1204',
+                    wing,
+                    residentName: bill.residentName || 'Resident',
+                    amount: bill.paidAmount,
+                    paymentMode: 'UPI',
+                    paymentDate: bill.paidDate || new Date().toISOString(),
+                    referenceNumber: bill.transactionId || 'TXN-DIRECT',
+                    receivedBy: 'Society Treasurer',
+                    status: 'RECEIPT_GENERATED',
+                    receiptNumber: bill.receiptNumber,
+                    createdAt: bill.paidDate || new Date().toISOString(),
+                    requiresApproval: false,
+                });
+            }
+        }
+
+        const effectiveBilled = totalBilled > 0 ? totalBilled : mockAccountingDashboard.totalBilledThisMonth;
+        const effectiveCollected = totalBilled > 0 ? totalCollected : mockAccountingDashboard.totalCollectedThisMonth;
+        const effectiveOutstanding = totalBilled > 0 ? totalOutstanding : mockAccountingDashboard.outstandingDues;
+        const efficiency = effectiveBilled > 0 ? Math.round((effectiveCollected / effectiveBilled) * 1000) / 10 : 100;
+
         return repositorySuccess({
             ...mockAccountingDashboard,
-            recentCollections: [],
-            topDefaulters: mockDefaulters.slice(0, 3)
+            totalBilledThisMonth: effectiveBilled,
+            totalCollectedThisMonth: effectiveCollected,
+            outstandingDues: effectiveOutstanding,
+            collectionEfficiency: efficiency,
+            recentCollections: billPayments.length > 0 ? billPayments : mockAccountingDashboard.recentCollections,
+            topDefaulters: mockDefaulters.slice(0, 3),
+            lastUpdatedAt: new Date().toISOString(),
         });
     },
     async getChargeHeads(): Promise<RepositoryResult<ChargeHead[]>> {
@@ -134,6 +206,7 @@ export const accountingMockSource = {
     },
     async recordManualPayment(input: ManualPaymentInput): Promise<RepositoryResult<ManualPaymentRecord>> {
         await withMockDelay(800);
+        const receiptNumber = `RCPT-2026-${Math.floor(100 + Math.random() * 900)}`;
         const newPayment: ManualPaymentRecord = {
             id: `pay-${Math.floor(1000 + Math.random() * 9000)}`,
             paymentNumber: `PAY-2026-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -151,10 +224,48 @@ export const accountingMockSource = {
             receivedBy: 'Society Treasurer',
             status: 'RECEIPT_GENERATED',
             receiptId: `rcpt-${Math.floor(1000 + Math.random() * 9000)}`,
-            receiptNumber: `RCPT-2026-${Math.floor(100 + Math.random() * 900)}`,
+            receiptNumber,
             createdAt: new Date().toISOString(),
             requiresApproval: false
         };
+
+        // Reflect in mockStore ledger
+        mockStore.addLedgerEntry({
+            id: `ledger-${Date.now()}`,
+            date: input.paymentDate,
+            type: 'CREDIT',
+            unitId: input.unitId,
+            description: `Manual Payment - ${input.paymentMode} (${input.referenceNumber})`,
+            amount: input.amount,
+        });
+
+        // If there's an unpaid bill for this unit, apply it
+        const unpaidBill = mockStore.getState().bills.find(b =>
+            (b.unitId === input.unitId || b.flatNumber === 'A-1204') && b.status !== 'PAID'
+        );
+        if (unpaidBill) {
+            const currentPaid = unpaidBill.paidAmount ?? 0;
+            const newPaid = currentPaid + input.amount;
+            mockStore.updateBill(unpaidBill.id, {
+                paidAmount: newPaid,
+                status: newPaid >= unpaidBill.amount ? 'PAID' : 'PARTIALLY_PAID',
+                paidDate: input.paymentDate,
+                transactionId: input.referenceNumber,
+                receiptNumber,
+                payments: [
+                    ...(unpaidBill.payments ?? []),
+                    {
+                        id: `pay-${Date.now()}`,
+                        amountPaid: input.amount,
+                        paymentDate: input.paymentDate,
+                        paymentMethod: input.paymentMode,
+                        transactionId: input.referenceNumber,
+                        receiptNumber,
+                    }
+                ]
+            });
+        }
+
         return repositorySuccess(newPayment);
     },
     async getDefaulters(): Promise<RepositoryResult<Defaulter[]>> {

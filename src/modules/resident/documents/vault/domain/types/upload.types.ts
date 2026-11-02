@@ -79,3 +79,9 @@ export type UploadProgress = {
 export type ResumeDirective =
   | { readonly resumable: true; readonly resumeToken: string; readonly nextByteOffset: number }
   | { readonly resumable: false; readonly reason: string };
+
+export type CommittedUpload = {
+  readonly session: UploadSession;
+  readonly document: DocumentRecord;
+  readonly version: DocumentVersionRecord;
+};

@@ -1,5 +1,5 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../../../../../../core/jobs/job.types';
-import type { JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
+import type { JobExecution, JobResult } from '../../../../../../core/jobs/job.types';
+import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
 import type { VaultClock } from '../../../../../../core/identity/personaRegistry';
 import type { ParkingViolationRecord } from '../../domain/types/parking';
 

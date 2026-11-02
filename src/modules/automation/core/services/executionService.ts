@@ -22,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const executions: Map<string, AutomationExecution> = new Map();
 const executionsByCorrelation: Map<string, Set<string>> = new Map();
+retryService.setExecutionLookup((id) => executions.get(id));
 
 function generateId(): string {
   return uuidv4();

@@ -11,6 +11,7 @@ import type {
   JobExecutionSummary,
   JobType,
   JobStatus,
+  JobResult,
 } from './job.types';
 
 export interface JobDefinitionStore {
@@ -100,4 +101,8 @@ export interface JobSchedulerPort {
   listExecutions(filter: JobFilter): Promise<JobExecution[]>;
   getJobMetrics(jobId: string): Promise<JobMetrics | Absent>;
   getAllMetrics(): Promise<JobMetrics[]>;
+}
+
+export interface JobExecutor {
+  execute(execution: JobExecution, ports: JobPorts): Promise<JobResult>;
 }

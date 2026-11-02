@@ -2,7 +2,6 @@
 
 
 
-import type { StaffDocument, StaffAssignment, StaffVerificationRecord } from './workforcePhase11.types';
 import type { ResidentScopedEntity } from './residentScope.types';
 
 export type StaffWorkforceCategory =

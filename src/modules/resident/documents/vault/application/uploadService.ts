@@ -14,6 +14,7 @@ import type {
   UploadScanSource,
   UploadSession,
   UploadSessionState,
+  CommittedUpload,
 } from '../domain/types/upload.types';
 import {
   canTransitionUpload,
@@ -77,11 +78,7 @@ export type UploadService = {
   readonly sweepExpired: () => readonly string[];
 };
 
-export type CommittedUpload = {
-  readonly session: UploadSession;
-  readonly document: DocumentRecord;
-  readonly version: DocumentVersionRecord;
-};
+export type { CommittedUpload };
 
 function fail(code: DocumentVaultViolation['code'], message: string): ServiceOutcome<never> {
   return { ok: false, code, message };

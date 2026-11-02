@@ -17,7 +17,6 @@ import type {
   ParkingHomeRecord,
   AllocationApproval,
 } from '../domain/types/parking';
-import type { VaultPorts } from '../application/ports';
 
 export type ParkingSlotStore = {
   readonly insert: (slot: ParkingSlotRecord) => boolean;

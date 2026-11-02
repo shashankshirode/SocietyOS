@@ -9,7 +9,7 @@ import type { AccessLogEntry, RetrievalTicket } from '../domain/types/access.typ
 import type { LegalHold } from '../domain/types/retention.types';
 import type { DigestProvider } from '../domain/engines/integrityEngine';
 import type { DocumentPolicySet } from '../domain/types/policy.types';
-import type { CommittedUpload } from './uploadService';
+import type { CommittedUpload } from '../domain/types/upload.types';
 
 export type DocumentStore = {
   readonly insert: (document: DocumentRecord) => boolean;
@@ -131,4 +131,4 @@ export type ServiceOutcome<T> =
   | { readonly ok: false; readonly code: DocumentVaultErrorCode; readonly message: string };
 
 export { type DocumentPolicySet } from '../domain/types/policy.types';
-export { type CommittedUpload } from './uploadService';
+export { type CommittedUpload } from '../domain/types/upload.types';

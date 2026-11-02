@@ -1,4 +1,5 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../job.types';
+import type { JobExecution, JobResult } from '../job.types';
+import type { JobExecutor, JobPorts } from '../job.ports';
 import type { VaultPorts } from '../../../modules/resident/documents/vault/application/ports';
 import type { DocumentVersionRecord } from '../../../modules/resident/documents/vault/domain/types/document.types';
 const ORPHAN_GRACE_PERIOD_MS = 24 * 60 * 60 * 1000;

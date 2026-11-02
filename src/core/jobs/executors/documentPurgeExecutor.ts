@@ -1,4 +1,5 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../job.types';
+import type { JobExecution, JobResult } from '../job.types';
+import type { JobExecutor, JobPorts } from '../job.ports';
 import type { DocumentRecord } from '../../../modules/resident/documents/vault/domain/types/document.types';
 import type { VaultPorts } from '../../../modules/resident/documents/vault/application/ports';
 import { activeHolds, retentionGate } from '../../../modules/resident/documents/vault/domain/stateMachines/retentionStateMachine';

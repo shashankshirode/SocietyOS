@@ -173,11 +173,3 @@ export function isRetryableStatus(status: JobStatus): boolean {
 export function isActiveStatus(status: JobStatus): boolean {
   return status === 'SCHEDULED' || status === 'RUNNING';
 }
-
-import type { JobPorts } from './job.ports';
-export type { JobPorts } from './job.ports';
-export type { JobPorts as JobPortsInterface } from './job.ports';
-
-export interface JobExecutor {
-  execute(execution: JobExecution, ports: JobPorts): Promise<JobResult>;
-}

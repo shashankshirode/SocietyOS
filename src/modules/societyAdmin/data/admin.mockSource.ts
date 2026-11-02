@@ -7,6 +7,14 @@ import { mockAdminAuditLogs } from '../../../shared/mock/adminAuditLogs.mock';
 import { mockStore } from '../../../core/mockStore/mockStore';
 import type { NoticeCategory } from '../../../shared/types/notice.types';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
+import { getPendingResidenceRequests, approveResidenceRequest, rejectResidenceRequest } from '../../../core/identity/identityResolver';
+
+let dynamicAdminApprovals = [...mockAdminApprovals];
+
+export function resetAdminApprovals() {
+    dynamicAdminApprovals = [...mockAdminApprovals];
+}
+
 const withMockDelay = <T>(data: T, ms = 600): Promise<T> => new Promise(resolve => setTimeout(() => resolve(data), ms));
 export const adminMockSource = {
     getDashboard: (): Promise<AdminDashboardData> => {
@@ -21,14 +29,30 @@ export const adminMockSource = {
     getUnits: (_filters?: Record<string, string>): Promise<AdminUnit[]> => withMockDelay(mockAdminUnits),
     getUnitDetail: (_unitId: string): Promise<AdminUnitDetail> => withMockDelay(mockAdminUnitDetail),
     getResidents: (_filters?: Record<string, string>): Promise<AdminResident[]> => withMockDelay(mockStore.getState().residents as AdminResident[]),
-    getApprovals: (_filters?: Record<string, string>): Promise<AdminApproval[]> => withMockDelay(mockAdminApprovals),
-    getApprovalDetail: (approvalId: string): Promise<AdminApproval> => withMockDelay(mockAdminApprovals.find(a => a.id === approvalId) ?? getRequiredItem(mockAdminApprovals, 0, "admin.mockSource.ts")),
-    approveRequest: (_approvalId: string, _notes?: string): Promise<{
+    getApprovals: (_filters?: Record<string, string>): Promise<AdminApproval[]> => {
+        const pendingReqs = getPendingResidenceRequests();
+        const merged = [...pendingReqs, ...dynamicAdminApprovals];
+        return withMockDelay(merged);
+    },
+    getApprovalDetail: (approvalId: string): Promise<AdminApproval> => {
+        const pendingReqs = getPendingResidenceRequests();
+        const found = pendingReqs.find(a => a.id === approvalId) || dynamicAdminApprovals.find(a => a.id === approvalId);
+        return withMockDelay(found ?? getRequiredItem(mockAdminApprovals, 0, "admin.mockSource.ts"));
+    },
+    approveRequest: (approvalId: string, notes?: string): Promise<{
         success: boolean;
-    }> => withMockDelay({ success: true }, 800),
-    rejectRequest: (_approvalId: string, _reason: string): Promise<{
+    }> => {
+        approveResidenceRequest(approvalId);
+        dynamicAdminApprovals = dynamicAdminApprovals.map(a => a.id === approvalId ? { ...a, status: 'APPROVED' as const, notes: notes || a.notes } : a);
+        return withMockDelay({ success: true }, 400);
+    },
+    rejectRequest: (approvalId: string, reason: string): Promise<{
         success: boolean;
-    }> => withMockDelay({ success: true }, 800),
+    }> => {
+        rejectResidenceRequest(approvalId, reason);
+        dynamicAdminApprovals = dynamicAdminApprovals.map(a => a.id === approvalId ? { ...a, status: 'REJECTED' as const, notes: `Rejected: ${reason}` } : a);
+        return withMockDelay({ success: true }, 400);
+    },
     requestMoreInfo: (_approvalId: string, _info: string): Promise<{
         success: boolean;
     }> => withMockDelay({ success: true }, 800),

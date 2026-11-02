@@ -38,7 +38,7 @@ export function ResidentLoginScreen({
   onRegister,
 }: ResidentLoginScreenProps) {
   const insets = useSafeAreaInsets();
-  const { login } = useAuth();
+  const { loginWithPhone } = useAuth();
   const [role, setRole] = useState<'resident' | 'staff'>('resident');
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -51,15 +51,23 @@ export function ResidentLoginScreen({
   const bottomPadding = Math.max(insets.bottom, 12);
 
   const handleSignIn = async () => {
+    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
+    if (cleanNumber.length !== 10) {
+      setError('Please enter a valid 10-digit mobile number');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      if (role === 'resident') {
-        await login('RESIDENT_OWNER');
+      const res = await loginWithPhone(cleanNumber, password.trim() || '123456');
+      if (!res.success) {
+        setError(res.error || 'Sign in failed');
+      } else if (res.isNewUser) {
+        onRegister?.();
       } else {
-        await login('SOCIETY_ADMIN');
+        onSuccess?.();
       }
-      onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     } finally {

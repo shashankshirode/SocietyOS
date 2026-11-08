@@ -20,7 +20,7 @@ export type DocumentSearchResult = {
   answerType: 'FOUND_IN_SOURCE' | 'INFERRED' | 'NOT_FOUND';
   confidence: number;
   confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
-  sourceReferences: Array<{
+  sourceReferences: {
     type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE';
     entityId: string;
     entityType: string;
@@ -30,7 +30,7 @@ export type DocumentSearchResult = {
     asOf: string;
     excerpt?: string;
     relevanceScore: number;
-  }>;
+  }[];
   modelVersion: string;
   templateVersion: number;
   source: 'AI_PROVIDER' | 'RULE_FALLBACK';

@@ -5,7 +5,7 @@ import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
 import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
 import { visitorStateMachine } from './visitorStateMachine';
-import { visitorPassValidationService } from './visitorPassValidationServiceNew';
+import { visitorPassValidationService } from './visitorPassValidationService';
 import { offlineGateSyncService } from './offlineGateSyncService';
 import { gateIdempotencyService } from './gateIdempotencyService';
 import { currentVisitorPresenceService } from './currentVisitorPresenceService';
@@ -43,8 +43,6 @@ export const visitorPassService = {
                         expectedTime: payload.expectedTime,
                         expectedEntryAtIso: payload.expectedEntryAtIso || new Date(payload.validityStartAtIso || Date.now()).toISOString(),
                         expectedExitAtIso: payload.expectedExitAtIso || new Date(Date.now() + (payload.validityWindowMinutes || 240) * 60 * 1000).toISOString(),
-                        actualEntryAtIso: undefined,
-                        actualExitAtIso: undefined,
                         flatNumber: payload.flatNumber || '',
                         societyName: '',
                         purpose: payload.purpose,
@@ -57,20 +55,13 @@ export const visitorPassService = {
                         createdByUserId: createdBy,
                         createdByDisplayName: '',
                         visitorCategory: payload.visitorCategory,
-                        exitTracking: undefined,
-                        cancellationReason: undefined,
-                        cancellationNotes: undefined,
-                        cancelledAt: undefined,
-                        cancelledBy: undefined,
                         approvalSource: 'PRE_APPROVED' as ApprovalSource,
                         approvalStatus: 'EXPECTED' as VisitorPassStatus,
                         validityWindowMinutes: payload.validityWindowMinutes || 240,
                         validityStartAtIso: validityStartAtIso,
                         validityEndAtIso: validityEndAtIso,
-                        description: undefined,
                         invitedByResidentId: '',
                         invitedByResidentName: '',
-                        preApprovalId: undefined,
                         deliveryBrand: payload.deliveryBrand,
                         deliveryTrackingId: payload.deliveryTrackingId,
                         cabCompany: payload.cabCompany,
@@ -85,34 +76,13 @@ export const visitorPassService = {
                         emergencyDescription: payload.emergencyDescription,
                         emergencyContactName: payload.emergencyContactName,
                         emergencyContactPhone: payload.emergencyContactPhone,
-                        gateId: undefined,
-                        gateName: undefined,
-                        checkInAtIso: undefined,
-                        checkInGateId: undefined,
-                        checkInGateName: undefined,
-                        checkOutAtIso: undefined,
-                        checkOutGateId: undefined,
-                        checkOutGateName: undefined,
-                        deniedAtIso: undefined,
-                        deniedBy: undefined,
-                        deniedReason: undefined,
-                        escalatedAtIso: undefined,
-                        escalatedBy: undefined,
-                        escalationReason: undefined,
-                        escalationStatus: undefined,
-                        revokedAtIso: undefined,
-                        revokedBy: undefined,
-                        revocationReason: undefined,
                         watchlistWarning: false,
-                        watchlistId: undefined,
-                        watchlistReason: undefined,
                         previousVisitCount: 0,
-                        lastVisitAtIso: undefined,
                         tags: payload.tags,
                         metadata: payload.metadata,
                         societyId,
-                    };
-                    mockStore.getState().visitors?.push(visitor);
+                    } as Visitor;
+                    (mockStore.getState().visitors as any[])?.push(visitor);
                     mockStore.notify();
                     resolve(visitor);
                 }
@@ -196,7 +166,12 @@ export const visitorPassService = {
                     resolve(null);
                     return;
                 }
-                const updated = { ...visitors[index], ...updates, updatedAt: new Date().toISOString() };
+                const current = visitors[index];
+                if (!current) {
+                    resolve(null);
+                    return;
+                }
+                const updated: Visitor = { ...current, ...updates, updatedAt: new Date().toISOString() };
                 mockStore.getState().visitors[index] = updated;
                 mockStore.notify();
                 resolve(updated);
@@ -218,13 +193,17 @@ export const visitorPassService = {
                     return;
                 }
                 const current = visitors[index];
+                if (!current) {
+                    reject(new Error('Visitor not found'));
+                    return;
+                }
                 if (!visitorStateMachine.canTransitionVisitorStatus(current.status as VisitorStatus, newStatus)) {
                     reject(new Error(`Invalid status transition from ${current.status} to ${newStatus}`));
                     return;
                 }
                 const now = new Date().toISOString();
                 const updated = {
-                    ...visitors[index],
+                    ...current,
                     status: newStatus,
                     ...additionalUpdates,
                     updatedAt: now,
@@ -255,7 +234,7 @@ export const visitorPassService = {
                 if (newStatus === 'EXPIRED') {
                     (updated as any).expiredAtIso = now;
                 }
-                mockStore.getState().visitors[index] = updated;
+                (mockStore.getState().visitors as any[])[index] = updated;
                 mockStore.notify();
                 if (context) {
                     visitorStateMachine.logTransition({
@@ -263,10 +242,10 @@ export const visitorPassService = {
                         societyId: context.societyId,
                         actorUserId: context.actorUserId,
                         actorType: context.actorType,
-                        reason: context.reason,
+                        ...(context.reason ? { reason: context.reason } : {}),
                     }, 'VISITOR', current.status, newStatus, `VISITOR_STATUS_${current.status}_TO_${newStatus}`);
                 }
-                resolve(updated);
+                resolve(updated as Visitor);
             }, 500);
         });
     },
@@ -284,14 +263,18 @@ export const visitorPassService = {
                         return;
                     }
                     const visitor = visitors[index];
+                    if (!visitor) {
+                        reject(new Error('Visitor not found'));
+                        return;
+                    }
                     if (!['APPROVED', 'EXPECTED', 'PRESENTED'].includes(visitor.status as any)) {
                         reject(new Error(`Cannot check in visitor with status: ${visitor.status}`));
                         return;
                     }
-                    const key = idempotencyKey || gateIdempotencyService.generateKey('checkin', { visitorId, gateId });
+                    const key = idempotencyKey || createIdempotencyKey(`checkin-${visitorId}-${gateId}`);
                     const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, societyId);
                     if (idempotencyResult.exists && idempotencyResult.record?.status === 'COMPLETED') {
-                        resolve({ visitor, gateEvent: idempotencyResult.record.responsePayload });
+                        resolve({ visitor, gateEvent: idempotencyResult.record.responsePayload as any });
                         return;
                     }
                     const watchlist = mockStore.getState().watchlistEntries || [];
@@ -301,7 +284,7 @@ export const visitorPassService = {
                     }>();
                     const gateConfig = mockStore.getState().gates?.find(g => g.id === gateId);
                     if (gateConfig) {
-                        gates.set(gateId, { id: gateConfig.id, allowedVisitorTypes: gateConfig.allowedVisitorTypes });
+                        gates.set(gateId, { id: String(gateConfig.id), allowedVisitorTypes: (gateConfig.allowedVisitorTypes as any) || [] });
                     }
                     const validation = await visitorPassValidationService.validatePass({
                         passCode: visitor.otp,
@@ -316,8 +299,8 @@ export const visitorPassService = {
                         return;
                     }
                     const now = new Date().toISOString();
-                    const updated = {
-                        ...visitors[index],
+                    const updated: Visitor = {
+                        ...visitor,
                         status: 'CHECKED_IN' as VisitorStatus,
                         actualEntryAtIso: now,
                         checkInAtIso: now,
@@ -327,7 +310,7 @@ export const visitorPassService = {
                         updatedAt: now,
                     };
                     mockStore.getState().visitors[index] = updated;
-                    const gateEvent = {
+                    const gateEvent: GateEvent = {
                         id: `gate-event-${Date.now()}`,
                         eventType: 'CHECK_IN' as GateEventType,
                         gateId: gateId,
@@ -354,24 +337,13 @@ export const visitorPassService = {
                         vehicleType: vehicleType as VehicleType,
                         vehicleColor: vehicleColor,
                         eventStatus: 'SUCCESS',
-                        approvalSource: approvalSource,
                         approvalStatus: 'CHECKED_IN' as VisitorPassStatus,
-                        denialReason: undefined,
                         escalationTriggered: false,
-                        escalationType: undefined,
                         watchlistMatch: validation.watchlistWarning || false,
                         watchlistId: validation.watchlistId,
                         watchlistReason: validation.watchlistReason,
                         emergencyBypassUsed: false,
-                        emergencyType: undefined,
-                        emergencyDescription: undefined,
-                        emergencyContactName: undefined,
-                        emergencyContactPhone: undefined,
                         idempotencyKey: key,
-                        deviceId: undefined,
-                        deviceInfo: undefined,
-                        appVersion: undefined,
-                        networkType: undefined,
                         syncStatus: 'SYNCED',
                         createdAt: now,
                         createdBy: guardId,
@@ -381,7 +353,7 @@ export const visitorPassService = {
                     mockStore.getState().visitors[index] = updated;
                     mockStore.getState().gateEvents?.push(gateEvent);
                     mockStore.notify();
-                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent);
+                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent as unknown as Record<string, unknown>);
                     const residentUserIds = mockStore.getState().residents
                         ?.filter(r => r.flatNumber === visitor.flatNumber)
                         .map(r => r.id) || [];
@@ -416,6 +388,10 @@ export const visitorPassService = {
                         return;
                     }
                     const visitor = visitors[index];
+                    if (!visitor) {
+                        reject(new Error('Visitor not found'));
+                        return;
+                    }
                     if (visitor.status !== 'CHECKED_IN') {
                         reject(new Error(`Cannot check out visitor with status: ${visitor.status}`));
                         return;
@@ -423,12 +399,12 @@ export const visitorPassService = {
                     const key = idempotencyKey || gateIdempotencyService.generateKey('checkout', { visitorId, gateId });
                     const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, societyId);
                     if (idempotencyResult.exists && idempotencyResult.record?.status === 'COMPLETED') {
-                        resolve({ visitor, gateEvent: idempotencyResult.record.responsePayload });
+                        resolve({ visitor, gateEvent: idempotencyResult.record.responsePayload as any });
                         return;
                     }
                     const now = new Date().toISOString();
-                    const updated = {
-                        ...visitors[index],
+                    const updated: Visitor = {
+                        ...visitor,
                         status: 'CHECKED_OUT' as VisitorStatus,
                         actualExitAtIso: now,
                         checkOutAtIso: now,
@@ -437,7 +413,7 @@ export const visitorPassService = {
                         updatedAt: now,
                     };
                     mockStore.getState().visitors[index] = updated;
-                    const gateEvent = {
+                    const gateEvent: GateEvent = {
                         id: `gate-event-${Date.now()}`,
                         eventType: 'CHECK_OUT' as GateEventType,
                         gateId: gateId,
@@ -464,7 +440,6 @@ export const visitorPassService = {
                         vehicleType: undefined,
                         vehicleColor: undefined,
                         eventStatus: 'SUCCESS',
-                        approvalSource: visitor.approvalSource || 'PRE_APPROVED',
                         approvalStatus: 'CHECKED_OUT' as VisitorPassStatus,
                         denialReason: undefined,
                         escalationTriggered: false,
@@ -491,7 +466,7 @@ export const visitorPassService = {
                     mockStore.getState().visitors[index] = updated;
                     mockStore.getState().gateEvents?.push(gateEvent);
                     mockStore.notify();
-                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent);
+                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent as unknown as Record<string, unknown>);
                     const residentUserIds = mockStore.getState().residents
                         ?.filter(r => r.flatNumber === visitor.flatNumber)
                         .map(r => r.id) || [];
@@ -522,13 +497,17 @@ export const visitorPassService = {
                     return;
                 }
                 const current = visitors[index];
+                if (!current) {
+                    reject(new Error('Visitor not found'));
+                    return;
+                }
                 if (!visitorStateMachine.canTransitionVisitorStatus(current.status as VisitorStatus, 'REVOKED')) {
                     reject(new Error(`Cannot revoke visitor with status: ${current.status}`));
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
-                    ...visitors[index],
+                const updated: Visitor = {
+                    ...current,
                     status: 'REVOKED' as VisitorStatus,
                     revokedAtIso: now,
                     revokedBy,
@@ -564,13 +543,17 @@ export const visitorPassService = {
                     return;
                 }
                 const current = visitors[index];
+                if (!current) {
+                    reject(new Error('Visitor not found'));
+                    return;
+                }
                 if (!visitorStateMachine.canTransitionVisitorStatus(current.status as VisitorStatus, 'CANCELLED')) {
                     reject(new Error(`Cannot cancel visitor with status: ${current.status}`));
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
-                    ...visitors[index],
+                const updated: Visitor = {
+                    ...current,
                     status: 'CANCELLED' as VisitorStatus,
                     cancellationReason: reason,
                     cancelledAt: now,
@@ -777,9 +760,9 @@ export const visitorPassService = {
     async getCurrentInside(societyId: string): Promise<any[]> {
         return new Promise((resolve) => {
             setTimeout(() => {
-                const visitors = mockStore.getState().visitors || [];
-                const gateEvents = mockStore.getState().gateEvents || [];
-                const presence = currentVisitorPresenceService.derivePresence(visitors, gateEvents, { societyId });
+                const visitors = (mockStore.getState().visitors || []).filter(v => v.societyId === societyId);
+                const gateEvents = (mockStore.getState().gateEvents || []).filter(e => e.societyId === societyId);
+                const presence = currentVisitorPresenceService.derivePresence(visitors, gateEvents);
                 const formattedPresence = presence.map(p => ({
                     visitorId: p.visitorId,
                     visitorName: p.visitorName,
@@ -816,19 +799,27 @@ export const visitorPassService = {
                     reject(new Error('Visitor not found'));
                     return;
                 }
+                const current = visitors[index];
+                if (!current) {
+                    reject(new Error('Visitor not found'));
+                    return;
+                }
                 const now = new Date().toISOString();
-                const updated = {
-                    ...visitors[index],
+                const updated: Visitor = {
+                    ...current,
                     expectedExitAtIso: newExpectedExitAtIso,
                     exitTracking: {
-                        ...visitors[index].exitTracking,
-                        exitStatus: 'extended' as any,
-                        alertStatus: 'snoozed' as any,
+                        expectedEntryAtIso: current.actualEntryAtIso || current.expectedEntryAtIso || now,
+                        expectedExitAtIso: newExpectedExitAtIso,
+                        gracePeriodMinutes: current.exitTracking?.gracePeriodMinutes || 15,
+                        exitStatus: 'extended',
+                        alertStatus: 'snoozed',
                         extendedExpectedExitAtIso: newExpectedExitAtIso,
                         extensionReason: reason,
                         alertDueAtIso: addMinutesToIso(newExpectedExitAtIso, 30),
+                        timeline: current.exitTracking?.timeline || [],
                     },
-                    escalationStatus: 'NOT_ESCALATED' as any,
+                    escalationStatus: 'NOT_ESCALATED',
                     updatedAt: now,
                 };
                 mockStore.getState().visitors[index] = updated;
@@ -860,10 +851,11 @@ export const visitorPassService = {
                     const key = idempotencyKey || gateIdempotencyService.generateKey('emergency_bypass', { gateId: payload.gateId, guardId });
                     const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, societyId);
                     if (idempotencyResult.exists && idempotencyResult.record?.status === 'COMPLETED') {
+                        const record = idempotencyResult.record;
                         const visitors = mockStore.getState().visitors || [];
-                        const visitor = visitors.find(v => v.id === idempotencyResult.record.entityId);
+                        const visitor = visitors.find(v => v.id === record.entityId);
                         if (visitor) {
-                            resolve({ visitor, gateEvent: idempotencyResult.record.responsePayload });
+                            resolve({ visitor, gateEvent: record.responsePayload as any });
                             return;
                         }
                     }
@@ -876,7 +868,7 @@ export const visitorPassService = {
                         type: payload.visitorType,
                         category: 'emergency',
                         status: 'EMERGENCY_BYPASS',
-                        expectedDate: new Date().toISOString().split('T')[0],
+                        expectedDate: new Date().toISOString().split('T')[0] || '',
                         expectedTime: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
                         expectedEntryAtIso: now,
                         expectedExitAtIso: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
@@ -950,7 +942,7 @@ export const visitorPassService = {
                         societyId,
                         unitId: payload.unitId,
                     };
-                    mockStore.getState().visitors?.push(visitor);
+                    (mockStore.getState().visitors as any[])?.push(visitor);
                     const gateEvent = {
                         id: `gate-event-${Date.now()}`,
                         eventType: 'EMERGENCY_BYPASS' as GateEventType,
@@ -978,7 +970,6 @@ export const visitorPassService = {
                         vehicleType: payload.vehicleType,
                         vehicleColor: undefined,
                         eventStatus: 'SUCCESS',
-                        approvalSource: 'EMERGENCY' as ApprovalSource,
                         approvalStatus: 'EMERGENCY_BYPASS' as VisitorPassStatus,
                         denialReason: undefined,
                         escalationTriggered: false,
@@ -1002,12 +993,12 @@ export const visitorPassService = {
                         metadata: {},
                         societyId: societyId,
                     };
-                    mockStore.getState().visitors?.push(visitor);
-                    mockStore.getState().gateEvents?.push(gateEvent);
+                    (mockStore.getState().visitors as any[])?.push(visitor);
+                    mockStore.getState().gateEvents?.push(gateEvent as unknown as GateEvent);
                     mockStore.notify();
-                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent);
+                    await gateIdempotencyService.completeIdempotency(key, societyId, gateEvent.id, gateEvent as unknown as Record<string, unknown>);
                     const securityUserIds = mockStore.getState().residents
-                        ?.filter(r => r.role === 'SECURITY_GUARD' || r.role === 'SECURITY_SUPERVISOR')
+                        ?.filter(r => (r.role as string) === 'SECURITY_GUARD' || (r.role as string) === 'SECURITY_SUPERVISOR')
                         .map(r => r.id) || [];
                     if (securityUserIds.length > 0) {
                         await visitorNotificationService.sendEmergencyBypass(visitor, payload.gateId, payload.emergencyDescription, securityUserIds, societyId);
@@ -1137,12 +1128,19 @@ export const visitorPassService = {
                     return;
                 }
                 const isRevoked = ['REVOKED', 'CANCELLED'].includes(visitor.status as any);
-                resolve({
-                    isRevoked,
-                    revocationReason: isRevoked ? visitor.revocationReason || visitor.cancellationReason : undefined,
-                    revokedAtIso: isRevoked ? visitor.revokedAtIso || visitor.cancelledAt : undefined,
-                    revokedBy: isRevoked ? visitor.revokedBy || visitor.cancelledBy : undefined,
-                });
+                if (isRevoked) {
+                    const reason = visitor.revocationReason || visitor.cancellationReason;
+                    const atIso = visitor.revokedAtIso || visitor.cancelledAt;
+                    const by = visitor.revokedBy || visitor.cancelledBy;
+                    resolve({
+                        isRevoked: true,
+                        ...(reason ? { revocationReason: reason } : {}),
+                        ...(atIso ? { revokedAtIso: atIso } : {}),
+                        ...(by ? { revokedBy: by } : {}),
+                    });
+                } else {
+                    resolve({ isRevoked: false });
+                }
             }, 200);
         });
     },

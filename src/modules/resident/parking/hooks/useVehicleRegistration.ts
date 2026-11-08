@@ -1,8 +1,9 @@
 import { useRepositoryMutation } from '../../../../core/repositories/useRepositoryResult';
+import type { AddVehicleInput } from '../../../../shared/types/vehicle.types';
 import { parkingRepository } from '../data/parking.repository';
 
 export function useVehicleRegistration() {
-  const mutation = useRepositoryMutation(async (input: JsonValue) => {
+  const mutation = useRepositoryMutation(async (input: AddVehicleInput) => {
     const res = await parkingRepository.registerVehicle(input);
     const data = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
     return { ok: true, data };

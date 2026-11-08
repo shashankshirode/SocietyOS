@@ -137,7 +137,7 @@ export class SlaEngine {
       ? mockStore.getState().calendars?.find((c: any) => c.id === calendarId)
       : null;
 
-    const businessHours = calendar?.businessHours || {
+    const defaultHours: Record<string, { start: number; end: number }> = {
       monday: { start: 9, end: 18 },
       tuesday: { start: 9, end: 18 },
       wednesday: { start: 9, end: 18 },
@@ -146,20 +146,21 @@ export class SlaEngine {
       saturday: { start: 10, end: 14 },
       sunday: { start: 10, end: 14 },
     };
+    const businessHours: Record<string, { start: number; end: number }> = (calendar as any)?.businessHours || defaultHours;
 
-    const holidays = calendar?.holidays || [];
-    const timezone = calendar?.timezone || 'Asia/Kolkata';
+    const holidays = (calendar as any)?.holidays || [];
+    const timezone = (calendar as any)?.timezone || 'Asia/Kolkata';
 
     let currentTime = startTime;
     let remainingMs = hours * MS_PER_HOUR;
 
     while (remainingMs > 0) {
       const date = new Date(currentTime);
-      const dayOfWeek = date.toLocaleString('en-US', { weekday: 'lowercase', timeZone: timezone });
+      const dayOfWeek = date.toLocaleString('en-US', { weekday: 'long', timeZone: timezone }).toLowerCase();
       const dayHours = businessHours[dayOfWeek];
 
-      if (!dayHours || isHoliday(date, holidays)) {
-        currentTime = getNextBusinessDayStart(date, businessHours, holidays, timezone);
+      if (!dayHours || this.isHoliday(date, holidays)) {
+        currentTime = this.getNextBusinessDayStart(date, businessHours, holidays, timezone);
         continue;
       }
 
@@ -174,7 +175,7 @@ export class SlaEngine {
 
       const availableMs = dayEnd.getTime() - currentTime;
       if (availableMs <= 0) {
-        currentTime = getNextBusinessDayStart(date, businessHours, holidays, timezone);
+        currentTime = this.getNextBusinessDayStart(date, businessHours, holidays, timezone);
         continue;
       }
 
@@ -184,7 +185,7 @@ export class SlaEngine {
       } else {
         currentTime = dayEnd.getTime();
         remainingMs -= availableMs;
-        currentTime = getNextBusinessDayStart(new Date(currentTime), businessHours, holidays, timezone);
+        currentTime = this.getNextBusinessDayStart(new Date(currentTime), businessHours, holidays, timezone);
       }
     }
 
@@ -202,7 +203,6 @@ export class SlaEngine {
     }
 
     const now = new Date().toISOString();
-    const pauseDuration = complaint.totalPauseDurationMs || 0;
 
     mockStore.updateComplaint(complaint.id, {
       slaIsPaused: true,
@@ -216,7 +216,7 @@ export class SlaEngine {
     await createAuditEntry({
       actorUserId: startedBy,
       actorType: 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'SLA_PAUSED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -230,7 +230,7 @@ export class SlaEngine {
     return { paused: true, pausePolicy: policy, reason, pausedAt: now, startedBy };
   }
 
-  async resumeSla(complaint: Complaint, resumedBy: string): Promise<SlaResumeResult> {
+  async resumeSla(complaint: Complaint, _resumedBy: string): Promise<SlaResumeResult> {
     if (!complaint.slaIsPaused || !complaint.slaPausedAt) {
       return { resumed: false, resumedAt: '', totalPauseDurationMs: 0 };
     }
@@ -239,15 +239,8 @@ export class SlaEngine {
     const pauseDurationMs = new Date(now).getTime() - new Date(complaint.slaPausedAt).getTime();
     const totalPauseDurationMs = (complaint.totalPauseDurationMs || 0) + pauseDurationMs;
 
-    const nowDate = new Date(now);
-    const pauseStart = new Date(complaint.slaPausedAt);
-
     mockStore.updateComplaint(complaint.id, {
       slaIsPaused: false,
-      slaPausePolicy: undefined,
-      slaPausedAt: undefined,
-      slaPauseReason: undefined,
-      slaPauseStartedBy: undefined,
       totalPauseDurationMs,
       updatedAt: now,
     });
@@ -255,14 +248,14 @@ export class SlaEngine {
     await createAuditEntry({
       actorUserId: 'SYSTEM',
       actorType: 'SYSTEM',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'SLA_RESUMED',
       entityType: 'Complaint',
       entityId: complaint.id,
       previousState: { slaIsPaused: true },
       newState: { slaIsPaused: false, totalPauseDurationMs },
       idempotencyKey: createIdempotencyKey(`sla-resume-${complaint.id}`),
-      source: 'SYSTEM',
+      source: 'SYSTEM_JOB',
       outcome: 'SUCCESS',
     });
 
@@ -329,22 +322,20 @@ export class SlaEngine {
     complaint: Complaint,
     holdReason: HoldReason,
     notes: string,
-    expectedResumeAt?: string,
-    startedBy: string
+    startedBy: string,
+    expectedResumeAt?: string
   ): Promise<SlaPauseResult> {
-    const now = new Date().toISOString();
-
-    const pausePolicy = this.getSlaPausePolicyForHoldReason(holdReason);
-
-    const holdRecord = {
+    const holdRecord: any = {
       id: `hold_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       complaintId: complaint.id,
+      societyId: complaint.societyId || '',
       reason: holdReason,
       notes,
       startedAt: new Date().toISOString(),
-      expectedResumeAt,
-      startedBy: startedBy,
+      startedByUserId: startedBy,
+      startedByDisplayName: startedBy,
       isActive: true,
+      ...(expectedResumeAt ? { expectedResumeAt } : {}),
     };
 
     mockStore.getState().complaintHolds?.push(holdRecord);
@@ -377,7 +368,7 @@ export class SlaEngine {
     return this.resumeSla(complaint, resumedBy);
   }
 
-  private getSlaPausePolicyForHoldReason(reason: HoldReason): SlaPausePolicy {
+  getSlaPausePolicyForHoldReason(reason: HoldReason): SlaPausePolicy {
     switch (reason) {
       case 'SPARE_PART_REQUIRED':
       case 'VENDOR_REQUIRED':
@@ -406,13 +397,13 @@ export class SlaEngine {
       case 'SOCIETY_APPROVAL_REQUIRED':
         return 'WAITING_FOR_APPROVAL';
       case 'ANOTHER_OPERATIONAL_REASON':
-        return 'WAITING_FOR_OTHER';
+        return 'HOLD_OTHER';
       case 'WEATHER_DELAY':
         return 'WAITING_FOR_WEATHER';
       case 'SAFETY_CONCERN':
         return 'HOLD_SAFETY_CONCERN';
       default:
-        return 'WAITING_FOR_OTHER';
+        return 'HOLD_OTHER';
     }
   }
 
@@ -426,18 +417,23 @@ export class SlaEngine {
 
     const breachResult = await this.checkSlaBreach(complaint);
 
-    const holdEvents = mockStore.getState().complaintHolds
-      ?.filter(h => h.complaintId === complaint.id)
-      .map(h => ({
-        reason: h.reason,
-        startAt: h.startedAt,
-        endAt: h.resumedAt,
-        durationMs: h.resumedAt ? new Date(h.resumedAt).getTime() - new Date(h.startedAt).getTime() : undefined,
-      })) || [];
+    const holdEvents: { reason: HoldReason; startAt: string; endAt?: string; durationMs?: number }[] = (mockStore.getState().complaintHolds || [])
+      .filter(h => h.complaintId === complaint.id)
+      .map(h => {
+        const item: { reason: HoldReason; startAt: string; endAt?: string; durationMs?: number } = {
+          reason: h.reason,
+          startAt: h.startedAt,
+        };
+        if (h.resumedAt) {
+          item.endAt = h.resumedAt;
+          item.durationMs = new Date(h.resumedAt).getTime() - new Date(h.startedAt).getTime();
+        }
+        return item;
+      });
 
-    const escalationEvents = mockStore.getState().complaintEscalations
-      ?.filter(e => e.complaintId === complaint.id)
-      .map(e => ({ level: e.toLevel, at: e.triggeredAt })) || [];
+    const escalationEvents = (mockStore.getState().complaintEscalations || [])
+      .filter(e => e.complaintId === complaint.id)
+      .map(e => ({ level: e.toLevel, at: e.triggeredAt }));
 
     const totalPauseDurationMs = complaint.totalPauseDurationMs || 0;
 
@@ -475,21 +471,24 @@ export class SlaEngine {
     const actualDuration = resolvedAt - createdAt - totalPauseMs;
     const allowedDuration = deadline - createdAt - totalPauseMs;
 
-    if (allowedDuration <= 0) return 100;
+    if (actualDuration <= 0 || allowedDuration <= 0) return 100;
     return Math.max(0, Math.min(100, Math.round((allowedDuration / actualDuration) * 100)));
   }
 
   private isHoliday(date: Date, holidays: string[]): boolean {
-    const dateStr = date.toISOString().split('T')[0];
+    const parts = date.toISOString().split('T');
+    const dateStr = parts[0] || '';
     return holidays.includes(dateStr);
   }
 
   private getNextBusinessDayStart(date: Date, businessHours: any, holidays: string[], timezone: string): number {
-    let nextDay = new Date(date.getTime() + 24 * MS_PER_HOUR);
-    while (this.isHoliday(nextDay, holidays) || !businessHours[nextDay.toLocaleString('en-US', { weekday: 'lowercase', timeZone: 'Asia/Kolkata' })]) {
-      nextDay = new Date(nextDay.getTime() + 24 * MS_PER_HOUR);
+    let nextDay = new Date(date.getTime() + 24 * this.MS_PER_HOUR);
+    const getWeekday = (d: Date, tz: string) => d.toLocaleString('en-US', { weekday: 'long', timeZone: tz }).toLowerCase();
+    while (this.isHoliday(nextDay, holidays) || !businessHours[getWeekday(nextDay, 'Asia/Kolkata')]) {
+      nextDay = new Date(nextDay.getTime() + 24 * this.MS_PER_HOUR);
     }
-    nextDay.setHours(businessHours[nextDay.toLocaleString('en-US', { weekday: 'lowercase', timeZone: timezone })].start, 0, 0, 0);
+    const dayConfig = businessHours[getWeekday(nextDay, timezone)] || { start: 9, end: 18 };
+    nextDay.setHours(dayConfig.start, 0, 0, 0);
     return nextDay.getTime();
   }
 

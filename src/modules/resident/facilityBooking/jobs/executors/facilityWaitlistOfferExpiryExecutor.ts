@@ -80,7 +80,7 @@ export class FacilityWaitlistOfferExpiryExecutor implements JobExecutor {
         });
 
         const nextEntry = await this.promoteNext(entry.facilityId, entry.slotId, vault);
-        if (nextPromoted) {
+        if (nextEntry) {
           (details.promoted as string[]).push(nextEntry.id);
         }
 

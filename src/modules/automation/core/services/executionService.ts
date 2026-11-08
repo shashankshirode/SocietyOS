@@ -18,14 +18,14 @@ import { triggerRegistry } from './triggerRegistry';
 import { suppressionService } from './suppressionService';
 import { approvalService } from './approvalService';
 import { retryService } from './retryService';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 const executions: Map<string, AutomationExecution> = new Map();
 const executionsByCorrelation: Map<string, Set<string>> = new Map();
 retryService.setExecutionLookup((id) => executions.get(id));
 
 function generateId(): string {
-  return uuidv4();
+  return Crypto.randomUUID();
 }
 
 function getNow(): string {
@@ -100,7 +100,7 @@ export const executionService = {
         reason: suppression.reason,
         detail: suppression.detail,
         suppressedAt: now,
-        expiresAt: suppression.expiresAt,
+        ...(suppression.expiresAt ? { expiresAt: suppression.expiresAt } : {}),
       });
     } else if (!allConditionsPassed) {
       initialStatus = 'EVALUATING';
@@ -112,16 +112,16 @@ export const executionService = {
       actionId: action.id,
       actionType: action.type,
       risk: action.risk,
-      status: initialStatus === 'ACTIONABLE' ? 'PENDING' : 'SKIPPED' as AutomationActionStatus,
+      status: initialStatus === 'ACTIONABLE' ? 'PENDING' : ('SKIPPED' as AutomationActionStatus),
       config: action.config,
       idempotencyKey: `auto_${action.id}_${executionId}_${rule.societyId}`.replace(/[^a-zA-Z0-9_]/g, '_'),
       domainService: actionDispatcher.getDomainService(action.type),
       domainMethod: actionDispatcher.getDomainMethod(action.type),
       domainParams: action.config,
       retryCount: 0,
-      dependsOnActionId: action.dependsOnActionId,
+      ...(action.dependsOnActionId ? { dependsOnActionId: action.dependsOnActionId } : {}),
       requiresApproval: action.requiresApproval || false,
-      approvalStatus: action.requiresApproval ? 'PENDING' : undefined,
+      ...(action.requiresApproval ? { approvalStatus: 'PENDING' as const } : {}),
     }));
 
     const approvals = rule.actions
@@ -156,6 +156,7 @@ export const executionService = {
       causalChain: getCausalChain(command.triggerEventPayload, command.correlationId),
       causalDepth: loopCheck.depth,
       startedAt: now,
+      retryCount: 0,
       dryRun: command.dryRun || false,
     };
 
@@ -189,6 +190,7 @@ export const executionService = {
 
     for (let i = 0; i < actionAttempts.length; i++) {
       const attempt = actionAttempts[i];
+      if (!attempt) continue;
 
       if (attempt.dependsOnActionId) {
         const dependency = actionAttempts.find(a => a.actionId === attempt.dependsOnActionId);
@@ -206,8 +208,11 @@ export const executionService = {
 
       if (attempt.status === 'SKIPPED') continue;
 
+      const currentAction = rule.actions.find(a => a.id === attempt.actionId);
+      if (!currentAction) continue;
+
       const result = await actionDispatcher.executeAction(
-        rule.actions.find(a => a.id === attempt.actionId)!,
+        currentAction,
         {
           societyId: execution.societyId,
           actorId: 'SYSTEM_AUTOMATION',
@@ -220,7 +225,10 @@ export const executionService = {
 
       if (result.status === 'FAILED') {
         if (actionDispatcher.isRetryableError(result.error?.code || '')) {
-          actionAttempts[i].status = 'RETRYING';
+          const updatedAttempt = actionAttempts[i];
+          if (updatedAttempt) {
+            updatedAttempt.status = 'RETRYING';
+          }
         }
       }
     }

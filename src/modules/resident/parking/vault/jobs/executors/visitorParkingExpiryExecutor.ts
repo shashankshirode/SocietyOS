@@ -1,11 +1,11 @@
 import type { JobExecution, JobResult } from '../../../../../../core/jobs/job.types';
 import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
-import type { VaultClock } from '../../../../../../core/identity/personaRegistry';
+import type { ParkingVaultClock } from '../../domain/types/primitives';
 import type { VisitorParkingPassRecord } from '../../domain/types/parking';
 
-interface ParkingBookingPorts extends JobPortsInterface {
+interface ParkingBookingPorts extends Omit<JobPortsInterface, 'vault'> {
   vault: {
-    clock: VaultClock;
+    clock: ParkingVaultClock;
     visitorPasses: {
       findActiveByExpiry: (beforeIso: string) => readonly VisitorParkingPassRecord[];
       findByFacilityAndSlot: (facilityId: string, slotId: string) => readonly VisitorParkingPassRecord[];
@@ -22,7 +22,7 @@ interface ParkingBookingPorts extends JobPortsInterface {
 
 export class VisitorParkingExpiryExecutor implements JobExecutor {
   async execute(execution: JobExecution, ports: JobPorts): Promise<JobResult> {
-    const vault = (ports as ParkingBookingPorts).vault;
+    const vault = (ports as unknown as ParkingBookingPorts).vault;
     if (!vault) {
       return { success: false, processedCount: 0, succeededCount: 0, failedCount: 0, details: { error: 'Vault not available' } };
     }
@@ -43,8 +43,8 @@ export class VisitorParkingExpiryExecutor implements JobExecutor {
         vault.visitorPasses.update(updatedPass);
 
         await vault.notifications.send({
-          residenceId: pass.residenceId,
-          userId: pass.userId,
+          residenceId: pass.scope.owningEntityId,
+          userId: pass.createdBy,
           title: 'Visitor Parking Expired',
           body: `Visitor parking pass ${pass.passNumber} has expired.`,
           data: { passId: pass.id },
@@ -54,8 +54,8 @@ export class VisitorParkingExpiryExecutor implements JobExecutor {
           action: 'VISITOR_PARKING_EXPIRED',
           entityType: 'VISITOR_PARKING_PASS',
           entityId: pass.id,
-          societyId: pass.societyId,
-          residenceId: pass.residenceId,
+          societyId: pass.scope.societyId,
+          residenceId: pass.scope.owningEntityId,
           metadata: { passNumber: pass.passNumber },
         });
 

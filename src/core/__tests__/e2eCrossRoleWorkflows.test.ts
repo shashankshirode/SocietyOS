@@ -16,9 +16,9 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
       name: 'Shashank Shirode',
       role: 'RESIDENT_OWNER',
       personaKey: 'owner_greenwood',
-      homeContextId: 'res-greenwood-a1204',
       societyId: 'soc-greenwood-pune',
       unitId: 'unit-a1204',
+      isMockSession: true,
     });
   });
 
@@ -27,7 +27,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
       // Step A: Resident creates a visitor pass
       const passResult = await visitorLifecycleStore.createPass({
         name: 'Rajesh Sharma',
-        type: 'guest',
+        type: 'GUEST',
         phone: '9876543210',
         expectedDate: '2026-07-15',
         expectedTimeFrom: '10:00 AM',
@@ -52,6 +52,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
         role: 'SECURITY_GUARD',
         personaKey: 'guard_main_gate',
         societyId: 'soc-greenwood-pune',
+        isMockSession: true,
       });
 
       // Guard checks expected visitors list
@@ -73,9 +74,9 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
         name: 'Shashank Shirode',
         role: 'RESIDENT_OWNER',
         personaKey: 'owner_greenwood',
-        homeContextId: 'res-greenwood-a1204',
         societyId: 'soc-greenwood-pune',
         unitId: 'unit-a1204',
+        isMockSession: true,
       });
 
       // Resident inspects their visitor list
@@ -90,6 +91,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
         role: 'SECURITY_GUARD',
         personaKey: 'guard_main_gate',
         societyId: 'soc-greenwood-pune',
+        isMockSession: true,
       });
 
       const exitResult = await visitorLifecycleStore.recordExit(passResult.id, { gateName: 'Main Gate' });
@@ -103,7 +105,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
     it('rejects invalid state transitions such as double check-in or exit before entry', async () => {
       const pass = await visitorLifecycleStore.createPass({
         name: 'Sneha Patil',
-        type: 'delivery',
+        type: 'DELIVERY',
         phone: '9822001122',
         expectedDate: '2026-07-15',
         expectedTimeFrom: '11:00 AM',
@@ -134,6 +136,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
 
       const targetBill = billsResult.data[0];
       expect(targetBill).toBeDefined();
+      if (!targetBill) return;
       const originalAmount = targetBill.amount;
       const initialPaid = targetBill.paidAmount ?? 0;
       const outstanding = originalAmount - initialPaid;
@@ -183,7 +186,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
       const createResult = await complaintMockSource.create({
         title: 'Elevator squeaking sound',
         description: 'Noticeable metallic grinding sound in Wing A lift',
-        category: 'Maintenance',
+        category: 'LIFT',
         priority: 'HIGH',
         location: 'Wing A Lift 1',
       });
@@ -241,6 +244,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
       expect(facilities.ok).toBe(true);
       if (!facilities.ok || facilities.data.length === 0) return;
       const facility = facilities.data[0];
+      if (!facility) return;
       const facilityId = facility.id;
       const slotTime = '10:00 AM - 11:00 AM';
       const bookingDate = '2026-07-20';
@@ -304,7 +308,7 @@ describe('SOCIETY OS — PHASE 2: End-to-End Cross-Role Workflows', () => {
       // 1. Create a visitor as Resident
       const visitor = await visitorLifecycleStore.createPass({
         name: 'Shared Data Test',
-        type: 'guest',
+        type: 'GUEST',
         phone: '9998887776',
         expectedDate: '2026-07-16',
         expectedTimeFrom: '09:00 AM',

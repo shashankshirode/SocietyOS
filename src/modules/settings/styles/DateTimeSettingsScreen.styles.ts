@@ -1,7 +1,7 @@
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import type { ThemeColors, Theme } from '../../../shared/theme/tokens';
+import type { ThemeColors } from '../../../shared/theme/useAppTheme';
 
-interface DateTimeSettingsStyles {
+export interface DateTimeSettingsStyles {
   root: ViewStyle;
   scrollContent: ViewStyle;
   sectionCard: ViewStyle;
@@ -23,18 +23,10 @@ interface DateTimeSettingsStyles {
   divider: ViewStyle;
   crossTimezoneNote: TextStyle;
   overlay: ViewStyle;
-  modalOverlay: ViewStyle;
-  modalContent: ViewStyle;
-  modalHeader: ViewStyle;
-  modalTitle: TextStyle;
-  modalSearch: ViewStyle;
-  searchIcon: ViewStyle;
-  searchInput: ViewStyle;
-  searchInputText: TextStyle;
-  resultsList: ViewStyle;
-  resultItem: ViewStyle;
-  resultLabel: TextStyle;
-  resultId: TextStyle;
+  radioCircle: ViewStyle;
+  radioCircleSelected: ViewStyle;
+  radioDot: ViewStyle;
+  errorMessage: TextStyle;
 }
 
 export function createDateTimeSettingsStyles(colors: ThemeColors): DateTimeSettingsStyles {
@@ -112,19 +104,21 @@ export function createDateTimeSettingsStyles(colors: ThemeColors): DateTimeSetti
     customTimezoneValue: {
       fontSize: 15,
       fontWeight: '500',
-      color: '#111827',
+      color: colors.textPrimary,
       flex: 1,
     },
     customTimezoneHint: {
       fontSize: 12,
-      color: '#6B7280',
+      color: colors.textSecondary,
       marginTop: 8,
     },
     previewCard: {
-      backgroundColor: '#F3F4F6',
+      backgroundColor: colors.surfaceMuted || colors.background,
       borderRadius: 12,
       padding: 16,
       gap: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
     previewRow: {
       flexDirection: 'row',
@@ -134,23 +128,23 @@ export function createDateTimeSettingsStyles(colors: ThemeColors): DateTimeSetti
     previewLabel: {
       fontSize: 12,
       fontWeight: '600',
-      color: '#6B7280',
+      color: colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     previewValue: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: '#111827',
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.textPrimary,
     },
     divider: {
       height: 1,
-      backgroundColor: '#E5E7EB',
+      backgroundColor: colors.border,
       marginVertical: 8,
     },
     crossTimezoneNote: {
       fontSize: 12,
-      color: '#6B7280',
+      color: colors.textSecondary,
       lineHeight: 17,
     },
     overlay: {
@@ -164,81 +158,28 @@ export function createDateTimeSettingsStyles(colors: ThemeColors): DateTimeSetti
       alignItems: 'center',
       zIndex: 100,
     },
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'flex-end',
-    },
-    modalContent: {
-      backgroundColor: '#FFFFFF',
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      paddingTop: 8,
-      maxHeight: '85%',
-    },
-    modalHeader: {
-      flexDirection: 'row',
+    radioCircle: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.textSecondary,
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: '#E5E7EB',
+      justifyContent: 'center',
     },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#111827',
+    radioCircleSelected: {
+      borderColor: colors.primary,
     },
-    modalSearch: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 16,
-      gap: 12,
+    radioDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.primary,
     },
-    searchIcon: {
-      marginLeft: 4,
-    },
-    searchInput: {
-      flex: 1,
-      backgroundColor: '#F3F4F6',
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      fontSize: 15,
-      color: '#111827',
-    },
-    searchInputText: {
-      fontSize: 15,
-      color: '#111827',
-    },
-    resultsList: {
-      paddingHorizontal: 16,
-      paddingBottom: 24,
-      gap: 8,
-    },
-    resultItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-      backgroundColor: '#F9FAFB',
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: '#E5E7EB',
-    },
-    resultLabel: {
-      fontSize: 15,
-      fontWeight: '500',
-      color: '#111827',
-      flex: 1,
-    },
-    resultId: {
-      fontSize: 12,
-      color: '#9CA3AF',
-      marginLeft: 12,
-      fontFamily: 'monospace',
+    errorMessage: {
+      fontSize: 13,
+      color: colors.danger,
+      marginTop: 8,
     },
   });
 }

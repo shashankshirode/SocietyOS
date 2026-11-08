@@ -56,11 +56,11 @@ export type ImportTemplate = {
   columns: ColumnMapping[];
   validationRules: ValidationRule[];
   uniqueKeys: string[];
-  foreignKeyRefs: Array<{
+  foreignKeyRefs: {
     field: string;
     referenceEntity: ImportEntityType;
     referenceField: string;
-  }>;
+  }[];
   createdAt: string;
   updatedAt: string;
 };
@@ -92,23 +92,23 @@ export type ImportRowResult = {
   rowIndex: number;
   status: 'VALID' | 'INVALID' | 'DUPLICATE' | 'FOREIGN_KEY_ERROR';
   data: JsonObject;
-  errors: Array<{
+  errors: {
     field: string;
     code: string;
     message: string;
     severity: ValidationSeverity;
-  }>;
-  warnings: Array<{
+  }[];
+  warnings: {
     field: string;
     code: string;
     message: string;
-  }>;
+  }[];
   duplicateOf?: string;
-  foreignKeyErrors?: Array<{
+  foreignKeyErrors?: {
     field: string;
     referenceEntity: ImportEntityType;
     value: JsonObject[string];
-  }>;
+  }[];
 };
 
 export type ImportPreview = {
@@ -157,12 +157,12 @@ export type MigrationPlan = {
   name: string;
   sourceSystem: string;
   targetSystem: string;
-  entities: Array<{
+  entities: {
     entityType: ImportEntityType;
     sourceQuery: string;
     targetTemplateId: string;
     transformScript?: string;
-  }>;
+  }[];
   status: 'DRAFT' | 'VALIDATING' | 'READY' | 'RUNNING' | 'COMPLETED' | 'FAILED';
   createdAt: string;
   startedAt?: string;

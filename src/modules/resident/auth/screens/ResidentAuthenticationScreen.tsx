@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert } from "react-native";
+import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useAuthSession } from "../../../../core/auth/useAuthSession";
 import { clearCurrentSession } from "../../../../core/auth/sessionStore";
 import type { ResidenceAccessDetail } from "../../../../features/residenceAccess/models/residenceAccess.types";
@@ -43,7 +43,7 @@ export function ResidentAuthenticationScreen() {
   };
 
   const handleNeedHelp = () => {
-    Alert.alert(
+    AppAlert.alert(
       'Resident Support',
       'For assistance logging in or onboarding to your society, contact support@societyos.in or +91 80000 12345.',
       [{ text: 'OK' }]

@@ -1,5 +1,5 @@
 import { mockStore } from '../../../core/mockStore/mockStore';
-import type { OfflineGateEvent, GateEntry, GateExit, VisitorPass, OfflineSyncStatus, } from '../../../../shared/types/visitorPhase5';
+import type { OfflineGateEvent, GateEntry, GateExit, VisitorPass, OfflineSyncStatus, } from '../../../shared/types/visitorPhase5';
 import { unifiedVisitorStateMachine } from './unifiedVisitorStateMachine';
 import { auditService, createAuditEntry } from '../../../core/audit';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
@@ -9,6 +9,7 @@ export interface ReconciliationResult {
     readonly serverEventId?: string;
     readonly errorCode?: string;
     readonly errorMessage?: string;
+    readonly requiresReview?: boolean;
 }
 export interface ReconciliationSummary {
     readonly total: number;
@@ -75,12 +76,17 @@ export class OfflineSyncReconciliationService {
         const payload = event.payload;
         const passId = payload.passId as string;
         const gateId = payload.gateId as string;
-        const gateEntries = mockStore.getState().gateEntries || [];
+        const gateEntries = (mockStore.getState().gateEntries || []) as GateEntry[];
         const existingEntry = gateEntries.find(e => e.passId === passId &&
             e.gateId === gateId &&
             Math.abs(new Date(e.entryAt).getTime() - new Date(event.localTimestamp).getTime()) < 5 * 60 * 1000);
         if (existingEntry) {
-            return { eventId: event.eventId, status: 'DUPLICATE', serverEventId: existingEntry.entryId, errorMessage: 'Entry already recorded' };
+            return {
+                eventId: event.eventId,
+                status: 'DUPLICATE',
+                ...(existingEntry.entryId ? { serverEventId: existingEntry.entryId } : {}),
+                errorMessage: 'Entry already recorded',
+            };
         }
         const visitors = mockStore.getState().visitors || [];
         const pass = visitors.find(v => v.passId === passId);
@@ -88,9 +94,14 @@ export class OfflineSyncReconciliationService {
             return { eventId: event.eventId, status: 'REJECTED', errorCode: 'PASS_NOT_FOUND', errorMessage: 'Visitor pass not found on server' };
         }
         if (pass.status === 'CHECKED_IN') {
-            const existingEntry = gateEntries.find(e => e.passId === passId && e.status === 'CHECKED_IN');
-            if (existingEntry) {
-                return { eventId: event.eventId, status: 'DUPLICATE', serverEventId: existingEntry.entryId, errorMessage: 'Visitor already checked in' };
+            const existingCheckedIn = gateEntries.find(e => e.passId === passId && e.status === 'CHECKED_IN');
+            if (existingCheckedIn) {
+                return {
+                    eventId: event.eventId,
+                    status: 'DUPLICATE',
+                    ...(existingCheckedIn.entryId ? { serverEventId: existingCheckedIn.entryId } : {}),
+                    errorMessage: 'Visitor already checked in',
+                };
             }
         }
         if (pass.status === 'REVOKED' || pass.status === 'EXPIRED' || pass.status === 'CANCELLED') {
@@ -111,7 +122,7 @@ export class OfflineSyncReconciliationService {
             visitorPhone: payload.visitorPhone as string,
             visitorCategory: payload.visitorCategory as any,
             flatNumber: payload.flatNumber as string,
-            unitId: pass.unitId,
+            unitId: pass.unitId || 'UNKNOWN',
             gateId: payload.gateId as string,
             gateName: payload.gateName as string,
             guardId: event.guardId,
@@ -127,22 +138,24 @@ export class OfflineSyncReconciliationService {
             offlineEventId: event.eventId,
             dataVersion: 1,
             societyId: event.societyId,
-            unitId: pass.unitId,
             createdAt: event.localTimestamp,
             updatedAt: event.localTimestamp,
         };
         mockStore.getState().gateEntries = [...gateEntries, serverEntry];
-        const visitors = mockStore.getState().visitors || [];
-        const passIndex = visitors.findIndex(v => v.passId === passId);
+        const currentVisitors = mockStore.getState().visitors || [];
+        const passIndex = currentVisitors.findIndex(v => v.passId === passId);
         if (passIndex !== -1) {
-            visitors[passIndex] = {
-                ...visitors[passIndex],
-                status: 'CHECKED_IN',
-                actualEntryAt: event.localTimestamp,
-                entryGateId: payload.gateId as string,
-                entryGateName: payload.gateName as string,
-                dataVersion: (visitors[passIndex].dataVersion || 0) + 1,
-            };
+            const currentPass = currentVisitors[passIndex];
+            if (currentPass) {
+                currentVisitors[passIndex] = {
+                    ...currentPass,
+                    status: 'CHECKED_IN',
+                    actualEntryAt: event.localTimestamp,
+                    entryGateId: payload.gateId as string,
+                    entryGateName: payload.gateName as string,
+                    dataVersion: (currentPass.dataVersion || 0) + 1,
+                };
+            }
         }
         mockStore.notify();
         return { eventId: event.eventId, status: 'ACCEPTED', serverEventId: serverEntryId };
@@ -151,12 +164,17 @@ export class OfflineSyncReconciliationService {
         const payload = event.payload;
         const passId = payload.passId as string;
         const gateId = payload.gateId as string;
-        const gateExits = mockStore.getState().gateExits || [];
+        const gateExits = (mockStore.getState().gateExits || []) as GateExit[];
         const existingExit = gateExits.find(e => e.passId === passId &&
             e.gateId === gateId &&
             Math.abs(new Date(e.exitAt).getTime() - new Date(event.localTimestamp).getTime()) < 5 * 60 * 1000);
         if (existingExit) {
-            return { eventId: event.eventId, status: 'DUPLICATE', serverEventId: existingExit.exitId, errorMessage: 'Exit already recorded' };
+            return {
+                eventId: event.eventId,
+                status: 'DUPLICATE',
+                ...(existingExit.exitId ? { serverEventId: existingExit.exitId } : {}),
+                errorMessage: 'Exit already recorded',
+            };
         }
         const visitors = mockStore.getState().visitors || [];
         const pass = visitors.find(v => v.passId === passId);
@@ -173,7 +191,7 @@ export class OfflineSyncReconciliationService {
         const serverExit: GateExit = {
             exitId: serverExitId,
             entryId: '',
-            passId: pass.passId,
+            ...(pass.passId ? { passId: pass.passId } : {}),
             gateId,
             gateName: payload.gateName as string,
             guardId: event.guardId,
@@ -184,34 +202,41 @@ export class OfflineSyncReconciliationService {
             offlineEventId: event.eventId,
             dataVersion: 1,
             societyId: event.societyId,
-            unitId: pass.unitId,
             createdAt: event.localTimestamp,
             updatedAt: event.localTimestamp,
         };
         mockStore.getState().gateExits = [...gateExits, serverExit];
-        const visitors = mockStore.getState().visitors || [];
-        const passIndex = visitors.findIndex(v => v.passId === passId);
+        const currentVisitors = mockStore.getState().visitors || [];
+        const passIndex = currentVisitors.findIndex(v => v.passId === passId);
         if (passIndex !== -1) {
-            visitors[passIndex] = {
-                ...visitors[passIndex],
-                status: 'CHECKED_OUT',
-                actualExitAt: event.localTimestamp,
-                exitGateId: gateId,
-                exitGateName: payload.gateName as string,
-                dataVersion: (visitors[passIndex].dataVersion || 0) + 1,
-            };
+            const currentPass = currentVisitors[passIndex];
+            if (currentPass) {
+                currentVisitors[passIndex] = {
+                    ...currentPass,
+                    status: 'CHECKED_OUT',
+                    actualExitAt: event.localTimestamp,
+                    exitGateId: gateId,
+                    exitGateName: payload.gateName as string,
+                    dataVersion: (currentPass.dataVersion || 0) + 1,
+                };
+            }
         }
         mockStore.notify();
         return { eventId: event.eventId, status: 'ACCEPTED', serverEventId: serverExitId };
     }
     private async reconcileEmergencyBypass(event: OfflineGateEvent): Promise<ReconciliationResult> {
         const payload = event.payload;
-        const gateEntries = mockStore.getState().gateEntries || [];
+        const gateEntries = (mockStore.getState().gateEntries || []) as GateEntry[];
         const existingEntry = gateEntries.find(e => e.entryType === 'EMERGENCY_BYPASS' &&
             e.gateId === payload.gateId &&
             Math.abs(new Date(e.entryAt).getTime() - new Date(event.localTimestamp).getTime()) < 5 * 60 * 1000);
         if (existingEntry) {
-            return { eventId: event.eventId, status: 'DUPLICATE', serverEventId: existingEntry.entryId, errorMessage: 'Emergency bypass already recorded' };
+            return {
+                eventId: event.eventId,
+                status: 'DUPLICATE',
+                ...(existingEntry.entryId ? { serverEventId: existingEntry.entryId } : {}),
+                errorMessage: 'Emergency bypass already recorded',
+            };
         }
         const serverEntryId = `emergency-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         const serverEntry: GateEntry = {
@@ -236,7 +261,6 @@ export class OfflineSyncReconciliationService {
             offlineEventId: event.eventId,
             dataVersion: 1,
             societyId: event.societyId,
-            unitId: 'ALL',
             createdAt: event.localTimestamp,
             updatedAt: event.localTimestamp,
         };

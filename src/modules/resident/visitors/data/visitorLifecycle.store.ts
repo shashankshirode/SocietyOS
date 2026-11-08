@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Visitor, VisitorType, VisitorStatus } from '../../../../shared/types/visitor.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
+import { walkInApprovalService } from '../../../guard/services/walkInApprovalService';
+import type { VisitorApprovalRequest } from '../../../../shared/types/visitorPhase8.types';
 
 function mapStoreVisitorToActiveRecord(v: Visitor): ActiveVisitorRecord {
     return {
@@ -14,8 +16,8 @@ function mapStoreVisitorToActiveRecord(v: Visitor): ActiveVisitorRecord {
         tower: v.flatNumber ? `Tower ${v.flatNumber[0] || 'A'}` : 'Tower A',
         expectedWindow: `${v.expectedDate || 'Today'} · ${v.expectedTime || '10:00 AM'}`,
         status: v.status,
-        entryTime: v.actualEntryTime,
-        exitTime: v.actualExitTime,
+        ...(v.actualEntryTime ? { entryTime: v.actualEntryTime } : {}),
+        ...(v.actualExitTime ? { exitTime: v.actualExitTime } : {}),
         qrPayload: `SOC-OS:PASS:${v.otp || v.id}:${v.name.toUpperCase()}:${v.flatNumber || 'A-1204'}`,
         createdAt: v.createdAt || new Date().toISOString(),
         ...(v.vehicleNumber ? { vehicleNumber: v.vehicleNumber } : {}),
@@ -78,6 +80,48 @@ export interface ActiveVisitorRecord {
     walkInApprovalState?: 'PENDING_RESIDENT' | 'APPROVED' | 'DENIED' | 'UNREACHABLE';
 }
 export type VisitorPassRecord = ActiveVisitorRecord;
+export interface ParcelCustodyRecord {
+    id: string;
+    unitId: string;
+    flatNumber: string;
+    recipientName: string;
+    deliveryPartner: string;
+    trackingNumber?: string;
+    receivedAt: string;
+    guardName: string;
+    gateName: string;
+    status: 'WAITING_COLLECTION' | 'COLLECTED' | 'RETURNED';
+    collectedAt?: string;
+    collectedBy?: string;
+}
+const INITIAL_PARCELS: ParcelCustodyRecord[] = [
+    {
+        id: 'pkg-001',
+        unitId: 'unit_402',
+        flatNumber: 'A-1204',
+        recipientName: 'Aarav Sharma',
+        deliveryPartner: 'Amazon Delivery',
+        trackingNumber: 'AMZ-IN-889421',
+        receivedAt: 'Today · 2:15 PM',
+        guardName: 'Ramesh Shinde',
+        gateName: 'Gate 01',
+        status: 'WAITING_COLLECTION',
+    },
+    {
+        id: 'pkg-002',
+        unitId: 'unit_402',
+        flatNumber: 'A-1204',
+        recipientName: 'Aarav Sharma',
+        deliveryPartner: 'Blue Dart Courier',
+        trackingNumber: 'BD-882190',
+        receivedAt: 'Yesterday · 11:30 AM',
+        guardName: 'Ramesh Shinde',
+        gateName: 'Gate 01',
+        status: 'COLLECTED',
+        collectedAt: 'Yesterday · 6:00 PM',
+        collectedBy: 'Aarav Sharma',
+    },
+];
 const INITIAL_VISITORS: ActiveVisitorRecord[] = [
     {
         id: 'pass-001',
@@ -158,10 +202,11 @@ const INITIAL_VISITORS: ActiveVisitorRecord[] = [
     },
 ];
 let globalVisitors: ActiveVisitorRecord[] = [...INITIAL_VISITORS];
+let globalParcels: ParcelCustodyRecord[] = [...INITIAL_PARCELS];
 let globalGateLogs: GateActivityEvent[] = [];
 let globalOfflineQueue: GateActivityEvent[] = [];
 let globalOfflineMode = false;
-let globalListeners: Array<() => void> = [];
+let globalListeners: (() => void)[] = [];
 function notifyListeners() {
     globalListeners.forEach((l) => l());
 }
@@ -175,14 +220,15 @@ export const visitorLifecycleStore = {
                 merged.push(sv);
             } else {
                 const idx = merged.findIndex(v => v.id === sv.id);
-                if (idx !== -1) merged[idx] = { ...merged[idx], status: sv.status };
+                const target = idx !== -1 ? merged[idx] : undefined;
+                if (target && idx !== -1) merged[idx] = { ...target, status: sv.status };
             }
         }
         return merged;
     },
     getGateLogs: () => [...globalGateLogs],
     getOfflineQueue: () => [...globalOfflineQueue],
-    createPass: (draft: VisitorPassDraft): ActiveVisitorRecord => {
+    createPass: (draft: Partial<VisitorPassDraft> & { name?: string; visitorName?: string }): ActiveVisitorRecord => {
         const randomNum = Math.floor(100 + Math.random() * 900);
         const passCode = `GH-${randomNum}`;
         const name = draft.name || (draft as unknown as { visitorName?: string }).visitorName || 'Visitor';
@@ -201,7 +247,7 @@ export const visitorLifecycleStore = {
             flatNumber: draft.flatNumber || 'A-1204',
             tower: draft.tower || 'Tower A',
             expectedWindow: `${expectedDate} · ${timeFrom} – ${timeTo}`,
-            ...(draft.hasVehicle && draft.vehicleNumber ? { vehicleNumber: draft.vehicleNumber } : {}),
+            ...((draft.hasVehicle || draft.vehicleNumber) && draft.vehicleNumber ? { vehicleNumber: draft.vehicleNumber } : {}),
             status: 'APPROVED',
             qrPayload: `SOC-OS:PASS:${passCode}:${name.toUpperCase()}:${draft.flatNumber || 'A-1204'}`,
             createdAt: new Date().toISOString(),
@@ -238,7 +284,8 @@ export const visitorLifecycleStore = {
         notifyListeners();
         return found;
     },
-    findPass: (query: string): ActiveVisitorRecord | null => {
+    findPass: (query?: string | null): ActiveVisitorRecord | null => {
+        if (!query || typeof query !== 'string') return null;
         const clean = query.trim().toUpperCase();
         const fromGlobal = globalVisitors.find((v) => v.id === query ||
             v.id.toUpperCase() === clean ||
@@ -344,6 +391,7 @@ export const visitorLifecycleStore = {
     },
     recordExit: (passId: string, options?: {
         gateId?: string;
+        gateName?: string;
         guardName?: string;
         isOffline?: boolean;
     }): {
@@ -486,12 +534,187 @@ export const visitorLifecycleStore = {
     syncOfflineQueue: (): number => {
         const count = globalOfflineQueue.length;
         if (count > 0) {
+            for (const item of globalOfflineQueue) {
+                if (item.eventType === 'ENTRY') {
+                    const pass = globalVisitors.find(v => v.id === item.visitorPassId);
+                    if (pass && pass.status !== 'CANCELLED' && (pass.status as string) !== 'REVOKED' && pass.status !== 'EXPIRED') {
+                        pass.status = 'CHECKED_IN';
+                        pass.entryTime = pass.entryTime || new Date(item.timestampIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        mockStore.updateVisitor(pass.id, { status: 'CHECKED_IN', actualEntryTime: pass.entryTime });
+                    }
+                } else if (item.eventType === 'EXIT') {
+                    const pass = globalVisitors.find(v => v.id === item.visitorPassId);
+                    if (pass) {
+                        pass.status = 'CHECKED_OUT';
+                        pass.exitTime = pass.exitTime || new Date(item.timestampIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        mockStore.updateVisitor(pass.id, { status: 'CHECKED_OUT', actualExitTime: pass.exitTime });
+                    }
+                }
+            }
             globalGateLogs = [...globalOfflineQueue, ...globalGateLogs];
             globalOfflineQueue = [];
             globalOfflineMode = false;
             notifyListeners();
         }
         return count;
+    },
+    getParcels: (flatNumber?: string): ParcelCustodyRecord[] => {
+        if (!flatNumber) return [...globalParcels];
+        return globalParcels.filter(p => p.flatNumber === flatNumber || p.flatNumber.toLowerCase() === flatNumber.toLowerCase());
+    },
+    receiveParcel: (input: {
+        flatNumber: string;
+        recipientName?: string;
+        deliveryPartner?: string;
+        partner?: string;
+        trackingNumber?: string;
+        guardName?: string;
+        gateName?: string;
+        deliveryPersonName?: string;
+        deliveryPersonPhone?: string;
+        numberOfPackages?: number;
+        notes?: string;
+    }): ParcelCustodyRecord => {
+        const id = `pkg-${Date.now()}`;
+        const partner = input.deliveryPartner || input.partner || 'Courier';
+        const newParcel: ParcelCustodyRecord = {
+            id,
+            unitId: 'unit-active',
+            flatNumber: input.flatNumber,
+            recipientName: input.recipientName || 'Resident',
+            deliveryPartner: partner,
+            trackingNumber: input.trackingNumber || `TRK-${Math.floor(100000 + Math.random() * 900000)}`,
+            receivedAt: 'Just now',
+            guardName: input.guardName || 'Security Desk',
+            gateName: input.gateName || 'Gate 01',
+            status: 'WAITING_COLLECTION',
+        };
+        globalParcels = [newParcel, ...globalParcels];
+        const now = new Date();
+        const event: GateActivityEvent = {
+            id: `evt-pkg-${Date.now()}`,
+            visitorPassId: id,
+            visitorName: `${partner} (Parcel)`,
+            visitorType: 'DELIVERY',
+            flatNumber: input.flatNumber,
+            gateId: input.gateName || 'Gate 01',
+            gateName: input.gateName || 'Gate 01',
+            eventType: 'ENTRY',
+            timestampIso: now.toISOString(),
+            guardName: input.guardName || 'Security Desk',
+        };
+        globalGateLogs = [event, ...globalGateLogs];
+        mockStore.addGateLog({
+            id: event.id,
+            visitorId: id,
+            visitorName: `${partner} (Parcel)`,
+            entryTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            guardName: input.guardName || 'Security Desk',
+            gateNumber: input.gateName || 'Gate 01',
+            flatNumber: input.flatNumber,
+            visitorType: 'DELIVERY',
+        });
+        notifyListeners();
+        return newParcel;
+    },
+    confirmParcelPickup: (parcelId: string, collectedBy?: string): boolean => {
+        let found = false;
+        globalParcels = globalParcels.map(p => {
+            if (p.id === parcelId) {
+                found = true;
+                return {
+                    ...p,
+                    status: 'COLLECTED',
+                    collectedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    collectedBy: collectedBy || 'Resident',
+                };
+            }
+            return p;
+        });
+        notifyListeners();
+        return found;
+    },
+    checkInStaff: (input: {
+        staffId: string;
+        staffName: string;
+        role?: string;
+        gateName?: string;
+        guardName?: string;
+        isSuspended?: boolean;
+    }): { success: boolean; event?: GateActivityEvent; error?: string } => {
+        if (input.isSuspended) {
+            return { success: false, error: 'Staff member is currently suspended or blocked from campus entry' };
+        }
+        const event: GateActivityEvent = {
+            id: `evt-stf-${Date.now()}`,
+            visitorPassId: input.staffId,
+            visitorName: input.staffName,
+            visitorType: 'SERVICE' as any,
+            flatNumber: 'Campus Staff',
+            gateId: input.gateName || 'Gate 01',
+            gateName: input.gateName || 'Gate 01',
+            eventType: 'ENTRY',
+            timestampIso: new Date().toISOString(),
+            guardName: input.guardName || 'Security Gate 1',
+        };
+        (event as any).staffName = input.staffName;
+        globalGateLogs = [event, ...globalGateLogs];
+        notifyListeners();
+        return { success: true, event };
+    },
+    recordCabEntry: (input: {
+        cabRegistration?: string;
+        vehicleNumber?: string;
+        provider?: string;
+        driverName?: string;
+        flatNumber: string;
+        guardName?: string;
+        gateName?: string;
+    }): { success: boolean; event?: GateActivityEvent; pass?: ActiveVisitorRecord } => {
+        const reg = (input.cabRegistration || input.vehicleNumber || 'MH-12-CAB-0000').toUpperCase();
+        const pass = visitorLifecycleStore.createPass({
+            name: input.driverName || (input.provider ? `${input.provider} Cab Driver` : 'Cab Driver'),
+            phone: '9800000000',
+            type: 'CAB' as any,
+            purpose: input.provider ? `${input.provider} Drop-off` : 'Cab Drop-off',
+            expectedDate: new Date().toISOString().split('T')[0] || 'Today',
+            expectedTimeFrom: 'Now',
+            expectedTimeTo: new Date(Date.now() + 30 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            durationHours: 1,
+            isRecurring: false,
+            hasVehicle: true,
+            vehicleNumber: reg,
+            flatNumber: input.flatNumber,
+            tower: `Tower ${input.flatNumber[0] || 'A'}`,
+        });
+        const res = visitorLifecycleStore.allowEntry(pass.id, {
+            gateName: input.gateName || 'Gate 01',
+            guardName: input.guardName || 'Officer Gate 1',
+            vehicleNumber: reg,
+        });
+        const updatedPass = visitorLifecycleStore.findPass(pass.id) || pass;
+        return {
+            success: res.success,
+            ...(res.event ? { event: res.event } : {}),
+            pass: updatedPass,
+        };
+    },
+    getPendingApprovals: (flatNumber?: string): VisitorApprovalRequest[] => {
+        const all = mockStore.getState().visitorApprovalRequests || [];
+        const pending = all.filter(r => r.status === 'PENDING');
+        if (!flatNumber) return pending;
+        return pending.filter(r => r.flatNumber === flatNumber || r.flatNumber.toLowerCase() === flatNumber.toLowerCase());
+    },
+    respondToWalkIn: async (requestId: string, action: 'APPROVE' | 'DENY', residentId = 'res-001', denialReason?: string) => {
+        const result = await walkInApprovalService.respondToApproval({
+            requestId,
+            action,
+            residentId,
+            residentRole: 'OWNER',
+            ...(denialReason ? { denialReason } : {}),
+        });
+        notifyListeners();
+        return result;
     },
     reset: () => {
         visitorLifecycleStore.resetForTesting();
@@ -501,6 +724,7 @@ export const visitorLifecycleStore = {
         globalGateLogs = [];
         globalOfflineQueue = [];
         globalOfflineMode = false;
+        globalParcels = [...INITIAL_PARCELS];
         notifyListeners();
     },
 };
@@ -537,6 +761,14 @@ export function useVisitorLifecycle() {
         offlineQueue: globalOfflineQueue,
         gateLogs: globalGateLogs,
         gateEvents: globalGateLogs,
+        parcels: visitorLifecycleStore.getParcels(),
+        getParcels: visitorLifecycleStore.getParcels,
+        receiveParcel: visitorLifecycleStore.receiveParcel,
+        confirmParcelPickup: visitorLifecycleStore.confirmParcelPickup,
+        checkInStaff: visitorLifecycleStore.checkInStaff,
+        recordCabEntry: visitorLifecycleStore.recordCabEntry,
+        getPendingApprovals: visitorLifecycleStore.getPendingApprovals,
+        respondToWalkIn: visitorLifecycleStore.respondToWalkIn,
     };
 }
 

@@ -203,7 +203,7 @@ export const nocService = {
   async createClearanceSnapshot(
     moveOutRequestId: string,
     generatedBy: string,
-    checklist: Array<{ id: string; title: string; category?: string; status: string; priority?: string }>
+    checklist: { id: string; title: string; category?: string; status: string; priority?: string }[]
   ): Promise<ClearanceSnapshot> {
     return new Promise((resolve) => {
       setTimeout(() => {

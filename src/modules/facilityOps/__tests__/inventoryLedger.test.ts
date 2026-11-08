@@ -91,7 +91,8 @@ describe('Inventory Movement Ledger', () => {
 
     const recommendations = invService.evaluateReorderRecommendations();
     expect(recommendations.length).toBe(1);
-    expect(recommendations[0].item.id).toBe('inv-chlorine-tab');
-    expect(recommendations[0].recommendedQuantity).toBe(9);
+    const firstRec = recommendations[0];
+    expect(firstRec?.item.id).toBe('inv-chlorine-tab');
+    expect(firstRec?.recommendedQuantity).toBe(9);
   });
 });

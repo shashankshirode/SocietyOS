@@ -59,7 +59,7 @@ export function ResidentServicesScreen({ navigation }: Props) {
         const filtered = allCommands.filter((command) => canAccessCapability(command.capability));
         return filtered.length > 0 ? filtered : allCommands.slice(0, 7);
     }, [activeContext.unitId, canAccessCapability, copy, maintenanceDescription, navigation]);
-    return (<SocietyExperienceFrame>
+    return (<SocietyExperienceFrame showAmbientChrome={false}>
       <View style={[styles.root, createRootStyle(theme.semantic.surface.canvas)]}>
         <ScrollView contentContainerStyle={[styles.content, createContentStyle(0, bottomObstruction)]} showsVerticalScrollIndicator={false}>
           
@@ -67,15 +67,14 @@ export function ResidentServicesScreen({ navigation }: Props) {
             <SafeText variant="tiny" style={[styles.eyebrow, createTextStyle(theme.semantic.accent.moss)]}>
               {copy.eyebrow}
             </SafeText>
-            <SafeText variant="h1" color="primary" style={{ fontSize: 26, fontWeight: '700', lineHeight: 32 }}>
+            <SafeText variant="h1" color="primary" style={styles.titleText}>
               {copy.title}
             </SafeText>
-            <SafeText variant="body" color="secondary" style={{ fontSize: 15, lineHeight: 22 }}>
+            <SafeText variant="body" color="secondary" style={styles.descText}>
               {copy.description}
             </SafeText>
           </View>
 
-          
           <View style={[styles.commandSurface, createSurfaceStyle(theme.semantic.surface.raised, theme.semantic.border.subtle)]}>
             {commands.map((command, index) => (<View key={command.id}>
                 <Pressable onPress={command.onPress} accessibilityRole="button" accessibilityLabel={`${command.title}. ${command.description}`} style={[
@@ -87,10 +86,10 @@ export function ResidentServicesScreen({ navigation }: Props) {
                     <Ionicons name={command.icon} size={22} color={command.primary ? theme.semantic.text.inverse : theme.semantic.accent.moss}/>
                   </View>
                   <View style={styles.commandCopy}>
-                    <SafeText variant="bodyStrong" color="primary" style={{ fontSize: 16, fontWeight: '700' }}>
+                    <SafeText variant="bodyStrong" color="primary" style={styles.commandTitleText}>
                       {command.title}
                     </SafeText>
-                    <SafeText variant="caption" color="secondary" style={{ fontSize: 13, lineHeight: 18 }}>
+                    <SafeText variant="caption" color="secondary" style={styles.commandDescText}>
                       {command.description}
                     </SafeText>
                   </View>

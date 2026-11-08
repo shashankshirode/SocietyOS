@@ -2,6 +2,7 @@ import type { FacilityBookingType, FacilitySlot } from './facility.types';
 
 export enum FacilityBookingStatusCode {
   Draft = 'DRAFT',
+  Pending = 'PENDING',
   PendingApproval = 'PENDING_APPROVAL',
   Approved = 'APPROVED',
   Confirmed = 'CONFIRMED',
@@ -102,28 +103,28 @@ export type FacilityBooking = {
 };
 
 export type CreateFacilityBookingInput = {
-  unitId: string;
+  unitId?: string;
   facilityId: string;
   facilityName: string;
   bookingType: FacilityBookingType;
   date: string;
   slot: string;
-  purpose: string;
-  guestCount: number;
-  contactNumber: string;
+  purpose?: string;
+  guestCount?: number;
+  contactNumber?: string;
   specialRequirements?: string;
-  setupRequired: boolean;
+  setupRequired?: boolean;
   equipmentRequired?: string;
   rulesAccepted: boolean;
   damageConsentAccepted: boolean;
-  chargeAmount: number;
-  depositAmount: number;
-  approvalRequired: boolean;
+  chargeAmount?: number;
+  depositAmount?: number;
+  approvalRequired?: boolean;
 };
 
 export type CancelFacilityBookingInput = {
   reason: string;
-  consentAccepted: boolean;
+  consentAccepted?: boolean;
 };
 
 export type RescheduleFacilityBookingInput = {

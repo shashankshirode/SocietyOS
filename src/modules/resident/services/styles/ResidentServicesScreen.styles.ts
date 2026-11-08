@@ -48,6 +48,23 @@ export const styles = StyleSheet.create({
   },
   commandCopy: { flex: 1, gap: Spacing.xxs },
   divider: { height: 1, marginLeft: 64 },
+  titleText: {
+    fontSize: 26,
+    fontWeight: '700',
+    lineHeight: 32,
+  },
+  descText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  commandTitleText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  commandDescText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
 });
 
 export const createRootStyle = (backgroundColor: string) => ({ backgroundColor });

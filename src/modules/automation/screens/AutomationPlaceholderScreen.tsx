@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenContainer } from '../../../shared/layouts/ScreenContainer';
 import { ResponsivePageHeader } from '../../../shared/layouts/ResponsivePageHeader';

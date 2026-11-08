@@ -88,6 +88,10 @@ export const verificationService = {
         }
 
         const verification = verifications[index];
+        if (!verification) {
+          resolve({ success: false, verified: false, error: 'Invalid verification session' });
+          return;
+        }
 
         if (verification.verified) {
           resolve({ success: false, verified: false, error: 'This code has already been used' });
@@ -131,6 +135,10 @@ export const verificationService = {
         }
 
         const verification = verifications[index];
+        if (!verification) {
+          resolve({ success: false, error: 'Invalid verification session' });
+          return;
+        }
         const now = new Date();
         const expiresAt = new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
 

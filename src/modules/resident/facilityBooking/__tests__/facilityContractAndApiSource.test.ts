@@ -1,10 +1,9 @@
 import { facilityApiSource } from '../data/facility.apiSource';
 import { facilityMockSource } from '../data/facility.mockSource';
-import { facilityDtoDecoder, facilityBookingDtoDecoder } from '../data/facility.dto';
+import { facilityDtoDecoder, facilityBookingDtoDecoder, type FacilityDto } from '../data/facility.dto';
 import { mapFacilityDtoToDomain, mapFacilityBookingDtoToDomain } from '../data/facility.mapper';
 import { decodeOrThrow, ApiContractError } from '../../../../core/api/decoders';
 import { apiClient } from '../../../../core/api/apiClient';
-import type { ResidentFacilityRepository } from '../data/residentFacility.repository.types';
 
 describe('Facility Production Data Architecture & Contract Certification', () => {
   beforeEach(() => {
@@ -12,9 +11,9 @@ describe('Facility Production Data Architecture & Contract Certification', () =>
   });
 
   describe('Contract Equivalence', () => {
-    it('proves facilityMockSource and facilityApiSource implement the exact same ResidentFacilityRepository interface', () => {
-      const mockRepo: ResidentFacilityRepository = facilityMockSource;
-      const apiRepo: ResidentFacilityRepository = facilityApiSource;
+    it('proves facilityMockSource and facilityApiSource implement the exact same interface', () => {
+      const mockRepo = facilityMockSource;
+      const apiRepo = facilityApiSource;
 
       expect(typeof mockRepo.getFacilities).toBe('function');
       expect(typeof apiRepo.getFacilities).toBe('function');
@@ -85,9 +84,8 @@ describe('Facility Production Data Architecture & Contract Certification', () =>
 
   describe('ApiFacilityRepository Transport Resilience', () => {
     it('returns repositoryFailure with VALIDATION category when facilities payload is malformed', async () => {
-      jest.spyOn(apiClient, 'get').mockResolvedValueOnce([
-        { id: 'missing-name' },
-      ] as any);
+      const malformedFacility = { id: 'missing-name' };
+      jest.spyOn(apiClient, 'get').mockResolvedValueOnce([malformedFacility] as never);
 
       const result = await facilityApiSource.getFacilities();
       expect(result.ok).toBe(false);
@@ -98,9 +96,10 @@ describe('Facility Production Data Architecture & Contract Certification', () =>
     });
 
     it('returns repositoryFailure with normalized error when server returns 404', async () => {
-      const notFoundErr = new Error('Facility not found');
-      (notFoundErr as any).status = 404;
-      (notFoundErr as any).code = 'NOT_FOUND';
+      const notFoundErr = Object.assign(new Error('Facility not found'), {
+        status: 404,
+        code: 'NOT_FOUND',
+      });
 
       jest.spyOn(apiClient, 'get').mockRejectedValueOnce(notFoundErr);
 

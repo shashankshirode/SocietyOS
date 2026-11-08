@@ -31,31 +31,32 @@ export interface ResidentRegistration {
   societyId: string;
   unitId: string;
   unitNumber: string;
-  towerName?: string;
-  wingName?: string;
-  floorNumber?: number;
+  towerName?: string | undefined;
+  wingName?: string | undefined;
+  floorNumber?: number | undefined;
   relationshipType: ResidentRelationshipType;
-  familyRelationshipSubType?: FamilyRelationshipSubType;
+  familyRelationshipSubType?: FamilyRelationshipSubType | undefined;
   firstName: string;
   lastName: string;
   mobile: string;
   email: string;
   status: ResidentRegistrationStatus;
   verificationStatus: VerificationStatus;
-  verificationChannel?: VerificationChannel;
-  verificationCompletedAt?: string;
+  verificationChannel?: VerificationChannel | undefined;
+  verificationCompletedAt?: string | undefined;
   invitedAt: string;
-  registeredAt?: string;
-  documentsSubmittedAt?: string;
-  submittedForReviewAt?: string;
-  reviewedAt?: string;
-  approvedAt?: string;
-  rejectedAt?: string;
-  rejectionReason?: string;
-  activatedAt?: string;
+  registeredAt?: string | undefined;
+  documentsSubmittedAt?: string | undefined;
+  submittedForReviewAt?: string | undefined;
+  reviewedAt?: string | undefined;
+  approvedAt?: string | undefined;
+  rejectedAt?: string | undefined;
+  rejectionReason?: string | undefined;
+  activatedAt?: string | undefined;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  dataVersion?: number | undefined;
 }
 
 export interface CreateResidentRegistrationRequest {
@@ -90,14 +91,14 @@ export interface ResidentInvitation {
   unitId: string;
   unitNumber: string;
   relationshipType: ResidentRelationshipType;
-  familyRelationshipSubType?: FamilyRelationshipSubType;
+  familyRelationshipSubType?: FamilyRelationshipSubType | undefined;
   recipientMobile: string;
   recipientEmail: string;
   token: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED' | 'USED';
   expiresAt: string;
   createdAt: string;
-  acceptedAt?: string;
+  acceptedAt?: string | undefined;
 }
 
 export interface CreateResidentInvitationRequest {
@@ -167,15 +168,15 @@ export interface SubmitDocumentsRequest {
 }
 
 export interface ResidentRegistrationDetail extends ResidentRegistration {
-  invitation?: ResidentInvitation;
+  invitation?: ResidentInvitation | undefined;
   documents: ResidentDocument[];
   requiredDocuments: DocumentRequirement[];
   unit: {
     id: string;
     unitNumber: string;
-    towerName?: string;
-    wingName?: string;
-    floorNumber?: number;
+    towerName?: string | undefined;
+    wingName?: string | undefined;
+    floorNumber?: number | undefined;
   };
 }
 

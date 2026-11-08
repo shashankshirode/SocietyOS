@@ -1,4 +1,4 @@
-import { AutomationRule, AutomationCooldown, AutomationSuppression, AutomationSuppressionReason } from '../types';
+import type { AutomationRule, AutomationCooldown, AutomationRuleSuppression, AutomationSuppressionReason } from '../types';
 
 interface CooldownEntry {
   key: string;

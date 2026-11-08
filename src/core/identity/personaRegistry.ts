@@ -348,3 +348,8 @@ export const MOCK_PERSONAS = {
     isHouseholdAdmin: false,
   } as ActiveContext,
 };
+
+export type { VaultClock, VaultActor } from '../../modules/resident/documents/vault/domain/types/primitives';
+
+export type { FacilitySlot, Facility } from '../../modules/resident/facilityBooking/models/facilityBooking.models';
+

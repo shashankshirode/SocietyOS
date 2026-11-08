@@ -80,7 +80,7 @@ export function ResidentLoginScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,

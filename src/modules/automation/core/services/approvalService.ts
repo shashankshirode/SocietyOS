@@ -6,6 +6,7 @@ interface ApprovalRequest {
   actionId: string;
   approverRoles: string[];
   requiredApprovals: number;
+  currentApprovals: number;
   status: AutomationApprovalStatus;
   requestedAt: string;
   expiresAt: string;
@@ -24,6 +25,23 @@ function getNow(): string {
   return new Date().toISOString();
 }
 
+function toAutomationApproval(approval: ApprovalRequest): AutomationApproval {
+  return {
+    id: approval.id,
+    executionId: approval.executionId,
+    actionId: approval.actionId,
+    approverRoles: approval.approverRoles,
+    requiredApprovals: approval.requiredApprovals,
+    currentApprovals: approval.currentApprovals,
+    status: approval.status,
+    requestedAt: approval.requestedAt,
+    expiresAt: approval.expiresAt,
+    ...(approval.decidedAt ? { decidedAt: approval.decidedAt } : {}),
+    ...(approval.decidedBy ? { decidedBy: approval.decidedBy } : {}),
+    ...(approval.rejectionReason ? { rejectionReason: approval.rejectionReason } : {}),
+  };
+}
+
 export const approvalService = {
   createApproval(
     executionId: string,
@@ -39,80 +57,32 @@ export const approvalService = {
       actionId,
       approverRoles,
       requiredApprovals,
+      currentApprovals: 0,
       status: 'PENDING',
       requestedAt: now,
       expiresAt: new Date(Date.now() + timeoutMinutes * 60 * 1000).toISOString(),
     };
     approvalStore.set(approval.id, approval);
 
-    return {
-      id: approval.id,
-      executionId: approval.executionId,
-      actionId: approval.actionId,
-      approverRoles: approval.approverRoles,
-      requiredApprovals: approval.requiredApprovals,
-      currentApprovals: 0,
-      status: approval.status,
-      requestedAt: approval.requestedAt,
-      decidedAt: approval.decidedAt,
-      decidedBy: approval.decidedBy,
-      rejectionReason: approval.rejectionReason,
-      expiresAt: approval.expiresAt,
-    };
+    return toAutomationApproval(approval);
   },
 
   getApproval(approvalId: string): AutomationApproval | undefined {
     const approval = approvalStore.get(approvalId);
     if (!approval) return undefined;
-    return {
-      id: approval.id,
-      executionId: approval.executionId,
-      actionId: approval.actionId,
-      approverRoles: approval.approverRoles,
-      requiredApprovals: approval.requiredApprovals,
-      currentApprovals: approval.currentApprovals,
-      status: approval.status,
-      requestedAt: approval.requestedAt,
-      decidedAt: approval.decidedAt,
-      decidedBy: approval.decidedBy,
-      rejectionReason: approval.rejectionReason,
-      expiresAt: approval.expiresAt,
-    };
+    return toAutomationApproval(approval);
   },
 
   getApprovalsByExecution(executionId: string): AutomationApproval[] {
     return Array.from(approvalStore.values())
       .filter(a => a.executionId === executionId)
-      .map(a => ({
-        id: a.id,
-        executionId: a.executionId,
-        actionId: a.actionId,
-        approverRoles: a.approverRoles,
-        requiredApprovals: a.requiredApprovals,
-        currentApprovals: a.currentApprovals,
-        status: a.status,
-        requestedAt: a.requestedAt,
-        decidedAt: a.decidedAt,
-        decidedBy: a.decidedBy,
-        rejectionReason: a.rejectionReason,
-        expiresAt: a.expiresAt,
-      }));
+      .map(toAutomationApproval);
   },
 
   getPendingApprovalsForUser(userId: string, userRoles: string[]): AutomationApproval[] {
     return Array.from(approvalStore.values())
       .filter(a => a.status === 'PENDING' && a.approverRoles.some(r => userRoles.includes(r)))
-      .map(a => ({
-        id: a.id,
-        executionId: a.executionId,
-        actionId: a.actionId,
-        approverRoles: a.approverRoles,
-        requiredApprovals: a.requiredApprovals,
-        currentApprovals: a.currentApprovals,
-        status: a.status,
-        requestedAt: a.requestedAt,
-        expiresAt: a.expiresAt,
-      }));
+      .map(toAutomationApproval);
   },
 
   approve(approvalId: string, approverId: string, approverRole: string): AutomationApproval | null {
@@ -174,34 +144,11 @@ export const approvalService = {
   getAllPending(): AutomationApproval[] {
     return Array.from(approvalStore.values())
       .filter(a => a.status === 'PENDING')
-      .map(a => ({
-        id: a.id,
-        executionId: a.executionId,
-        actionId: a.actionId,
-        approverRoles: a.approverRoles,
-        requiredApprovals: a.requiredApprovals,
-        currentApprovals: a.currentApprovals,
-        status: a.status,
-        requestedAt: a.requestedAt,
-        expiresAt: a.expiresAt,
-      }));
+      .map(toAutomationApproval);
   },
 
   getAllApprovals(): AutomationApproval[] {
-    return Array.from(approvalStore.values()).map(a => ({
-      id: a.id,
-      executionId: a.executionId,
-      actionId: a.actionId,
-      approverRoles: a.approverRoles,
-      requiredApprovals: a.requiredApprovals,
-      currentApprovals: a.currentApprovals,
-      status: a.status,
-      requestedAt: a.requestedAt,
-      decidedAt: a.decidedAt,
-      decidedBy: a.decidedBy,
-      rejectionReason: a.rejectionReason,
-      expiresAt: a.expiresAt,
-    }));
+    return Array.from(approvalStore.values()).map(toAutomationApproval);
   },
 
   cancelApproval(approvalId: string): boolean {

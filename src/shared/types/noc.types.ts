@@ -12,6 +12,7 @@ export type NocType =
   | 'VEHICLE_NOC';
 
 export type NocStatus =
+  | 'PENDING'
   | 'DRAFT'
   | 'SUBMITTED'
   | 'UNDER_REVIEW'
@@ -41,18 +42,30 @@ export interface TimelineStep {
 export interface NocRequest extends ResidentScopedEntity {
   id: string;
   requestNumber: string;
+  applicationNumber?: string;
   nocType: NocType;
+  category?: string;
   flatNumber: string;
+  unitNumber?: string;
   residentName: string;
+  applicantName?: string;
+  applicantType?: string;
   submittedDate: string;
+  createdAt?: string;
   requiredByDate: string;
   status: NocStatus;
   reason: string;
+  purpose?: string;
   notes?: string;
+  comments?: string;
+  approvalRemarks?: string;
+  approvedAt?: string;
   timeline: TimelineStep[];
   rejectionReason?: string;
   certificateId?: string;
 }
+
+export type NOCApplication = NocRequest;
 
 export interface NocCertificate {
   id: string;
@@ -68,4 +81,5 @@ export interface NocCertificate {
   clearanceSummary: string;
   verificationCode: string;
   disclaimer: string;
+  digitalSignature?: string;
 }

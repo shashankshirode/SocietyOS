@@ -59,6 +59,7 @@ export interface Bill extends ResidentScopedEntity {
   societyName: string;
   title: string;
   amount: number;
+  totalAmount?: number;
   dueDate: string;
   status: BillStatus;
   billingPeriod: string;

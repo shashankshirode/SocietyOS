@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { AppModal } from '../../../../ui/modal/AppModal';
 import Svg, { Path } from 'react-native-svg';
 import {
   FONT_FAMILY_INTER,
@@ -22,7 +23,7 @@ export function RevokePassModal({
   onCancel,
 }: RevokePassModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <AppModal visible={visible} onClose={onCancel} centered>
       <View style={styles.overlay}>
         <View style={styles.card}>
           <View style={styles.iconCircle}>
@@ -64,7 +65,7 @@ export function RevokePassModal({
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

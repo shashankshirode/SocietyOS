@@ -12,7 +12,7 @@ export type BillExplanationResult = {
   explanation: string;
   format: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML';
   language: string;
-  chargeBreakdown: Array<{
+  chargeBreakdown: {
     chargeHead: string;
     description: string;
     amount: number;
@@ -26,7 +26,7 @@ export type BillExplanationResult = {
       amount: number;
       reason: string;
     };
-  }>;
+  }[];
   totalAmount: number;
   previousBalance: number;
   netPayable: number;

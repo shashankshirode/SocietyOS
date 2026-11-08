@@ -1,8 +1,9 @@
 import type { Absent } from '../../../../../../shared/types/absence.types';
-export { type DocumentAction } from './policy.types';
 import type { DocumentVisibility } from './document.types';
-import type { SensitivityPolicy } from './policy.types';
+import type { SensitivityPolicy, DocumentAction } from './policy.types';
 import type { Revision, TraceContext, VaultScope } from './primitives';
+
+export type { DocumentAction } from './policy.types';
 
 export type AccessOutcome = 'GRANTED' | 'DENIED' | 'ALLOWED_WITH_REASON' | 'QUARANTINED_BLOCK';
 

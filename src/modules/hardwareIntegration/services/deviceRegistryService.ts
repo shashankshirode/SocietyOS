@@ -123,7 +123,7 @@ export class DeviceRegistryService {
     device.status = 'DISABLED';
     device.healthState = 'OFFLINE';
     device.decommissionedAt = new Date().toISOString();
-    device.credentialReference = undefined;
+    delete device.credentialReference;
     device.updatedAt = new Date().toISOString();
     return device;
   }

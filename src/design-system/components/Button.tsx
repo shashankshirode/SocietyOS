@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View, StyleSheet, TouchableOpacityProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { type ViewInstance, ActivityIndicator, Text, TouchableOpacity, View, StyleSheet, TouchableOpacityProps, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import { HapticFeedback } from '../../shared/utils/haptics';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { colors, getColors } from '../tokens/premium-colors';
@@ -32,7 +32,7 @@ const sizeConfig = {
     lg: { height: 56, paddingHorizontal: 24, fontSize: typography.fontSize.lg, iconSize: 20, gap: 10, borderRadius: radius.lg },
     xl: { height: 64, paddingHorizontal: 28, fontSize: typography.fontSize.xl, iconSize: 22, gap: 12, borderRadius: radius.lg },
 };
-export const Button = forwardRef<View, ButtonProps>(({ title, variant = 'primary', size = 'md', loading = false, leftIcon, rightIcon, fullWidth = false, onPress, style, testID, accessibilityLabel, disabled, ...props }, ref) => {
+export const Button = forwardRef<ViewInstance, ButtonProps>(({ title, variant = 'primary', size = 'md', loading = false, leftIcon, rightIcon, fullWidth = false, onPress, style, testID, accessibilityLabel, disabled, ...props }, ref) => {
     const { dark } = useAppTheme();
     const tc = getColors(dark ? 'dark' : 'light');
     const cfg = sizeConfig[size];

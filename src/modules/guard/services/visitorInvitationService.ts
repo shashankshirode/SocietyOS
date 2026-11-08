@@ -3,9 +3,7 @@ import type { VisitorInvitation, CreateVisitorInvitationPayload, VisitorInvitati
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-import { format } from 'date-fns';
+import { repositorySuccess, type RepositoryResult } from '../../../core/repositories/repository.types';
 const withMockDelay = <T>(data: T, ms = 400): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), ms));
 function generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -123,15 +121,23 @@ export const visitorInvitationService = {
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
-                    ...invitations[index],
+                const current = invitations[index];
+                if (!current) {
+                    reject(new Error('Invitation not found'));
+                    return;
+                }
+                const updated: VisitorInvitation = {
+                    ...current,
                     status: 'REVOKED' as const,
-                    revokedAtIso: new Date().toISOString(),
+                    revokedAtIso: now,
                     revokedBy,
                     revocationReason: reason,
                     statusChangedAtIso: now,
                 };
-                mockStore.getState().visitorInvitations[index] = updated;
+                const storeInvs = mockStore.getState().visitorInvitations;
+                if (storeInvs) {
+                    storeInvs[index] = updated;
+                }
                 mockStore.notify();
                 resolve(updated);
             }, 400);
@@ -155,13 +161,21 @@ export const visitorInvitationService = {
                     resolve(undefined);
                     return;
                 }
-                const updated = {
-                    ...invitations[index],
+                const current = invitations[index];
+                if (!current) {
+                    resolve(undefined);
+                    return;
+                }
+                const updated: VisitorInvitation = {
+                    ...current,
                     status: 'ACCEPTED' as const,
                     acceptedAtIso: new Date().toISOString(),
                     statusChangedAtIso: new Date().toISOString(),
                 };
-                mockStore.getState().visitorInvitations[index] = updated;
+                const storeInvs = mockStore.getState().visitorInvitations;
+                if (storeInvs) {
+                    storeInvs[index] = updated;
+                }
                 mockStore.notify();
                 resolve(updated);
             }, 300);
@@ -188,13 +202,13 @@ export const visitorInvitationService = {
                     resolve({ success: false, error: 'Invitation has expired' });
                     return;
                 }
-                const updated = {
+                const updated: VisitorInvitation = {
                     ...invitation,
                     status: 'ACCEPTED' as const,
                     acceptedAtIso: new Date().toISOString(),
                     statusChangedAtIso: new Date().toISOString(),
                 };
-                mockStore.getState().visitorInvitations = mockStore.getState().visitorInvitations?.map((i) => i.preApprovalId === preApprovalId ? updated : i);
+                mockStore.getState().visitorInvitations = (mockStore.getState().visitorInvitations || []).map((i) => i.preApprovalId === preApprovalId ? updated : i);
                 resolve({ success: true });
             }, 400);
         });
@@ -222,6 +236,10 @@ export const visitorInvitationService = {
                     return;
                 }
                 const invitation = invitations[index];
+                if (!invitation) {
+                    resolve({ success: false, error: 'Invalid invitation' });
+                    return;
+                }
                 if (invitation.status !== 'SENT' && invitation.status !== 'ACCEPTED') {
                     resolve({ success: false, error: `Invitation is ${invitation.status.toLowerCase()}` });
                     return;
@@ -231,39 +249,42 @@ export const visitorInvitationService = {
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
+                const updated: VisitorInvitation = {
                     ...invitation,
                     status: 'USED' as const,
                     usedAtIso: now,
                     statusChangedAtIso: now,
                 };
-                mockStore.getState().visitorInvitations[index] = updated;
-                const visitor = {
+                const storeInvs = mockStore.getState().visitorInvitations;
+                if (storeInvs) {
+                    storeInvs[index] = updated;
+                }
+                const visitor: Visitor = {
                     id: generateId('vis'),
-                    name: invitations[index].visitorName,
-                    phone: invitations[index].visitorPhone,
-                    email: invitations[index].visitorEmail,
-                    type: invitations[index].visitorType,
-                    category: invitations[index].visitorCategory,
+                    name: invitation.visitorName,
+                    phone: invitation.visitorPhone,
+                    email: invitation.visitorEmail,
+                    type: invitation.visitorType,
+                    category: invitation.visitorCategory,
                     status: 'APPROVED',
-                    expectedDate: invitations[index].validityStartAtIso?.split('T')[0] || '',
-                    expectedTime: invitations[index].validityStartAtIso?.split('T')[1]?.substring(0, 5) || '',
-                    expectedEntryAtIso: invitations[index].validityStartAtIso || new Date().toISOString(),
-                    expectedExitAtIso: invitations[index].validityEndAtIso || new Date(Date.now() + 240 * 60 * 1000).toISOString(),
+                    expectedDate: invitation.validityStartAtIso?.split('T')[0] || '',
+                    expectedTime: invitation.validityStartAtIso?.split('T')[1]?.substring(0, 5) || '',
+                    expectedEntryAtIso: invitation.validityStartAtIso || new Date().toISOString(),
+                    expectedExitAtIso: invitation.validityEndAtIso || new Date(Date.now() + 240 * 60 * 1000).toISOString(),
                     actualEntryAtIso: undefined,
                     actualExitAtIso: undefined,
-                    flatNumber: invitations[index].flatNumber || '',
+                    flatNumber: invitation.residentUnitNumber || '',
                     societyName: '',
-                    purpose: invitations[index].purpose,
-                    vehicleNumber: invitations[index].vehicleNumber,
+                    purpose: invitation.purpose,
+                    vehicleNumber: invitation.vehicleNumber,
                     otp: Math.floor(100000 + Math.random() * 900000).toString(),
                     qrCode: `qr-${generateId('qr')}`,
                     qrCodeData: `qr-${generateId('qr')}`,
                     qrCodeExpiryAtIso: new Date(Date.now() + 240 * 60 * 1000).toISOString(),
                     createdAt: now,
                     createdByUserId: 'visitor',
-                    createdByDisplayName: invitations[index].visitorName,
-                    visitorCategory: invitations[index].visitorCategory,
+                    createdByDisplayName: invitation.visitorName,
+                    visitorCategory: invitation.visitorCategory,
                     exitTracking: undefined,
                     cancellationReason: undefined,
                     cancellationNotes: undefined,
@@ -271,27 +292,27 @@ export const visitorInvitationService = {
                     cancelledBy: undefined,
                     approvalSource: 'PRE_APPROVED',
                     approvalStatus: 'APPROVED',
-                    validityWindowMinutes: invitations[index].validityWindowMinutes || 240,
-                    validityStartAtIso: invitations[index].validityStartAtIso,
-                    validityEndAtIso: invitations[index].validityEndAtIso,
+                    validityWindowMinutes: invitation.validityWindowMinutes || 240,
+                    validityStartAtIso: invitation.validityStartAtIso,
+                    validityEndAtIso: invitation.validityEndAtIso,
                     description: undefined,
-                    invitedByResidentId: invitations[index].residentId,
-                    invitedByResidentName: invitations[index].residentName,
-                    preApprovalId: invitations[index].preApprovalId,
-                    deliveryBrand: invitations[index].deliveryBrand,
-                    deliveryTrackingId: invitations[index].deliveryTrackingId,
-                    cabCompany: invitations[index].cabCompany,
-                    cabDriverName: invitations[index].cabDriverName,
-                    vendorCompany: invitations[index].vendorCompany,
-                    vendorContactPerson: invitations[index].vendorContactPerson,
-                    vendorServiceType: invitations[index].vendorServiceType,
-                    materialDescription: invitations[index].materialDescription,
-                    materialQuantity: invitations[index].materialQuantity,
-                    materialWeightKg: invitations[index].materialWeightKg,
-                    emergencyType: invitations[index].emergencyType,
-                    emergencyDescription: invitations[index].emergencyDescription,
-                    emergencyContactName: invitations[index].emergencyContactName,
-                    emergencyContactPhone: invitations[index].emergencyContactPhone,
+                    invitedByResidentId: invitation.residentId,
+                    invitedByResidentName: invitation.residentName,
+                    preApprovalId: invitation.preApprovalId,
+                    deliveryBrand: invitation.deliveryBrand,
+                    deliveryTrackingId: invitation.deliveryTrackingId,
+                    cabCompany: invitation.cabCompany,
+                    cabDriverName: invitation.cabDriverName,
+                    vendorCompany: invitation.vendorCompany,
+                    vendorContactPerson: invitation.vendorContactPerson,
+                    vendorServiceType: invitation.vendorServiceType,
+                    materialDescription: invitation.materialDescription,
+                    materialQuantity: invitation.materialQuantity,
+                    materialWeightKg: invitation.materialWeightKg,
+                    emergencyType: invitation.emergencyType,
+                    emergencyDescription: invitation.emergencyDescription,
+                    emergencyContactName: invitation.emergencyContactName,
+                    emergencyContactPhone: invitation.emergencyContactPhone,
                     gateId: undefined,
                     gateName: undefined,
                     checkInAtIso: undefined,
@@ -317,7 +338,7 @@ export const visitorInvitationService = {
                     lastVisitAtIso: undefined,
                     tags: ['invited'],
                     metadata: {},
-                    societyId: invitations[index].societyId,
+                    societyId: invitation.societyId,
                 };
                 mockStore.getState().visitors?.push(visitor);
                 mockStore.notify();

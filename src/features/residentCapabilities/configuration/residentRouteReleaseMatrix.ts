@@ -16,6 +16,8 @@ export const residentNavigatorReleasePolicies: readonly ResidentNavigatorRelease
 ];
 
 const homeRouteCapabilities: Readonly<Record<string, ResidentCapabilityId>> = {
+  NotificationInbox: 'resident.homeContext',
+  DigitalHomePassport: 'resident.homeContext',
   CreateVisitorFromHome: 'resident.visitors',
   VisitorDetailFromHome: 'resident.visitors',
   CreateComplaintFromHome: 'resident.complaints',

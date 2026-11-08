@@ -19,30 +19,39 @@ function getNow(): string {
 
 export const humanReviewService = {
   submitReview(command: SubmitAiReviewCommand): AiHumanReview {
+    const originalOutput = command.originalOutput ?? {
+      category: 'GENERAL' as const,
+      subCategory: 'OTHER',
+      urgency: 'LOW' as const,
+      assignedDepartment: 'GENERAL',
+      keywords: [],
+    };
     const review: AiHumanReview = {
       id: generateId(),
       requestId: command.requestId,
       responseId: command.responseId,
-      capability: command.capability,
+      capability: command.capability ?? 'COMPLAINT_TRIAGE',
       reviewerId: command.reviewerId,
       reviewerRole: command.reviewerRole,
       reviewedAt: getNow(),
       status: command.status,
-      originalOutput: command.originalOutput,
-      correctedOutput: command.correctedOutput,
-      correctionReason: command.correctionReason,
-      feedback: command.feedback,
-      modelVersion: command.modelVersion,
-      templateVersion: command.templateVersion,
+      originalOutput,
+      feedback: command.feedback ?? 'ACCEPTED',
+      modelVersion: command.modelVersion ?? 'v1.0.0',
+      templateVersion: command.templateVersion ?? 1,
+      ...(command.correctedOutput ? { correctedOutput: command.correctedOutput } : {}),
+      ...(command.correctionReason ? { correctionReason: command.correctionReason } : {}),
     };
 
     reviews.set(review.id, review);
     reviewsByRequest.set(command.requestId, review.id);
 
-    if (!reviewsByComplaint.has(command.complaintId)) {
-      reviewsByComplaint.set(command.complaintId, []);
+    if (command.complaintId) {
+      if (!reviewsByComplaint.has(command.complaintId)) {
+        reviewsByComplaint.set(command.complaintId, []);
+      }
+      reviewsByComplaint.get(command.complaintId)?.push(review.id);
     }
-    reviewsByComplaint.get(command.complaintId)!.push(review.id);
 
     return review;
   },
@@ -96,13 +105,12 @@ export const humanReviewService = {
     const stats: Record<string, { total: number; accepted: number; corrected: number; rejected: number }> = {};
 
     Array.from(reviews.values()).forEach(review => {
-      if (!stats[review.capability]) {
-        stats[review.capability] = { total: 0, accepted: 0, corrected: 0, rejected: 0 };
-      }
-      stats[review.capability].total += 1;
-      if (review.feedback === 'ACCEPTED') stats[review.capability].accepted += 1;
-      if (review.feedback === 'CORRECTED') stats[review.capability].corrected += 1;
-      if (review.feedback === 'REJECTED') stats[review.capability].rejected += 1;
+      const existing = stats[review.capability] ?? { total: 0, accepted: 0, corrected: 0, rejected: 0 };
+      existing.total += 1;
+      if (review.feedback === 'ACCEPTED') existing.accepted += 1;
+      if (review.feedback === 'CORRECTED') existing.corrected += 1;
+      if (review.feedback === 'REJECTED') existing.rejected += 1;
+      stats[review.capability] = existing;
     });
 
     return stats;

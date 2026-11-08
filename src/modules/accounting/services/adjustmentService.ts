@@ -78,7 +78,7 @@ export class AdjustmentService {
         return adjustment;
     }
     async approveAdjustment(adjustmentId: string, approvedBy: string): Promise<Adjustment> {
-        const adjustments = (mockStore.getState().adjustments ?? []) as Adjustment[];
+        const adjustments = mockStore.getState().adjustments ?? [];
         const index = adjustments.findIndex((a) => a.id === adjustmentId);
         if (index === -1) {
             throw new Error('Adjustment not found');
@@ -134,7 +134,7 @@ export class AdjustmentService {
         type?: string;
         approvalStatus?: string;
     }): Promise<Adjustment[]> {
-        let list = (mockStore.getState().adjustments ?? []) as Adjustment[];
+        let list = mockStore.getState().adjustments ?? [];
         if (filters?.unitId)
             list = list.filter((a) => a.unitId === filters.unitId);
         if (filters?.invoiceId)

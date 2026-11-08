@@ -7,9 +7,10 @@ import {
   ActivateAutomationRuleCommand,
   PauseAutomationRuleCommand,
   DisableAutomationRuleCommand,
+  AutomationTriggerType,
+  AutomationActionType,
+  AutomationActionRisk,
 } from '../types/rule.types';
-import { AutomationTriggerType, AutomationActionType, AutomationActionRisk } from '../types/rule.types';
-import { v4 as uuidv4 } from 'uuid';
 
 interface RuleStorage {
   rules: Map<string, AutomationRule>;
@@ -24,14 +25,14 @@ const storage: RuleStorage = {
 };
 
 function generateId(): string {
-  return uuidv4();
+  return `rule_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 function getNow(): string {
   return new Date().toISOString();
 }
 
-function validateRuleSchema(rule: CreateAutomationRuleCommand | UpdateAutomationRuleCommand): string[] {
+function validateRuleSchema(rule: CreateAutomationRuleCommand | UpdateAutomationRuleCommand | AutomationRule): string[] {
   const errors: string[] = [];
 
   if (!rule.name || rule.name.trim().length === 0) {
@@ -93,33 +94,37 @@ function validateRuleSchema(rule: CreateAutomationRuleCommand | UpdateAutomation
   return errors;
 }
 
-function checkDependencies(rule: CreateAutomationRuleCommand | UpdateAutomationRuleCommand): string[] {
+function checkDependencies(rule: CreateAutomationRuleCommand | UpdateAutomationRuleCommand | AutomationRule): string[] {
   const warnings: string[] = [];
 
-  if (rule.trigger.type === 'DOMAIN_EVENT' && !rule.trigger.eventName) {
-    warnings.push('Domain event trigger missing eventName');
-  }
-  if (rule.trigger.type === 'SCHEDULE' && !rule.trigger.scheduleCron) {
-    warnings.push('Schedule trigger missing cronExpression');
-  }
-  if (rule.trigger.type === 'THRESHOLD' && (!rule.trigger.metricName || rule.trigger.thresholdValue === undefined)) {
-    warnings.push('Threshold trigger missing metricName or thresholdValue');
+  if (rule.trigger) {
+    if (rule.trigger.type === 'DOMAIN_EVENT' && !rule.trigger.eventName) {
+      warnings.push('Domain event trigger missing eventName');
+    }
+    if (rule.trigger.type === 'SCHEDULE' && !rule.trigger.scheduleCron && !rule.trigger.cronExpression) {
+      warnings.push('Schedule trigger missing cronExpression');
+    }
+    if (rule.trigger.type === 'THRESHOLD' && (!rule.trigger.metricName || rule.trigger.thresholdValue === undefined)) {
+      warnings.push('Threshold trigger missing metricName or thresholdValue');
+    }
   }
 
-  rule.actions.forEach((action) => {
-    if (action.type === 'SEND_NOTIFICATION' && !action.config.templateId) {
-      warnings.push(`Action ${action.id}: SEND_NOTIFICATION requires templateId in config`);
-    }
-    if (action.type === 'REQUEST_HARDWARE_COMMAND' && !action.config.deviceId) {
-      warnings.push(`Action ${action.id}: REQUEST_HARDWARE_COMMAND requires deviceId in config`);
-    }
-    if (action.type === 'REQUEST_AI_ANALYSIS' && !action.config.capability) {
-      warnings.push(`Action ${action.id}: REQUEST_AI_ANALYSIS requires capability in config`);
-    }
-    if (action.type === 'CREATE_WORK_ORDER_REQUEST' && !action.config.category) {
-      warnings.push(`Action ${action.id}: CREATE_WORK_ORDER_REQUEST requires category in config`);
-    }
-  });
+  if (rule.actions) {
+    rule.actions.forEach((action) => {
+      if (action.type === 'SEND_NOTIFICATION' && !action.config.templateId) {
+        warnings.push(`Action ${action.id}: SEND_NOTIFICATION requires templateId in config`);
+      }
+      if (action.type === 'REQUEST_HARDWARE_COMMAND' && !action.config.deviceId) {
+        warnings.push(`Action ${action.id}: REQUEST_HARDWARE_COMMAND requires deviceId in config`);
+      }
+      if (action.type === 'REQUEST_AI_ANALYSIS' && !action.config.capability) {
+        warnings.push(`Action ${action.id}: REQUEST_AI_ANALYSIS requires capability in config`);
+      }
+      if (action.type === 'CREATE_WORK_ORDER_REQUEST' && !action.config.category) {
+        warnings.push(`Action ${action.id}: CREATE_WORK_ORDER_REQUEST requires category in config`);
+      }
+    });
+  }
 
   return warnings;
 }
@@ -388,15 +393,15 @@ export const ruleService = {
       throw new Error('CANNOT_ROLLBACK_ACTIVE_RULE: Disable first');
     }
 
-    const restoredRule = {
+    const restoredRule: AutomationRule = {
       ...targetVersion.snapshot,
       id: currentRule.id,
       version: currentRule.version + 1,
       status: 'DRAFT',
       updatedBy: actorId,
       updatedAt: getNow(),
-      parentRuleId: currentRule.parentRuleId,
       isLatestVersion: true,
+      ...(currentRule.parentRuleId ? { parentRuleId: currentRule.parentRuleId } : {}),
     };
 
     storage.rules.set(ruleId, restoredRule);
@@ -436,17 +441,17 @@ export const ruleService = {
   },
 
   dryRun(rule: AutomationRule, testPayload: Record<string, unknown>): {
-    conditionEvaluations: Array<{
+    conditionEvaluations: {
       conditionId: string;
       passed: boolean;
       actualValue: unknown;
-    }>;
-    wouldRunActions: Array<{
+    }[];
+    wouldRunActions: {
       actionId: string;
       actionType: string;
       suppressed: boolean;
       suppressionReason?: string;
-    }>;
+    }[];
   } {
     const evaluations = rule.conditions.map(c => ({
       conditionId: c.id,
@@ -459,7 +464,7 @@ export const ruleService = {
       actionId: a.id,
       actionType: a.type,
       suppressed: !allPassed,
-      suppressionReason: !allPassed ? 'CONDITIONS_NOT_MET' : undefined,
+      ...(allPassed ? {} : { suppressionReason: 'CONDITIONS_NOT_MET' }),
     }));
 
     return { conditionEvaluations: evaluations, wouldRunActions };

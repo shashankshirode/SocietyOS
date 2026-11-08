@@ -20,6 +20,8 @@ import type {
   RegistrationTimelineEvent,
   SocietyRegistrationPolicy,
   NormalizedContact,
+  ClaimedRelationshipType,
+  FamilyRelationshipSubType,
 } from '../data/registration.types';
 import { canTransitionRegistration, REGISTRATION_STATUS_TRANSITIONS } from '../data/registration.types';
 import { normalizeContact, detectDuplicateRegistration } from './identityNormalization';
@@ -58,8 +60,17 @@ function getSocietyPolicy(societyId: string): SocietyRegistrationPolicy {
   };
 }
 
-function getMockUnits(): readonly { id: string; unitNumber: string; towerId?: string; wingId?: string; floorId?: string; occupancyStatus: string }[] {
-  return mockStore.getState().societyUnits || [];
+function getMockUnits(): readonly { id: string; unitNumber: string; societyId?: string; towerId?: string; wingId?: string; floorId?: string; occupancyStatus: string }[] {
+  return (mockStore.getState().societyUnits as any) || [];
+}
+
+function isResidentRegistration(reg: unknown): reg is ResidentRegistration {
+  return reg !== null && typeof reg === 'object' && 'registrationId' in reg;
+}
+
+function getStoredRegistrations(): ResidentRegistration[] {
+  const list = mockStore.getState().residentRegistrations || [];
+  return list.filter(isResidentRegistration);
 }
 
 export const registrationService = {
@@ -76,7 +87,7 @@ export const registrationService = {
         if (!normalized) {
           return { hasDuplicate: false, message: 'Invalid contact format', requiresManualReview: false };
         }
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getStoredRegistrations();
         return detectDuplicateRegistration(normalized, registrations, societyId, excludeRegistrationId);
       })()
     );
@@ -90,7 +101,7 @@ export const registrationService = {
           throw new Error('Invalid contact format');
         }
 
-        const existingRegistrations = mockStore.getState().residentRegistrations || [];
+        const existingRegistrations = getStoredRegistrations();
         const duplicateCheck = detectDuplicateRegistration(normalized, existingRegistrations, request.societyId);
         if (duplicateCheck.hasDuplicate && !duplicateCheck.requiresManualReview) {
           throw new Error(duplicateCheck.message);
@@ -145,7 +156,7 @@ export const registrationService = {
   async getRegistrations(filters: RegistrationFilters): Promise<ResidentRegistration[]> {
     return withMockDelay(
       (() => {
-        let registrations = mockStore.getState().residentRegistrations || [];
+        let registrations = getStoredRegistrations();
         registrations = registrations.filter((r) => r.societyId === filters.societyId);
 
         if (filters.status) {
@@ -176,7 +187,7 @@ export const registrationService = {
   async getRegistrationById(id: string): Promise<ResidentRegistration | Absent> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getStoredRegistrations();
         return registrations.find((r) => r.registrationId === id);
       })()
     );
@@ -185,7 +196,7 @@ export const registrationService = {
   async getRegistrationDetail(id: string): Promise<ResidentRegistrationDetail | Absent> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getStoredRegistrations();
         const registration = registrations.find((r) => r.registrationId === id);
         if (!registration) return undefined;
 
@@ -196,7 +207,7 @@ export const registrationService = {
           (i) => i.registrationId === id
         );
         const requirements = (mockStore.getState().registrationRequirements || []).filter(
-          (r) => r.registrationId === id || (r.societyId === registration.societyId && r.unitId === registration.unitId && r.relationshipType === registration.claimedRelationship)
+          (r: any) => r.registrationId === id || (r.societyId === registration.societyId && r.unitId === registration.unitId && r.relationshipType === registration.claimedRelationship)
         );
         const timeline = (mockStore.getState().registrationTimeline || []).filter(
           (t) => t.registrationId === id
@@ -224,11 +235,11 @@ export const registrationService = {
   async updateRegistration(request: UpdateRegistrationRequest): Promise<ResidentRegistration> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
-        const index = registrations.findIndex((r) => r.registrationId === request.registrationId);
+        const all = mockStore.getState().residentRegistrations || [];
+        const index = all.findIndex((r) => isResidentRegistration(r) && r.registrationId === request.registrationId);
         if (index === -1) throw new Error('Registration not found');
 
-        const current = registrations[index];
+        const current = all[index] as ResidentRegistration;
         
         if (request.profile?.email || request.profile?.fullName) {
           const normalized = normalizeContact(
@@ -240,7 +251,7 @@ export const registrationService = {
 
           const duplicateCheck = detectDuplicateRegistration(
             normalized,
-            registrations,
+            getStoredRegistrations(),
             current.societyId,
             request.registrationId
           );
@@ -251,8 +262,7 @@ export const registrationService = {
 
         const updated: ResidentRegistration = {
           ...current,
-          ...request,
-          profile: { ...current.profile, ...request.profile },
+          profile: request.profile ? { ...current.profile, ...request.profile } : current.profile,
           verifiedContact: request.profile?.email
             ? normalizeContact(current.verifiedContact.mobileNumber, current.verifiedContact.countryCode, request.profile.email) || current.verifiedContact
             : current.verifiedContact,
@@ -262,7 +272,7 @@ export const registrationService = {
           dataVersion: current.dataVersion + 1,
         };
 
-        mockStore.getState().residentRegistrations[index] = updated;
+        all[index] = updated;
         mockStore.notify();
         return updated;
       })()
@@ -276,16 +286,21 @@ export const registrationService = {
   ): Promise<ResidentRegistration> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
-        const index = registrations.findIndex((r) => r.registrationId === registrationId);
+        const all = mockStore.getState().residentRegistrations || [];
+        const index = all.findIndex((r) => isResidentRegistration(r) && r.registrationId === registrationId);
         if (index === -1) throw new Error('Registration not found');
 
-        const current = registrations[index];
+        const current = all[index] as ResidentRegistration;
         if (!canTransitionRegistration(current.status, newStatus)) {
           throw new Error(`Invalid status transition from ${current.status} to ${newStatus}`);
         }
 
-        const updates: Partial<ResidentRegistration> = { status: newStatus, updatedAt: nowIso(), dataVersion: current.dataVersion + 1, ...additionalData };
+        const updates: Record<string, any> = {
+          status: newStatus,
+          updatedAt: nowIso(),
+          dataVersion: current.dataVersion + 1,
+          ...additionalData,
+        };
 
         if (newStatus === 'IDENTITY_VERIFIED') {
           updates.verificationStatus = 'VERIFIED';
@@ -301,8 +316,8 @@ export const registrationService = {
         }
         if (newStatus === 'ACTIVE') updates.activatedAt = nowIso();
 
-        const updated = { ...current, ...updates };
-        mockStore.getState().residentRegistrations[index] = updated;
+        const updated: ResidentRegistration = { ...current, ...updates };
+        all[index] = updated;
         mockStore.notify();
         return updated;
       })()
@@ -413,14 +428,14 @@ export const registrationService = {
         if (index === -1) return undefined;
 
         const invitation = invitations[index];
-        if (invitation.status !== 'PENDING') return undefined;
+        if (!invitation || invitation.status !== 'PENDING') return undefined;
 
         if (new Date(invitation.expiresAt) < new Date()) {
           return undefined;
         }
 
-        const updated = { ...invitation, status: 'ACCEPTED' as const, acceptedAt: nowIso() };
-        mockStore.getState().registrationInvitations[index] = updated;
+        const updated: RegistrationInvitation = { ...invitation, status: 'ACCEPTED' as const, acceptedAt: nowIso() };
+        invitations[index] = updated;
         mockStore.notify();
         return updated;
       })()
@@ -446,7 +461,7 @@ export const registrationService = {
   ): Promise<RegistrationDocument> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getStoredRegistrations();
         const registration = registrations.find((r) => r.registrationId === registrationId);
         if (!registration) throw new Error('Registration not found');
 
@@ -491,8 +506,10 @@ export const registrationService = {
         const index = documents.findIndex((d) => d.registrationId === registrationId && d.requirementId === requirementId);
         if (index === -1) throw new Error('Document not found');
 
-        const updated = { ...documents[index], status: 'SUBMITTED' as const, submittedAt: nowIso() };
-        mockStore.getState().registrationDocuments[index] = updated;
+        const current = documents[index];
+        if (!current) throw new Error('Document not found');
+        const updated: RegistrationDocument = { ...current, status: 'SUBMITTED' as const, submittedAt: nowIso() };
+        documents[index] = updated;
         mockStore.notify();
         return updated;
       })()
@@ -575,7 +592,7 @@ export const registrationService = {
     );
   },
 
-  async getUnitsForSociety(societyId: string): Promise<readonly { id: string; unitNumber: string; towerId?: string; wingId?: string; floorId?: string; occupancyStatus: string }[]> {
+  async getUnitsForSociety(societyId: string): Promise<readonly { id: string; unitNumber: string; societyId?: string; towerId?: string; wingId?: string; floorId?: string; occupancyStatus: string }[]> {
     return withMockDelay(getMockUnits().filter((u) => u.societyId === societyId));
   },
 
@@ -586,7 +603,7 @@ export const registrationService = {
   ): Promise<ResidentRegistration[]> {
     return withMockDelay(
       (() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getStoredRegistrations();
         return registrations.filter(
           (r) => r.societyId === societyId && (r.verifiedContact.mobileNumber === mobile || r.verifiedContact.email === email)
         );

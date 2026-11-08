@@ -42,7 +42,7 @@ export class FinancialControlService {
             const graceEnd = new Date(dueDate.getTime() + rule.gracePeriodDays * 24 * 60 * 60 * 1000);
             return now > graceEnd;
         });
-        const penalties = (mockStore.getState().invoicePenalties ?? []) as InvoicePenalty[];
+        const penalties = mockStore.getState().invoicePenalties ?? [];
         let appliedCount = 0;
         let totalFeeMinor = 0;
         for (const inv of overdueInvoices) {

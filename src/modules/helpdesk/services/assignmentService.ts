@@ -4,33 +4,33 @@ import type {
   AssignmentRule,
   EscalationLevel,
   EscalationReason,
-  ComplaintStatus,
 } from '../../../shared/types/complaintPhase6';
+import type { Absent } from '../../../shared/types/absence.types';
 import { mockStore } from '../../../core/mockStore/mockStore';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
-import { auditService, createAuditEntry } from '../../../core/audit';
+import { createAuditEntry } from '../../../core/audit';
 import { gateIdempotencyService } from '../../guard/services/gateIdempotencyService';
 
 export interface AssignmentResult {
   success: boolean;
-  assignment?: ComplaintAssignment;
-  errorCode?: string;
-  errorMessage?: string;
+  assignment?: ComplaintAssignment | Absent;
+  errorCode?: string | Absent;
+  errorMessage?: string | Absent;
 }
 
 export interface AcknowledgmentResult {
   success: boolean;
-  acknowledgedAt?: string;
-  errorCode?: string;
-  errorMessage?: string;
+  acknowledgedAt?: string | Absent;
+  errorCode?: string | Absent;
+  errorMessage?: string | Absent;
 }
 
 export interface ReassignmentResult {
   success: boolean;
-  previousAssignment?: ComplaintAssignment;
-  newAssignment?: ComplaintAssignment;
-  errorCode?: string;
-  errorMessage?: string;
+  previousAssignment?: ComplaintAssignment | Absent;
+  newAssignment?: ComplaintAssignment | Absent;
+  errorCode?: string | Absent;
+  errorMessage?: string | Absent;
 }
 
 export interface EligibleAssignee {
@@ -41,7 +41,7 @@ export interface EligibleAssignee {
   currentWorkload: number;
   maxWorkload: number;
   isAvailable: boolean;
-  shiftEndsAt?: string;
+  shiftEndsAt?: string | Absent;
 }
 
 export class AssignmentService {
@@ -63,10 +63,14 @@ export class AssignmentService {
     idempotencyKey?: string
   ): Promise<AssignmentResult> {
     const key = idempotencyKey || createIdempotencyKey(`assign-${complaint.id}-${assigneeUserId}`);
+    const societyId = complaint.societyId || '';
 
-    const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, complaint.societyId);
+    const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, societyId);
     if (idempotencyResult.exists) {
-      return { success: true, assignment: idempotencyResult.record?.assignment };
+      return {
+        success: true,
+        assignment: idempotencyResult.record?.responsePayload?.assignment as ComplaintAssignment | undefined,
+      };
     }
 
     const targetComplaint = mockStore.getState().complaints.find(c => c.id === complaint.id) || complaint;
@@ -89,15 +93,10 @@ export class AssignmentService {
       assignedToDisplayName,
       assignedByUserId,
       assignedByDisplayName,
-      assignedAt: new Date().toISOString(),
-      acknowledgedAt: undefined,
-      rejectedAt: undefined,
-      rejectionReason: undefined,
-      ruleUsed,
+      assignedAt: now,
+      ruleUsed: ruleUsed || 'MANUAL',
       metadata: {},
-      societyId: targetComplaint.societyId,
-      createdAt: now,
-      updatedAt: now,
+      ...(targetComplaint.societyId ? { societyId: targetComplaint.societyId } : {}),
     };
 
     mockStore.updateComplaint(targetComplaint.id, {
@@ -112,12 +111,12 @@ export class AssignmentService {
     mockStore.getState().complaintAssignments?.push(assignment);
     mockStore.notify();
 
-    await gateIdempotencyService.completeIdempotency(key, targetComplaint.societyId, assignment.id, { assignment });
+    await gateIdempotencyService.completeIdempotency(key, targetComplaint.societyId || '', assignment.id, { assignment: assignment as any });
 
     await createAuditEntry({
       actorUserId: assignedByUserId,
       actorType: 'ADMIN',
-      societyId: targetComplaint.societyId,
+      societyId: targetComplaint.societyId || '',
       action: 'COMPLAINT_ASSIGNED',
       entityType: 'ComplaintAssignment',
       entityId: assignment.id,
@@ -138,10 +137,14 @@ export class AssignmentService {
   ): Promise<AcknowledgmentResult> {
     const targetComplaint = mockStore.getState().complaints.find(c => c.id === complaint.id) || complaint;
     const key = idempotencyKey || createIdempotencyKey(`acknowledge-${targetComplaint.id}-${technicianUserId}`);
+    const societyId = targetComplaint.societyId || '';
 
-    const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, targetComplaint.societyId);
+    const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, societyId);
     if (idempotencyResult.exists) {
-      return { success: true, acknowledgedAt: idempotencyResult.record?.acknowledgedAt };
+      return {
+        success: true,
+        acknowledgedAt: idempotencyResult.record?.responsePayload?.acknowledgedAt as string | undefined,
+      };
     }
 
     if (targetComplaint.status !== 'ASSIGNED') {
@@ -157,26 +160,25 @@ export class AssignmentService {
     const assignments = mockStore.getState().complaintAssignments || [];
     const assignmentIndex = assignments.findIndex(a => a.complaintId === complaint.id && a.assignedToUserId === technicianUserId);
 
-    if (assignmentIndex !== -1) {
+    if (assignmentIndex !== -1 && assignments[assignmentIndex]) {
       assignments[assignmentIndex] = {
         ...assignments[assignmentIndex],
-        acknowledgedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        acknowledgedAt: now,
       };
     }
 
     mockStore.updateComplaint(complaint.id, {
       status: 'ACKNOWLEDGED',
-      acknowledgedAt: new Date().toISOString(),
+      acknowledgedAt: now,
       updatedAt: now,
     });
 
-    await gateIdempotencyService.completeIdempotency(key, complaint.societyId, 'acknowledged', { acknowledgedAt: now });
+    await gateIdempotencyService.completeIdempotency(key, societyId, 'acknowledged', { acknowledgedAt: now });
 
     await createAuditEntry({
       actorUserId: technicianUserId,
       actorType: 'TECHNICIAN',
-      societyId: complaint.societyId,
+      societyId,
       action: 'COMPLAINT_ACKNOWLEDGED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -194,7 +196,7 @@ export class AssignmentService {
     technicianUserId: string,
     workNote?: string,
     idempotencyKey?: string
-  ): Promise<{ success: boolean; workStartedAt?: string; errorCode?: string; errorMessage?: string }> {
+  ): Promise<{ success: boolean; workStartedAt?: string | Absent; errorCode?: string | Absent; errorMessage?: string | Absent }> {
     const targetComplaint = mockStore.getState().complaints.find(c => c.id === complaint.id) || complaint;
     const key = idempotencyKey || createIdempotencyKey(`start-work-${targetComplaint.id}-${technicianUserId}`);
 
@@ -217,12 +219,12 @@ export class AssignmentService {
     await createAuditEntry({
       actorUserId: technicianUserId,
       actorType: 'TECHNICIAN',
-      societyId: targetComplaint.societyId,
+      societyId: targetComplaint.societyId || '',
       action: 'COMPLAINT_WORK_STARTED',
       entityType: 'Complaint',
       entityId: targetComplaint.id,
       previousState: { status: 'ACKNOWLEDGED' },
-      newState: { status: 'IN_PROGRESS', workStartedAt: now, note: workNote },
+      newState: { status: 'IN_PROGRESS', workStartedAt: now, ...(workNote ? { note: workNote } : {}) },
       idempotencyKey: key,
       source: 'MOBILE',
       outcome: 'SUCCESS',
@@ -255,13 +257,12 @@ export class AssignmentService {
     const previousAssigneeDisplayName = targetComplaint.assignedToDisplayName;
 
     const now = new Date().toISOString();
-
     const newAssigneeDisplayName = newAssignee.assignee?.displayName || 'Technician';
+
     mockStore.updateComplaint(targetComplaint.id, {
       assignedToUserId: newAssigneeUserId,
       assignedToDisplayName: newAssigneeDisplayName,
-      assignedAt: new Date().toISOString(),
-      acknowledgedAt: undefined,
+      assignedAt: now,
       updatedAt: now,
     });
 
@@ -270,8 +271,12 @@ export class AssignmentService {
 
     let previousAssignment: ComplaintAssignment | undefined;
 
-    if (previousAssignmentIndex !== -1) {
-      previousAssignment = { ...assignments[previousAssignmentIndex], rejectedAt: new Date().toISOString(), rejectionReason: 'Reassigned', isActive: false };
+    if (previousAssignmentIndex !== -1 && assignments[previousAssignmentIndex]) {
+      previousAssignment = {
+        ...assignments[previousAssignmentIndex],
+        rejectedAt: now,
+        rejectionReason: 'Reassigned',
+      };
       assignments[previousAssignmentIndex] = previousAssignment;
     }
 
@@ -281,16 +286,11 @@ export class AssignmentService {
       assignedToUserId: newAssigneeUserId,
       assignedToDisplayName: newAssigneeDisplayName,
       assignedByUserId: reassignedByUserId,
-      assignedByDisplayName,
-      assignedAt: new Date().toISOString(),
-      acknowledgedAt: undefined,
-      rejectedAt: undefined,
-      rejectionReason: undefined,
+      assignedByDisplayName: reassignedByDisplayName,
+      assignedAt: now,
       ruleUsed: 'MANUAL',
-      metadata: { reassignmentReason: reason, previousAssigneeUserId },
-      societyId: complaint.societyId,
-      createdAt: now,
-      updatedAt: now,
+      metadata: { reassignmentReason: reason, ...(previousAssigneeUserId ? { previousAssigneeUserId } : {}) },
+      ...(complaint.societyId ? { societyId: complaint.societyId } : {}),
     };
 
     mockStore.getState().complaintAssignments = [...(assignments || []), newAssignment];
@@ -299,18 +299,25 @@ export class AssignmentService {
     await createAuditEntry({
       actorUserId: reassignedByUserId,
       actorType: 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_REASSIGNED',
       entityType: 'Complaint',
       entityId: complaint.id,
-      previousState: { assignedToUserId: previousAssigneeUserId, assignedToDisplayName: previousAssigneeDisplayName },
-      newState: { assignedToUserId: newAssigneeUserId, assignedToDisplayName: newAssignee.displayName, reason },
+      previousState: {
+        ...(previousAssigneeUserId ? { assignedToUserId: previousAssigneeUserId } : {}),
+        ...(previousAssigneeDisplayName ? { assignedToDisplayName: previousAssigneeDisplayName } : {}),
+      },
+      newState: { assignedToUserId: newAssigneeUserId, assignedToDisplayName: newAssigneeDisplayName, reason },
       idempotencyKey: key,
       source: 'MOBILE',
       outcome: 'SUCCESS',
     });
 
-    return { success: true, previousAssignment, newAssignment };
+    return {
+      success: true,
+      ...(previousAssignment ? { previousAssignment } : {}),
+      newAssignment,
+    };
   }
 
   async escalateComplaint(
@@ -320,11 +327,11 @@ export class AssignmentService {
     escalatedByDisplayName: string,
     reason: EscalationReason,
     idempotencyKey?: string
-  ): Promise<{ success: boolean; errorCode?: string; errorMessage?: string }> {
+  ): Promise<{ success: boolean; errorCode?: string | Absent; errorMessage?: string | Absent }> {
     const key = idempotencyKey || createIdempotencyKey(`escalate-${complaint.id}-${toLevel}`);
 
     const escalationLevels: EscalationLevel[] = ['TECHNICIAN', 'SUPERVISOR', 'HELPDESK_ADMIN', 'FACILITY_ADMIN', 'SOCIETY_ADMIN'];
-    const currentIndex = escalationLevels.indexOf(complaint.escalationLevel);
+    const currentIndex = complaint.escalationLevel ? escalationLevels.indexOf(complaint.escalationLevel) : -1;
     const targetIndex = escalationLevels.indexOf(toLevel);
 
     if (targetIndex <= currentIndex) {
@@ -336,23 +343,23 @@ export class AssignmentService {
     mockStore.updateComplaint(complaint.id, {
       status: 'ESCALATED',
       escalationLevel: toLevel,
-      escalatedAt: new Date().toISOString(),
-      escalatedBy: 'current-user',
-      escalationReason: 'SLA_BREACH',
+      escalatedAt: now,
+      escalatedBy: escalatedByUserId || 'current-user',
+      escalationReason: reason || 'SLA_BREACH',
       updatedAt: now,
     });
 
     await createAuditEntry({
-      actorUserId: 'SYSTEM',
+      actorUserId: escalatedByUserId || 'SYSTEM',
       actorType: 'SYSTEM',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_ESCALATED',
       entityType: 'Complaint',
       entityId: complaint.id,
       previousState: { escalationLevel: complaint.escalationLevel },
-      newState: { escalationLevel: toLevel, reason: 'SLA_BREACH' },
+      newState: { escalationLevel: toLevel, reason: reason || 'SLA_BREACH' },
       idempotencyKey: key,
-      source: 'SYSTEM',
+      source: 'SYSTEM_JOB',
       outcome: 'SUCCESS',
     });
 
@@ -369,12 +376,14 @@ export class AssignmentService {
       return { success: false, errorCode: 'NO_ELIGIBLE_ASSIGNEE', errorMessage: 'No eligible assignee found for auto-assignment' };
     }
 
-    let selectedAssignee: EligibleAssignee;
+    let selectedAssignee: EligibleAssignee = eligibleAssignees[0]!;
 
     switch (rule) {
-      case 'ROUND_ROBIN':
-        selectedAssignee = eligibleAssignees[Math.floor(Math.random() * eligibleAssignees.length)];
+      case 'ROUND_ROBIN': {
+        const picked = eligibleAssignees[Math.floor(Math.random() * eligibleAssignees.length)];
+        if (picked) selectedAssignee = picked;
         break;
+      }
       case 'SKILL_BASED':
         selectedAssignee = eligibleAssignees.reduce((best, current) =>
           current.skills.length > best.skills.length ? current : best
@@ -386,19 +395,26 @@ export class AssignmentService {
         );
         break;
       case 'LOCATION_BASED':
-        selectedAssignee = eligibleAssignees.find(a => a.skills.includes('LOCAL')) || eligibleAssignees[0];
+        selectedAssignee = eligibleAssignees.find(a => a.skills.includes('LOCAL')) || eligibleAssignees[0]!;
         break;
       case 'CATEGORY_BASED':
-        selectedAssignee = eligibleAssignees.find(a => a.skills.includes('CATEGORY')) || eligibleAssignees[0];
+        selectedAssignee = eligibleAssignees.find(a => a.skills.includes('CATEGORY')) || eligibleAssignees[0]!;
         break;
       default:
-        selectedAssignee = eligibleAssignees[0];
+        selectedAssignee = eligibleAssignees[0]!;
     }
 
-    return this.assignComplaint(complaint, selectedAssignee.userId, 'SYSTEM_AUTO', 'System Auto-Assignment', 'CATEGORY_BASED');
+    return this.assignComplaint(
+      complaint,
+      selectedAssignee.userId,
+      'SYSTEM_AUTO',
+      'System Auto-Assignment',
+      'CATEGORY_BASED',
+      idempotencyKey
+    );
   }
 
-  async validateAssigneeEligibility(userId: string, complaint: Complaint): Promise<{ valid: boolean; errorCode?: string; errorMessage?: string; assignee?: EligibleAssignee }> {
+  async validateAssigneeEligibility(userId: string, complaint: Complaint): Promise<{ valid: boolean; errorCode?: string | Absent; errorMessage?: string | Absent; assignee?: EligibleAssignee | Absent }> {
     const staff = mockStore.getState().staff || [];
     const staffMember = staff.find(s => s.id === userId);
 
@@ -406,16 +422,17 @@ export class AssignmentService {
       return { valid: false, errorCode: 'ASSIGNEE_NOT_FOUND', errorMessage: 'Assignee not found' };
     }
 
-    if (staffMember.status !== 'ACTIVE') {
+    if (staffMember.status !== 'ACTIVE' && (staffMember as any).isActive !== true) {
       return { valid: false, errorCode: 'ASSIGNEE_INACTIVE', errorMessage: 'Assignee is not active' };
     }
 
-    if (staffMember.societyId !== complaint.societyId) {
+    if (complaint.societyId && staffMember.societyId && staffMember.societyId !== complaint.societyId) {
       return { valid: false, errorCode: 'CROSS_SOCIETY', errorMessage: 'Assignee belongs to different society' };
     }
 
     const technicianRoles = ['TECHNICIAN', 'FACILITY_MANAGER', 'SUPERVISOR', 'VENDOR_USER'];
-    if (!technicianRoles.includes(staffMember.role)) {
+    const role = (staffMember as any).role || staffMember.designation || 'TECHNICIAN';
+    if (!technicianRoles.includes(role)) {
       return { valid: false, errorCode: 'INVALID_ROLE', errorMessage: 'User is not a valid technician/assignee role' };
     }
 
@@ -424,12 +441,12 @@ export class AssignmentService {
       assignee: {
         userId: staffMember.id,
         displayName: staffMember.name,
-        role: staffMember.role,
-        skills: staffMember.skills || [],
-        currentWorkload: staffMember.currentWorkload || 0,
-        maxWorkload: staffMember.maxWorkload || 10,
-        isAvailable: (staffMember.currentWorkload || 0) < (staffMember.maxWorkload || 10),
-        shiftEndsAt: staffMember.shiftEndsAt,
+        role,
+        skills: (staffMember as any).skills || [],
+        currentWorkload: (staffMember as any).currentWorkload || 0,
+        maxWorkload: (staffMember as any).maxWorkload || 10,
+        isAvailable: ((staffMember as any).currentWorkload || 0) < ((staffMember as any).maxWorkload || 10),
+        ...((staffMember as any).shiftEndsAt ? { shiftEndsAt: (staffMember as any).shiftEndsAt } : {}),
       },
     };
   }
@@ -437,20 +454,20 @@ export class AssignmentService {
   async getEligibleAssignees(complaint: Complaint): Promise<EligibleAssignee[]> {
     const staff = mockStore.getState().staff || [];
     const technicians = staff.filter(s =>
-      s.societyId === complaint.societyId &&
-      s.status === 'ACTIVE' &&
-      ['TECHNICIAN', 'FACILITY_MANAGER', 'SUPERVISOR', 'VENDOR_USER'].includes(s.role)
+      (!complaint.societyId || s.societyId === complaint.societyId) &&
+      (s.status === 'ACTIVE' || (s as any).isActive === true) &&
+      ['TECHNICIAN', 'FACILITY_MANAGER', 'SUPERVISOR', 'VENDOR_USER'].includes((s as any).role || s.designation)
     );
 
     return technicians.map(t => ({
       userId: t.id,
       displayName: t.name,
-      role: t.role,
-      skills: t.skills || [],
-      currentWorkload: t.currentWorkload || 0,
-      maxWorkload: t.maxWorkload || 10,
-      isAvailable: (t.currentWorkload || 0) < (t.maxWorkload || 10),
-      shiftEndsAt: t.shiftEndsAt,
+      role: (t as any).role || t.designation || 'TECHNICIAN',
+      skills: (t as any).skills || [],
+      currentWorkload: (t as any).currentWorkload || 0,
+      maxWorkload: (t as any).maxWorkload || 10,
+      isAvailable: ((t as any).currentWorkload || 0) < ((t as any).maxWorkload || 10),
+      ...((t as any).shiftEndsAt ? { shiftEndsAt: (t as any).shiftEndsAt } : {}),
     })).filter(a => a.isAvailable);
   }
 }

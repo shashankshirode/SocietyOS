@@ -1,4 +1,4 @@
-import { AiEvaluationRecord, AiHumanReview, AiResponse } from '../types';
+import { AiCapability, AiEvaluationRecord, AiHumanReview, AiResponse } from '../types';
 import { humanReviewService } from './humanReviewService';
 
 const evaluations: Map<string, AiEvaluationRecord> = new Map();
@@ -23,7 +23,7 @@ export const evaluationService = {
   },
 
   computePeriodicEvaluations(): AiEvaluationRecord[] {
-    const capabilities = [
+    const capabilities: AiCapability[] = [
       'COMPLAINT_CLASSIFICATION',
       'NOTICE_DRAFTING',
       'DOCUMENT_SEARCH',
@@ -137,6 +137,10 @@ export const evaluationService = {
 
       const latest = history[history.length - 1];
       const previous = history[history.length - 2];
+      if (!latest || !previous) {
+        trends[capability] = { driftDetected: false, confidenceTrend: 'STABLE' };
+        continue;
+      }
 
       let trend: 'IMPROVING' | 'STABLE' | 'DEGRADING' = 'STABLE';
       if (latest.avgConfidence > previous.avgConfidence + 0.05) trend = 'IMPROVING';

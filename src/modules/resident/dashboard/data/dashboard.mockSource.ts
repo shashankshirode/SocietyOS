@@ -576,10 +576,12 @@ function buildMaintenancePayment(
   if (unpaidBills.length === 0) {
     const latestPaid = bills.length > 0 ? bills[0] : undefined;
     return {
+      ...includeWhenPresent("billId", latestPaid?.id),
       billingMonth: latestPaid
         ? formatBillingPeriod(latestPaid.billingPeriod)
         : "July 2026",
       billAmount: latestPaid?.amount ?? 0,
+      totalOutstanding: 0,
       dueInDays: 0,
       status: "paid",
       chargeTags: [],
@@ -600,8 +602,13 @@ function buildMaintenancePayment(
     "Parking",
   ];
   return {
+    billId: current.id,
     billingMonth: formatBillingPeriod(current.billingPeriod),
     billAmount: Math.max(0, current.amount - (current.paidAmount ?? 0)),
+    totalOutstanding: unpaidBills.reduce(
+      (sum, b) => sum + Math.max(0, b.amount - (b.paidAmount ?? 0)),
+      0,
+    ),
     dueInDays: 7,
     status: billStatus,
     chargeTags: tags,
@@ -845,22 +852,25 @@ function buildComplaintProgress(context: ResidentRepositoryRequestContext) {
     const active = storeComplaints.find(c => c.status !== 'RESOLVED' && c.status !== 'CLOSED') ?? storeComplaints[0];
     if (active) {
       const isUrgent = active.priority === 'URGENT' || active.priority === 'HIGH';
+      const isResolved = active.status === 'RESOLVED' || active.status === 'CLOSED';
+      const isInProgress = active.status === 'IN_PROGRESS';
+      const isAssigned = isInProgress || isResolved;
       const steps: ComplaintStep[] = [
-        { id: `${active.id}:step-1`, label: 'Registered', status: 'completed' },
+        { id: `${active.id}:step-1`, label: 'Registered', status: 'done' },
         {
           id: `${active.id}:step-2`,
           label: 'Assigned',
-          status: active.status === 'ASSIGNED' || active.status === 'IN_PROGRESS' || active.status === 'RESOLVED' || active.status === 'CLOSED' ? 'completed' : 'pending',
+          status: isAssigned ? 'done' : 'current',
         },
         {
           id: `${active.id}:step-3`,
           label: 'In Progress',
-          status: active.status === 'IN_PROGRESS' || active.status === 'RESOLVED' || active.status === 'CLOSED' ? 'completed' : 'pending',
+          status: isResolved ? 'done' : isInProgress ? 'current' : 'pending',
         },
         {
           id: `${active.id}:step-4`,
           label: 'Resolved',
-          status: active.status === 'RESOLVED' || active.status === 'CLOSED' ? 'completed' : 'pending',
+          status: isResolved ? 'done' : 'pending',
         },
       ];
       return {
@@ -870,6 +880,7 @@ function buildComplaintProgress(context: ResidentRepositoryRequestContext) {
         assignedTo: active.assignedTo || active.technicianName || 'Maintenance Team',
         slaRemainingLabel: active.slaText || 'Within SLA',
         slaProgressPercent: active.status === 'RESOLVED' || active.status === 'CLOSED' ? 100 : active.status === 'IN_PROGRESS' ? 65 : 25,
+        latestUpdate: 'Technician assigned, visiting soon',
         steps,
       };
     }
@@ -1217,15 +1228,29 @@ export function getScopedDashboardData(
         !createdVisitors.some((created) => created.id === visitor.id),
     ),
   ]);
+  const seenVisitorTitles = new Set<string>();
   const createdVisitorActivities: HomeActivityItem[] = createdVisitors.map(
-    (visitor) => ({
-      id: `created-activity-${visitor.id}`,
-      title: `${visitor.visitorName} access updated`,
-      description: `${visitorStatusLabels[visitor.status]} · ${visitor.gateName}`,
-      module: "visitor",
-      timestampLabel: visitor.validFrom,
-      dateGroupLabel: "Visitor history",
-    }),
+    (visitor, idx) => {
+      let title = `${visitor.visitorName} access updated`;
+      if (seenVisitorTitles.has(title)) {
+        title = `${visitor.visitorName} (${visitor.gateName}) access updated`;
+      }
+      if (seenVisitorTitles.has(title)) {
+        title = `${visitor.visitorName} (${visitor.validFrom}) access updated`;
+      }
+      if (seenVisitorTitles.has(title)) {
+        title = `${visitor.visitorName} #${idx + 1} access updated`;
+      }
+      seenVisitorTitles.add(title);
+      return {
+        id: `created-activity-${visitor.id}`,
+        title,
+        description: `${visitorStatusLabels[visitor.status]} · ${visitor.gateName}`,
+        module: "visitor",
+        timestampLabel: visitor.validFrom,
+        dateGroupLabel: "Visitor history",
+      };
+    },
   );
   return {
     contextKey: dashboardContext.dataScopeKey,
@@ -1249,25 +1274,52 @@ export function getScopedDashboardData(
     priorityActions:
       profile?.priorityActions ?? buildPriorityActions(dashboardContext),
     visitorTimeline,
-    maintenancePayment:
-      mockStore
-        .getState()
-        .bills.some((b) =>
-          matchesResidentRepositoryContext(b, dashboardContext),
-        )
-        ? buildMaintenancePayment(dashboardContext)
-        : (profile?.maintenancePayment ??
-          buildMaintenancePayment(dashboardContext)),
+    maintenancePayment: profile?.maintenancePayment
+      ? (() => {
+          const bills = mockStore
+            .getState()
+            .bills.filter((b) =>
+              matchesResidentRepositoryContext(b, dashboardContext),
+            );
+          const unpaidBills = bills.filter(
+            (b) =>
+              b.status === "DUE" ||
+              b.status === "OVERDUE" ||
+              b.status === "PARTIALLY_PAID",
+          );
+          if (bills.length > 0 && unpaidBills.length === 0) {
+            return {
+              ...profile.maintenancePayment,
+              billAmount: 0,
+              totalOutstanding: 0,
+              dueInDays: 0,
+              status: "paid" as const,
+              pendingBillsCount: 0,
+            };
+          }
+          return profile.maintenancePayment;
+        })()
+      : buildMaintenancePayment(dashboardContext),
     ...includeWhenPresent(
       "complaintProgress",
-      mockStore
-        .getState()
-        .complaints.some((c) =>
-          matchesResidentRepositoryContext(c, dashboardContext),
-        )
-        ? buildComplaintProgress(dashboardContext)
-        : (profile?.complaintProgress ??
-          buildComplaintProgress(dashboardContext)),
+      profile?.complaintProgress
+        ? (() => {
+            const complaints = mockStore
+              .getState()
+              .complaints.filter((c) =>
+                matchesResidentRepositoryContext(c, dashboardContext),
+              );
+            if (
+              complaints.length > 0 &&
+              complaints.every(
+                (c) => c.status === "RESOLVED" || c.status === "CLOSED",
+              )
+            ) {
+              return undefined;
+            }
+            return profile.complaintProgress;
+          })()
+        : buildComplaintProgress(dashboardContext),
     ),
     ...includeWhenPresent(
       "contactRequest",

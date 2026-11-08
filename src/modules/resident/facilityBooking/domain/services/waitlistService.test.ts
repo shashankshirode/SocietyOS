@@ -1,6 +1,6 @@
 import { WaitlistService } from './waitlistService';
 import type { VaultActor, VaultClock } from '../../../../../core/identity/personaRegistry';
-import type { FacilityWaitlistEntry } from '../../../models/facilityBooking.models';
+import type { FacilityWaitlistEntry } from '../../models/facilityBooking.models';
 
 const mockClock: VaultClock = {
   now: () => new Date('2026-07-11T10:00:00.000Z'),

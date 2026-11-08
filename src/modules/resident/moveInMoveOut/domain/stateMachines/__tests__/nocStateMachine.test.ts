@@ -468,7 +468,7 @@ describe('noc QR verification', () => {
 
   it('refuses privileged operations to the SYSTEM actor', () => {
     const system = makeActor('SYSTEM', 'SYSTEM');
-    const privileged: ReadonlyArray<readonly [NocCommand['kind'], NocStatus]> = [
+    const privileged: readonly (readonly [NocCommand['kind'], NocStatus])[] = [
       ['BEGIN_REVIEW', 'REQUESTED'],
       ['GRANT_APPROVAL', 'UNDER_REVIEW'],
       ['REJECT', 'UNDER_REVIEW'],

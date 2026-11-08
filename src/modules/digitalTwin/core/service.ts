@@ -32,8 +32,7 @@ import {
 import { TwinSnapshot, SnapshotCreationRequest, SnapshotCreationResult, SnapshotStatus, SnapshotType, SnapshotScope, SnapshotTrigger, SnapshotWarning } from '../snapshots/types';
 import { TimelineEvent, TimelineQuery, TimelineResult, TimelineEventType, TimelineEventSource, TimelineEventSeverity } from '../timeline/types';
 import { CapacitySnapshot, CapacityType, CapacityStatus, CapacityUnit } from '../capacity/types';
-import { DigitalTwinRepository } from './repository.types';
-import { ProjectionActorContext } from './repository.types';
+import { DigitalTwinRepository , ProjectionActorContext } from './repository.types';
 
 export class DigitalTwinService {
   constructor(private repository: DigitalTwinRepository) {}

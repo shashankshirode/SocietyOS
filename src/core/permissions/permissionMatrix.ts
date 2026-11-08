@@ -12,6 +12,8 @@ const residentBase: Permission[] = [
     'NOTICE_ACKNOWLEDGE',
     'DOCUMENT_VIEW_OWN',
     'DOCUMENT_VIEW_SOCIETY',
+    'DOCUMENT_DOWNLOAD',
+    'DOCUMENT_SIGN',
     'NOC_VIEW',
     'MOVE_OUT_CREATE',
     'OWNER_TENANT_VIEW_CURRENT',
@@ -35,6 +37,11 @@ const committeeBase: Permission[] = [
     'COMPLAINT_RESOLVE',
     'DOCUMENT_VIEW_RESTRICTED',
     'DOCUMENT_ACCESS_LOG_VIEW',
+    'DOCUMENT_VERIFY',
+    'DOCUMENT_ARCHIVE',
+    'DOCUMENT_REPLACE_VERSION',
+    'DOCUMENT_MANAGE_RETENTION',
+    'DOCUMENT_MANAGE_LEGAL_HOLD',
     'NOC_APPROVE',
     'MOVE_OUT_CLEARANCE_UPDATE',
     'OWNER_TENANT_VIEW_HISTORY',
@@ -49,6 +56,7 @@ const committeeBase: Permission[] = [
     'DISPUTE_MEDIATION_MANAGE',
 ];
 export const rolePermissionMatrix: Record<AppRole, Permission[]> = {
+    SYSTEM: permissions,
     RESIDENT_OWNER: [
         ...residentBase,
         'DOCUMENT_UPLOAD',

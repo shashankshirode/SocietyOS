@@ -7,8 +7,10 @@ import type {
   ResidentOtpPurpose,
   ResidentCountryCode,
   ResidentGlobalProfile,
+  AcceptResidentInvitationInput,
+  ResidentMembership,
+  ResidentAuthRepository,
 } from '../data/residentAuth.types';
-import type { ResidentAuthRepository } from '../data/residentAuth.types';
 import { createIdempotencyKey } from '../../../../core/api/idempotency';
 
 type OtpChallenge = {
@@ -298,7 +300,7 @@ export const residentAuthService: ResidentAuthRepository = {
       profileStore.set(challenge.mobileNumber, profile);
     }
 
-    const memberships = mockStore.getState().residentMemberships || [];
+    const memberships = (mockStore.getState().residentMemberships || []) as unknown as ResidentMembership[];
 
     return {
       status: 'verified',
@@ -338,8 +340,8 @@ export const residentAuthService: ResidentAuthRepository = {
     };
   },
 
-  async acceptInvitation(input: { membershipId: string }): Promise<{ membershipId: string; status: string }> {
-    const memberships = mockStore.getState().residentMemberships || [];
+  async acceptInvitation(input: AcceptResidentInvitationInput): Promise<ResidentMembership> {
+    const memberships = (mockStore.getState().residentMemberships || []) as unknown as ResidentMembership[];
     const membership = memberships.find((m) => m.membershipId === input.membershipId);
     
     if (!membership) {
@@ -350,10 +352,10 @@ export const residentAuthService: ResidentAuthRepository = {
       throw new Error('Invitation has expired.');
     }
     
-    const accepted = { ...membership, status: 'active' as const };
+    const accepted: ResidentMembership = { ...membership, status: 'active' };
     mockStore.getState().residentMemberships = memberships.map((m) =>
       m.membershipId === accepted.membershipId ? accepted : m
-    );
+    ) as unknown as JsonObject[];
     
     return accepted;
   },

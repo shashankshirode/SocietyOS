@@ -1,6 +1,6 @@
 import { AutomationActionAttempt, AutomationActionStatus, AutomationDeadLetter, AutomationExecution } from '../types';
 import { actionDispatcher } from './actionDispatcher';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 interface RetryPolicy {
   maxRetries: number;
@@ -30,7 +30,7 @@ const retryQueues: Map<string, NodeJS.Timeout> = new Map();
 let executionLookup: ((id: string) => AutomationExecution | undefined) | null = null;
 
 function generateId(): string {
-  return uuidv4();
+  return Crypto.randomUUID();
 }
 
 function getNow(): string {

@@ -2,6 +2,7 @@ import type { AuditLogEntry, AuditConfig, AuditQuery, AuditLogResult, AuditActor
 import { createCorrelationId } from '../api/requestContext';
 import type { JsonObject } from '../api/api.types';
 import type { Absent } from "../../shared/types/absence.types";
+import { UniversalApiClient, createApiClientFromEnv } from '../../api/client/UniversalApiClient';
 const DEFAULT_CONFIG: AuditConfig = {
     enabled: true,
     retentionDays: 2555,
@@ -15,11 +16,14 @@ class AuditService {
     private buffer: AuditLogEntry[] = [];
     private flushTimer: ReturnType<typeof setInterval> | null = null;
     private isFlushing = false;
-    private listeners: Array<(entry: AuditLogEntry) => void> = [];
+    private listeners: ((entry: AuditLogEntry) => void)[] = [];
+    private client: UniversalApiClient;
+
     constructor(config?: Partial<AuditConfig>) {
         if (config) {
             this.config = { ...DEFAULT_CONFIG, ...config };
         }
+        this.client = createApiClientFromEnv();
         if (this.config.asyncWrite) {
             this.startFlushTimer();
         }
@@ -92,14 +96,7 @@ class AuditService {
     }
     private async persist(entry: AuditLogEntry): Promise<void> {
         try {
-            const response = await fetch('/api/audit/logs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry),
-            });
-            if (!response.ok) {
-                throw new Error(`Audit log failed: ${response.status}`);
-            }
+            await this.client.post('/api/audit/logs', entry);
         }
         catch (error) {
             console.error('[AuditService] Failed to persist audit log:', error);
@@ -107,14 +104,7 @@ class AuditService {
     }
     private async persistBatch(entries: AuditLogEntry[]): Promise<void> {
         try {
-            const response = await fetch('/api/audit/logs/batch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ entries }),
-            });
-            if (!response.ok) {
-                throw new Error(`Audit batch failed: ${response.status}`);
-            }
+            await this.client.post('/api/audit/logs/batch', { entries });
         }
         catch (error) {
             console.error('[AuditService] Failed to persist audit batch:', error);
@@ -139,11 +129,12 @@ class AuditService {
             params.set('limit', String(query.limit));
         if (query.offset)
             params.set('offset', String(query.offset));
-        const response = await fetch(`/api/audit/logs?${params.toString()}`);
-        if (!response.ok) {
-            throw new Error(`Audit query failed: ${response.status}`);
+        const response = await this.client.get<AuditLogResult>(`/api/audit/logs?${params.toString()}`);
+        if (!response.success || !response.data) {
+            const message = response.error?.message ?? 'Failed to load audit logs';
+            throw new Error(message);
         }
-        return response.json();
+        return response.data;
     }
     onLog(listener: (entry: AuditLogEntry) => void): () => void {
         this.listeners.push(listener);

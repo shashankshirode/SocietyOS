@@ -1,28 +1,28 @@
 import { useState, useCallback } from 'react';
 import { visitorApprovalService } from '../services/visitorApprovalService';
-import { mockStore } from '../../../../core/mockStore/mockStore';
+import { mockStore } from '../../../core/mockStore/mockStore';
 import type { VisitorApprovalRequest } from '../../../shared/types/visitorPhase8.types';
 
 export function useVisitorApprovals() {
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<VisitorApprovalRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPending = useCallback(async (unitId?: string, guardId?: string) => {
     setIsLoading(true);
     try {
-      let requests: any[] = [];
+      let reqList: VisitorApprovalRequest[] = [];
       if (unitId) {
         const result = await visitorApprovalService.getPendingApprovalsForUnit(unitId);
-        requests = result;
+        reqList = result;
       } else if (guardId) {
         const result = await visitorApprovalService.getPendingApprovalsForGuard(guardId);
-        requests = result;
+        reqList = result;
       } else {
         const requestsData = mockStore.getState().visitorApprovalRequests || [];
-        requests = requestsData.filter(r => r.status === 'PENDING');
+        reqList = requestsData.filter((r: VisitorApprovalRequest) => r.status === 'PENDING');
       }
-      setRequests(requests);
+      setRequests(reqList);
     } catch (error) {
       setError('Failed to fetch approval requests');
     } finally {

@@ -45,7 +45,9 @@ export type ConflictType =
   | 'SCHEMA_MISMATCH'
   | 'PASS_EXPIRED'
   | 'UNIT_MISMATCH'
-  | 'GUARD_UNAUTHORIZED';
+  | 'GUARD_UNAUTHORIZED'
+  | 'WATCHLIST_MATCH'
+  | 'EMERGENCY_OVERRIDE';
 
 export type ConflictResolution =
   | 'SERVER_WINS'
@@ -101,7 +103,7 @@ export interface SyncBatchRequest {
 
 export interface SyncBatchResponse {
   batchId: string;
-  results: Array<{
+  results: {
     clientId: string;
     idempotencyKey: string;
     status: 'ACCEPTED' | 'CONFLICT' | 'REJECTED';
@@ -111,19 +113,19 @@ export interface SyncBatchResponse {
       serverState: JsonObject;
       suggestedResolution: ConflictResolution;
     };
-  }>;
+  }[];
   serverTime: string;
   schemaVersion: number;
 }
 
 export interface ConflictResolutionRequest {
   batchId: string;
-  resolutions: Array<{
+  resolutions: {
     clientId: string;
     idempotencyKey: string;
     resolution: ConflictResolution;
     mergedPayload?: JsonObject;
-  }>;
+  }[];
 }
 
 export const CONFLICT_STRATEGIES: Record<ConflictType, ConflictStrategy> = {

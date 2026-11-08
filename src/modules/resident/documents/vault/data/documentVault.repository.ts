@@ -1,6 +1,6 @@
-import { resolveDataSource } from '../../../../core/dataSource/dataSourceResolver';
-import { isDevelopmentMode } from '../../../../shared/utils/isDevelopmentMode';
-import type { DocumentVaultRecord } from '../../../../types/documentVault.types';
+import { resolveDataSource } from '../../../../../core/dataSource/dataSourceResolver';
+import { isDevelopmentMode } from '../../../../../shared/utils/isDevelopmentMode';
+import type { DocumentVaultRecord } from '../../../../../shared/types/documentVault.types';
 
 interface DocumentVaultApiSource {
   createDocument(input: CreateDocumentInput): Promise<DocumentVaultRecord>;

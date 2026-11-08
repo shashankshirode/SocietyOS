@@ -1,3 +1,5 @@
+import type { JsonObject } from '../../core/api/api.types';
+import type { Absent } from "../../shared/types/absence.types";
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
@@ -35,8 +37,6 @@ export interface PaginatedResponse<T> {
     meta: ResponseMeta;
 }
 export type { JsonObject, JsonValue } from '../../core/api/api.types';
-import type { JsonObject } from '../../core/api/api.types';
-import type { Absent } from "../../shared/types/absence.types";
 export interface ApiRequestConfig {
     params?: Record<string, JsonObject[string]>;
     headers?: Record<string, string>;

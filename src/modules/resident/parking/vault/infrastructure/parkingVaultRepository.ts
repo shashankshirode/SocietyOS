@@ -1,5 +1,5 @@
-import type { Absent } from '../../../../../../shared/types/absence.types';
-import type { AuditLogEntry } from '../../../../../../core/audit/audit.types';
+import type { Absent } from '../../../../../shared/types/absence.types';
+import type { AuditLogEntry } from '../../../../../core/audit/audit.types';
 import type {
   ParkingVaultErrorCode,
   ParkingVaultClock,
@@ -34,8 +34,7 @@ import type {
   RulesStore,
   HomeStore,
   AuditSink,
-} from '../application/ports';
-import type { ParkingVaultPorts } from '../application/ports';
+ ParkingVaultPorts } from '../application/ports';
 
 
 type StoredParkingSlot = ParkingSlotRecord;
@@ -259,9 +258,8 @@ export function createParkingVaultRepository(): ParkingVaultPorts {
   };
 
   const rulesStore: RulesStore = {
-    upsert: (rules: ParkingRulesRecord): boolean => {
-      if (rules.has(rules.societyId)) return false;
-      rules.set(rules.societyId, rules);
+    upsert: (ruleRecord: ParkingRulesRecord): boolean => {
+      rules.set(ruleRecord.societyId, ruleRecord);
       return true;
     },
     read: (societyId: string): ParkingRulesRecord | Absent => rules.get(societyId),
@@ -295,6 +293,6 @@ export function createParkingVaultRepository(): ParkingVaultPorts {
   };
 }
 
-export type ParkingVaultPorts = ReturnType<typeof createParkingVaultRepository>;
+export { type ParkingVaultPorts };
 
 export const parkingVaultRepository = createParkingVaultRepository();

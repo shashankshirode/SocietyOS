@@ -118,7 +118,7 @@ describe('Phase 7: Full Coverage of Financial Services, Utilities & Edge Branche
             expect(resManual.amount).toBe(350);
             const unknownRule: BillingRule = {
                 ...areaRule,
-                ruleType: 'UNKNOWN_TYPE' as any,
+                ruleType: 'UNKNOWN_TYPE' as never,
             };
             const resUnknown = calculateChargeAmount(unknownRule, unit);
             expect(resUnknown.error).toContain('Unsupported rule type');
@@ -129,7 +129,7 @@ describe('Phase 7: Full Coverage of Financial Services, Utilities & Edge Branche
                     id: 'u-cancel',
                     unitNumber: 'C-1',
                     areaSqFt: 1000,
-                    isActive: true,
+                    occupancyStatus: 'OWNER_OCCUPIED',
                 },
             ];
             mockStore.getState().billingRules = [

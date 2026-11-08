@@ -2,7 +2,7 @@ export { slaEngine } from './slaEngine';
 export { assignmentService } from './assignmentService';
 export { evidenceService } from './evidenceService';
 export { complaintService } from './complaintService';
-export { parentIncidentService } from './parentIncidentService';
+export { parentIncidentService, ParentIncidentService } from './parentIncidentService';
 export { complaintNotificationService } from './complaintNotificationService';
 export { gateIdempotencyService } from '../../guard/services/gateIdempotencyService';
 
@@ -13,7 +13,6 @@ export type {
   SlaPauseResult,
   SlaResumeResult,
   EscalationCheckResult,
-  ParentIncidentService,
 } from './slaEngine';
 export type {
   AssignmentResult,
@@ -35,7 +34,9 @@ export type {
   CancelComplaintInput,
   AddCommentInput,
   UpdateVisibilityInput,
+} from './complaintService';
+export type {
   CorrelationResult,
   ParentIncidentResolutionInput,
   ParentIncidentCloseInput,
-} from './complaintService';
+} from './parentIncidentService';

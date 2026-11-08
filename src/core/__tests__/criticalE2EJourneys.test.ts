@@ -113,7 +113,7 @@ describe('SocietyOS Critical End-to-End User Journeys (E2E-01 through E2E-05)', 
   // E2E-03: Resident pays bill -> receipt -> bill paid -> Dashboard updated
   it('E2E-03: Billing Journey (List -> Pay -> Receipt -> Settled State)', async () => {
     // 1. Get unpaid bill
-    const billsRes = await billMockSource.getBillsPage(undefined as any, { filter: 'unpaid', pageSize: 20 });
+    const billsRes = await billMockSource.getBillsPage(undefined as any, { filter: 'unpaid', cursor: null, pageSize: 20 });
     expect(billsRes.ok).toBe(true);
     if (!billsRes.ok) return;
     const unpaidBill = billsRes.data.bills[0];

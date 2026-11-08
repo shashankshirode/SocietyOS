@@ -117,12 +117,17 @@ export const documentService = {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const documents = mockStore.getState().residentDocuments || [];
-                const index = documents.findIndex((d) => d.id === documentId);
-                if (index === -1) {
+                const doc = documents.find((d) => d.id === documentId);
+                if (!doc) {
                     reject(new Error('Document not found'));
                     return;
                 }
-                const updated = { ...documents[index], status: 'VERIFIED' as const, verifiedAt: new Date().toISOString(), verifiedBy: adminId };
+                const updated: ResidentDocument = {
+                    ...doc,
+                    status: 'VERIFIED',
+                    verifiedAt: new Date().toISOString(),
+                    verifiedBy: adminId,
+                };
                 mockStore.updateResidentDocument(documentId, updated);
                 resolve(updated);
             }, 400);
@@ -132,12 +137,18 @@ export const documentService = {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 const documents = mockStore.getState().residentDocuments || [];
-                const index = documents.findIndex((d) => d.id === documentId);
-                if (index === -1) {
+                const doc = documents.find((d) => d.id === documentId);
+                if (!doc) {
                     reject(new Error('Document not found'));
                     return;
                 }
-                const updated = { ...documents[index], status: 'REJECTED' as const, verifiedAt: new Date().toISOString(), verifiedBy: adminId, rejectionReason: reason };
+                const updated: ResidentDocument = {
+                    ...doc,
+                    status: 'REJECTED',
+                    verifiedAt: new Date().toISOString(),
+                    verifiedBy: adminId,
+                    rejectionReason: reason,
+                };
                 mockStore.updateResidentDocument(documentId, updated);
                 resolve(updated);
             }, 400);
@@ -146,7 +157,8 @@ export const documentService = {
     async deleteDocument(documentId: string): Promise<void> {
         return new Promise((resolve) => {
             setTimeout(() => {
-                const documents = mockStore.getState().residentDocuments.filter((d) => d.id !== documentId);
+                const documents = (mockStore.getState().residentDocuments || []).filter((d) => d.id !== documentId);
+                mockStore.getState().residentDocuments = documents;
                 resolve();
             }, 300);
         });

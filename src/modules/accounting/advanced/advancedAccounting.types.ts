@@ -172,11 +172,11 @@ export type MonthEndClosePeriod = {
   closedAt?: string;
   closedBy?: string;
   tasks: MonthEndCloseTask[];
-  validationChecks: Array<{
+  validationChecks: {
     name: string;
     status: 'PASS' | 'FAIL' | 'WARNING';
     details?: string;
-  }>;
+  }[];
   snapshot?: {
     totalAssets: number;
     totalLiabilities: number;
@@ -202,18 +202,18 @@ export type OpeningBalanceImport = {
     totalCredits: number;
     balanced: boolean;
   };
-  accounts: Array<{
+  accounts: {
     accountCode: string;
     accountName: string;
     debitBalance: number;
     creditBalance: number;
-  }>;
-  errors: Array<{
+  }[];
+  errors: {
     row: number;
     field: string;
     code: string;
     message: string;
-  }>;
+  }[];
   uploadedAt: string;
   uploadedBy: string;
   validatedAt?: string;
@@ -226,11 +226,11 @@ export type MatchingRule = {
   id: string;
   name: string;
   bankAccountId: string;
-  conditions: Array<{
+  conditions: {
     field: 'description' | 'reference' | 'amount' | 'date';
     operator: 'EQUALS' | 'CONTAINS' | 'STARTS_WITH' | 'ENDS_WITH' | 'REGEX' | 'AMOUNT_RANGE';
     value: string | number;
-  }>;
+  }[];
   ledgerAccountCode: string;
   priority: number;
   enabled: boolean;

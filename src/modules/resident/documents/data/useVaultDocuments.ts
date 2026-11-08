@@ -1,16 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLatestValue } from '../../../../shared/hooks/useLatestValue';
 import type { DocumentRecord, DocumentVersionRecord } from '../vault/domain/types/document.types';
-import type { VerificationCase } from '../vault/domain/types/verification.types';
+import type { VerificationCase , VerificationChecklist } from '../vault/domain/types/verification.types';
 import type { AccessLogEntry, RetrievalTicket, AccessGrant, DocumentAction } from '../vault/domain/types/access.types';
-import type { LegalHold } from '../vault/domain/types/retention.types';
-import type { TraceableRetentionRecord } from '../vault/domain/types/retention.types';
-import type { TraceContext } from '../vault/domain/types/primitives';
-import type { VerificationChecklist } from '../vault/domain/types/verification.types';
+import type { LegalHold , TraceableRetentionRecord , RetentionAssessment } from '../vault/domain/types/retention.types';
+import type { TraceContext, VaultActor, VaultActorType } from '../vault/domain/types/primitives';
+import type { AppRole } from '../../../../core/permissions/permission.types';
 import type { DocumentAction as DocumentActionType, SignatureMethod } from '../vault/domain/types/policy.types';
 import { createDocumentVaultService } from '../vault/application/documentVaultService';
 import { vaultRepository } from '../vault/infrastructure/vaultRepository';
-import type { RetentionAssessment } from '../vault/domain/types/retention.types';
 
 let vaultService: ReturnType<typeof createDocumentVaultService> | null = null;
 
@@ -21,8 +19,25 @@ function getVaultService() {
   return vaultService;
 }
 
+function createVaultActor(
+  userId: string,
+  role: AppRole,
+  actorType: VaultActorType,
+  societyId: string,
+  sessionId = 'sess-1'
+): VaultActor {
+  return {
+    userId,
+    role,
+    actorType,
+    societyId,
+    sessionId,
+    authenticatedAt: new Date().toISOString(),
+  };
+}
+
 export function useVaultDocuments(filters?: { categoryGroup?: string; entityType?: string; entityId?: string }) {
-  const [data, setData] = useState<DocumentRecord[]>([]);
+  const [data, setData] = useState<readonly DocumentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const filterSignature = JSON.stringify(filters);
@@ -85,7 +100,7 @@ export function useVaultDocumentDetail(documentId: string) {
 }
 
 export function useVaultDocumentVersions(documentId: string) {
-  const [data, setData] = useState<DocumentVersionRecord[]>([]);
+  const [data, setData] = useState<readonly DocumentVersionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -110,7 +125,7 @@ export function useVaultDocumentVersions(documentId: string) {
 }
 
 export function useVaultDocumentHistory(documentId: string) {
-  const [data, setData] = useState<DocumentVersionRecord[]>([]);
+  const [data, setData] = useState<readonly DocumentVersionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -160,7 +175,7 @@ export function useVaultActiveVersion(documentId: string) {
 }
 
 export function useVaultVerificationCases(documentId: string) {
-  const [data, setData] = useState<VerificationCase[]>([]);
+  const [data, setData] = useState<readonly VerificationCase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -185,7 +200,7 @@ export function useVaultVerificationCases(documentId: string) {
 }
 
 export function useVaultAccessLogs(documentId: string) {
-  const [data, setData] = useState<AccessLogEntry[]>([]);
+  const [data, setData] = useState<readonly AccessLogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -235,7 +250,7 @@ export function useVaultRetrievalTicket(ticketId: string) {
 }
 
 export function useVaultAccessGrants(documentId: string) {
-  const [data, setData] = useState<AccessGrant[]>([]);
+  const [data, setData] = useState<readonly AccessGrant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -260,7 +275,7 @@ export function useVaultAccessGrants(documentId: string) {
 }
 
 export function useVaultLegalHolds(documentId: string) {
-  const [data, setData] = useState<LegalHold[]>([]);
+  const [data, setData] = useState<readonly LegalHold[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -285,7 +300,7 @@ export function useVaultLegalHolds(documentId: string) {
 }
 
 export function useVaultRetentionHistory(documentId: string) {
-  const [data, setData] = useState<TraceableRetentionRecord[]>([]);
+  const [data, setData] = useState<readonly TraceableRetentionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -335,7 +350,7 @@ export function useVaultUploadDocument() {
     try {
       const service = getVaultService();
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -420,7 +435,7 @@ export function useVaultUploadDocumentVersion() {
     try {
       const service = getVaultService();
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -507,7 +522,7 @@ export function useVaultVerification() {
       const document = service.getDocument(documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -516,7 +531,10 @@ export function useVaultVerification() {
         authenticatedAt: new Date().toISOString(),
       };
 
-      const result = service.verification.createCase(actor, document, versionId, checklist, traceContext);
+      const result = service.verification.createCase(actor, document, versionId, checklist, {
+        correlationId: traceContext.correlationId,
+        ...(traceContext.causationId ? { causationId: traceContext.causationId } : {}),
+      });
       if (!result.ok) throw new Error(result.message);
       return result.value;
     } catch (e) {
@@ -532,7 +550,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -556,7 +574,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -580,7 +598,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -604,7 +622,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -628,7 +646,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SYSTEM',
         actorType: 'SYSTEM' as const,
@@ -652,7 +670,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -676,7 +694,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -700,7 +718,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -724,7 +742,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: signerId,
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -748,7 +766,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -772,7 +790,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SYSTEM',
         actorType: 'SYSTEM' as const,
@@ -796,7 +814,7 @@ export function useVaultVerification() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -857,7 +875,7 @@ export function useVaultAccess() {
       const version = service.getActiveVersion(input.documentId);
       if (!version) throw new Error('Active version not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -866,7 +884,18 @@ export function useVaultAccess() {
         authenticatedAt: new Date().toISOString(),
       };
 
-      const result = service.access.issueRetrievalTicket(actor, document, version, input.action, input.ttlSeconds, {} as any, input.traceContext);
+      const result = service.access.issueRetrievalTicket(
+        actor,
+        document,
+        version,
+        input.action,
+        input.ttlSeconds,
+        {} as any,
+        {
+          correlationId: input.traceContext.correlationId,
+          ...(input.traceContext.causationId ? { causationId: input.traceContext.causationId } : {}),
+        }
+      );
       if (!result.ok) throw new Error(result.message);
       return result.value;
     } catch (e) {
@@ -882,7 +911,7 @@ export function useVaultAccess() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -906,7 +935,7 @@ export function useVaultAccess() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -943,7 +972,7 @@ export function useVaultAccess() {
       const document = service.getDocument(input.documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'RESIDENT_OWNER',
         actorType: 'RESIDENT_OWNER' as const,
@@ -989,7 +1018,7 @@ export function useVaultAccess() {
       const document = service.getDocument(input.documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1014,7 +1043,7 @@ export function useVaultAccess() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1059,7 +1088,7 @@ export function useVaultRetention() {
       const document = service.getDocument(documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1084,7 +1113,7 @@ export function useVaultRetention() {
     setIsLoading(true);
     setError(null);
     try {
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1117,7 +1146,7 @@ export function useVaultRetention() {
       const document = service.getDocument(input.documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1149,7 +1178,7 @@ export function useVaultRetention() {
       const document = service.getDocument(input.documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SOCIETY_ADMIN',
         actorType: 'SOCIETY_ADMIN' as const,
@@ -1184,7 +1213,7 @@ export function useVaultRetention() {
       const document = service.getDocument(input.documentId);
       if (!document) throw new Error('Document not found.');
 
-      const actor = {
+      const actor: VaultActor = {
         userId: 'current-user',
         role: 'SYSTEM',
         actorType: 'SYSTEM' as const,

@@ -1,12 +1,14 @@
-import type { Document, DocumentVersion, DocumentCategory, DocumentStatus, DocumentVerificationInput, DocumentAccessLog, } from '../types/documentVault.types';
+import type { Document, DocumentVersion, DocumentCategory, DocumentVerificationInput, DocumentAccessLog, } from '../../../../shared/types/documentVault.types';
+import type { DocumentInfo, DocumentStatus } from '../../../../shared/types/document.types';
 import type { AppRole } from '../../../../core/permissions/permission.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
 import { documentAccessService, type DocumentAccessContext } from './documentAccessService';
 import { auditService } from '../../../../core/audit';
+import { createCorrelationId } from '../../../../core/api/requestContext';
 import { createIdempotencyKey } from '../../../../core/api/idempotency';
 export interface VerificationResult {
     success: boolean;
-    document?: Document;
+    document?: DocumentInfo;
     verificationCaseId?: string;
     error?: string;
 }
@@ -21,6 +23,7 @@ export interface VerificationCase {
     reviewedAt?: string;
     decision?: 'APPROVE' | 'REJECT';
     reason?: string;
+    resubmissionDeadline?: string;
     checklist: VerificationChecklistItem[];
     createdAt: string;
     updatedAt: string;
@@ -60,7 +63,7 @@ export interface VerificationAuditData {
     actorUserId: string;
     actorRole: string;
     societyId: string;
-    action: 'VERIFY' | 'REJECT' | 'RESUBMIT';
+    action: 'VERIFY' | 'REJECT' | 'RESUBMIT' | 'CREATE_VERIFICATION_CASE';
     documentId: string;
     versionId: string;
     decision?: 'APPROVE' | 'REJECT';
@@ -196,7 +199,7 @@ export class DocumentVerificationService {
         });
     }
     async verifyDocument(input: VerifyDocumentInput, context: DocumentAccessContext): Promise<VerificationResult> {
-        const idempotencyKey = createIdempotencyKey('verify_document', input.documentId, input.action);
+        const idempotencyKey = `verify_document_${input.documentId}_${input.action}`;
         if (this.idempotencyKeys.has(idempotencyKey)) {
             return { success: false, error: 'Duplicate verification request' };
         }
@@ -209,7 +212,7 @@ export class DocumentVerificationService {
         if (!version) {
             return { success: false, error: 'Current version not found' };
         }
-        const accessCheck = await documentAccessService.checkDocumentAccess(context, document, 'VERIFY');
+        const accessCheck = await documentAccessService.checkDocumentAccess(context, document as any, 'VERIFY');
         if (!accessCheck.canVerify) {
             return { success: false, error: accessCheck.denialReason };
         }
@@ -231,19 +234,16 @@ export class DocumentVerificationService {
         activeCase.reviewedBy = context.userId;
         activeCase.reviewedAt = now;
         activeCase.decision = hasRejections ? 'REJECT' : 'APPROVE';
-        activeCase.reason = input.reason;
+        if (input.reason) activeCase.reason = input.reason;
         activeCase.checklist = checklist;
         activeCase.updatedAt = now;
         this.verificationCases.set(activeCase.id, activeCase);
         const newStatus = this.getDocumentStatusFromVerification(activeCase.status);
-        const updatedDocument: Document = {
+        const updatedDocument: DocumentInfo = {
             ...document,
             status: newStatus,
-            verificationStatus: hasRejections ? 'REJECTED' : 'VERIFIED',
-            verifiedAt: hasRejections ? undefined : now,
-            verifiedBy: hasRejections ? undefined : context.userId,
-            rejectionReason: hasRejections ? input.reason : undefined,
-            updatedAt: now,
+            ...(hasRejections ? {} : { verifiedDate: now, verifiedBy: context.userId }),
+            ...(hasRejections && input.reason ? { rejectionReason: input.reason } : {}),
         };
         mockStore.getState().documents = mockStore.getState().documents?.map(d => d.id === input.documentId ? updatedDocument : d) || [];
         mockStore.notify();
@@ -264,7 +264,7 @@ export class DocumentVerificationService {
         if (!document) {
             return { success: false, error: 'Document not found' };
         }
-        const accessCheck = await documentAccessService.checkDocumentAccess(context, document, 'VERIFY');
+        const accessCheck = await documentAccessService.checkDocumentAccess(context, document as any, 'VERIFY');
         if (!accessCheck.canVerify) {
             return { success: false, error: accessCheck.denialReason };
         }
@@ -278,19 +278,17 @@ export class DocumentVerificationService {
         activeCase.reviewedBy = context.userId;
         activeCase.reviewedAt = now;
         activeCase.decision = 'REJECT';
-        activeCase.reason = input.reason;
+        if (input.reason) activeCase.reason = input.reason;
         activeCase.updatedAt = now;
         if (input.resubmissionAllowed) {
             activeCase.status = 'PENDING';
-            activeCase.resubmissionDeadline = input.resubmissionDeadline;
+            if (input.resubmissionDeadline) activeCase.resubmissionDeadline = input.resubmissionDeadline;
         }
         this.verificationCases.set(activeCase.id, activeCase);
-        const updatedDocument: Document = {
+        const updatedDocument: DocumentInfo = {
             ...document,
             status: 'REJECTED',
-            verificationStatus: 'REJECTED',
-            rejectionReason: input.reason,
-            updatedAt: now,
+            ...(input.reason ? { rejectionReason: input.reason } : {}),
         };
         mockStore.getState().documents = mockStore.getState().documents?.map(d => d.id === input.documentId ? updatedDocument : d) || [];
         mockStore.notify();
@@ -311,7 +309,7 @@ export class DocumentVerificationService {
         if (!document) {
             return { success: false, error: 'Document not found' };
         }
-        const accessCheck = await documentAccessService.checkDocumentAccess(context, document, 'VERIFY');
+        const accessCheck = await documentAccessService.checkDocumentAccess(context, document as any, 'VERIFY');
         if (!accessCheck.canVerify) {
             return { success: false, error: accessCheck.denialReason };
         }
@@ -325,12 +323,9 @@ export class DocumentVerificationService {
         activeCase.resubmissionDeadline = deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
         activeCase.updatedAt = now;
         this.verificationCases.set(activeCase.id, activeCase);
-        const updatedDocument: Document = {
+        const updatedDocument: DocumentInfo = {
             ...document,
             status: 'PENDING_VERIFICATION',
-            verificationStatus: 'PENDING',
-            rejectionReason: undefined,
-            updatedAt: now,
         };
         mockStore.getState().documents = mockStore.getState().documents?.map(d => d.id === documentId ? updatedDocument : d) || [];
         mockStore.notify();
@@ -388,15 +383,20 @@ export class DocumentVerificationService {
                 reason: data.reason,
             },
         };
-        mockStore.getState().documentAccessLogs?.push(accessLog);
+        mockStore.getState().documentAccessLogs?.push(accessLog as any);
         mockStore.notify();
         auditService.log({
-            actorId: data.actorUserId,
-            actorRole: data.actorRole as any,
-            societyId: data.societyId,
-            action: data.action,
+            correlationId: createCorrelationId(),
+            actor: {
+                userId: data.actorUserId,
+                type: 'ADMIN',
+                role: data.actorRole,
+                societyId: data.societyId,
+            },
+            action: (data.action as any) ?? 'VERIFY',
             entityType: 'DOCUMENT',
             entityId: data.documentId,
+            outcome: 'SUCCESS',
             metadata: {
                 versionId: data.versionId,
                 decision: data.decision,

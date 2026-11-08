@@ -29,35 +29,61 @@ export class ApiClientError extends Error {
 
 export class AuthenticationExpiredError extends ApiClientError {
   constructor(message = 'Session has expired. Please authenticate again.', traceId?: string) {
-    super({ code: 'SESSION_EXPIRED', status: 401, message, traceId });
+    super({
+      code: 'SESSION_EXPIRED',
+      status: 401,
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'AuthenticationExpiredError';
   }
 }
 
 export class PermissionDeniedError extends ApiClientError {
   constructor(message = 'You do not have permission to perform this action.', traceId?: string) {
-    super({ code: 'FORBIDDEN', status: 403, message, traceId });
+    super({
+      code: 'FORBIDDEN',
+      status: 403,
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'PermissionDeniedError';
   }
 }
 
 export class NotFoundError extends ApiClientError {
   constructor(message = 'The requested resource was not found.', traceId?: string) {
-    super({ code: 'NOT_FOUND', status: 404, message, traceId });
+    super({
+      code: 'NOT_FOUND',
+      status: 404,
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'NotFoundError';
   }
 }
 
 export class ConflictError extends ApiClientError {
   constructor(message = 'A conflict occurred with the current state of the resource.', traceId?: string) {
-    super({ code: 'CONFLICT', status: 409, message, traceId });
+    super({
+      code: 'CONFLICT',
+      status: 409,
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'ConflictError';
   }
 }
 
 export class RequestValidationError extends ApiClientError {
   constructor(message: string, fieldErrors?: ApiErrorBody['fieldErrors'], traceId?: string) {
-    super({ code: 'VALIDATION_ERROR', status: 422, message, fieldErrors, traceId });
+    super({
+      code: 'VALIDATION_ERROR',
+      status: 422,
+      message,
+      ...(fieldErrors !== undefined ? { fieldErrors } : {}),
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'RequestValidationError';
   }
 }
@@ -65,9 +91,16 @@ export class RequestValidationError extends ApiClientError {
 export class RateLimitedError extends ApiClientError {
   readonly retryAfterSeconds?: number;
   constructor(message = 'Too many requests. Please try again later.', retryAfterSeconds?: number, traceId?: string) {
-    super({ code: 'RATE_LIMIT', status: 429, message, traceId });
+    super({
+      code: 'RATE_LIMIT',
+      status: 429,
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'RateLimitedError';
-    this.retryAfterSeconds = retryAfterSeconds;
+    if (retryAfterSeconds !== undefined) {
+      this.retryAfterSeconds = retryAfterSeconds;
+    }
   }
 }
 
@@ -87,7 +120,12 @@ export class NetworkUnavailableError extends ApiClientError {
 
 export class ServiceUnavailableError extends ApiClientError {
   constructor(message = 'Service temporarily unavailable. Please try again shortly.', status = 503, traceId?: string) {
-    super({ code: 'SERVER_ERROR', status, message, traceId });
+    super({
+      code: 'SERVER_ERROR',
+      ...(status !== undefined ? { status } : {}),
+      message,
+      ...(traceId !== undefined ? { traceId } : {}),
+    });
     this.name = 'ServiceUnavailableError';
   }
 }

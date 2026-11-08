@@ -12,7 +12,7 @@ class OfflineSyncEngine {
     private pendingConflicts: Map<string, OfflineQueueItem> = new Map();
     private isSyncing = false;
     private syncInterval: ReturnType<typeof setInterval> | null = null;
-    private listeners: Array<(item: OfflineQueueItem) => void> = [];
+    private listeners: ((item: OfflineQueueItem) => void)[] = [];
     private deviceId: string;
     private devicePublicKey: string;
     private lastSyncedAt: string | null = null;

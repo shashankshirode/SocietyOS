@@ -1,3 +1,5 @@
+import type { Absent } from '../../../../shared/types/absence.types';
+
 export type AutomationTriggerType =
   | 'DOMAIN_EVENT'
   | 'SCHEDULE'
@@ -11,20 +13,22 @@ export type DomainEventTrigger = {
   type: 'DOMAIN_EVENT';
   eventName: string;
   eventSchemaVersion: string;
-  filterConditions?: Array<{
+  filterConditions?: {
     field: string;
     operator: string;
     value: unknown;
-  }>;
+  }[];
 };
 
 export type ScheduleTrigger = {
   type: 'SCHEDULE';
   cronExpression: string;
+  scheduleCron?: string | Absent;
   timezone: string;
-  startDate?: string;
-  endDate?: string;
-  jitterMinutes?: number;
+  scheduleTimezone?: string | Absent;
+  startDate?: string | Absent;
+  endDate?: string | Absent;
+  jitterMinutes?: number | Absent;
 };
 
 export type ThresholdTrigger = {
@@ -53,11 +57,11 @@ export type TimeBeforeTrigger = {
   referenceEventName: string;
   referenceTimeField: string;
   leadTimeMinutes: number;
-  filterConditions?: Array<{
+  filterConditions?: {
     field: string;
     operator: string;
     value: unknown;
-  }>;
+  }[];
 };
 
 export type TimeAfterTrigger = {
@@ -65,26 +69,41 @@ export type TimeAfterTrigger = {
   referenceEventName: string;
   referenceTimeField: string;
   lagTimeMinutes: number;
-  filterConditions?: Array<{
+  filterConditions?: {
     field: string;
     operator: string;
     value: unknown;
-  }>;
+  }[];
 };
 
 export type ManualTestTrigger = {
   type: 'MANUAL_TEST';
   testPayload: Record<string, unknown>;
+  manualTestPayload?: Record<string, unknown> | Absent;
 };
 
-export type AutomationTrigger =
+export type AutomationTrigger = (
   | DomainEventTrigger
   | ScheduleTrigger
   | ThresholdTrigger
   | StateDurationTrigger
   | TimeBeforeTrigger
   | TimeAfterTrigger
-  | ManualTestTrigger;
+  | ManualTestTrigger
+) & {
+  eventName?: string | Absent;
+  scheduleCron?: string | Absent;
+  cronExpression?: string | Absent;
+  scheduleTimezone?: string | Absent;
+  metricName?: string | Absent;
+  thresholdValue?: number | Absent;
+  entityType?: string | Absent;
+  targetState?: string | Absent;
+  referenceEventName?: string | Absent;
+  leadTimeMinutes?: number | Absent;
+  lagTimeMinutes?: number | Absent;
+  manualTestPayload?: Record<string, unknown> | Absent;
+};
 
 export type TriggerSubscription = {
   id: string;
@@ -127,10 +146,10 @@ export type ThresholdTriggerEvaluation = {
   operator: string;
   exceeded: boolean;
   evaluatedAt: string;
-  triggeringEntities: Array<{
+  triggeringEntities: {
     entityId: string;
     entityType: string;
     value: number;
     tags: Record<string, string>;
-  }>;
+  }[];
 };

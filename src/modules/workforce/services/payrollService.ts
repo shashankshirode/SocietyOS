@@ -16,8 +16,7 @@ import type {
     PayrollPaymentStatus,
     SalaryComponentType,
     PayrollAdjustmentType,
-} from '../../../shared/types/workforcePhase11.types';
-import type { StaffDailyAttendance, MonthlyAttendanceRecord } from '../../../shared/types/workforcePhase11.types';
+ StaffDailyAttendance, MonthlyAttendanceRecord } from '../../../shared/types/workforcePhase11.types';
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';

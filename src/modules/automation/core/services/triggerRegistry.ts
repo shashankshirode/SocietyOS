@@ -127,11 +127,16 @@ function parseCronNextRun(cronExpression: string, timezone: string): Date {
   next.setSeconds(0);
   next.setMilliseconds(0);
 
-  if (minute !== '*') next.setMinutes(parseInt(minute, 10));
-  if (hour !== '*') next.setHours(parseInt(hour, 10));
-  if (dayOfMonth !== '*') next.setDate(parseInt(dayOfMonth, 10));
-  if (month !== '*') next.setMonth(parseInt(month, 10) - 1);
-  if (dayOfWeek !== '*') next.setDay(parseInt(dayOfWeek, 10));
+  if (minute && minute !== '*') next.setMinutes(parseInt(minute, 10));
+  if (hour && hour !== '*') next.setHours(parseInt(hour, 10));
+  if (dayOfMonth && dayOfMonth !== '*') next.setDate(parseInt(dayOfMonth, 10));
+  if (month && month !== '*') next.setMonth(parseInt(month, 10) - 1);
+  if (dayOfWeek && dayOfWeek !== '*') {
+    const targetDay = parseInt(dayOfWeek, 10);
+    const currentDay = next.getDay();
+    const diff = (targetDay - currentDay + 7) % 7;
+    if (diff > 0) next.setDate(next.getDate() + diff);
+  }
 
   if (next <= now) {
     next.setDate(next.getDate() + 1);

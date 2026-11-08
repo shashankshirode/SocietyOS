@@ -2,7 +2,8 @@ import { createJobScheduler } from '../../../../../core/jobs/job.scheduler';
 import { createTemporaryAllocationExpiryExecutor } from './executors/temporaryAllocationExpiryExecutor';
 import { createVisitorParkingExpiryExecutor } from './executors/visitorParkingExpiryExecutor';
 import { createViolationRepeatOffenceExecutor } from './executors/violationRepeatOffenceExecutor';
-import type { JobDefinition, JobPorts, JobType } from '../../../../../core/jobs/job.types';
+import type { JobDefinition, JobType } from '../../../../../core/jobs/job.types';
+import type { JobPorts } from '../../../../../core/jobs/job.ports';
 
 export const PARKING_JOB_TYPES: JobType[] = [
   'PARKING_TEMPORARY_ALLOCATION_EXPIRY',

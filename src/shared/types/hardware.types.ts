@@ -422,12 +422,12 @@ export interface RequestCctvAccessCommand {
 }
 
 export interface ImportMeterReadingsCommand {
-  readings: Array<{
+  readings: {
     meterCode: string;
     readingValue: number;
     readingDate: string;
     source: 'AUTOMATIC' | 'MANUAL' | 'IMPORT';
-  }>;
+  }[];
   batchId?: string;
 }
 
@@ -451,5 +451,5 @@ export interface EscalateHardwareErrorCommand {
 }
 
 export interface UpdateHardwareSettingsCommand {
-  settings: Array<{ key: string; value: string }>;
+  settings: { key: string; value: string }[];
 }

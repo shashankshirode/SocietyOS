@@ -11,7 +11,6 @@ import type {
   ParkingIncidentType,
   ParkingIncidentStatus,
   ParkingIncidentPriority,
-  ParkingVaultScope,
 } from '../domain/types/parking';
 import { canTransitionIncident, isIncidentTerminal } from '../domain/stateMachines/violationStateMachine';
 import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
@@ -70,7 +69,7 @@ export type ReviewRequest = {
   readonly evidenceLabel: string | undefined;
 };
 
-function fail(code: ParkingVaultErrorCode, message: string) {
+function fail(code: ParkingVaultErrorCode, message: string): { ok: false; code: ParkingVaultErrorCode; message: string } {
   return { ok: false, code, message };
 }
 
@@ -133,9 +132,9 @@ export function createIncidentService(ports: {
 
     const incidentId = `incident-${input.idempotencyKey}`;
     const replay = ports.incidents.read(incidentId);
-    if (replay) return { ok: true, value: replay, warnings: ['IDEMPOTENT_REPLAY'] };
+    if (replay) return { ok: true as const, value: replay, warnings: ['IDEMPOTENT_REPLAY'] as const };
 
-    const now = ports.clock.now().toISOString();
+    const nowIso = ports.clock.now().toISOString();
     const initialStatus = input.immediateSecurityHelp || input.isVehicleBlocked ? 'SECURITY_NOTIFIED' : 'REPORTED';
 
     const incident: ParkingIncidentRecord = {
@@ -154,11 +153,10 @@ export function createIncidentService(ports: {
       assignedTo: undefined,
       evidenceLabel: input.evidenceLabel,
       resolutionNotes: undefined,
-      createdAt: ports.clock.now().toISOString(),
-      updatedAt: now(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
       resolvedAt: undefined,
       resolvedBy: undefined,
-      resolutionNotes: undefined,
       revision: { revision: 1, revisionToken: `rev-${incidentId}-1` },
       trace: { correlationId: input.idempotencyKey, causationId: undefined },
     };
@@ -167,7 +165,7 @@ export function createIncidentService(ports: {
 
     ports.audit.emit({
       id: `aud-${incidentId}`,
-      timestamp: now(),
+      timestamp: nowIso,
       correlationId: incident.trace.correlationId,
       actor: { userId: actor.userId, type: 'RESIDENT', role: actor.role, societyId: actor.societyId },
       action: 'CREATE',
@@ -179,7 +177,7 @@ export function createIncidentService(ports: {
       outcome: 'SUCCESS',
     });
 
-    return { ok: true, value: incident, warnings: [] };
+    return { ok: true as const, value: incident, warnings: [] as const };
   };
 
   const reviewIncident = async (actor: VaultActor, input: ReviewRequest) => {
@@ -386,10 +384,6 @@ export function createIncidentService(ports: {
 
     return saved;
   };
-
-  function fail(code: ParkingVaultErrorCode, message: string) {
-    return { ok: false, code, message };
-  }
 
   const getIncident = (incidentId: string) => ports.incidents.read(incidentId);
   const getIncidentsByUnit = (unitId: string) => ports.incidents.listByUnit('society-001', unitId);

@@ -6,7 +6,7 @@ import type {
   DocumentSensitivity,
   DocumentCategory,
   DocumentStatus,
-} from '../types/documentVault.types';
+} from '../../../../shared/types/documentVault.types';
 import type { ResidentHomeRole } from '../../homeContext/data/residentHomeContext.types';
 import type { AppRole } from '../../../../core/permissions/permission.types';
 import { hasPermission } from '../../../../core/permissions/rolePermissionMap';
@@ -31,6 +31,21 @@ export interface EntityRelationship {
 }
 
 export class DocumentAccessService {
+  private static instance: DocumentAccessService;
+  public static getInstance(): DocumentAccessService {
+    if (!DocumentAccessService.instance) {
+      DocumentAccessService.instance = new DocumentAccessService();
+    }
+    return DocumentAccessService.instance;
+  }
+
+  async checkDocumentAccess(
+    context: DocumentAccessContext,
+    document: Document,
+    action: 'VIEW' | 'DOWNLOAD' | 'UPLOAD' | 'REPLACE' | 'VERIFY' | 'ARCHIVE' | 'VIEW_VERSIONS'
+  ): Promise<DocumentAccessCheckResult> {
+    return DocumentAccessService.checkDocumentAccess(context, document, action);
+  }
   private static entityTypeRoleMap: Record<DocumentEntityType, AppRole[]> = {
     USER: ['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'],
     RESIDENT: ['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'],
@@ -57,7 +72,7 @@ export class DocumentAccessService {
     HIGHLY_SENSITIVE: ['RESIDENT_OWNER', 'CHAIRPERSON', 'SECRETARY', 'SOCIETY_ADMIN'],
     RESIDENT_ONLY: ['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'],
     OWNER_ONLY: ['RESIDENT_OWNER', 'CHAIRPERSON', 'SECRETARY', 'SOCIETY_ADMIN'],
-    TENANT_ONLY: ['RESIDENT_TENAT', 'RESIDENT_FAMILY', 'CHAIRPERSON', 'SECRETARY', 'SOCIETY_ADMIN'],
+    TENANT_ONLY: ['RESIDENT_TENANT', 'RESIDENT_FAMILY', 'CHAIRPERSON', 'SECRETARY', 'SOCIETY_ADMIN'],
     COMMITTEE_ONLY: ['CHAIRPERSON', 'SECRETARY', 'TREASURER', 'COMMITTEE_MEMBER', 'SOCIETY_ADMIN'],
     ADMIN_ONLY: ['SOCIETY_ADMIN', 'SUPER_ADMIN'],
     RESTRICTED: ['SUPER_ADMIN'],
@@ -165,12 +180,12 @@ export class DocumentAccessService {
       };
     }
 
-    if (document.entityType === 'TENANT' || document.entityType === 'OWNER' || document.entityType === 'FAMILY_MEMBER') {
+    if (document.entityType === 'TENANT' || document.entityType === 'OWNER') {
       return {
         entityType: document.entityType,
         entityId: document.entityId,
         relationshipType: document.entityType as any,
-        isActive: document.status === 'VERIFIED' || document.status === 'ACTIVE',
+        isActive: document.status === 'VERIFIED',
       };
     }
 
@@ -297,3 +312,5 @@ export class DocumentAccessService {
     return false;
   }
 }
+
+export const documentAccessService = DocumentAccessService.getInstance();

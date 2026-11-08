@@ -1,5 +1,7 @@
 import type { AppIconName } from '../../../shared/icons/icon.types';
 
+import type { ReturnSemantic } from '../experience/EdgeReturn';
+
 export type MessageKey = string;
 
 export type ResidentHeaderVariant =
@@ -21,8 +23,6 @@ export type ResidentHeaderAction = {
   onPress: () => void;
   badgeCount?: number;
 };
-
-import type { ReturnSemantic } from '../experience/EdgeReturn';
 
 export type ResidentAppHeaderProps = {
   variant?: ResidentHeaderVariant;

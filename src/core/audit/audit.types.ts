@@ -1,3 +1,6 @@
+import type { JsonObject } from '../api/api.types';
+import type { Absent } from "../../shared/types/absence.types";
+
 export type AuditActorType = 'RESIDENT' | 'ADMIN' | 'GUARD' | 'STAFF' | 'VENDOR' | 'SYSTEM' | 'AI_SERVICE' | 'WORKFORCE_ADMIN' | 'PAYROLL_ADMIN' | 'TECHNICIAN' | 'PUBLIC';
 export type AuditAction =
   | 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT' | 'VERIFY' | 'SIGN' | 'PAY' | 'REFUND' | 'REVERSE'
@@ -45,9 +48,6 @@ export type AuditEntityType =
   | 'STAFF_DOCUMENT' | 'STAFF_EXIT' | 'STAFF_ONBOARDING' | 'STAFF_PERFORMANCE' | 'STAFF_PROFILE' | 'STAFF_SUSPENSION'
   | 'STAFF_TRANSFER' | 'STAFF_VERIFICATION' | 'STAFF_ASSIGNMENT'
   | (string & {});
-
-import type { JsonObject } from '../api/api.types';
-import type { Absent } from "../../shared/types/absence.types";
 export type AuditEventType = 'DOCUMENT_VIEW_ATTEMPT' | 'DOCUMENT_DOWNLOAD_ATTEMPT' | 'NOC_REQUEST_CREATED' | 'MOVE_OUT_REQUEST_CREATED' | 'VISITOR_PASS_CREATED' | 'GATE_ENTRY_RECORDED' | 'COMPLAINT_CREATED' | 'PAYMENT_ATTEMPT_STARTED' | 'RESIDENT_CONTACT_REQUEST_CREATED' | 'CHAT_MESSAGE_REPORTED' | 'PARKING_INCIDENT_CREATED' | 'FACILITY_BOOKING_CREATED' | 'WORK_ORDER_CREATED' | 'VENDOR_BLACKLIST_ATTEMPTED' | 'POLL_VOTE_SUBMITTED' | 'MEETING_RSVP_SUBMITTED' | 'PROXY_AUTHORIZATION_SUBMITTED' | 'PERMISSION_DENIED_VIEW' | string;
 export interface AuditEvent {
     eventType: AuditEventType;

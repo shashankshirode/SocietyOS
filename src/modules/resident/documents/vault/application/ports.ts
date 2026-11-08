@@ -2,14 +2,12 @@ import type { Absent } from '../../../../../shared/types/absence.types';
 import type { AuditLogEntry } from '../../../../../core/audit/audit.types';
 import type { DocumentVaultErrorCode, VaultClock } from '../domain/types/primitives';
 import type { DocumentRecord, DocumentVersionRecord } from '../domain/types/document.types';
-import type { UploadSession } from '../domain/types/upload.types';
-import type { VerificationCase } from '../domain/types/verification.types';
-import type { SignatureEnvelope } from '../domain/types/verification.types';
+import type { UploadSession , CommittedUpload } from '../domain/types/upload.types';
+import type { VerificationCase , SignatureEnvelope } from '../domain/types/verification.types';
 import type { AccessLogEntry, RetrievalTicket } from '../domain/types/access.types';
 import type { LegalHold } from '../domain/types/retention.types';
 import type { DigestProvider } from '../domain/engines/integrityEngine';
 import type { DocumentPolicySet } from '../domain/types/policy.types';
-import type { CommittedUpload } from '../domain/types/upload.types';
 
 export type DocumentStore = {
   readonly insert: (document: DocumentRecord) => boolean;

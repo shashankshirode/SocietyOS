@@ -1,5 +1,4 @@
-import type { CaseView, ActorContextInput, DisputeCommand } from '../application/caseService';
-import type { CaseCommandOutcome } from '../application/caseService';
+import type { CaseView, ActorContextInput, DisputeCommand , CaseCommandOutcome } from '../application/caseService';
 import { createDisputeRuntime, type DisputeRuntime } from '../infrastructure/disputeRuntime';
 import type { DisputeCase, DisputeCaseStatus } from '../domain/types/case.types';
 type CaseService = DisputeRuntime['cases'];

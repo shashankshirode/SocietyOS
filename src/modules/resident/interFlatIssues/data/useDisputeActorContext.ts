@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../../core/auth/AuthProvider';
 import type { ResidenceMembership } from '../../../../core/householdGovernance/identity.types';
 import { mockIdentityStore } from '../../../../core/householdGovernance/mockIdentityStore';
-import type { ActorContextInput } from '../application/caseService';
+import type { ActorContextInput , CaseView } from '../application/caseService';
 import { deriveDisputeActor, disputeIdentityFromSession, type DisputeActorResolution, } from '../domain/types/actorContext.types';
 import { listCasesForActor, viewCase, resetDisputeGateway } from './disputeGateway';
-import type { CaseView } from '../application/caseService';
 import type { DisputeCase } from '../domain/types/case.types';
 export type DisputeActorContext = {
     readonly status: 'READY';

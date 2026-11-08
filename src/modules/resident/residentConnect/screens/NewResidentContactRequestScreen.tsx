@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, ScrollView, TextInput, View } from "react-native";
+import { type ScrollViewInstance, type TextInputInstance, KeyboardAvoidingView, ScrollView, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -65,9 +65,9 @@ export function NewResidentContactRequestScreen({ navigation, route }: Props) {
     const [showErrors, setShowErrors] = useState(false);
     const [sheetState, setSheetState] = useState<SheetState>('closed');
     const [footerHeight, setFooterHeight] = useState(0);
-    const scrollRef = useRef<ScrollView>(null);
-    const subjectInputRef = useRef<TextInput>(null);
-    const messageInputRef = useRef<TextInput>(null);
+    const scrollRef = useRef<ScrollViewInstance>(null);
+    const subjectInputRef = useRef<TextInputInstance>(null);
+    const messageInputRef = useRef<TextInputInstance>(null);
     const validation = useMemo(() => validateResidentContactRequest(formValues.subject, formValues.message), [formValues.message, formValues.subject]);
     const subjectError = useMemo(() => {
         if (!subjectTouched && !showErrors)
@@ -102,7 +102,7 @@ export function NewResidentContactRequestScreen({ navigation, route }: Props) {
     const handleTopicChange = (topic: ResidentContactTopic): void => {
         setFormValues((current) => ({ ...current, topic }));
     };
-    const scrollInputIntoView = useCallback((input: TextInput | null): void => {
+    const scrollInputIntoView = useCallback((input: TextInputInstance | null): void => {
         if (!input || !scrollRef.current)
             return;
         scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(input, 24, true);

@@ -15,14 +15,20 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
   const contextUnitB804: ResidentRepositoryRequestContext = {
     activeHome: {
       homeContextId: 'ctx-b804',
-      residenceId: 'unit-b804',
+      residentId: 'usr-rohan-01',
       societyId: 'soc-palm-grove-01',
       unitId: 'unit-b804',
       flatNumber: 'B-804',
       societyName: 'Palm Grove',
+      societyAreaId: 'area-1',
+      societyAreaName: 'Main Campus',
+      city: 'Mumbai',
+      displayUnitName: 'B-804',
       residentRole: 'owner',
-      isPrimaryResidence: true,
-      hasPendingDues: false,
+      status: 'active',
+      featureFlagScopeId: 'ff-soc-palm-grove-01-b804',
+      permissionScopeId: 'perm-soc-palm-grove-01-b804',
+      dataScopeKey: 'soc-palm-grove-01:unit-b804',
     },
     dataScopeKey: 'soc-palm-grove-01:unit-b804',
   };
@@ -30,14 +36,20 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
   const contextUnitA1204: ResidentRepositoryRequestContext = {
     activeHome: {
       homeContextId: 'ctx-a1204',
-      residenceId: 'unit-a1204',
+      residentId: 'usr-ananya-01',
       societyId: 'soc-palm-grove-01',
       unitId: 'unit-a1204',
       flatNumber: 'A-1204',
       societyName: 'Palm Grove',
+      societyAreaId: 'area-1',
+      societyAreaName: 'Main Campus',
+      city: 'Mumbai',
+      displayUnitName: 'A-1204',
       residentRole: 'owner',
-      isPrimaryResidence: false,
-      hasPendingDues: false,
+      status: 'active',
+      featureFlagScopeId: 'ff-soc-palm-grove-01-a1204',
+      permissionScopeId: 'perm-soc-palm-grove-01-a1204',
+      dataScopeKey: 'soc-palm-grove-01:unit-a1204',
     },
     dataScopeKey: 'soc-palm-grove-01:unit-a1204',
   };
@@ -62,7 +74,7 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
       // Create a private document in Unit B-804
       const docB804 = await documentMockSource.uploadPlaceholder(contextUnitB804, {
         title: 'B-804 Electricity Tax Invoice',
-        category: 'PERSONAL',
+        category: 'OTHER',
       });
       expect(docB804.ok).toBe(true);
       if (!docB804.ok) return;
@@ -70,13 +82,15 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
       // Attempt to access document using Unit A-1204 context
       const crossUnitDetail = await documentMockSource.detail(contextUnitA1204, docB804.data.id);
       expect(crossUnitDetail.ok).toBe(true);
-      expect(crossUnitDetail.data).toBeUndefined(); // Absent
+      if (crossUnitDetail.ok) {
+        expect(crossUnitDetail.data).toBeUndefined(); // Absent
+      }
 
       // Attempt to record access log from Unit A-1204
       const illegalLog = await documentMockSource.recordAccess(contextUnitA1204, {
         documentId: docB804.data.id,
         documentTitle: docB804.data.title,
-        action: 'VIEW',
+        action: 'VIEWED',
       });
       expect(illegalLog.ok).toBe(false);
       if (!illegalLog.ok) {
@@ -131,17 +145,29 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
     it('handles 1,000 deterministic bills with fast cursor pagination without performance degradation', () => {
       const generatedBills: Bill[] = Array.from({ length: 1000 }, (_, index) => ({
         id: `bill-perf-${index}`,
+        billNumber: `BILL-PERF-${index}`,
+        flatNumber: 'B-804',
+        societyName: 'Palm Grove',
+        billingPeriod: '2026-10',
         societyId: 'soc-palm-grove-01',
         unitId: 'unit-b804',
         title: `Maintenance Bill #${index}`,
         amount: 2500 + (index % 100),
         status: index % 3 === 0 ? 'PAID' : index % 3 === 1 ? 'DUE' : 'OVERDUE',
         dueDate: `2026-${String((index % 12) + 1).padStart(2, '0')}-15`,
-        charges: [{ id: `c-${index}`, title: 'Monthly Maintenance', amount: 2500, currencyCode: 'INR' }],
+        charges: [{
+          lineItemId: `c-${index}`,
+          type: 'maintenance',
+          label: 'Monthly Maintenance',
+          labelMessageKey: 'bills.maintenance',
+          amount: 2500,
+          currencyCode: 'INR',
+          isCredit: false,
+        }],
       }));
 
       const startTime = Date.now();
-      const page1 = paginateResidentBills(generatedBills, { filter: 'unpaid', pageSize: 20 });
+      const page1 = paginateResidentBills(generatedBills, { filter: 'unpaid', cursor: null, pageSize: 20 });
       const duration1 = Date.now() - startTime;
 
       expect(page1.bills.length).toBe(20);
@@ -154,7 +180,7 @@ describe('SocietyOS Adversarial Isolation & Large Dataset Resilience', () => {
       const page2 = paginateResidentBills(generatedBills, {
         filter: 'unpaid',
         pageSize: 20,
-        cursor: page1.nextCursor ?? undefined,
+        cursor: page1.nextCursor ?? null,
       });
       const duration2 = Date.now() - startTime2;
 

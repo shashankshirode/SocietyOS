@@ -1,6 +1,5 @@
-import type { VaultActor, VaultClock } from '../../../../../core/identity/personaRegistry';
-import type { FacilityBooking } from '../../../models/facilityBooking.models';
-import type { FacilityBookingQrPass } from '../../../models/facilityBooking.models';
+import type { VaultActor, VaultClock } from '../../../../core/identity/personaRegistry';
+import type { FacilityBooking, FacilityBookingQrPass } from '../models/facilityBooking.models';
 
 export interface QrVerificationPorts {
   readonly clock: VaultClock;

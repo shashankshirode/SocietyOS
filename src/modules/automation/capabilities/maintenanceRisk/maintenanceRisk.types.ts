@@ -12,25 +12,25 @@ export type MaintenanceRiskResult = {
   assetCategory?: string;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   riskScore: number;
-  factors: Array<{
+  factors: {
     factor: string;
     value: unknown;
     weight: number;
     description: string;
-  }>;
-  evidence: Array<{
+  }[];
+  evidence: {
     type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE';
     entityId: string;
     entityType: string;
     metric: string;
     value: number;
     asOf: string;
-  }>;
-  recommendations: Array<{
+  }[];
+  recommendations: {
     action: string;
     priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
     rationale: string;
-  }>;
+  }[];
   confidence: number;
   confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
   dataFreshness: string;
@@ -60,10 +60,10 @@ export type AssetMaintenanceMetrics = {
 export function calculateRiskScore(metrics: AssetMaintenanceMetrics): {
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   riskScore: number;
-  factors: Array<{ factor: string; value: unknown; weight: number; description: string }>;
+  factors: { factor: string; value: unknown; weight: number; description: string }[];
 } {
   let score = 0;
-  const factors: Array<{ factor: string; value: unknown; weight: number; description: string }> = [];
+  const factors: { factor: string; value: unknown; weight: number; description: string }[] = [];
 
   if (metrics.breakdownCount > 0) {
     const breakdownScore = Math.min(metrics.breakdownCount * 15, 40);
@@ -165,12 +165,12 @@ export function calculateRiskScore(metrics: AssetMaintenanceMetrics): {
   return { riskLevel, riskScore: Math.min(score, 100), factors };
 }
 
-export function getRiskRecommendations(riskLevel: string, factors: any[]): Array<{
+export function getRiskRecommendations(riskLevel: string, factors: any[]): {
   action: string;
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   rationale: string;
-}> {
-  const recommendations: Array<{ action: string; priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'; rationale: string }> = [];
+}[] {
+  const recommendations: { action: string; priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'; rationale: string }[] = [];
 
   if (riskLevel === 'CRITICAL' || riskLevel === 'HIGH') {
     recommendations.push({

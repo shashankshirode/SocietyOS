@@ -1,5 +1,7 @@
 import type { ResidentScopedEntity } from './residentScope.types';
+import type { Absent } from './absence.types';
 import type { JsonObject } from '../../core/api/api.types';
+export type { StaffMember } from './staff.types';
 
 export type ComplaintCategory =
   | 'PLUMBING'
@@ -60,6 +62,7 @@ export type ComplaintSubcategory =
   | 'OTHER';
 
 export type ComplaintStatus =
+  | 'OPEN'
   | 'CREATED'
   | 'CLASSIFIED'
   | 'PENDING_ASSIGNMENT'
@@ -67,6 +70,7 @@ export type ComplaintStatus =
   | 'ACKNOWLEDGED'
   | 'IN_PROGRESS'
   | 'WAITING'
+  | 'WAITING_FOR_RESIDENT'
   | 'HOLD'
   | 'RESOLVED'
   | 'CONFIRMED'
@@ -84,6 +88,7 @@ export type ComplaintPriority =
   | 'MEDIUM'
   | 'NORMAL'
   | 'HIGH'
+  | 'URGENT'
   | 'CRITICAL'
   | 'EMERGENCY';
 
@@ -125,6 +130,10 @@ export type SlaPausePolicy =
 
 export type HoldReason =
   | 'SPARE_PART_REQUIRED'
+  | 'WAITING_FOR_PART'
+  | 'WAITING_FOR_RESIDENT'
+  | 'WAITING_FOR_VENDOR'
+  | 'WAITING_FOR_ACCESS'
   | 'VENDOR_REQUIRED'
   | 'RESIDENT_UNAVAILABLE'
   | 'EXTERNAL_DEPENDENCY'
@@ -409,16 +418,22 @@ export interface ComplaintHold extends ResidentScopedEntity {
   id: string;
   complaintId: string;
   reason: HoldReason;
-  notes?: string;
+  notes?: string | Absent;
   startedByUserId: string;
   startedByDisplayName: string;
   startedAt: string;
-  expectedResumeAt?: string;
-  resumedAt?: string;
-  resumedByUserId?: string;
-  resumedByDisplayName?: string;
-  dependencyDetails?: JsonObject;
+  expectedResumeAt?: string | Absent;
+  resumedAt?: string | Absent;
+  resumedByUserId?: string | Absent;
+  resumedByDisplayName?: string | Absent;
+  dependencyDetails?: JsonObject | Absent;
   isActive: boolean;
+  holdStartedAt?: string | Absent;
+  holdExpectedResumeAt?: string | Absent;
+  holdNotes?: string | Absent;
+  pausePolicy?: string | Absent;
+  createdAt?: string | Absent;
+  updatedAt?: string | Absent;
 }
 
 export interface ComplaintEscalation extends ResidentScopedEntity {
@@ -640,6 +655,7 @@ export interface ComplaintSlaMetrics {
 }
 
 export const COMPLAINT_STATUS_TRANSITIONS: Record<ComplaintStatus, ComplaintStatus[]> = {
+  OPEN: ['CREATED', 'CANCELLED'],
   CREATED: ['CLASSIFIED', 'CANCELLED', 'REJECTED'],
   CLASSIFIED: ['PENDING_ASSIGNMENT', 'ASSIGNED', 'CANCELLED'],
   PENDING_ASSIGNMENT: ['ASSIGNED', 'CANCELLED'],
@@ -654,6 +670,7 @@ export const COMPLAINT_STATUS_TRANSITIONS: Record<ComplaintStatus, ComplaintStat
   REOPENED: ['ASSIGNED', 'IN_PROGRESS', 'PENDING_ASSIGNMENT', 'CANCELLED'],
   REASSIGNED: ['ASSIGNED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'CANCELLED'],
   ESCALATED: ['ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'],
+  WAITING_FOR_RESIDENT: ['IN_PROGRESS', 'CANCELLED', 'ESCALATED'],
   CANCELLED: ['CREATED'],
   REJECTED: ['CREATED'],
   DUPLICATE: ['CREATED'],
@@ -686,6 +703,7 @@ export const COMPLAINT_PRIORITY_LABELS: Record<ComplaintPriority, string> = {
   MEDIUM: 'Medium',
   NORMAL: 'Normal',
   HIGH: 'High',
+  URGENT: 'Urgent',
   CRITICAL: 'Critical',
   EMERGENCY: 'Emergency',
 };
@@ -797,7 +815,7 @@ export interface ComplaintFeedback extends ResidentScopedEntity {
   complaintId: string;
   submittedByUserId: string;
   rating: number;
-  comment?: string;
+  comment?: string | Absent;
   submittedAt: string;
   createdAt: string;
   updatedAt: string;

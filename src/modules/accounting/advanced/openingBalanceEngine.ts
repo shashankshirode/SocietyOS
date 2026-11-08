@@ -6,7 +6,7 @@ import { apiEndpoints } from '../../../core/api/apiEndpoints';
 
 class OpeningBalanceEngine {
   private imports: Map<string, OpeningBalanceImport> = new Map();
-  private listeners: Array<(import_: OpeningBalanceImport) => void> = [];
+  private listeners: ((import_: OpeningBalanceImport) => void)[] = [];
 
   constructor() {
     this.loadFromStorage();

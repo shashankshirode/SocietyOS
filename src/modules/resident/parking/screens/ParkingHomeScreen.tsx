@@ -145,7 +145,7 @@ export function ParkingHomeScreen({ navigation, route }: ParkingHomeScreenProps)
         });
         refetch();
     };
-    return (<SocietyExperienceFrame>
+    return (<SocietyExperienceFrame showAmbientChrome={false}>
       <View style={[styles.root, createBgStyle(theme.semantic.surface.canvas)]}>
         <ScrollView contentContainerStyle={[styles.content, createContentInset(0, bottomObstruction)]} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.semantic.accent.moss}/>}>
           

@@ -26,8 +26,7 @@ import type {
 import type { CategoryPolicy, DocumentPolicySet } from '../domain/types/policy.types';
 import { findCategoryPolicy, isEffectiveAt, resolvePolicySet } from '../domain/types/policy.types';
 import type { UploadIntent, UploadSession, UploadSessionState } from '../domain/types/upload.types';
-import type { VerificationCase, VerificationChecklist } from '../domain/types/verification.types';
-import type { SignatureEnvelope, SignatureMethod } from '../domain/types/verification.types';
+import type { VerificationCase, VerificationChecklist , SignatureEnvelope, SignatureMethod } from '../domain/types/verification.types';
 import type { AccessLogEntry, RetrievalTicket, AccessGrant, DocumentAction } from '../domain/types/access.types';
 import type { LegalHold, RetentionAssessment, RetentionBasis, DispositionOutcome, RetentionJobOutcome, TraceableRetentionRecord } from '../domain/types/retention.types';
 import type { ObservedContentType } from '../domain/engines/integrityEngine';

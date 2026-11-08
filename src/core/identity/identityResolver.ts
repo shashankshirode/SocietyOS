@@ -1,7 +1,8 @@
 import { MOCK_PERSONAS } from './personaRegistry';
-import type { ActiveContext, AppRole, UnitRelationship, SocietyMembership, UserAccount, PersonProfile } from './identity.types';
+import type { ActiveContext, UnitRelationship, SocietyMembership, UserAccount, PersonProfile } from './identity.types';
+import type { AppRole } from '../permissions/permission.types';
 import { mockStore } from '../mockStore/mockStore';
-import type { AdminApproval } from '../../shared/types/admin.types';
+import type { AdminApproval, AdminResident } from '../../shared/types/admin.types';
 
 export interface RegisteredIdentity {
   user: UserAccount;
@@ -49,18 +50,19 @@ export function lookupIdentityByPhone(rawPhone: string): IdentityLookupResult {
   for (const [key, persona] of Object.entries(MOCK_PERSONAS)) {
     const personaPhone = normalizePhoneNumber(persona.user.phone);
     if (personaPhone === normalized) {
+      const resolvedIdentity: RegisteredIdentity = {
+        user: persona.user,
+        person: persona.person,
+        membership: persona.membership,
+        ...(persona.unitRelationship !== undefined ? { unitRelationship: persona.unitRelationship } : {}),
+        activeRole: persona.activeRole,
+        isHouseholdAdmin: persona.isHouseholdAdmin,
+        personaKey: key,
+        status: 'ACTIVE',
+      };
       return {
         status: 'REGISTERED',
-        identity: {
-          user: persona.user,
-          person: persona.person,
-          membership: persona.membership,
-          unitRelationship: persona.unitRelationship,
-          activeRole: persona.activeRole,
-          isHouseholdAdmin: persona.isHouseholdAdmin,
-          personaKey: key,
-          status: 'ACTIVE',
-        },
+        identity: resolvedIdentity,
       };
     }
   }
@@ -75,15 +77,15 @@ export function lookupIdentityByPhone(rawPhone: string): IdentityLookupResult {
   }
 
   // 3. Check mockStore residents
-  const storeResidents = mockStore.getState().residents;
-  const storeMatch = storeResidents.find((r) => r.phone && normalizePhoneNumber(r.phone) === normalized);
+  const storeResidents = mockStore.getState().residents as Array<AdminResident & { phone?: string; email?: string; unitNumber: string; wing: string; role: 'OWNER' | 'TENANT' | 'FAMILY' }>;
+  const storeMatch = storeResidents.find((r) => Boolean(r.phone) && normalizePhoneNumber(r.phone) === normalized);
   if (storeMatch) {
     const isOwner = storeMatch.role === 'OWNER';
     const role: AppRole = isOwner ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT';
     const dynamicId: RegisteredIdentity = {
       user: {
         id: storeMatch.id,
-        email: storeMatch.email,
+        email: storeMatch.email ?? `${storeMatch.name.toLowerCase().replace(/\s+/g, '.')}@societyos.mock`,
         phone: `+91${normalized}`,
         createdAtIso: new Date().toISOString(),
         isVerified: true,
@@ -104,20 +106,22 @@ export function lookupIdentityByPhone(rawPhone: string): IdentityLookupResult {
         joinedAtIso: new Date().toISOString(),
         defaultRole: role,
       },
-      unitRelationship: {
-        id: `rel-${storeMatch.id}`,
-        userId: storeMatch.id,
-        personId: `per-${storeMatch.id}`,
-        societyId: 'soc-greenwood-pune',
-        unitId: `unit-${storeMatch.unitNumber.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
-        unitNumber: storeMatch.unitNumber,
-        towerOrBlock: storeMatch.wing,
-        relationshipType: isOwner ? 'PRIMARY_OWNER' : 'TENANT',
-        status: 'ACTIVE',
-        isHouseholdAdmin: isOwner,
-        allowedCapabilities: ['*'],
-        validFromIso: new Date().toISOString(),
-      },
+      ...(storeMatch.unitNumber ? {
+        unitRelationship: {
+          id: `rel-${storeMatch.id}`,
+          userId: storeMatch.id,
+          personId: `per-${storeMatch.id}`,
+          societyId: 'soc-greenwood-pune',
+          unitId: `unit-${storeMatch.unitNumber.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+          unitNumber: storeMatch.unitNumber,
+          towerOrBlock: storeMatch.wing,
+          relationshipType: isOwner ? 'PRIMARY_OWNER' : 'TENANT',
+          status: 'ACTIVE',
+          isHouseholdAdmin: isOwner,
+          allowedCapabilities: ['*'],
+          validFromIso: new Date().toISOString(),
+        },
+      } : {}),
       activeRole: role,
       isHouseholdAdmin: isOwner,
       status: 'ACTIVE',
@@ -214,7 +218,7 @@ export function approveResidenceRequest(approvalId: string): boolean {
 
   // Find user by name in dynamic users
   for (const [phone, user] of dynamicUsersByPhone.entries()) {
-    if (user.person.preferredName === req.requestedBy || user.user.name === req.requestedBy) {
+    if (user.person.preferredName === req.requestedBy || user.person.firstName === req.requestedBy || user.person.lastName === req.requestedBy) {
       const isOwner = req.requestedByRole === 'RESIDENT_OWNER';
       const role: AppRole = isOwner ? 'RESIDENT_OWNER' : 'RESIDENT_TENANT';
       const updated: RegisteredIdentity = {

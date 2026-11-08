@@ -34,7 +34,7 @@ export function GuardVehicleLookupScreen({ navigation }: GuardVehicleLookupScree
       <AppButton title={localizedUiText.m_96c475ddd9a3} onPress={handleSearch}/>
       {isLoading && submittedQuery ? <LoadingState message={localizedUiText.m_5ed852f856c8}/> : null}
       {error ? <ErrorState message={error.message} onRetry={refetch}/> : null}
-      <FlatList data={data} keyExtractor={(item) => item.id} scrollEnabled={false} ListEmptyComponent={submittedQuery ? (<EmptyState title={localizedUiText.m_edc615c15b8f} description={localizedUiText.m_5daf063a64b2} iconName="search-outline"/>) : null} renderItem={({ item }) => <LookupCard result={item}/>}/>
+      <FlatList data={data} keyExtractor={(item) => item.id} scrollEnabled={false} ListEmptyComponent={submittedQuery ? (<EmptyState title={localizedUiText.m_edc615c15b8f} description={localizedUiText.m_5daf063a64b2} iconName="search-outline"/>) : <></>} renderItem={({ item }) => <LookupCard result={item}/>}/>
     </ParkingScreen>);
 }
 function LookupCard({ result }: {

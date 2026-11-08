@@ -108,7 +108,7 @@ export interface VisitorPass extends ResidentScopedEntity {
   readonly unitId: string;
   readonly flatNumber: string;
   readonly societyId: string;
-  readonly gateId?: string;
+  readonly gateId?: string | undefined;
   readonly status: VisitorPassStatus;
   readonly approvalSource: ApprovalSource;
   readonly createdByUserId: string;
@@ -117,21 +117,21 @@ export interface VisitorPass extends ResidentScopedEntity {
   readonly updatedAt: string;
   readonly expectedEntryAt: string;
   readonly expectedExitAt: string;
-  readonly actualEntryAt?: string;
-  readonly actualExitAt?: string;
-  readonly entryGateId?: string;
-  readonly entryGateName?: string;
-  readonly exitGateId?: string;
-  readonly exitGateName?: string;
-  readonly vehicleRegistration?: string;
-  readonly vehicleType?: 'CAR' | 'BIKE' | 'OTHER';
-  readonly qrCredential?: string;
-  readonly otpCredential?: string;
-  readonly credentialExpiresAt?: string;
+  readonly actualEntryAt?: string | undefined;
+  readonly actualExitAt?: string | undefined;
+  readonly entryGateId?: string | undefined;
+  readonly entryGateName?: string | undefined;
+  readonly exitGateId?: string | undefined;
+  readonly exitGateName?: string | undefined;
+  readonly vehicleRegistration?: string | undefined;
+  readonly vehicleType?: ('CAR' | 'BIKE' | 'OTHER') | undefined;
+  readonly qrCredential?: string | undefined;
+  readonly otpCredential?: string | undefined;
+  readonly credentialExpiresAt?: string | undefined;
   readonly isRecurring: boolean;
-  readonly recurringPattern?: RecurringPattern;
+  readonly recurringPattern?: RecurringPattern | undefined;
   readonly dataVersion: number;
-  readonly watchlistWarning?: boolean;
+  readonly watchlistWarning?: boolean | undefined;
 }
 
 export interface RecurringPattern {
@@ -224,6 +224,8 @@ export interface GateEntry extends ResidentScopedEntity {
   readonly isOfflineCapture: boolean;
   readonly offlineEventId?: string;
   readonly dataVersion: number;
+  readonly createdAt?: string;
+  readonly updatedAt?: string;
 }
 
 export interface GateExit extends ResidentScopedEntity {
@@ -239,6 +241,8 @@ export interface GateExit extends ResidentScopedEntity {
   readonly isOfflineCapture: boolean;
   readonly offlineEventId?: string;
   readonly dataVersion: number;
+  readonly createdAt?: string;
+  readonly updatedAt?: string;
 }
 
 export interface OfflineGateEvent {
@@ -251,13 +255,13 @@ export interface OfflineGateEvent {
   readonly payload: JsonObject;
   readonly localTimestamp: string;
   readonly deviceId: string;
-  readonly syncStatus: OfflineSyncStatus;
-  readonly syncAttempts: number;
-  readonly lastSyncError?: string;
+  syncStatus: OfflineSyncStatus;
+  syncAttempts: number;
+  lastSyncError?: string;
   readonly createdAt: string;
-  readonly syncedAt?: string;
-  readonly conflictResolution?: 'ACCEPTED' | 'DUPLICATE' | 'REJECTED' | 'REQUIRES_REVIEW';
-  readonly serverEventId?: string;
+  syncedAt?: string;
+  conflictResolution?: 'ACCEPTED' | 'DUPLICATE' | 'REJECTED' | 'REQUIRES_REVIEW';
+  serverEventId?: string;
 }
 
 export interface CurrentVisitorPresence {

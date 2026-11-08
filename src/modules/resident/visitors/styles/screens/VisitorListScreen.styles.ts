@@ -1,104 +1,338 @@
-import { StyleSheet } from "react-native";
-import { Radius, Shadows, Spacing } from "../../../../../shared/theme";
+import { StyleSheet } from 'react-native';
+import {
+  FONT_FAMILY_INTER,
+  FONT_FAMILY_INTER_MEDIUM,
+  FONT_FAMILY_INTER_BOLD,
+} from '../../../../../shared/theme/typography';
+
 export const styles = StyleSheet.create({
-    root: {
-        flex: 1,
-    },
-    unavailableContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 32,
-        gap: 8,
-    },
-    tabContainer: {
-        paddingTop: 18,
-        paddingBottom: 14,
-    },
-    tabScroll: {
-        paddingHorizontal: 20,
-        gap: 10,
-        flexGrow: 1,
-    },
-    tabChip: {
-        flex: 1,
-        minWidth: 112,
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderRadius: 24,
-        borderWidth: 1,
-    },
-    scrollContent: {
-        paddingBottom: 132,
-    },
-    arrivalHero: {
-        marginBottom: 22,
-        padding: 22,
-        borderRadius: 24,
-        gap: 8,
-    },
-    fabContainer: {
-        position: 'absolute',
-        right: Spacing.xl,
-    },
-    fab: {
-        minWidth: 164,
-        height: 56,
-        borderRadius: Radius.pill,
-        flexDirection: 'row',
-        gap: 8,
-        paddingHorizontal: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...Shadows.floating,
-    },
+  root: {
+    flex: 1,
+    backgroundColor: '#F8F6F0',
+  },
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backBtn: {
+    padding: 4,
+    marginRight: -4,
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  hiddenAccessibilityText: {
+    position: 'absolute',
+    opacity: 0,
+    height: 0,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconActionBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addBtnCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#064F43',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#064F43',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchBarBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    paddingHorizontal: 14,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#111613',
+  },
+  segmentedWrapper: {
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  bannerSection: {
+    marginBottom: 16,
+    gap: 10,
+  },
+  approvalCard: {
+    backgroundColor: '#FFF8E6',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F3D28C',
+    padding: 14,
+    gap: 10,
+  },
+  approvalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  approvalIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FDEBB8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  approvalInfo: {
+    flex: 1,
+  },
+  approvalTitle: {
+    fontSize: 15,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#7D4A00',
+  },
+  approvalSubtitle: {
+    fontSize: 12,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#9C6615',
+    marginTop: 2,
+  },
+  approvalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 2,
+  },
+  allowBtn: {
+    flex: 1,
+    backgroundColor: '#064F43',
+    borderRadius: 10,
+    paddingVertical: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  allowBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '600',
+  },
+  denyBtn: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E53E3E',
+    borderRadius: 10,
+    paddingVertical: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  denyBtnText: {
+    color: '#E53E3E',
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+  },
+  parcelCard: {
+    backgroundColor: '#EEF7F4',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#BFE3D7',
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  parcelInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  parcelTitle: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#064F43',
+  },
+  parcelSubtitle: {
+    fontSize: 12,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#4A6B62',
+    marginTop: 2,
+  },
+  collectBtn: {
+    backgroundColor: '#064F43',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  collectBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '600',
+  },
+  groupHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  groupTitle: {
+    fontSize: 17,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  groupCount: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#8C928E',
+  },
+  listGrid: {
+    gap: 12,
+  },
+  visitorCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  cardContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F2F1EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+  },
+  avatarInitials: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#064F43',
+  },
+  infoCol: {
+    flex: 1,
+    gap: 4,
+  },
+  visitorNameText: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  visitorSublineText: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#626A65',
+  },
+  pillRow: {
+    marginTop: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  moreActionBtn: {
+    padding: 8,
+    marginRight: -4,
+  },
+  emptyStateBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    gap: 12,
+  },
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F2F1EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '600',
+    color: '#111613',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#626A65',
+    textAlign: 'center',
+    maxWidth: 260,
+    lineHeight: 20,
+  },
+  emptyCtaBtn: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#064F43',
+    borderRadius: 14,
+  },
+  emptyCtaText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '600',
+  },
 });
-export function createSafeTextColorStyle(colorValue: string) {
-    return {
-        color: colorValue,
-        marginTop: 16
-    } as const;
+
+export function createRootTopInset(inset: number) {
+  return { paddingTop: inset } as const;
 }
-export function createSafeTextColorStyle2(colorValue: string) {
-    return {
-        color: colorValue,
-        textAlign: 'center',
-        marginTop: 8
-    } as const;
-}
-export function createSafeTextColorStyle3(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createViewBackgroundColorStyle(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle2(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createPressableBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBottomStyle(bottomValue: number) {
-    return {
-        bottom: bottomValue
-    } as const;
-}
-export function createPressableScaleBackgroundColorStyle(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createScrollPaddingBottomStyle(paddingBottomValue: number) {
-    return { paddingBottom: paddingBottomValue } as const;
+
+export function createScrollContentPadding(bottomInset: number) {
+  return { paddingBottom: bottomInset + 84 } as const;
 }

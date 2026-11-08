@@ -47,7 +47,7 @@ export function OnboardingShell({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top Safe Area Container */}
       <View style={{ paddingTop: topPadding }}>

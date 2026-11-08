@@ -2,6 +2,8 @@ import type { Absent } from '../../../../../../shared/types/absence.types';
 import type {
   DocumentCategoryGroup,
   DocumentOwningEntityType,
+  DocumentRecord,
+  DocumentVersionRecord,
   IntegrityAlgorithm,
   IntegrityRecord,
   MalwareScanRecord,

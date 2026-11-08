@@ -9,7 +9,8 @@ export type VerificationCaseState =
   | 'RESUBMISSION_REQUIRED'
   | 'EXPIRED'
   | 'REVOKED'
-  | 'CLOSED';
+  | 'CLOSED'
+  | 'SIGNED';
 
 export type ChecklistItemState =
   | 'PENDING'
@@ -83,6 +84,11 @@ export type VerificationCase = {
   readonly closesAt: string | Absent;
   readonly revision: Revision;
   readonly trace: TraceContext;
+  readonly decidedBy?: string | Absent;
+  readonly decidedAt?: string | Absent;
+  readonly decision?: VerificationDecision | Absent;
+  readonly decisionReason?: string | Absent;
+  readonly signatureEnvelopeId?: string | Absent;
 };
 
 export type SignatureMethod =
@@ -136,6 +142,8 @@ export type SignatureEnvelope = {
   readonly sealedAt: string | Absent;
   readonly revision: Revision;
   readonly trace: TraceContext;
+  readonly expectedSigners?: readonly { signerId: string; signerRole: string; }[] | Absent;
+  readonly expectedSignersCount?: number | Absent;
 };
 
 export type SignedIssuance = {

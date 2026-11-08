@@ -21,6 +21,8 @@ export type DocumentCategory =
   | 'INSURANCE'
   | 'AUDIT_REPORT'
   | 'CIRCULAR'
+  | 'PROPERTY_TAX'
+  | 'SOCIETY_NOC'
   | 'OTHER';
 
 export type DocumentStatus =

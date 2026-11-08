@@ -14,7 +14,7 @@ export interface ComplaintNotificationPayload {
   correlationId: string;
 }
 
-const NOTIFICATION_TEMPLATES: Record<string, { title: string; body: string }> = {
+const NOTIFICATION_TEMPLATES = {
   COMPLAINT_CREATED: {
     title: 'Complaint Registered',
     body: 'Your complaint "{title}" has been registered with ticket number {ticketNumber}.',
@@ -260,9 +260,9 @@ export class ComplaintNotificationService {
       recipientUserIds,
       title: interpolate(NOTIFICATION_TEMPLATES.PARENT_INCIDENT_UPDATE.title, { parentTitle: parentIncident.title }),
       body: interpolate(NOTIFICATION_TEMPLATES.PARENT_INCIDENT_UPDATE.body, { parentTitle: parentIncident.title, updateText }),
-      data: { parentIncidentId: complaint.id, updateText },
+      data: { parentIncidentId: parentIncident.id, updateText },
       priority: 'high',
-      actionUrl: `/parent-incidents/${complaint.id}`,
+      actionUrl: `/parent-incidents/${parentIncident.id}`,
       correlationId: generateCorrelationId(),
     });
   }
@@ -277,7 +277,7 @@ export class ComplaintNotificationService {
       entityId: payload.correlationId,
       newState: { type: payload.type, recipients: payload.recipientUserIds.length, priority: payload.priority },
       idempotencyKey: payload.correlationId,
-      source: 'SYSTEM',
+      source: 'SYSTEM_JOB',
       outcome: 'SUCCESS',
     });
 

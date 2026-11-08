@@ -44,7 +44,9 @@ export function ActivityFeed({ title, items, emptyTitle = getActiveUiLiteral("m_
           <SafeText variant="body" color="muted">{emptyTitle}</SafeText>
           <SafeText variant="caption" color="muted">{emptySubtitle}</SafeText>
         </View>) : (<View style={[styles.feedCard, createViewBackgroundColorBorderColorStyle2(colors.surface, colors.border)]}>
-          {items.map((item, index) => (<Animated.View key={item.id} entering={FadeInDown.delay(index * 60).duration(300).springify()} style={[styles.row, index < items.length - 1 && createAnimatedViewBorderBottomColorStyle(colors.border)]}>
+          {items.map((item, index) => {
+            const enteringAnimation = FadeInDown?.delay ? FadeInDown.delay(index * 60).duration(300).springify() : undefined;
+            return (<Animated.View key={item.id} {...(enteringAnimation ? { entering: enteringAnimation } : {})} style={[styles.row, index < items.length - 1 && createAnimatedViewBorderBottomColorStyle(colors.border)]}>
               <StatusDot {...includeWhenPresent("tone", item.statusTone)}/>
               <View style={styles.rowBody}>
                 <View style={styles.rowHeader}>
@@ -56,7 +58,8 @@ export function ActivityFeed({ title, items, emptyTitle = getActiveUiLiteral("m_
                 <SafeText variant="caption" color="muted" numberOfLines={1}>{item.subtitle}</SafeText>
                 {item.timestamp && <SafeText variant="tiny" color="muted">{item.timestamp}</SafeText>}
               </View>
-            </Animated.View>))}
+            </Animated.View>);
+          })}
         </View>)}
     </View>);
 }

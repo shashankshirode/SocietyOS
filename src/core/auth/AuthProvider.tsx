@@ -130,11 +130,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { registerNewUserAccount } = await import('../identity/identityResolver');
-    const identity = registerNewUserAccount({ mobileNumber, fullName, email });
+    const identity = registerNewUserAccount({
+      mobileNumber,
+      fullName,
+      ...(email !== undefined ? { email } : {}),
+    });
 
     const sessionObj: AuthSession = {
       userId: identity.user.id,
-      name: identity.person.preferredName,
+      name: identity.person.preferredName || `${identity.person.firstName} ${identity.person.lastName}`.trim(),
       role: identity.activeRole,
       personaKey: 'rohan',
       isHouseholdAdmin: false,

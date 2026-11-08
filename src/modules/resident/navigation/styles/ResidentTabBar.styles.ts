@@ -12,8 +12,8 @@ export const createResidentTabBarStyles = (theme: AppTheme) =>
       height: 64,
       borderRadius: Radius.pill,
       borderWidth: 1,
-      backgroundColor: '#071F1A',
-      borderColor: 'rgba(255, 255, 255, 0.08)',
+      backgroundColor: theme.colors.tabBarBackground,
+      borderColor: theme.colors.border,
       ...Platform.select({
         ios: {
           shadowColor: '#000',
@@ -32,7 +32,7 @@ export const createResidentTabBarStyles = (theme: AppTheme) =>
       bottom: theme.navigation.internalPadding,
       left: theme.navigation.internalPadding,
       borderRadius: Radius.pill,
-      backgroundColor: 'transparent',
+      backgroundColor: theme.colors.tabBarActive,
     },
     tabItem: {
       flex: 1,
@@ -43,11 +43,14 @@ export const createResidentTabBarStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       paddingVertical: Spacing.xs,
     },
+    tabItemActive: {
+      backgroundColor: theme.colors.tabBarActive,
+    },
     activeDot: {
       width: 4,
       height: 4,
       borderRadius: 2,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: theme.dark ? '#FFFFFF' : '#171C18',
       marginTop: 2,
     },
     centerActionItem: {
@@ -60,9 +63,9 @@ export const createResidentTabBarStyles = (theme: AppTheme) =>
       width: 50,
       height: 50,
       borderRadius: 25,
-      backgroundColor: '#0E362C',
+      backgroundColor: theme.colors.tabBarActive,
       borderWidth: 1.5,
-      borderColor: 'rgba(255, 255, 255, 0.2)',
+      borderColor: theme.colors.tabBarActive,
       alignItems: 'center',
       justifyContent: 'center',
       ...Platform.select({
@@ -80,7 +83,7 @@ export const createResidentTabBarStyles = (theme: AppTheme) =>
     centerActionLabel: {
       fontSize: 10,
       fontWeight: '600',
-      color: 'rgba(255, 255, 255, 0.75)',
+      color: theme.colors.tabBarActive,
       marginTop: 2,
     },
     label: {

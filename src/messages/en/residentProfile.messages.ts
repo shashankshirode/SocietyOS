@@ -40,7 +40,10 @@ export const residentProfileMessages = {
     tenantStatus: 'Active Tenant',
     documentStatus: '4 Verified',
   },
+  homePassport: 'Digital Home Passport',
+  homePassportSub: 'Active residence specs, household, parking & records',
   previews: {
+    homePassport: 'Residence architectural specs, parking bays & vault',
     householdFamily: '2 active family members • Emergency contact set',
     familyAccess: 'Manage 2 family member passes & keys',
     tenantManagement: 'Active tenant: Kabir Sharma',

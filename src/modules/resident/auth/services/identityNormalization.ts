@@ -1,5 +1,10 @@
 import type { SupportedCallingCode } from '../data/membership.types';
-import type { NormalizedContact, DuplicateDetectionResult } from '../data/registration.types';
+import type {
+  NormalizedContact,
+  DuplicateDetectionResult,
+  ResidentRegistration,
+  RegistrationProfile,
+} from '../data/registration.types';
 
 const INDIAN_MOBILE_PATTERN = /^(\+91|91|0)?([6-9]\d{9})$/;
 
@@ -8,6 +13,7 @@ export function normalizeIndianMobile(mobile: string): { normalized: string; cou
   const match = cleaned.match(INDIAN_MOBILE_PATTERN);
   if (!match) return null;
   const number = match[2];
+  if (!number) return null;
   return { normalized: number, countryCode: '+91' };
 }
 
@@ -69,20 +75,47 @@ export function areContactsEquivalent(
          contact1.email === contact2.email;
 }
 
+export type DuplicateCheckRegistration =
+  | ResidentRegistration
+  | {
+      id?: string;
+      registrationId?: string;
+      mobileNumber?: string;
+      countryCode?: SupportedCallingCode;
+      email?: string;
+      fullName?: string;
+      societyId: string;
+      verifiedContact?: NormalizedContact;
+      profile?: RegistrationProfile;
+    };
+
+function extractRegistrationInfo(r: DuplicateCheckRegistration): {
+  id: string;
+  societyId: string;
+  mobileNumber: string;
+  countryCode: SupportedCallingCode;
+  email: string;
+  fullName: string;
+} {
+  const reg = r as any;
+  const id = reg.registrationId || reg.id || '';
+  const societyId = reg.societyId || '';
+  const mobileNumber = reg.verifiedContact?.mobileNumber || reg.mobileNumber || '';
+  const countryCode = (reg.verifiedContact?.countryCode || reg.countryCode || '+91') as SupportedCallingCode;
+  const email = reg.verifiedContact?.email || reg.email || '';
+  const fullName = reg.profile?.fullName || reg.fullName || '';
+  return { id, societyId, mobileNumber, countryCode, email, fullName };
+}
+
 export function detectDuplicateRegistration(
   newContact: NormalizedContact,
-  existingRegistrations: readonly {
-    id: string;
-    mobileNumber: string;
-    countryCode: SupportedCallingCode;
-    email: string;
-    fullName: string;
-    societyId: string;
-  }[],
+  existingRegistrations: readonly DuplicateCheckRegistration[],
   currentSocietyId: string,
   excludeRegistrationId?: string
 ): DuplicateDetectionResult {
-  const sameSocietyRegistrations = existingRegistrations.filter(
+  const normalizedRegistrations = existingRegistrations.map(extractRegistrationInfo);
+
+  const sameSocietyRegistrations = normalizedRegistrations.filter(
     (r) => r.societyId === currentSocietyId && r.id !== excludeRegistrationId
   );
 
@@ -131,7 +164,7 @@ export function detectDuplicateRegistration(
     }
   }
 
-  const otherSocietyRegistrations = existingRegistrations.filter(
+  const otherSocietyRegistrations = normalizedRegistrations.filter(
     (r) => r.societyId !== currentSocietyId
   );
 

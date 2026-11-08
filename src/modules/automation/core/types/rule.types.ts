@@ -1,3 +1,7 @@
+import type { Absent } from '../../../../shared/types/absence.types';
+import type { AutomationTriggerType, AutomationTrigger } from './trigger.types';
+export type { AutomationTriggerType, AutomationTrigger } from './trigger.types';
+
 export type AutomationRuleStatus =
   | 'DRAFT'
   | 'VALIDATING'
@@ -7,13 +11,6 @@ export type AutomationRuleStatus =
   | 'DISABLED'
   | 'INVALID'
   | 'ARCHIVED';
-
-export type AutomationTriggerType =
-  | 'DOMAIN_EVENT'
-  | 'SCHEDULE'
-  | 'THRESHOLD'
-  | 'STATE_DURATION'
-  | 'MANUAL_TEST';
 
 export type AutomationConditionOperator =
   | 'EQUALS'
@@ -45,19 +42,6 @@ export type AutomationActionRisk =
   | 'MODERATE'
   | 'HIGH'
   | 'PROHIBITED_AUTO';
-
-export type AutomationTrigger = {
-  type: AutomationTriggerType;
-  eventName?: string;
-  scheduleCron?: string;
-  scheduleTimezone?: string;
-  thresholdMetric?: string;
-  thresholdOperator?: AutomationConditionOperator;
-  thresholdValue?: number;
-  stateDurationMetric?: string;
-  stateDurationSeconds?: number;
-  manualTestPayload?: Record<string, unknown>;
-};
 
 export type AutomationCondition = {
   id: string;
@@ -93,7 +77,7 @@ export type AutomationCooldown = {
   dedupeKey?: string;
 };
 
-export type AutomationSuppression = {
+export type AutomationRuleSuppression = {
   enabled: boolean;
   reason: string;
   until?: string;
@@ -103,24 +87,24 @@ export type AutomationRule = {
   id: string;
   societyId: string;
   name: string;
-  description?: string;
+  description?: string | Absent;
   version: number;
   status: AutomationRuleStatus;
   trigger: AutomationTrigger;
   conditions: AutomationCondition[];
   actions: AutomationAction[];
-  approvalPolicyId?: string;
+  approvalPolicyId?: string | Absent;
   cooldown: AutomationCooldown;
-  suppression: AutomationSuppression;
-  effectiveFrom?: string;
-  effectiveTo?: string;
+  suppression: AutomationRuleSuppression;
+  effectiveFrom?: string | Absent;
+  effectiveTo?: string | Absent;
   createdBy: string;
   createdAt: string;
-  updatedBy?: string;
+  updatedBy?: string | Absent;
   updatedAt: string;
-  activatedBy?: string;
-  activatedAt?: string;
-  parentRuleId?: string;
+  activatedBy?: string | Absent;
+  activatedAt?: string | Absent;
+  parentRuleId?: string | Absent;
   isLatestVersion: boolean;
 };
 
@@ -131,18 +115,18 @@ export type AutomationRuleVersion = {
   snapshot: AutomationRule;
   createdBy: string;
   createdAt: string;
-  changeSummary?: string;
+  changeSummary?: string | Absent;
 };
 
 export type CreateAutomationRuleCommand = {
   name: string;
-  description?: string;
+  description?: string | Absent;
   trigger: AutomationTrigger;
   conditions: AutomationCondition[];
   actions: AutomationAction[];
-  approvalPolicyId?: string;
+  approvalPolicyId?: string | Absent;
   cooldown: AutomationCooldown;
-  suppression: AutomationSuppression;
+  suppression: AutomationRuleSuppression;
   effectiveFrom?: string;
   effectiveTo?: string;
 };
@@ -155,7 +139,7 @@ export type UpdateAutomationRuleCommand = {
   actions?: AutomationAction[];
   approvalPolicyId?: string;
   cooldown?: AutomationCooldown;
-  suppression?: AutomationSuppression;
+  suppression?: AutomationRuleSuppression;
   effectiveFrom?: string;
   effectiveTo?: string;
 };

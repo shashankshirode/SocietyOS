@@ -42,11 +42,11 @@ export interface ApiError extends Error {
     isNetworkError: boolean;
     isTimeout: boolean;
     isCancelled: boolean;
-    fieldErrors?: Array<{
+    fieldErrors?: {
         field: string;
         message: string;
         code?: string | Absent;
-    }> | Absent;
+    }[] | Absent;
 }
 export class UniversalApiClient {
     private config: Required<Omit<ApiClientConfig, 'interceptors' | 'retryConfig' | 'cacheConfig'>> & {
@@ -58,9 +58,9 @@ export class UniversalApiClient {
         data: JsonObject;
         expiresAt: number;
     }> = new Map();
-    private requestInterceptors: Array<(config: RequestConfig) => RequestConfig | Promise<RequestConfig>> = [];
-    private responseInterceptors: Array<(response: ApiResponse<JsonObject>) => ApiResponse<JsonObject> | Promise<ApiResponse<JsonObject>>> = [];
-    private errorInterceptors: Array<(error: ApiError) => Promise<never> | ApiResponse<JsonObject>> = [];
+    private requestInterceptors: ((config: RequestConfig) => RequestConfig | Promise<RequestConfig>)[] = [];
+    private responseInterceptors: ((response: ApiResponse<JsonObject>) => ApiResponse<JsonObject> | Promise<ApiResponse<JsonObject>>)[] = [];
+    private errorInterceptors: ((error: ApiError) => Promise<never> | ApiResponse<JsonObject>)[] = [];
     constructor(config: ApiClientConfig) {
         this.config = {
             baseUrl: config.baseUrl.replace(/\/$/, ''),

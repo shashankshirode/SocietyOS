@@ -45,7 +45,7 @@ export function CommandCenter({ role, title, subtitle, contextItems, metrics = [
         
         <View style={styles.body}>
           
-          {actions.length > 0 && (<Animated.View entering={FadeInDown.delay(100).duration(350)}>
+          {actions.length > 0 && (<Animated.View {...(FadeInDown?.delay ? { entering: FadeInDown.delay(100).duration(350) } : {})}>
               <SectionHeader title={localizedUiText.m_2cc2b6f7f200}/>
               <View style={styles.sectionGap}/>
               <QuickActionRail actions={actions}/>

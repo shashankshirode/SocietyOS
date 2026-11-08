@@ -1,4 +1,8 @@
 import { buildActor, buildTrace, createHarness, seedResident, SOCIETY_ID } from './harness';
+import type { DepartmentCode } from '../domain/types/channel';
+import type { NoticePriority } from '../domain/types/notice';
+import type { CreateNoticeCommand } from '../application/noticeService';
+import { absentValue, type Absent } from '../../../shared/types/absence.types';
 
 type Harness = ReturnType<typeof createHarness>;
 
@@ -7,16 +11,16 @@ type NoticeOverrides = {
   readonly effectiveFromIso?: string;
   readonly effectiveUntilIso?: string;
   readonly requiresAcknowledgement?: boolean;
-  readonly priority?: 'ROUTINE' | 'IMPORTANT' | 'URGENT' | 'EMERGENCY';
+  readonly priority?: NoticePriority;
   readonly emergencyOverride?: boolean;
-  readonly emergencyOverrideReason?: string;
+  readonly emergencyOverrideReason?: string | Absent;
   readonly quietHoursOverride?: boolean;
-  readonly allowedDepartments?: readonly ('A' | 'B' | 'C')[];
+  readonly allowedDepartments?: readonly DepartmentCode[];
 };
 
 let noticeSequence = 0;
 
-function noticeCommand(overrides: NoticeOverrides = {}) {
+function noticeCommand(overrides: NoticeOverrides = {}): CreateNoticeCommand {
   noticeSequence += 1;
   return {
     societyId: SOCIETY_ID,
@@ -28,7 +32,7 @@ function noticeCommand(overrides: NoticeOverrides = {}) {
     bodyCiphertextRef: 'cipher://notice/body',
     localizedBodyRefs: {},
     attachmentReferences: [],
-    priority: overrides.priority ?? 'IMPORTANT',
+    priority: overrides.priority ?? 'NORMAL',
     audienceType: 'TOWER' as const,
     audienceValue: 'A',
     effectiveFromIso: overrides.effectiveFromIso ?? '2026-09-02T09:00:00.000Z',
@@ -37,9 +41,9 @@ function noticeCommand(overrides: NoticeOverrides = {}) {
     acknowledgementDueAtIso: '2026-09-08T09:00:00.000Z',
     retentionDays: 90,
     emergencyOverride: overrides.emergencyOverride ?? false,
-    emergencyOverrideReason: overrides.emergencyOverrideReason,
+    emergencyOverrideReason: overrides.emergencyOverrideReason ?? absentValue,
     quietHoursOverride: overrides.quietHoursOverride ?? false,
-    allowedDepartments: overrides.allowedDepartments ?? (['A'] as const),
+    allowedDepartments: overrides.allowedDepartments ?? (['SECURITY'] as const),
     idempotencyKey: `notice-${noticeSequence}`,
     trace: buildTrace('corr-notice-setup'),
   };
@@ -94,9 +98,9 @@ describe('notice lifecycle and audience integrity', () => {
 
     const created = await harness.notices.create(
       noticeCommand({
-        priority: 'EMERGENCY',
+        priority: 'CRITICAL',
         emergencyOverride: true,
-        emergencyOverrideReason: undefined,
+        emergencyOverrideReason: absentValue,
       }),
     );
 

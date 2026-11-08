@@ -3,7 +3,6 @@ import type {
   ParentIncident,
   CorrelationRule,
   CorrelationCandidate,
-  CorrelationResult,
   ComplaintCategory,
   ComplaintPriority,
   ComplaintStatus,
@@ -209,17 +208,20 @@ export class ParentIncidentService {
   async confirmCandidate(candidateId: string, adminId: string): Promise<CorrelationResult | null> {
     const candidates = mockStore.getState().correlationCandidates || [];
     const index = candidates.findIndex(c => c.id === candidateId);
-    if (index === -1 || candidates[index].status !== 'PENDING_REVIEW') return null;
-
+    if (index === -1) return null;
     const candidate = candidates[index];
+    if (!candidate || candidate.status !== 'PENDING_REVIEW') return null;
+
     const parentId = `pi_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
     const now = new Date().toISOString();
 
     const complaints = mockStore.getState().complaints || [];
     const childComplaints = complaints.filter(c => candidate.complaintIds.includes(c.id));
-    const towers = Array.from(new Set(childComplaints.map(c => c.tower).filter(Boolean)));
-    const floors = Array.from(new Set(childComplaints.map(c => c.floor).filter(Boolean)));
-    const units = Array.from(new Set(childComplaints.map(c => c.unitId).filter(Boolean)));
+    const towers = Array.from(new Set(childComplaints.map(c => c.tower).filter((t): t is string => Boolean(t))));
+    const floors = Array.from(new Set(childComplaints.map(c => c.floor).filter((f): f is number => typeof f === 'number')));
+    const units = Array.from(new Set(childComplaints.map(c => c.unitId).filter((u): u is string => Boolean(u))));
+
+    const societyId = childComplaints[0]?.societyId || '';
 
     const parentIncident: any = {
       id: parentId,
@@ -240,38 +242,32 @@ export class ParentIncidentService {
       metadata: {},
       createdAt: now,
       updatedAt: now,
-      societyId: childComplaints[0]?.societyId,
+      societyId,
     };
 
     mockStore.getState().parentIncidents = [...(mockStore.getState().parentIncidents || []), parentIncident];
 
     for (const childId of candidate.complaintIds) {
-      const complaints = mockStore.getState().complaints || [];
-      const childIndex = complaints.findIndex(c => c.id === childId);
-      if (childIndex !== -1) {
-        complaints[childIndex] = {
-          ...complaints[childIndex],
-          parentIncidentId: parentId,
-          isParentIncident: false,
-          updatedAt: now,
-        };
-      }
+      mockStore.updateComplaint(childId, {
+        parentIncidentId: parentId,
+        isParentIncident: false,
+        updatedAt: now,
+      });
     }
 
-    candidates[index] = {
-      ...candidates[index],
-      status: 'CONFIRMED',
+    Object.assign(candidate, {
+      status: 'CONFIRMED' as const,
       reviewedByUserId: adminId,
       reviewedAt: now,
       parentIncidentId: parentId,
-    };
+    });
 
     mockStore.notify();
 
     await createAuditEntry({
       actorUserId: adminId,
       actorType: 'ADMIN',
-      societyId: '',
+      societyId,
       action: 'CREATE',
       entityType: 'PARENT_INCIDENT',
       entityId: parentId,
@@ -288,20 +284,21 @@ export class ParentIncidentService {
     const candidates = mockStore.getState().correlationCandidates || [];
     const index = candidates.findIndex(c => c.id === candidateId);
     if (index === -1) return;
+    const candidate = candidates[index];
+    if (!candidate) return;
 
-    candidates[index] = {
-      ...candidates[index],
-      status: 'REJECTED',
+    Object.assign(candidate, {
+      status: 'REJECTED' as const,
       reviewedByUserId: adminId,
       reviewedAt: new Date().toISOString(),
-    };
+    });
 
     mockStore.notify();
 
     await createAuditEntry({
       actorUserId: adminId,
       actorType: 'ADMIN',
-      societyId: '',
+      societyId: candidate.societyId || '',
       action: 'REJECT',
       entityType: 'PARENT_INCIDENT',
       entityId: candidateId,
@@ -319,29 +316,28 @@ export class ParentIncidentService {
     if (index === -1) return;
 
     const parent = parentIncidents[index];
+    if (!parent) return;
     const now = new Date().toISOString();
 
-    parentIncidents[index] = {
-      ...parent,
-      status: 'RESOLVED',
+    Object.assign(parent, {
+      status: 'RESOLVED' as const,
       resolvedAt: now,
       resolvedByUserId: input.adminId,
       rootCause: input.rootCause,
       resolutionSummary: input.resolutionSummary,
       updatedAt: now,
-    };
+    });
 
     const complaints = mockStore.getState().complaints || [];
     for (const childId of parent.childComplaintIds) {
-      const childIndex = complaints.findIndex(c => c.id === childId);
-      if (childIndex !== -1 && !['CLOSED', 'CANCELLED', 'REJECTED', 'DUPLICATE'].includes(complaints[childIndex].status)) {
-        complaints[childIndex] = {
-          ...complaints[childIndex],
+      const child = complaints.find(c => c.id === childId);
+      if (child && !['CLOSED', 'CANCELLED', 'REJECTED', 'DUPLICATE'].includes(child.status)) {
+        mockStore.updateComplaint(childId, {
           status: 'RESOLVED',
           resolvedAt: now,
           resolutionSummary: input.resolutionSummary,
           updatedAt: now,
-        };
+        });
       }
     }
 
@@ -350,7 +346,7 @@ export class ParentIncidentService {
     await createAuditEntry({
       actorUserId: input.adminId,
       actorType: 'ADMIN',
-      societyId: '',
+      societyId: parent.societyId || '',
       action: 'UPDATE',
       entityType: 'PARENT_INCIDENT',
       entityId: input.parentIncidentId,
@@ -368,31 +364,26 @@ export class ParentIncidentService {
     if (index === -1) return;
 
     const parent = parentIncidents[index];
+    if (!parent) return;
     if (parent.status !== 'RESOLVED') {
       throw new Error('Parent incident must be resolved before closing');
     }
 
     const now = new Date().toISOString();
 
-    parentIncidents[index] = {
-      ...parent,
-      status: 'CLOSED',
+    Object.assign(parent, {
+      status: 'CLOSED' as const,
       closedAt: now,
       closedByUserId: input.adminId,
       updatedAt: now,
-    };
+    });
 
-    const complaints = mockStore.getState().complaints || [];
     for (const childId of parent.childComplaintIds) {
-      const childIndex = complaints.findIndex(c => c.id === childId);
-      if (childIndex !== -1) {
-        complaints[childIndex] = {
-          ...complaints[childIndex],
-          status: 'CLOSED',
-          closedAt: now,
-          updatedAt: now,
-        };
-      }
+      mockStore.updateComplaint(childId, {
+        status: 'CLOSED',
+        closedAt: now,
+        updatedAt: now,
+      });
     }
 
     mockStore.notify();
@@ -400,7 +391,7 @@ export class ParentIncidentService {
     await createAuditEntry({
       actorUserId: input.adminId,
       actorType: 'ADMIN',
-      societyId: '',
+      societyId: parent.societyId || '',
       action: 'UPDATE',
       entityType: 'PARENT_INCIDENT',
       entityId: input.parentIncidentId,
@@ -438,25 +429,23 @@ export class ParentIncidentService {
     if (index === -1) return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
 
     const complaint = complaints[index];
-    if (!complaint.parentIncidentId) return { success: false, errorCode: 'NOT_LINKED', errorMessage: 'Complaint not linked to parent incident' };
+    if (!complaint || !complaint.parentIncidentId) return { success: false, errorCode: 'NOT_LINKED', errorMessage: 'Complaint not linked to parent incident' };
 
     const parentId = complaint.parentIncidentId;
     const parentIncidents = mockStore.getState().parentIncidents || [];
-    const parentIndex = parentIncidents.findIndex(p => p.id === parentId);
+    const parent = parentIncidents.find(p => p.id === parentId);
 
-    if (parentIndex !== -1) {
-      parentIncidents[parentIndex] = {
-        ...parentIncidents[parentIndex],
-        childComplaintIds: parentIncidents[parentIndex].childComplaintIds.filter(id => id !== complaintId),
+    if (parent) {
+      Object.assign(parent, {
+        childComplaintIds: parent.childComplaintIds.filter(id => id !== complaintId),
         updatedAt: new Date().toISOString(),
-      };
+      });
     }
 
-    complaints[index] = {
-      ...complaint,
+    mockStore.updateComplaint(complaintId, {
       parentIncidentId: undefined,
       updatedAt: new Date().toISOString(),
-    };
+    });
 
     mockStore.notify();
 
@@ -476,12 +465,15 @@ export class ParentIncidentService {
       return null;
     }
 
+    const firstComplaint = childComplaints[0];
+    if (!firstComplaint) return null;
+
     const rule = this.correlationRules.find(r => r.id === correlationRuleId);
     if (!rule) return null;
 
-    const towers = Array.from(new Set(childComplaints.map(c => c.tower).filter(Boolean)));
-    const floors = Array.from(new Set(childComplaints.map(c => c.floor).filter(Boolean)));
-    const units = Array.from(new Set(childComplaints.map(c => c.unitId).filter(Boolean)));
+    const towers = Array.from(new Set(childComplaints.map(c => c.tower).filter((t): t is string => Boolean(t))));
+    const floors = Array.from(new Set(childComplaints.map(c => c.floor).filter((f): f is number => typeof f === 'number')));
+    const units = Array.from(new Set(childComplaints.map(c => c.unitId).filter((u): u is string => Boolean(u))));
 
     const parentId = `pi_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
     const now = new Date().toISOString();
@@ -490,7 +482,7 @@ export class ParentIncidentService {
       id: parentId,
       title: `${rule.name} - ${towers.join(', ')}`,
       description: `Manually created parent incident from ${childComplaints.length} complaints`,
-      category: childComplaints[0].category,
+      category: firstComplaint.category,
       priority: this.calculatePriority(childComplaints),
       status: 'CONFIRMED',
       detectedAt: now,
@@ -505,22 +497,17 @@ export class ParentIncidentService {
       metadata: {},
       createdAt: now,
       updatedAt: now,
-      societyId: childComplaints[0].societyId,
+      societyId: firstComplaint.societyId,
     };
 
     mockStore.getState().parentIncidents = [...(mockStore.getState().parentIncidents || []), parentIncident];
 
     for (const childId of childComplaintIds) {
-      const complaints = mockStore.getState().complaints || [];
-      const childIndex = complaints.findIndex(c => c.id === childId);
-      if (childIndex !== -1) {
-        complaints[childIndex] = {
-          ...complaints[childIndex],
-          parentIncidentId: parentId,
-          isParentIncident: false,
-          updatedAt: now,
-        };
-      }
+      mockStore.updateComplaint(childId, {
+        parentIncidentId: parentId,
+        isParentIncident: false,
+        updatedAt: now,
+      });
     }
 
     mockStore.notify();

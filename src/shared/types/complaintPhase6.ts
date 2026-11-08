@@ -1,4 +1,5 @@
 import type { ResidentScopedEntity } from './residentScope.types';
+import type { Absent } from './absence.types';
 import type { JsonObject } from '../../core/api/api.types';
 
 export type ComplaintCategory =
@@ -60,6 +61,7 @@ export type ComplaintSubcategory =
   | 'OTHER';
 
 export type ComplaintStatus =
+  | 'OPEN'
   | 'CREATED'
   | 'CLASSIFIED'
   | 'PENDING_ASSIGNMENT'
@@ -67,6 +69,7 @@ export type ComplaintStatus =
   | 'ACKNOWLEDGED'
   | 'IN_PROGRESS'
   | 'WAITING'
+  | 'WAITING_FOR_RESIDENT'
   | 'HOLD'
   | 'RESOLVED'
   | 'CONFIRMED'
@@ -84,6 +87,7 @@ export type ComplaintPriority =
   | 'MEDIUM'
   | 'NORMAL'
   | 'HIGH'
+  | 'URGENT'
   | 'CRITICAL'
   | 'EMERGENCY';
 
@@ -292,80 +296,95 @@ export interface EscalationLevelConfig {
 
 export interface Complaint extends ResidentScopedEntity {
   id: string;
-  ticketNumber: string;
+  ticketNumber?: string | Absent;
   title: string;
   description: string;
   category: ComplaintCategory;
-  subcategory?: ComplaintSubcategory;
+  subcategory?: ComplaintSubcategory | Absent;
   priority: ComplaintPriority;
   status: ComplaintStatus;
-  visibility: ComplaintVisibility;
-  source: ComplaintSource;
+  visibility?: ComplaintVisibility | Absent;
+  source?: ComplaintSource | Absent;
   unitId: string;
-  unitNumber: string;
-  tower?: string;
-  floor?: number;
-  location?: string;
-  reportedByUserId: string;
-  reportedByDisplayName: string;
-  reportedByRole: string;
-  isPrivate: boolean;
-  isSensitive: boolean;
-  slaPolicyId?: string;
-  slaPolicyVersion?: number;
-  slaResponseDeadline?: string;
-  slaResolutionDeadline?: string;
-  slaAcknowledgementDeadline?: string;
-  slaIsPaused: boolean;
-  slaPausePolicy?: SlaPausePolicy;
-  slaPausedAt?: string;
-  slaPauseReason?: SlaPauseReason;
-  slaPauseStartedBy?: string;
-  escalationPolicyId?: string;
-  escalationLevel: EscalationLevel;
-  escalatedAt?: string;
-  escalatedBy?: string;
-  escalationReason?: EscalationReason;
-  assignedToUserId?: string;
-  assignedToDisplayName?: string;
-  assignedAt?: string;
-  acknowledgedAt?: string;
-  workStartedAt?: string;
-  holdReason?: HoldReason;
-  holdStartedAt?: string;
-  holdExpectedResumeAt?: string;
-  holdNotes?: string;
-  resolvedAt?: string;
-  resolvedBy?: string;
-  resolutionOutcome?: ResolutionOutcome;
-  resolutionSummary?: string;
-  resolutionEvidenceIds?: string[];
-  confirmationPolicy?: ConfirmationPolicy;
-  confirmationRequestedAt?: string;
-  confirmedAt?: string;
-  confirmedBy?: string;
-  closedAt?: string;
-  closedBy?: string;
-  reopenedAt?: string;
-  reopenedBy?: string;
-  reopenReason?: ReopenReason;
-  reopenSlaPolicy?: 'RESET' | 'CONTINUE' | 'NEW_SLA' | 'NO_SLA';
-  cancelledAt?: string;
-  cancelledBy?: string;
-  cancellationReason?: CancellationReason;
-  duplicateOfId?: string;
-  parentIncidentId?: string;
-  isParentIncident: boolean;
-  childComplaintIds: string[];
-  correlationConfidence?: number;
-  correlationRuleId?: string;
-  evidenceIds: string[];
-  comments: ComplaintComment[];
-  statusHistory: ComplaintStatusHistory[];
+  unitNumber?: string | Absent;
+  tower?: string | Absent;
+  floor?: number | Absent;
+  location?: string | Absent;
+  reportedByUserId?: string | Absent;
+  reportedByDisplayName?: string | Absent;
+  reportedByRole?: string | Absent;
+  isPrivate?: boolean | Absent;
+  isSensitive?: boolean | Absent;
+  slaPolicyId?: string | Absent;
+  slaPolicyVersion?: number | Absent;
+  slaResponseDeadline?: string | Absent;
+  slaResolutionDeadline?: string | Absent;
+  slaAcknowledgementDeadline?: string | Absent;
+  slaIsPaused?: boolean | Absent;
+  slaPausePolicy?: SlaPausePolicy | Absent;
+  slaPausedAt?: string | Absent;
+  slaPauseReason?: SlaPauseReason | Absent;
+  slaPauseStartedBy?: string | Absent;
+  totalPauseDurationMs?: number | Absent;
+  escalationPolicyId?: string | Absent;
+  escalationLevel?: EscalationLevel | Absent;
+  escalatedAt?: string | Absent;
+  escalatedBy?: string | Absent;
+  escalationReason?: EscalationReason | Absent;
+  assignedToUserId?: string | Absent;
+  assignedToDisplayName?: string | Absent;
+  assignedAt?: string | Absent;
+  acknowledgedAt?: string | Absent;
+  firstResponseAt?: string | Absent;
+  workStartedAt?: string | Absent;
+  holdReason?: HoldReason | Absent;
+  holdStartedAt?: string | Absent;
+  holdExpectedResumeAt?: string | Absent;
+  holdNotes?: string | Absent;
+  resolvedAt?: string | Absent;
+  resolvedBy?: string | Absent;
+  resolutionOutcome?: ResolutionOutcome | Absent;
+  resolutionSummary?: string | Absent;
+  resolutionEvidenceIds?: string[] | Absent;
+  confirmationPolicy?: ConfirmationPolicy | Absent;
+  confirmationRequestedAt?: string | Absent;
+  confirmedAt?: string | Absent;
+  confirmedBy?: string | Absent;
+  closedAt?: string | Absent;
+  closedBy?: string | Absent;
+  reopenedAt?: string | Absent;
+  reopenedBy?: string | Absent;
+  reopenReason?: ReopenReason | Absent;
+  reopenSlaPolicy?: 'RESET' | 'CONTINUE' | 'NEW_SLA' | 'NO_SLA' | Absent;
+  cancelledAt?: string | Absent;
+  cancelledBy?: string | Absent;
+  cancellationReason?: CancellationReason | Absent;
+  duplicateOfId?: string | Absent;
+  parentIncidentId?: string | Absent;
+  isParentIncident?: boolean | Absent;
+  childComplaintIds?: string[] | Absent;
+  correlationConfidence?: number | Absent;
+  correlationRuleId?: string | Absent;
+  evidenceIds?: string[] | Absent;
+  comments?: ComplaintComment[] | Absent;
+  statusHistory?: ComplaintStatusHistory[] | Absent;
   createdAt: string;
   updatedAt: string;
-  metadata?: JsonObject;
-  dataVersion: number;
+  metadata?: JsonObject | Absent;
+  dataVersion?: number | Absent;
+  flatNumber?: string | Absent;
+  residentName?: string | Absent;
+  slaText?: string | Absent;
+  assignedTo?: string | Absent;
+  resolutionNote?: string | Absent;
+  updates?: { id: string; status: string; note: string; timestamp: string }[] | Absent;
+  feedbackRating?: number | Absent;
+  rating?: number | Absent;
+  feedbackComment?: string | Absent;
+  technicianName?: string | Absent;
+  technicianContact?: string | Absent;
+  raisedBy?: string | Absent;
+  resolutionNotes?: string | Absent;
 }
 
 export interface ComplaintComment extends ResidentScopedEntity {
@@ -426,21 +445,7 @@ export interface ComplaintAssignment extends ResidentScopedEntity {
   metadata?: JsonObject;
 }
 
-export interface ComplaintHold extends ResidentScopedEntity {
-  id: string;
-  complaintId: string;
-  reason: HoldReason;
-  notes?: string;
-  startedByUserId: string;
-  startedByDisplayName: string;
-  startedAt: string;
-  expectedResumeAt?: string;
-  resumedAt?: string;
-  resumedByUserId?: string;
-  resumedByDisplayName?: string;
-  dependencyDetails?: JsonObject;
-  isActive: boolean;
-}
+export type { ComplaintHold } from './complaintPhase10.types';
 
 export interface ComplaintEscalation extends ResidentScopedEntity {
   id: string;
@@ -643,33 +648,35 @@ export interface ComplaintDashboardMetrics {
 export interface ComplaintSlaMetrics {
   complaintId: string;
   createdAt: string;
-  responseDeadline?: string;
-  resolutionDeadline?: string;
-  acknowledgementDeadline?: string;
-  firstResponseAt?: string;
-  acknowledgedAt?: string;
-  workStartedAt?: string;
-  resolvedAt?: string;
-  closedAt?: string;
+  responseDeadline?: string | Absent;
+  resolutionDeadline?: string | Absent;
+  acknowledgementDeadline?: string | Absent;
+  firstResponseAt?: string | Absent;
+  acknowledgedAt?: string | Absent;
+  workStartedAt?: string | Absent;
+  resolvedAt?: string | Absent;
+  closedAt?: string | Absent;
   totalPauseDurationMs: number;
-  holdEvents: { reason: HoldReason; startAt: string; endAt?: string; durationMs?: number }[];
+  holdEvents: { reason: HoldReason; startAt: string; endAt?: string | Absent; durationMs?: number | Absent }[];
   escalationEvents: { level: EscalationLevel; at: string }[];
   isBreached: boolean;
-  breachedAt?: string;
-  breachType?: 'RESPONSE' | 'RESOLUTION' | 'ACKNOWLEDGEMENT';
+  breachedAt?: string | Absent;
+  breachType?: ('RESPONSE' | 'RESOLUTION' | 'ACKNOWLEDGEMENT') | Absent;
   compliancePercent: number;
 }
 
 export const COMPLAINT_STATUS_TRANSITIONS: Record<ComplaintStatus, ComplaintStatus[]> = {
+  OPEN: ['ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'CANCELLED'],
   CREATED: ['CLASSIFIED', 'CANCELLED', 'REJECTED'],
   CLASSIFIED: ['PENDING_ASSIGNMENT', 'ASSIGNED', 'CANCELLED'],
   PENDING_ASSIGNMENT: ['ASSIGNED', 'CANCELLED'],
-  ASSIGNED: ['ACKNOWLEDGED', 'REASSIGNED', 'ESCALATED', 'CANCELLED'],
+  ASSIGNED: ['ACKNOWLEDGED', 'IN_PROGRESS', 'REASSIGNED', 'ESCALATED', 'CANCELLED'],
   ACKNOWLEDGED: ['IN_PROGRESS', 'REASSIGNED', 'ESCALATED'],
-  IN_PROGRESS: ['WAITING', 'HOLD', 'RESOLVED', 'ESCALATED', 'REASSIGNED'],
+  IN_PROGRESS: ['WAITING', 'WAITING_FOR_RESIDENT', 'HOLD', 'RESOLVED', 'ESCALATED', 'REASSIGNED'],
   WAITING: ['IN_PROGRESS', 'RESOLVED', 'ESCALATED', 'HOLD'],
+  WAITING_FOR_RESIDENT: ['IN_PROGRESS', 'RESOLVED', 'CLOSED'],
   HOLD: ['IN_PROGRESS', 'RESOLVED', 'ESCALATED', 'WAITING'],
-  RESOLVED: ['CONFIRMED', 'REOPENED', 'ESCALATED'],
+  RESOLVED: ['CONFIRMED', 'CLOSED', 'REOPENED', 'ESCALATED'],
   CONFIRMED: ['CLOSED', 'REOPENED'],
   CLOSED: ['REOPENED'],
   REOPENED: ['ASSIGNED', 'IN_PROGRESS', 'PENDING_ASSIGNMENT', 'CANCELLED'],
@@ -682,6 +689,7 @@ export const COMPLAINT_STATUS_TRANSITIONS: Record<ComplaintStatus, ComplaintStat
 };
 
 export const COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
+  OPEN: 'Open',
   CREATED: 'Created',
   CLASSIFIED: 'Classified',
   PENDING_ASSIGNMENT: 'Pending Assignment',
@@ -689,6 +697,7 @@ export const COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
   ACKNOWLEDGED: 'Acknowledged',
   IN_PROGRESS: 'In Progress',
   WAITING: 'Waiting',
+  WAITING_FOR_RESIDENT: 'Waiting for Resident',
   HOLD: 'On Hold',
   RESOLVED: 'Resolved',
   CONFIRMED: 'Confirmed',
@@ -707,6 +716,7 @@ export const COMPLAINT_PRIORITY_LABELS: Record<ComplaintPriority, string> = {
   MEDIUM: 'Medium',
   NORMAL: 'Normal',
   HIGH: 'High',
+  URGENT: 'Urgent',
   CRITICAL: 'Critical',
   EMERGENCY: 'Emergency',
 };
@@ -789,6 +799,7 @@ export function isComplaintStatusResolvable(status: ComplaintStatus): boolean {
 
 export function getComplaintStatusOrder(status: ComplaintStatus): number {
   const order: Record<ComplaintStatus, number> = {
+    OPEN: 1,
     CREATED: 1,
     CLASSIFIED: 2,
     PENDING_ASSIGNMENT: 3,
@@ -796,6 +807,7 @@ export function getComplaintStatusOrder(status: ComplaintStatus): number {
     ACKNOWLEDGED: 5,
     IN_PROGRESS: 6,
     WAITING: 7,
+    WAITING_FOR_RESIDENT: 7,
     HOLD: 8,
     RESOLVED: 9,
     CONFIRMED: 10,

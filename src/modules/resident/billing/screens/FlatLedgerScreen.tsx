@@ -85,10 +85,10 @@ export function FlatLedgerScreen() {
               <Ionicons name="receipt-outline" size={38} color={theme.textSecondary}/>
               <SafeText variant="title" style={createSafeTextColorStyle7(theme.textPrimary)}>{ledger.emptyTitle}</SafeText>
               <SafeText variant="caption" align="center" style={createSafeTextColorStyle8(theme.textSecondary)}>{ledger.emptyDescription}</SafeText>
-            </View>) : null} ListFooterComponent={isLoading || isLoadingMore ? (<View style={styles.loader}>
+            </View>) : <></>} ListFooterComponent={isLoading || isLoadingMore ? (<View style={styles.loader}>
               <ActivityIndicator size="small" color={theme.accent}/>
               {isLoadingMore ? <SafeText variant="tiny" style={createSafeTextColorStyle9(theme.textSecondary)}>{ledger.loadingMore}</SafeText> : null}
-            </View>) : null} onEndReached={() => void loadMore()} onEndReachedThreshold={0.35} showsVerticalScrollIndicator={false}/>
+            </View>) : <></>} onEndReached={() => void loadMore()} onEndReachedThreshold={0.35} showsVerticalScrollIndicator={false}/>
       </ContentFrame>
     </View>);
 }

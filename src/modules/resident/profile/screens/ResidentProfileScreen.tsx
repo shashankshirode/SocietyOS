@@ -68,6 +68,13 @@ export function ResidentProfileScreen({ navigation }: ResidentProfileScreenProps
       </View>);
     }
     const items: ProfileItem[] = [
+        {
+            id: 'digital-home-passport',
+            titleKey: 'resident.profile.homePassport',
+            subtitleKey: 'resident.profile.previews.homePassport',
+            icon: 'home-sharp' as const,
+            onPress: () => navigation.navigate('DigitalHomePassport', { unitId: activeContext?.unitId }),
+        },
         ...(canPerformAction('familyMemberManagement')
             ? [
                 {

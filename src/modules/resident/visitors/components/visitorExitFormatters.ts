@@ -19,11 +19,17 @@ export function formatVisitorExitTime(iso?: string): string {
   }).format(new Date(iso));
 }
 
-export function resolveExitStatusLabel(messages: EnglishMessagesType, status: VisitorExitStatus): string {
+export function resolveExitStatusLabel(messages: EnglishMessagesType, status?: VisitorExitStatus): string {
+  if (!status) {
+    return '—';
+  }
   return t(messages, `visitor.exitAssurance.${status}`);
 }
 
-export function resolveAlertStatusLabel(messages: EnglishMessagesType, status: VisitorExitAlertStatus): string {
+export function resolveAlertStatusLabel(messages: EnglishMessagesType, status?: VisitorExitAlertStatus): string {
+  if (!status) {
+    return '—';
+  }
   return t(messages, `visitor.exitAssurance.${status}`);
 }
 

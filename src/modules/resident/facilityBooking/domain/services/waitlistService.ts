@@ -126,7 +126,7 @@ export class WaitlistService {
       return { success: false, errorCode: 'NOT_FOUND', errorMessage: 'Waitlist entry not found.' };
     }
 
-    if (entry.userId !== actor.userId && actor.role !== 'ADMIN') {
+    if (entry.userId !== actor.userId && actor.role !== 'SOCIETY_ADMIN' && actor.role !== 'SUPER_ADMIN') {
       return { success: false, errorCode: 'UNAUTHORIZED', errorMessage: 'Not authorized to remove this waitlist entry.' };
     }
 
@@ -141,11 +141,12 @@ export class WaitlistService {
 
   private async recalculatePositions(facilityId: string, slotId: string): Promise<void> {
     const waitlist = this.ports.waitlist.findByFacilityAndSlot(facilityId, slotId);
-    const sorted = waitlist.sort((a, b) => a.position - b.position);
+    const sorted = [...waitlist].sort((a, b) => a.position - b.position);
 
     for (let i = 0; i < sorted.length; i++) {
-      if (sorted[i].position !== i + 1) {
-        const updated = { ...sorted[i], position: i + 1 };
+      const item = sorted[i];
+      if (item && item.position !== i + 1) {
+        const updated = { ...item, position: i + 1 };
         this.ports.waitlist.update(updated);
       }
     }
@@ -168,7 +169,7 @@ export class WaitlistService {
       return { success: false, errorCode: 'WAITLIST_EMPTY', errorMessage: 'No one is on the waitlist for this slot.' };
     }
 
-    const sorted = waitlist
+    const sorted = [...waitlist]
       .filter((e) => Date.parse(e.expiresAt) > Date.parse(now))
       .sort((a, b) => a.position - b.position);
 
@@ -177,6 +178,9 @@ export class WaitlistService {
     }
 
     const nextEntry = sorted[0];
+    if (!nextEntry) {
+      return { success: false, errorCode: 'WAITLIST_EMPTY', errorMessage: 'No one is on the waitlist for this slot.' };
+    }
 
     const holdId = `hold-wl-${nextEntry.id}`;
     const holdDurationMinutes = 60;
@@ -235,7 +239,15 @@ export class WaitlistService {
 
     await this.recalculatePositions(entry.facilityId, entry.slotId);
 
-    const nextPromoted = await this.promoteNext(entry.facilityId, entry.slotId, { role: 'SYSTEM' } as any);
+    const systemActor: VaultActor = {
+      userId: 'system',
+      role: 'SYSTEM',
+      actorType: 'SYSTEM',
+      societyId: '',
+      sessionId: 'system',
+      authenticatedAt: this.ports.clock.now().toISOString(),
+    };
+    const nextPromoted = await this.promoteNext(entry.facilityId, entry.slotId, systemActor);
     return { success: true, nextPromoted: nextPromoted.success };
   }
 
@@ -254,7 +266,7 @@ export class WaitlistService {
       return { position: null, total: 0, errorCode: 'NOT_FOUND' };
     }
 
-    if (entry.userId !== actor.userId && actor.role !== 'ADMIN') {
+    if (entry.userId !== actor.userId && actor.role !== 'SOCIETY_ADMIN' && actor.role !== 'SUPER_ADMIN') {
       return { position: null, total: 0, errorCode: 'UNAUTHORIZED' };
     }
 

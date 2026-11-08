@@ -47,6 +47,8 @@ export type AllocationStore = {
   readonly listBySociety: (societyId: string) => readonly AllocationRecord[];
   readonly findActiveBySlot: (slotId: string) => AllocationRecord | Absent;
   readonly findActiveByVehicle: (vehicleId: string) => AllocationRecord | Absent;
+  readonly findTemporaryByVehicle: (vehicleId: string) => AllocationRecord | Absent;
+  readonly findActiveTemporaryByExpiry: (beforeIso: string) => readonly AllocationRecord[];
 };
 
 export type VisitorParkingPassStore = {
@@ -56,6 +58,8 @@ export type VisitorParkingPassStore = {
   readonly listByUnit: (societyId: string, unitId: string) => readonly VisitorParkingPassRecord[];
   readonly listActiveBySociety: (societyId: string) => readonly VisitorParkingPassRecord[];
   readonly findByVehicle: (societyId: string, vehicleNumber: string) => VisitorParkingPassRecord | Absent;
+  readonly findActiveByVehicle: (societyId: string, vehicleNumber: string) => VisitorParkingPassRecord | Absent;
+  readonly findActiveByExpiry: (beforeIso: string) => readonly VisitorParkingPassRecord[];
 };
 
 export type IncidentStore = {
@@ -84,6 +88,8 @@ export type CredentialStore = {
   readonly readByVehicle: (vehicleId: string) => readonly ParkingCredential[];
   readonly readByAllocation: (allocationId: string) => ParkingCredential | Absent;
   readonly revoke: (credentialId: string, revokedAt: string, revokedBy: string) => boolean;
+  readonly readByRfid: (rfidTagNumber: string) => ParkingCredential | Absent;
+  readonly readByAnpr: (plate: string) => ParkingCredential | Absent;
 };
 
 export type StickerRfidStore = {
@@ -122,6 +128,8 @@ export type ParkingPorts = {
   readonly home: HomeStore;
   readonly audit: AuditSink;
 };
+
+export type ParkingVaultPorts = ParkingPorts;
 
 export type ServiceOutcome<T> =
   | { readonly ok: true; readonly value: T; readonly warnings: readonly string[] }

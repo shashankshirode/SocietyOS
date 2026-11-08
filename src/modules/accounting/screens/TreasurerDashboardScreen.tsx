@@ -28,10 +28,10 @@ export function TreasurerDashboardScreen({ navigation }: Props) {
         <ErrorState message={error.message} onRetry={refetch}/>
       </ScreenScaffold>);
     }
-    const efficiency = dashboard?.collectionEfficiency ?? 84.6;
-    const totalBilled = dashboard?.totalBilledThisMonth ?? 1843000;
-    const totalCollected = dashboard?.totalCollectedThisMonth ?? 1560000;
-    const outstanding = dashboard?.outstandingDues ?? 520000;
+    const efficiency = dashboard?.collectionEfficiency ?? 0;
+    const totalBilled = dashboard?.totalBilledThisMonth ?? 0;
+    const totalCollected = dashboard?.totalCollectedThisMonth ?? 0;
+    const outstanding = dashboard?.outstandingDues ?? 0;
     const pendingReceipts = dashboard?.pendingManualEntries ?? 0;
     return (<CommandCenter role="TREASURER" title={localizedUiText.m_d21f1607411d} subtitle={formatUiLiteral(localizedUiText.m_2b8e896fffa1, [efficiency])} contextItems={['Treasury & Finance', `${efficiency}% efficiency`, `${pendingReceipts} pending`]} metrics={[
             { icon: 'bill', label: String(localizedUiText.m_3f88b9003138), value: money(totalBilled), detail: getActiveUiLiteral("m_adbb511d7ac2") },

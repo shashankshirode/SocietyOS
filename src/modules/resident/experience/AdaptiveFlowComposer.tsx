@@ -58,7 +58,7 @@ export function AdaptiveFlowComposer({
           paddingBottom: Spacing.xl,
         },
         contentStyle,
-      ])}
+      ]) ?? {}}
     >
       <View
         style={{

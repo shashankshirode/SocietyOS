@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Pressable, ScrollView, View } from "react-native";
+import { type ScrollViewInstance, KeyboardAvoidingView, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -34,7 +34,7 @@ export function ResidentConversationScreen({ route, navigation }: Props) {
     const insets = useSafeAreaInsets();
     const keyboardConfig = getPlatformKeyboardConfig(insets.top);
     const { conversation, isLoading, isLoadingOlder, errorMessageKey, draft, setDraft, replyTo, setReplyTo, send, retryMessage, loadOlder, messageById, } = useResidentConversation(route.params.conversationId);
-    const scrollRef = useRef<ScrollView>(null);
+    const scrollRef = useRef<ScrollViewInstance>(null);
     const [searchVisible, setSearchVisible] = useState(false);
     const [query, setQuery] = useState('');
     const [isNearBottom, setIsNearBottom] = useState(true);

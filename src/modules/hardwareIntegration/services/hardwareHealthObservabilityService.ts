@@ -155,7 +155,11 @@ export class HardwareHealthObservabilityService {
     err.resolutionNotes = `[${command.resolutionAction}] ${command.notes}`;
     err.resolvedBy = actor.userName;
     err.resolvedAt = new Date().toISOString();
-    err.correctiveWorkOrderId = command.correctiveWorkOrderId;
+    if (command.correctiveWorkOrderId) {
+      err.correctiveWorkOrderId = command.correctiveWorkOrderId;
+    } else {
+      delete err.correctiveWorkOrderId;
+    }
     return err;
   }
 

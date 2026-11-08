@@ -204,14 +204,13 @@ describe('SOCIETY OS — PHASE 3: Auth, Registration, Onboarding, Household & Mu
         isEmergencyContact: true,
         isSeniorCitizen: false,
         isMinor: false,
-        permissions: {
-          visitorApprovalPermission: true,
-          noticeViewPermission: true,
-          emergencyAccessPermission: true,
-          facilityBookingPermission: true,
-          documentAccessPermission: 'LIMITED',
-          profileVisibility: 'HOUSEHOLD_ONLY',
-        },
+        visitorApprovalPermission: true,
+        noticeViewPermission: true,
+        emergencyAccessPermission: true,
+        facilityBookingPermission: true,
+        documentAccessPermission: 'LIMITED',
+        profileVisibility: 'HOUSEHOLD_ONLY',
+        accessStatus: 'ACTIVE',
       });
 
       expect(added.id).toBeDefined();
@@ -244,6 +243,7 @@ describe('SOCIETY OS — PHASE 3: Auth, Registration, Onboarding, Household & Mu
       // Revoke access completely
       const revoked = await residentHouseholdMockSource.removeFamilyMemberAccess(nonOwner.id, {
         reason: 'Moved to different city',
+        requestedByResidentId: 'usr-rohan-01',
       });
       expect(revoked.accessStatus).toBe('INACTIVE');
       expect(revoked.permissions.visitorApprovalPermission).toBe(false);
@@ -255,12 +255,20 @@ describe('SOCIETY OS — PHASE 3: Auth, Registration, Onboarding, Household & Mu
       const tenantMembers = await residentHouseholdMockSource.getFamilyMembers({
         activeHome: {
           homeContextId: 'ctx-tenant-01',
+          residentId: 'usr-tenant-01',
           societyId: 'soc-greenwood-pune',
           societyName: 'Greenwood Heights',
+          societyAreaId: 'area-1',
+          societyAreaName: 'Main',
+          city: 'Pune',
           unitId: 'unit-b201',
+          flatNumber: 'B-201',
           displayUnitName: 'B-201',
           residentRole: 'tenant',
-          isPrimaryResidence: true,
+          status: 'active',
+          featureFlagScopeId: 'ff-soc-greenwood-pune-unit-b201',
+          permissionScopeId: 'perm-soc-greenwood-pune-unit-b201',
+          dataScopeKey: 'soc-greenwood-pune:unit-b201',
         },
         dataScopeKey: 'soc-greenwood-pune:unit-b201',
       });
@@ -280,6 +288,7 @@ describe('SOCIETY OS — PHASE 3: Auth, Registration, Onboarding, Household & Mu
 
       const homeA = contexts[0];
       const homeB = contexts[1];
+      if (!homeA || !homeB) return;
 
       // Switch to Home A
       const switchA = await residentHomeContextRepository.switchHomeContext({

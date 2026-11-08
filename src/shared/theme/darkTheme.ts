@@ -31,7 +31,7 @@ export const darkTheme: AppTheme = {
     primaryText: '#111612',
 
     secondary: darkPalette.accentTeal,
-    secondarySoft: '#253832',
+    secondarySoft: '#1A2D1A',
     accentIndigo: darkPalette.accentIndigo,
     accentTeal: darkPalette.accentTeal,
     accentGold: darkPalette.accentGold,
@@ -47,9 +47,9 @@ export const darkTheme: AppTheme = {
     info: darkPalette.info,
     infoSoft: darkPalette.infoSoft,
 
-    textPrimary: '#F3F0E7',
-    textSecondary: '#C3C5B9',
-    textMuted: '#92988C',
+    textPrimary: '#F5F5F7',
+    textSecondary: '#A1A1AA',
+    textMuted: '#71717A',
     textInverse: '#111612',
 
     border: darkPalette.border,
@@ -60,18 +60,17 @@ export const darkTheme: AppTheme = {
     inputPlaceholder: darkPalette.textMuted,
 
     disabled: darkPalette.textDisabled,
-    overlay: 'rgba(7, 10, 8, 0.72)',
-    shadow: '#090C0A',
+    overlay: 'rgba(0, 0, 0, 0.72)',
+    shadow: '#000000',
 
-    tabBarBackground: '#171C18',
+    tabBarBackground: '#000000',
     tabBarActive: '#C2DCA5',
     tabBarInactive: darkPalette.textDisabled,
 
-    headerBackground: '#171D18',
-    headerText: '#F3F0E7',
+    headerBackground: '#0A0A0A',
+    headerText: '#F5F5F7',
 
     statusBarStyle: 'light-content',
-
     
     primaryLight: darkPalette.primaryPressed,
     primaryDark: darkPalette.primarySoft,
@@ -99,7 +98,7 @@ export const darkTheme: AppTheme = {
     document: darkPalette.primary,
     billing: darkPalette.accentGold,
     parking: darkPalette.accentTeal,
-    backdrop: 'rgba(7, 10, 8, 0.76)',
+    backdrop: 'rgba(0, 0, 0, 0.76)',
   },
   spacing: Spacing,
   typography: Typography,

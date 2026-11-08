@@ -1,10 +1,9 @@
 import type { Absent } from '../../../../../shared/types/absence.types';
 import type { VaultClock, VaultActor } from '../../../../../core/identity/personaRegistry';
-import type {
+import {
   FacilitySlotStatus,
-  FacilitySlot,
 } from '../../models/facilityBooking.enums';
-import type { Facility } from '../../models/facilityBooking.models';
+import type { Facility, FacilitySlot } from '../../models/facilityBooking.models';
 
 export interface SlotReservationRequest {
   readonly facilityId: string;
@@ -44,7 +43,7 @@ export interface AtomicReservationPorts {
   };
   readonly holds: {
     readonly create: (hold: { holdId: string; slotId: string; residenceId: string; unitId: string; startIso: string; endIso: string; expiresAt: string; idempotencyKey: string }) => boolean;
-    readonly findBySlot: (slotId: string) => readonly { holdId: string; residenceId: string; expiresAt: string; status: string }[];
+    readonly findBySlot: (slotId: string) => readonly { holdId: string; slotId: string; residenceId: string; expiresAt: string; status: string }[];
     readonly findByFacility: () => readonly { holdId: string; residenceId: string; expiresAt: string; status: string; slotId: string; facilityId: string }[];
   };
 }
@@ -124,12 +123,13 @@ export class AtomicSlotReservationService {
       slot.endsAt,
       request.residenceId,
     );
-    if (conflictingBookings.length > 0) {
+    const firstConflict = conflictingBookings[0];
+    if (firstConflict) {
       return {
         success: false,
         errorCode: 'SLOT_CONFLICT',
         errorMessage: 'This slot overlaps with an existing booking.',
-        conflictSlotId: conflictingBookings[0].slotId,
+        conflictSlotId: firstConflict.slotId,
       };
     }
 
@@ -167,7 +167,7 @@ export class AtomicSlotReservationService {
 
     const updatedSlot: FacilitySlot = {
       ...slot,
-      status: 'HELD',
+      status: FacilitySlotStatus.Held,
       heldByResidenceId: request.residenceId,
       holdExpiresAt: expiresAt,
     };
@@ -201,7 +201,7 @@ export class AtomicSlotReservationService {
       return { success: false, errorCode: 'HOLD_NOT_FOUND', errorMessage: 'Hold not found.' };
     }
 
-    if (hold.residenceId !== actor.residenceId && actor.role !== 'ADMIN') {
+    if (actor.residenceId && hold.residenceId !== actor.residenceId && actor.role !== 'SOCIETY_ADMIN' && actor.role !== 'SUPER_ADMIN') {
       return { success: false, errorCode: 'UNAUTHORIZED', errorMessage: 'Not authorized to release this hold.' };
     }
 
@@ -213,7 +213,7 @@ export class AtomicSlotReservationService {
     if (slot) {
       const updatedSlot: FacilitySlot = {
         ...slot,
-        status: 'AVAILABLE',
+        status: FacilitySlotStatus.Available,
         heldByResidenceId: null,
         holdExpiresAt: null,
       };
@@ -235,7 +235,7 @@ export class AtomicSlotReservationService {
       return { success: false, errorCode: 'HOLD_NOT_FOUND', errorMessage: 'Hold not found.' };
     }
 
-    if (hold.residenceId !== actor.residenceId) {
+    if (actor.residenceId && hold.residenceId !== actor.residenceId && actor.role !== 'SOCIETY_ADMIN' && actor.role !== 'SUPER_ADMIN') {
       return { success: false, errorCode: 'UNAUTHORIZED', errorMessage: 'Not authorized to confirm this hold.' };
     }
 
@@ -262,7 +262,16 @@ export class AtomicSlotReservationService {
     for (const hold of allHolds) {
       if (hold.status !== 'HELD') continue;
       if (Date.parse(hold.expiresAt) <= Date.parse(now)) {
-        await this.releaseHold({ residenceId: hold.residenceId, role: 'SYSTEM' } as any, hold.holdId, 'EXPIRED');
+        const systemActor: VaultActor = {
+          userId: 'system',
+          role: 'SYSTEM',
+          actorType: 'SYSTEM',
+          societyId: '',
+          sessionId: 'system',
+          authenticatedAt: now,
+          residenceId: hold.residenceId,
+        };
+        await this.releaseHold(systemActor, hold.holdId, 'EXPIRED');
         expiredCount++;
       }
     }

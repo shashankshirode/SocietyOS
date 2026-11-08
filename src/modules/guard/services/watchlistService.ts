@@ -8,11 +8,7 @@ import type {
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
 import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-
-const withMockDelay = <T>(data: T, ms = 400): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(data), ms));
 
 function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -67,13 +63,9 @@ export const watchlistService = {
           createdBy,
           createdByRole,
           createdAtIso: now,
-          reviewedBy: undefined,
-          reviewedAtIso: undefined,
-          reviewStatus: undefined,
-          reviewNotes: undefined,
-          autoDenyEntry: payload.autoDenyEntry,
-          requiresEscort: payload.requiresEscort,
-          notifyOnAttempt: payload.notifyOnAttempt,
+          ...(payload.autoDenyEntry !== undefined ? { autoDenyEntry: payload.autoDenyEntry } : {}),
+          ...(payload.requiresEscort !== undefined ? { requiresEscort: payload.requiresEscort } : {}),
+          ...(payload.notifyOnAttempt !== undefined ? { notifyOnAttempt: payload.notifyOnAttempt } : {}),
           metadata: {},
           societyId,
         };
@@ -147,7 +139,7 @@ export const watchlistService = {
           action: 'WATCHLIST_ENTRY_REVOKED',
           entityType: 'WATCHLIST_ENTRY',
           entityId: entryId,
-          previousState: { status: entries[index].status },
+          previousState: { status: entries[index]?.status ?? 'ACTIVE' },
           newState: { status: 'INACTIVE', revocationReason: reason },
           idempotencyKey: `wl_revoke_${entryId}`,
           source: 'MOBILE',

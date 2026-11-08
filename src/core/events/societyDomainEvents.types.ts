@@ -1,4 +1,4 @@
-import type { JsonObject } from '../api/api.types';
+import type { JsonObject, JsonValue } from '../api/api.types';
 import type { Absent } from '../../shared/types/absence.types';
 
 export interface VisitorPassIssuedPayload extends JsonObject {
@@ -86,7 +86,7 @@ export interface HouseholdMemberInvitedPayload extends JsonObject {
 
 export interface HouseholdPermissionsChangedPayload extends JsonObject {
   readonly memberName: string;
-  readonly permissions: Record<string, unknown>;
+  readonly permissions: Record<string, JsonValue | undefined>;
 }
 
 export interface HouseholdMemberRemovedPayload extends JsonObject {

@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Pressable, View, type TextInput } from 'react-native';
+import { type TextInputInstance, Pressable, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Visitor } from '../../../../shared/types/visitor.types';
 import type { CreateVisitorPassScreenProps } from '../../../../app/navigation/navigation.types';
@@ -20,6 +20,8 @@ import { VisitorType } from '../data/visitors.enums';
 import { visitorAccessPolicy } from '../data/visitorAccessPolicy';
 import { resolveVisitorCategory } from '../utils/visitorExitPolicyResolver';
 import { styles, backgroundBorder, colorStyle, backgroundStyle } from '../styles/screens/CreateVisitorPassScreen.styles';
+
+import { SocietySuccessView } from '../../../../shared/components/SocietySuccessView';
 
 type DayChoice = 'Today' | 'Tomorrow' | 'Choose date';
 
@@ -46,17 +48,26 @@ function timeForChoice(choice: string, date: Date): Date {
   return date;
 }
 
-import { SocietySuccessView } from '../../../../shared/components/SocietySuccessView';
+interface CreateVisitorPassNavigation {
+  navigate: (screen: string) => void;
+  canGoBack: () => boolean;
+  goBack: () => void;
+}
 
-export function CreateVisitorPassScreen({ navigation }: CreateVisitorPassScreenProps) {
+type Props = {
+  navigation: CreateVisitorPassNavigation;
+  route?: JsonObject;
+};
+
+export function CreateVisitorPassScreen({ navigation }: Props) {
   const messages = useMessages();
   const copy = messages.visitors;
   const theme = useResidentTheme();
   const { isStale } = useResidenceContextGuard();
   const { data: visitors = [] } = useVisitors();
   const { submit, isSubmitting } = useCreateVisitorPass();
-  const nameRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
+  const nameRef = useRef<TextInputInstance>(null);
+  const phoneRef = useRef<TextInputInstance>(null);
   const [type, setType] = useState<VisitorType | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

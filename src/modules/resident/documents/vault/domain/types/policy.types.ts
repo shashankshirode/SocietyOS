@@ -35,14 +35,9 @@ export type CategoryPolicy = {
   readonly minimumRequiredChecklistItems: number;
 };
 
-export type SignatureMethodPolicy =
-  | 'ADMIN_DIGITAL'
-  | 'E_SIGN_PROVIDER'
-  | 'DSC_PROVIDER'
-  | 'AADHAAR_ESIGN'
-  | 'WET_INK_OFFLINE';
-
-export type SignatureMethod = SignatureMethodPolicy;
+import type { SignatureMethod } from './verification.types';
+export type { SignatureMethod } from './verification.types';
+export type SignatureMethodPolicy = SignatureMethod;
 
 export type SensitivityPolicy = {
   readonly sensitivity: DocumentSensitivity;

@@ -13,7 +13,7 @@ describe('resident date, time and currency formatters', () => {
   it('formats month, date and date-time values without exposing source strings', () => {
     expect(formatResidentMonthYear('2026-01', context)).toBe('Jan 2026');
     expect(formatResidentDate('2026-01-28', context)).toBe('28 Jan 2026');
-    expect(formatResidentDateTime('2026-03-03T07:00:00.000Z', context)).toBe('3 Mar 2026, 12:30 PM');
+    expect(formatResidentDateTime('2026-03-03T07:00:00.000Z', context)).toBe('3 Mar 2026 · 12:30 PM');
   });
 
   it('formats same-day ranges with a localized day label', () => {

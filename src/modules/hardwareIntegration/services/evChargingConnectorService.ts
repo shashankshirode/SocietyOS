@@ -70,13 +70,11 @@ export class EvChargingConnectorService {
         externalSessionId: input.externalSessionId,
         sourceTimestamp: input.timestamp,
         receivedAt: now,
-        meterStartKwh: input.meterStartKwh,
-        meterEndKwh: input.meterEndKwh,
         deduplicationKey: dedupeKey,
+        ...(input.meterStartKwh !== undefined ? { meterStartKwh: input.meterStartKwh } : {}),
+        ...(input.meterEndKwh !== undefined ? { meterEndKwh: input.meterEndKwh } : {}),
+        ...(input.eventType === 'STOP' ? { endTime: input.timestamp } : {}),
       };
-      if (input.eventType === 'STOP') {
-        session.endTime = input.timestamp;
-      }
       this.sessions.set(input.externalSessionId, session);
     } else {
       if (input.eventType === 'STOP') {
@@ -95,16 +93,18 @@ export class EvChargingConnectorService {
       }
     }
 
+    const currentSession = session;
+
     if (input.eventType === 'START') {
       charger.status = 'OCCUPIED';
-      charger.currentSessionId = session.id;
+      charger.currentSessionId = currentSession.id;
     } else if (input.eventType === 'STOP') {
       charger.status = 'AVAILABLE';
-      charger.currentSessionId = undefined;
-      charger.totalEnergyDeliveredKwh += session.energyConsumedKwh;
+      delete charger.currentSessionId;
+      charger.totalEnergyDeliveredKwh += currentSession.energyConsumedKwh;
     }
 
-    return session;
+    return currentSession;
   }
 
   getDashboardData(): EvChargingDashboardData {

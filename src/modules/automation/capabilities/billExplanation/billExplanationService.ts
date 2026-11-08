@@ -6,7 +6,34 @@ import {
 } from './billExplanation.types';
 import { aiOrchestrationService } from '../../../aiServices/core/services';
 
-const mockBills: Map<string, any> = new Map();
+interface MockBillCharge {
+  chargeHeadId: string;
+  chargeHead: string;
+  category: string;
+  amount: number;
+  isRecurring: boolean;
+  calculationMethod: string;
+  period: { from: string; to: string };
+  quantity?: number;
+  rate?: number;
+  unit?: string;
+  adjustment?: { type: 'REVERSAL' | 'PENALTY' | 'WAIVER' | 'DISCOUNT'; amount: number; reason: string };
+}
+
+interface MockBill {
+  id: string;
+  unitId: string;
+  societyId: string;
+  period: { from: string; to: string };
+  charges: MockBillCharge[];
+  totalAmount: number;
+  previousBalance: number;
+  netPayable: number;
+  dueDate: string;
+  paymentStatus: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE';
+}
+
+const mockBills: Map<string, MockBill> = new Map();
 const mockChargeHeads: Map<string, BillChargeHead[]> = new Map();
 
 function initializeMockData(): void {
@@ -40,7 +67,7 @@ function initializeMockData(): void {
 
 initializeMockData();
 
-function getBill(billId: string): any {
+function getBill(billId: string): MockBill | undefined {
   return mockBills.get(billId);
 }
 
@@ -48,7 +75,7 @@ function getChargeHeads(societyId: string): BillChargeHead[] {
   return mockChargeHeads.get(societyId) || [];
 }
 
-function generateDeterministicExplanation(bill: any, language: string): {
+function generateDeterministicExplanation(bill: MockBill, language: string): {
   explanation: string;
   chargeBreakdown: BillExplanationResult['chargeBreakdown'];
 } {
@@ -73,12 +100,12 @@ function generateDeterministicExplanation(bill: any, language: string): {
       chargeHead: charge.chargeHead,
       description: charge.category,
       amount: charge.amount,
-      quantity: charge.quantity,
-      rate: charge.rate,
-      unit: charge.unit,
+      ...(charge.quantity !== undefined ? { quantity: charge.quantity } : {}),
+      ...(charge.rate !== undefined ? { rate: charge.rate } : {}),
+      ...(charge.unit ? { unit: charge.unit } : {}),
       period: charge.period,
       isRecurring: charge.isRecurring,
-      adjustment: charge.adjustment,
+      ...(charge.adjustment ? { adjustment: charge.adjustment } : {}),
     });
   }
 
@@ -140,13 +167,16 @@ export const billExplanationService = {
     let requiresReview = false;
     let processingTimeMs = 10;
 
+    const lang = request.language || 'en';
+
     try {
       const aiResponse = await aiOrchestrationService.requestAnalysis(aiCommand);
 
       if (aiResponse.source === 'AI_PROVIDER' && aiResponse.status === 'SUCCESS') {
-        const aiOutput = aiResponse.primaryOutput as any;
-        explanation = aiOutput.explanation || generateDeterministicExplanation(bill, request.language).explanation;
-        chargeBreakdown = aiOutput.chargeBreakdown || generateDeterministicExplanation(bill, request.language).chargeBreakdown;
+        const det = generateDeterministicExplanation(bill, lang);
+        const aiOutput = 'answer' in aiResponse.primaryOutput ? aiResponse.primaryOutput.answer : '';
+        explanation = aiOutput || det.explanation;
+        chargeBreakdown = det.chargeBreakdown;
         modelVersion = aiResponse.modelVersion;
         templateVersion = aiResponse.templateVersion;
         source = 'AI_PROVIDER';
@@ -156,13 +186,13 @@ export const billExplanationService = {
         requiresReview = aiResponse.status === 'REQUIRES_REVIEW' || aiResponse.confidence < 0.7;
         processingTimeMs = aiResponse.processingTimeMs;
       } else {
-        const det = generateDeterministicExplanation(bill, request.language);
+        const det = generateDeterministicExplanation(bill, lang);
         explanation = det.explanation;
         chargeBreakdown = det.chargeBreakdown;
       }
     } catch (error) {
       warnings.push(`AI_UNAVAILABLE: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      const det = generateDeterministicExplanation(bill, request.language);
+      const det = generateDeterministicExplanation(bill, lang);
       explanation = det.explanation;
       chargeBreakdown = det.chargeBreakdown;
     }
@@ -236,24 +266,30 @@ export const billExplanationService = {
   compareBills(billId1: string, billId2: string): {
     bill1: any;
     bill2: any;
-    differences: Array<{
+    differences: {
       chargeHead: string;
       amount1: number;
       amount2: number;
       difference: number;
       changeType: 'INCREASED' | 'DECREASED' | 'NEW' | 'REMOVED';
-    }>;
+    }[];
     totalDifference: number;
   } | null {
     const bill1 = getBill(billId1);
     const bill2 = getBill(billId2);
     if (!bill1 || !bill2) return null;
 
-    const chargeMap1 = new Map(bill1.charges.map(c => [c.chargeHead, c]));
-    const chargeMap2 = new Map(bill2.charges.map(c => [c.chargeHead, c]));
-    const allHeads = new Set([...chargeMap1.keys(), ...chargeMap2.keys()]);
+    const chargeMap1 = new Map<string, MockBillCharge>(bill1.charges.map((c: MockBillCharge) => [c.chargeHead, c]));
+    const chargeMap2 = new Map<string, MockBillCharge>(bill2.charges.map((c: MockBillCharge) => [c.chargeHead, c]));
+    const allHeads = new Set<string>([...chargeMap1.keys(), ...chargeMap2.keys()]);
 
-    const differences = Array.from(allHeads).map(head => {
+    const differences: {
+      chargeHead: string;
+      amount1: number;
+      amount2: number;
+      difference: number;
+      changeType: 'INCREASED' | 'DECREASED' | 'NEW' | 'REMOVED';
+    }[] = Array.from(allHeads).map(head => {
       const c1 = chargeMap1.get(head);
       const c2 = chargeMap2.get(head);
       const amount1 = c1?.amount || 0;

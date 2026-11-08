@@ -41,3 +41,14 @@ export function createViewOpacityStyle(opacityValue: 0 | 1) {
         opacity: opacityValue
     } as const;
 }
+export function createButtonDisabledStyle(backgroundColor: string, borderColor: string) {
+    return {
+        backgroundColor,
+        borderColor,
+    } as const;
+}
+export function createButtonDisabledTextStyle(color: string) {
+    return {
+        color,
+    } as const;
+}

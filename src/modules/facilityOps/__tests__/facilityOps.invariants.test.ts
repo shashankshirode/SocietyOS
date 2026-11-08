@@ -80,7 +80,7 @@ describe('Phase 16 Core Domain Invariants', () => {
     const contract1 = amcService.createContract(
       {
         vendorId: vendor.id,
-        vendorName: vendor.vendorName,
+        vendorName: vendor.vendorName ?? vendor.name,
         category: 'LIFT',
         linkedAssets: ['ast-lift-1'],
         startDate: '2026-01-01',
@@ -98,7 +98,7 @@ describe('Phase 16 Core Domain Invariants', () => {
     const contract2 = amcService.createContract(
       {
         vendorId: vendor.id,
-        vendorName: vendor.vendorName,
+        vendorName: vendor.vendorName ?? vendor.name,
         category: 'LIFT',
         linkedAssets: ['ast-lift-2'],
         startDate: '2026-06-01',
@@ -140,9 +140,9 @@ describe('Phase 16 Core Domain Invariants', () => {
 
     const reminders = amcService.evaluateRenewalReminders('2026-04-01');
     expect(reminders.length).toBe(1);
-    expect(reminders[0].contractId).toBe(contract.id);
-    expect(reminders[0].daysRemaining).toBe(14);
-    expect(reminders[0].status).toBe('DUE_SOON');
+    expect(reminders[0]!.contractId).toBe(contract.id);
+    expect(reminders[0]!.daysRemaining).toBe(14);
+    expect(reminders[0]!.status).toBe('DUE_SOON');
   });
 
   test('Invariant 3: Asset lifecycleStatus != operationalCondition', () => {
@@ -395,7 +395,7 @@ describe('Phase 16 Core Domain Invariants', () => {
         poId: po.id,
         lines: [
           {
-            poLineId: po.lines[0].id,
+            poLineId: po.lines[0]!.id,
             deliveredQuantity: 90,
             acceptedQuantity: 90,
             rejectedQuantity: 0,
@@ -407,7 +407,7 @@ describe('Phase 16 Core Domain Invariants', () => {
 
     const updatedPo = procurementService.getPurchaseOrder(po.id)!;
     expect(updatedPo.status).toBe('PARTIALLY_RECEIVED');
-    expect(updatedPo.lines[0].acceptedQuantity).toBe(90);
+    expect(updatedPo.lines[0]!.acceptedQuantity).toBe(90);
     expect(gr.status).toBe('PARTIAL');
   });
 
@@ -442,7 +442,7 @@ describe('Phase 16 Core Domain Invariants', () => {
         poId: po.id,
         lines: [
           {
-            poLineId: po.lines[0].id,
+            poLineId: po.lines[0]!.id,
             deliveredQuantity: 90,
             acceptedQuantity: 90,
             rejectedQuantity: 0,
@@ -458,7 +458,7 @@ describe('Phase 16 Core Domain Invariants', () => {
         vendorId: 'vnd-valves',
         vendorName: 'ValveTech',
         poId: po.id,
-        lines: [{ description: 'Gate Valve 2 inch', quantity: 100, unitPrice: 500, totalPrice: 50000, poLineId: po.lines[0].id }],
+        lines: [{ description: 'Gate Valve 2 inch', quantity: 100, unitPrice: 500, totalPrice: 50000, poLineId: po.lines[0]!.id }],
         subtotal: 50000,
         taxAmount: 9000,
         totalAmount: 59000,
@@ -471,9 +471,9 @@ describe('Phase 16 Core Domain Invariants', () => {
     const matchResult = invoiceService.performThreeWayMatch(invoice.id);
     expect(matchResult.status).toBe('EXCEPTION');
     expect(matchResult.exceptions.length).toBe(1);
-    expect(matchResult.exceptions[0].type).toBe('QUANTITY_MISMATCH');
-    expect(matchResult.exceptions[0].expected).toBe(90);
-    expect(matchResult.exceptions[0].actual).toBe(100);
+    expect(matchResult.exceptions[0]!.type).toBe('QUANTITY_MISMATCH');
+    expect(matchResult.exceptions[0]!.expected).toBe(90);
+    expect(matchResult.exceptions[0]!.actual).toBe(100);
 
     expect(() => {
       invoiceService.approveInvoice(invoice.id, committee);
@@ -513,7 +513,7 @@ describe('Phase 16 Core Domain Invariants', () => {
     procurementService.receiveGoods(
       {
         poId: po.id,
-        lines: [{ poLineId: po.lines[0].id, deliveredQuantity: 10, acceptedQuantity: 10, rejectedQuantity: 0 }],
+        lines: [{ poLineId: po.lines[0]!.id, deliveredQuantity: 10, acceptedQuantity: 10, rejectedQuantity: 0 }],
       },
       manager
     );
@@ -524,7 +524,7 @@ describe('Phase 16 Core Domain Invariants', () => {
         vendorId: 'vnd-pipes',
         vendorName: 'PipeCo',
         poId: po.id,
-        lines: [{ description: 'PVC Pipe', quantity: 10, unitPrice: 1015, totalPrice: 10150, poLineId: po.lines[0].id }],
+        lines: [{ description: 'PVC Pipe', quantity: 10, unitPrice: 1015, totalPrice: 10150, poLineId: po.lines[0]!.id }],
         subtotal: 10150,
         taxAmount: 1827,
         totalAmount: 11977,
@@ -629,16 +629,16 @@ describe('Phase 16 Core Domain Invariants', () => {
 
     const history = assetService.getTransferHistory(asset.id);
     expect(history.length).toBe(2);
-    expect(history[1].fromLocation).toBe('Pump House A');
-    expect(history[1].toLocation).toBe('STP Plant Basement');
-    expect(history[1].transferredBy).toBe(manager.name);
+    expect(history[1]!.fromLocation).toBe('Pump House A');
+    expect(history[1]!.toLocation).toBe('STP Plant Basement');
+    expect(history[1]!.transferredBy).toBe(manager.name);
   });
 
   test('Invariant 16: Asset retirement with open Work Order is blocked', () => {
     const asset = assetService.createAsset(
       {
         assetName: 'Solar Inverter 10kW',
-        category: 'SOLAR',
+        category: 'SOLAR_PANEL',
         location: 'Clubhouse Roof',
         installationDate: '2023-01-01',
         purchaseDate: '2022-12-01',
@@ -972,7 +972,7 @@ describe('Phase 16 Core Domain Invariants', () => {
     const gr = procurementService.receiveGoods(
       {
         poId: po.id,
-        lines: [{ poLineId: po.lines[0].id, deliveredQuantity: 20, acceptedQuantity: 20, rejectedQuantity: 0 }],
+        lines: [{ poLineId: po.lines[0]?.id ?? '', deliveredQuantity: 20, acceptedQuantity: 20, rejectedQuantity: 0 }],
         clientOperationId: 'client-gr-op-99',
       },
       manager
@@ -1130,7 +1130,7 @@ describe('Phase 16 Core Domain Invariants', () => {
       vendor.id,
       {
         documentType: 'PAN_CARD',
-        documentCategory: 'TAX',
+        documentCategory: 'PAN',
         documentVaultId: 'doc-vault-pan-secret',
         sensitivity: 'RESTRICTED',
       },
@@ -1234,7 +1234,7 @@ describe('Phase 16 Core Domain Invariants', () => {
         installationDate: '2020-01-01',
         purchaseDate: '2019-12-01',
         vendorId: vendor.id,
-        vendorName: vendor.vendorName,
+        vendorName: vendor.vendorName ?? vendor.name,
         warrantyExpiry: '2022-01-01',
         warrantyStatus: 'EXPIRED',
         serviceFrequency: 'MONTHLY',
@@ -1260,8 +1260,9 @@ describe('Phase 16 Core Domain Invariants', () => {
 
     const history = workOrderService.getServiceHistoryForAsset(asset.id);
     expect(history.length).toBe(1);
-    expect(history[0].assetId).toBe(asset.id);
-    expect(history[0].workOrderNumber).toBe(wo.workOrderNumber);
+    const firstHist = history[0];
+    expect(firstHist?.assetId).toBe(asset.id);
+    expect(firstHist?.workOrderNumber).toBe(wo.workOrderNumber);
 
     assetService.retireAsset({ assetId: asset.id, reason: 'Modernized with new elevator' }, manager);
     const retired = assetService.getAsset(asset.id)!;
@@ -1269,6 +1270,7 @@ describe('Phase 16 Core Domain Invariants', () => {
 
     const historyAfterRetirement = workOrderService.getServiceHistoryForAsset(asset.id);
     expect(historyAfterRetirement.length).toBe(1);
-    expect(historyAfterRetirement[0].workOrderNumber).toBe(wo.workOrderNumber);
+    const firstHistAfter = historyAfterRetirement[0];
+    expect(firstHistAfter?.workOrderNumber).toBe(wo.workOrderNumber);
   });
 });

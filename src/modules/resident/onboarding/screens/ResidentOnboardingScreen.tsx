@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { AppAlert } from '../../../../ui/modal/AppAlert';
 import { useResidentOnboarding, type OnboardingStep } from '../hooks/useResidentOnboarding';
 import { VerifyMobileStep } from './steps/VerifyMobileStep';
 import { FindSocietyStep } from './steps/FindSocietyStep';
@@ -21,7 +22,7 @@ interface ResidentOnboardingScreenProps {
 export function ResidentOnboardingScreen({ onComplete, onCancel, }: ResidentOnboardingScreenProps) {
     const { state, requestOtp, verifyOtp, resendOtp, selectSociety, confirmSociety, loadUnitsForSociety, selectUnit, confirmUnit, selectResidentRole, submitRoleSpecific, updateProfile, uploadDocument, removeDocument, proceedToReview, submitForReview, createRegistration, goToStep, reset, setError, } = useResidentOnboarding();
     const handleHelp = () => {
-        Alert.alert('Resident Support', 'Need help with your society onboarding? Contact the society management desk at support@societyos.in or +91 80000 12345.', [{ text: 'OK' }]);
+        AppAlert.alert('Resident Support', 'Need help with your society onboarding? Contact the society management desk at support@societyos.in or +91 80000 12345.', [{ text: 'OK' }]);
     };
     const handleBack = () => {
         switch (state.step) {

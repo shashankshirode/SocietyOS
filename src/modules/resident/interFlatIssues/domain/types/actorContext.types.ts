@@ -4,8 +4,7 @@ import type { ResidenceMembership, IdentitySnapshot } from '../../../../../core/
 import type { HouseholdActorRelationship } from '../../../../../core/householdGovernance/householdActionGovernance.types';
 import type { AuthSession } from '../../../../../core/auth/authSession.types';
 import type { DisputeActor, DisputeActorType } from './primitives';
-import type { DisputePartyRole } from './case.types';
-import type { DisputeCase } from './case.types';
+import type { DisputePartyRole , DisputeCase } from './case.types';
 import { getPermissionsForRoles } from '../../../../../core/permissions/rolePermissionMap';
 export const SESSION_AUTHENTICATED_AT_FALLBACK = '1970-01-01T00:00:00.000Z';
 export type DisputeIdentitySource = {

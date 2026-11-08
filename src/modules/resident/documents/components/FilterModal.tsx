@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { AppModal } from '../../../../ui/modal/AppModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SafeText } from '../../../../shared/components/SafeText';
 import { AppButton } from '../../../../shared/components/AppButton';
@@ -8,7 +9,7 @@ import { useResidentTheme } from '../../../../ui/foundation/residentTheme';
 import { useMessages } from '../../../../messages/useMessages';
 import { styles, createRootStyle, createSurfaceStyle, createColorStyle, createBorderStyle } from '../styles/components/FilterModal.styles';
 import { DocumentCategory, DocumentStatus, DocumentEntityType } from '../../../../shared/types/documentVault.types';
-import { getDocumentCategoryLabel, getDocumentStatusLabel, getDocumentEntityTypeLabel } from '../../../utils/formatters';
+import { getDocumentCategoryLabel, getDocumentStatusLabel, getDocumentEntityTypeLabel } from '../utils/formatters';
 
 interface FilterModalProps {
   visible: boolean;
@@ -59,8 +60,7 @@ export function FilterModal({ visible, onClose, onApply, onClear, initialFilters
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1} />
+    <AppModal visible={visible} onClose={onClose}>
       <View style={[styles.modal, createSurfaceStyle(theme.surface)]}>
         <View style={[styles.handle, createBorderStyle(theme.border)]} />
         <SafeText variant="bodyStrong" style={createColorStyle(theme.textPrimary)}>Filters</SafeText>
@@ -166,7 +166,7 @@ export function FilterModal({ visible, onClose, onApply, onClear, initialFilters
           />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

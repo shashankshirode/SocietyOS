@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { DisputeCase } from '../domain/types/case.types';
+import type { DisputeCase , DisputeParty, DisputePropertyTag , DisputeResponse, DisputeClaim } from '../domain/types/case.types';
 import type { EvidenceRecord } from '../domain/types/evidence.types';
 import type { TimelineEvent, CaseAuditEntry } from '../domain/types/timeline.types';
 import type { Inspection } from '../domain/types/inspection.types';
@@ -7,8 +7,6 @@ import type { ResolutionProposal, PartyDecision, MediatorNote, ClosureProof } fr
 import type { Mediation } from '../domain/stateMachines/mediationMachine';
 import type { Escalation } from '../domain/types/escalation.types';
 import type { DisputeRetentionRecord } from '../domain/types/retention.types';
-import type { DisputeParty, DisputePropertyTag } from '../domain/types/case.types';
-import type { DisputeResponse, DisputeClaim } from '../domain/types/case.types';
 export const DISPUTE_STORAGE_KEY = 'society-os.disputes.v1.snapshot';
 export const DISPUTE_SNAPSHOT_SCHEMA_VERSION = 1;
 export type DisputeSnapshot = {

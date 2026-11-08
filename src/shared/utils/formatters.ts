@@ -1,5 +1,5 @@
-import { VisitorStatus, VisitorType } from '../types/visitor.types';
-import { ComplaintStatus, ComplaintPriority, ComplaintCategory } from '../types/complaint.types';
+import { VisitorStatus, VisitorType } from '../types/visitorPhase8.types';
+import { ComplaintStatus, ComplaintPriority, ComplaintCategory } from '../types/complaintPhase10.types';
 import { BillStatus } from '../types/bill.types';
 import { Messages } from '../constants/messages';
 import type { Absent } from "../types/absence.types";
@@ -35,85 +35,166 @@ export function formatRelativeDate(dateString: string): string {
         return `${diffDays} days ago`;
     return formatDate(dateString);
 }
+function getLabel<T extends string>(labels: Partial<Record<T, string>>, value: T, fallback: string): string {
+  return labels[value] ?? fallback;
+}
+
 export function getVisitorStatusLabel(status: VisitorStatus): string {
-    const labels: Record<VisitorStatus, string> = {
-        EXPECTED: Messages.visitors.statusExpected,
-        WAITING_APPROVAL: Messages.visitors.statusWaitingApproval,
-        APPROVED: Messages.visitors.statusApproved,
-        COMPLETED: Messages.visitors.statusCompleted,
-        CHECKED_IN: Messages.visitors.statusInside,
-        CHECKED_OUT: Messages.visitors.statusCompleted,
-        REJECTED: Messages.visitors.statusRejected,
-        EXPIRED: Messages.visitors.statusExpired,
-        CANCELLED: 'Cancelled',
-    };
-    return labels[status];
+  const labels: Partial<Record<VisitorStatus, string>> = {
+    EXPECTED: Messages.visitors.statusExpected,
+    WAITING_APPROVAL: Messages.visitors.statusWaitingApproval,
+    APPROVED: Messages.visitors.statusApproved,
+    COMPLETED: Messages.visitors.statusCompleted,
+    CHECKED_IN: Messages.visitors.statusInside,
+    CHECKED_OUT: Messages.visitors.statusCompleted,
+    REJECTED: Messages.visitors.statusRejected,
+    EXPIRED: Messages.visitors.statusExpired,
+    CANCELLED: 'Cancelled',
+    DRAFT: 'Draft',
+    PRESENTED: 'Presented',
+    DENIED: 'Denied',
+    ESCALATED: 'Escalated',
+    REVOKED: 'Revoked',
+    EMERGENCY_BYPASS: 'Emergency Bypass',
+  };
+  return getLabel(labels, status, status);
 }
+
 export function getVisitorTypeLabel(type: VisitorType): string {
-    const labels: Record<VisitorType, string> = {
-        GUEST: Messages.visitors.typeGuest,
-        DELIVERY: Messages.visitors.typeDelivery,
-        CAB: Messages.visitors.typeCab,
-        VENDOR: Messages.visitors.typeVendor,
-    };
-    return labels[type];
+  const labels: Partial<Record<VisitorType, string>> = {
+    GUEST: Messages.visitors.typeGuest,
+    guest: Messages.visitors.typeGuest,
+    DELIVERY: Messages.visitors.typeDelivery,
+    delivery: Messages.visitors.typeDelivery,
+    CAB: Messages.visitors.typeCab,
+    cab: Messages.visitors.typeCab,
+    VENDOR: Messages.visitors.typeVendor,
+    vendor: Messages.visitors.typeVendor,
+    SERVICE_PROVIDER: 'Service Provider',
+    serviceProvider: 'Service Provider',
+    DOMESTIC_HELP: 'Domestic Help',
+    domesticHelp: 'Domestic Help',
+    STAFF: 'Staff',
+    staff: 'Staff',
+    COURIER: 'Courier',
+    courier: 'Courier',
+    MATERIAL_MOVEMENT: 'Material Movement',
+    materialMovement: 'Material Movement',
+    EMERGENCY: 'Emergency',
+    emergency: 'Emergency',
+    OTHER: 'Other',
+    other: 'Other',
+  };
+  return getLabel(labels, type, type);
 }
+
 export function getVisitorTypeIconName(type: VisitorType): string {
-    const icons: Record<VisitorType, string> = {
-        GUEST: 'person-outline',
-        DELIVERY: 'cube-outline',
-        CAB: 'car-outline',
-        VENDOR: 'construct-outline',
-    };
-    return icons[type];
+  const icons: Partial<Record<VisitorType, string>> = {
+    GUEST: 'person-outline',
+    guest: 'person-outline',
+    DELIVERY: 'cube-outline',
+    delivery: 'cube-outline',
+    CAB: 'car-outline',
+    cab: 'car-outline',
+    VENDOR: 'construct-outline',
+    vendor: 'construct-outline',
+    SERVICE_PROVIDER: 'construct-outline',
+    serviceProvider: 'construct-outline',
+    DOMESTIC_HELP: 'person-outline',
+    domesticHelp: 'person-outline',
+    STAFF: 'person-outline',
+    staff: 'person-outline',
+    COURIER: 'cube-outline',
+    courier: 'cube-outline',
+    MATERIAL_MOVEMENT: 'cube-outline',
+    materialMovement: 'cube-outline',
+    EMERGENCY: 'alert-circle-outline',
+    emergency: 'alert-circle-outline',
+    OTHER: 'help-outline',
+    other: 'help-outline',
+  };
+  return getLabel(icons, type, 'help-outline');
 }
+
 export function getComplaintStatusLabel(status: ComplaintStatus): string {
-    const labels: Record<ComplaintStatus, string> = {
-        OPEN: Messages.complaints.statusOpen,
-        IN_PROGRESS: Messages.complaints.statusInProgress,
-        WAITING_FOR_RESIDENT: Messages.complaints.statusWaitingForResident,
-        RESOLVED: Messages.complaints.statusResolved,
-        CLOSED: Messages.complaints.statusClosed,
-        REOPENED: Messages.complaints.statusReopened,
-    };
-    return labels[status];
+  const labels: Partial<Record<ComplaintStatus, string>> = {
+    OPEN: Messages.complaints.statusOpen,
+    CREATED: 'Created',
+    CLASSIFIED: 'Classified',
+    PENDING_ASSIGNMENT: 'Pending Assignment',
+    ASSIGNED: Messages.complaints.statusInProgress,
+    ACKNOWLEDGED: 'Acknowledged',
+    IN_PROGRESS: Messages.complaints.statusInProgress,
+    WAITING: 'Waiting',
+    WAITING_FOR_RESIDENT: Messages.complaints.statusWaitingForResident,
+    HOLD: 'On Hold',
+    RESOLVED: Messages.complaints.statusResolved,
+    CONFIRMED: 'Confirmed',
+    CLOSED: Messages.complaints.statusClosed,
+    REOPENED: Messages.complaints.statusReopened,
+    REASSIGNED: 'Reassigned',
+    ESCALATED: 'Escalated',
+    CANCELLED: 'Cancelled',
+    REJECTED: 'Rejected',
+    DUPLICATE: 'Duplicate',
+    LINKED_TO_PARENT: 'Linked to Parent',
+  };
+  return getLabel(labels, status, status);
 }
+
 export function getComplaintPriorityLabel(priority: ComplaintPriority): string {
-    const labels: Record<ComplaintPriority, string> = {
-        LOW: Messages.complaints.priorityLow,
-        MEDIUM: Messages.complaints.priorityMedium,
-        HIGH: Messages.complaints.priorityHigh,
-        URGENT: Messages.complaints.priorityUrgent,
-    };
-    return labels[priority];
+  const labels: Partial<Record<ComplaintPriority, string>> = {
+    LOW: Messages.complaints.priorityLow,
+    MEDIUM: Messages.complaints.priorityMedium,
+    NORMAL: Messages.complaints.priorityMedium,
+    HIGH: Messages.complaints.priorityHigh,
+    URGENT: Messages.complaints.priorityUrgent,
+    CRITICAL: 'Critical',
+    EMERGENCY: 'Emergency',
+  };
+  return getLabel(labels, priority, priority);
 }
+
 export function getComplaintCategoryLabel(category: ComplaintCategory): string {
-    const labels: Record<ComplaintCategory, string> = {
-        PLUMBING: Messages.complaints.categoryPlumbing,
-        LIFT: Messages.complaints.categoryLift,
-        SECURITY: Messages.complaints.categorySecurity,
-        HOUSEKEEPING: Messages.complaints.categoryHousekeeping,
-        PARKING: Messages.complaints.categoryParking,
-        NOISE: Messages.complaints.categoryNoise,
-        WATER_LEAKAGE: Messages.complaints.categoryWaterLeakage,
-        ELECTRICAL: Messages.complaints.categoryElectrical,
-        OTHER: Messages.complaints.categoryOther,
-    };
-    return labels[category];
+  const labels: Partial<Record<ComplaintCategory, string>> = {
+    PLUMBING: Messages.complaints.categoryPlumbing,
+    LIFT: Messages.complaints.categoryLift,
+    SECURITY: Messages.complaints.categorySecurity,
+    HOUSEKEEPING: Messages.complaints.categoryHousekeeping,
+    PARKING: Messages.complaints.categoryParking,
+    NOISE: Messages.complaints.categoryNoise,
+    WATER_LEAKAGE: Messages.complaints.categoryWaterLeakage,
+    ELECTRICAL: Messages.complaints.categoryElectrical,
+    COMMON_AREA: 'Common Area',
+    FACILITY: 'Facility',
+    PEST_CONTROL: 'Pest Control',
+    CLEANING: 'Cleaning',
+    WASTE_MANAGEMENT: 'Waste Management',
+    FIRE_SAFETY: 'Fire Safety',
+    OTHER: Messages.complaints.categoryOther,
+  };
+  return getLabel(labels, category, category);
 }
+
 export function getComplaintCategoryIconName(category: ComplaintCategory): string {
-    const icons: Record<ComplaintCategory, string> = {
-        PLUMBING: 'water-outline',
-        LIFT: 'swap-vertical-outline',
-        SECURITY: 'shield-checkmark-outline',
-        HOUSEKEEPING: 'sparkles-outline',
-        PARKING: 'car-sport-outline',
-        NOISE: 'volume-high-outline',
-        WATER_LEAKAGE: 'rainy-outline',
-        ELECTRICAL: 'flash-outline',
-        OTHER: 'document-text-outline',
-    };
-    return icons[category];
+  const icons: Partial<Record<ComplaintCategory, string>> = {
+    PLUMBING: 'water-outline',
+    LIFT: 'swap-vertical-outline',
+    SECURITY: 'shield-checkmark-outline',
+    HOUSEKEEPING: 'sparkles-outline',
+    PARKING: 'car-sport-outline',
+    NOISE: 'volume-high-outline',
+    WATER_LEAKAGE: 'rainy-outline',
+    ELECTRICAL: 'flash-outline',
+    COMMON_AREA: 'business-outline',
+    FACILITY: 'football-outline',
+    PEST_CONTROL: 'bug-outline',
+    CLEANING: 'sparkles-outline',
+    WASTE_MANAGEMENT: 'trash-outline',
+    FIRE_SAFETY: 'flame-outline',
+    OTHER: 'document-text-outline',
+  };
+  return getLabel(icons, category, 'document-text-outline');
 }
 export function getBillStatusLabel(status: BillStatus): string {
     const labels: Record<string, string> = {

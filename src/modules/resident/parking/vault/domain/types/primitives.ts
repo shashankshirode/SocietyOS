@@ -116,6 +116,8 @@ export type ParkingVaultErrorCode =
   | 'UNIT_INACTIVE'
   | 'ACCESS_DENIED'
   | 'FEATURE_DISABLED'
+  | 'VERIFICATION_CHECKLIST_INCOMPLETE'
+  | 'VERIFICATION_REASON_REQUIRED'
   | 'VALIDATION_FAILED';
 
 export type ParkingVaultViolation = {

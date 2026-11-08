@@ -1,19 +1,12 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  ScrollView,
-  View,
-  type TextInput,
-  type ViewStyle,
-} from 'react-native';
+import { type TextInputInstance, type ScrollViewInstance, Keyboard, KeyboardAvoidingView, ScrollView, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getPlatformKeyboardConfig } from '../platform';
 import { useKeyboardExperience } from '../../modules/resident/experience/KeyboardExperienceContext';
 import { styles, createCommandStyle, createContentStyle } from './styles/KeyboardAwareForm.styles';
 
 type FocusCoordinator = {
-  ensureVisible: (input: TextInput | null) => void;
+  ensureVisible: (input: TextInputInstance | null) => void;
 };
 
 const FormFocusContext = createContext<FocusCoordinator>({ ensureVisible: () => undefined });
@@ -28,13 +21,13 @@ export type KeyboardAwareFormProps = {
 };
 
 export function KeyboardAwareForm({ children, command, style, contentStyle, keyboardShouldPersistTaps = 'handled', testID }: KeyboardAwareFormProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const [commandHeight, setCommandHeight] = useState(0);
   const insets = useSafeAreaInsets();
   const keyboard = useKeyboardExperience();
   const keyboardConfig = getPlatformKeyboardConfig(insets.top);
 
-  const ensureVisible = useCallback((input: TextInput | null) => {
+  const ensureVisible = useCallback((input: TextInputInstance | null) => {
     if (!input) return;
     requestAnimationFrame(() => {
       scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard(
@@ -85,7 +78,7 @@ export function KeyboardAwareForm({ children, command, style, contentStyle, keyb
   );
 }
 
-export function useKeyboardAwareField<T extends TextInput>(ref: React.RefObject<T | null>) {
+export function useKeyboardAwareField<T extends TextInputInstance>(ref: React.RefObject<T | null>) {
   const { ensureVisible } = useContext(FormFocusContext);
   return useCallback(() => {
     ensureVisible(ref.current);

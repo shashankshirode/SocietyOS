@@ -229,6 +229,22 @@ export const ownerTenantApiSource = {
         catch (error) {
             return repositoryFailure(repositoryErrorFromUnknown(error as Error));
         }
+    },
+    async createCorrectionRequest(input: {
+        unitId: string;
+        field: string;
+        currentValue: string;
+        proposedValue: string;
+        reason: string;
+    }): Promise<RepositoryResult<{ id: string; status: string; field: string }>> {
+        return repositorySuccess({
+            id: `cor-${Date.now()}`,
+            status: 'PENDING_REVIEW',
+            field: input.field,
+        });
+    },
+    async getCorrectionRequests(unitId: string): Promise<RepositoryResult<any[]>> {
+        return repositorySuccess([]);
     }
 };
 

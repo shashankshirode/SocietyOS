@@ -9,7 +9,6 @@ import type {
   ParkingViolationRecord,
   ParkingViolationStatus,
   ParkingViolationType,
-  ParkingVaultScope,
 } from '../domain/types/parking';
 import {
   canTransitionViolation,
@@ -17,7 +16,7 @@ import {
   canApplyPenalty,
   canOverturnViolation,
 } from '../domain/stateMachines/violationStateMachine';
-import { evaluateActionPermission } from '../domain/guards/authorizationGuard';
+import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
 
 export interface ViolationService {
   recordViolation(
@@ -60,7 +59,7 @@ export type ViolationRecordRequest = {
   readonly idempotencyKey: string;
 };
 
-function fail(code: ParkingVaultErrorCode, message: string) {
+function fail(code: ParkingVaultErrorCode, message: string): { ok: false; code: ParkingVaultErrorCode; message: string } {
   return { ok: false, code, message };
 }
 
@@ -120,9 +119,9 @@ export function createViolationService(ports: {
 
     const violationId = `viol-${input.idempotencyKey}`;
     const replay = ports.violations.read(violationId);
-    if (replay) return { ok: true, value: replay, warnings: ['IDEMPOTENT_REPLAY'] };
+    if (replay) return { ok: true as const, value: replay, warnings: ['IDEMPOTENT_REPLAY'] as const };
 
-    const now = new Date().toISOString();
+    const nowIso = ports.clock.now().toISOString();
     const violation: ParkingViolationRecord = {
       id: violationId,
       scope: input.scope,
@@ -140,8 +139,8 @@ export function createViolationService(ports: {
       overturnedAt: undefined,
       overturnedBy: undefined,
       overturnReason: undefined,
-      createdAt: now(),
-      updatedAt: now(),
+      createdAt: nowIso,
+      updatedAt: nowIso,
       revision: { revision: 1, revisionToken: `rev-${violationId}-1` },
       trace: { correlationId: input.idempotencyKey, causationId: undefined },
     };
@@ -151,7 +150,7 @@ export function createViolationService(ports: {
 
     ports.audit.emit({
       id: `aud-${violationId}`,
-      timestamp: now(),
+      timestamp: nowIso,
       correlationId: violation.trace.correlationId,
       actor: { userId: actor.userId, type: 'ADMIN', role: actor.role, societyId: actor.societyId },
       action: 'RECORD_VIOLATION',
@@ -163,7 +162,7 @@ export function createViolationService(ports: {
       outcome: 'SUCCESS',
     });
 
-    return { ok: true, value: violation, warnings: [] };
+    return { ok: true as const, value: violation, warnings: [] as const };
   };
 
   const applyPenalty = async (actor: VaultActor, violationId: string, penaltyAmount: number, paymentObligationId: string) => {
@@ -285,10 +284,6 @@ export function createViolationService(ports: {
   const getViolationsBySociety = (societyId: string) => ports.violations.listBySociety(societyId);
   const getViolationsByStatus = (societyId: string, status: string) => ports.violations.listByStatus(societyId, status);
   const checkRepeatOffence = (societyId: string, vehicleNumber: string, timeWindow: string) => ports.violations.findRepeatOffences(societyId, vehicleNumber, timeWindow);
-
-  function fail(code: ParkingVaultErrorCode, message: string) {
-    return { ok: false, code, message };
-  }
 
   return {
     recordViolation,

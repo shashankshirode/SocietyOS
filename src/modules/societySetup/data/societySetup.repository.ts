@@ -63,7 +63,7 @@ export class SocietySetupRepository {
                 });
             });
             mockStore.addSocietyUnitsBulk(newUnits);
-            setTimeout(() => resolve(true), 400);
+            setTimeout(() => resolve(true), process.env.NODE_ENV === 'test' ? 0 : 400);
         });
     }
     static async getSocietyHierarchy(_input?: JsonValue): Promise<SocietyHierarchyNode> {

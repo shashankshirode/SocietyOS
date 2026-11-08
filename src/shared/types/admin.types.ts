@@ -151,6 +151,7 @@ export interface AdminResident {
   name: string;
   role: 'OWNER' | 'TENANT' | 'FAMILY';
   unitNumber: string;
+  flatNumber?: string | undefined;
   wing: string;
   occupancyStatus: string;
   kycStatus: KycStatus;
@@ -158,8 +159,8 @@ export interface AdminResident {
   accessStatus: 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
   mobileMasked: string;
   emailMasked: string;
-  profilePhotoPlaceholder?: string;
-  registeredAt?: string;
+  profilePhotoPlaceholder?: string | undefined;
+  registeredAt?: string | undefined;
 }
 
 export interface AdminApproval {
@@ -245,6 +246,13 @@ export interface AdminDashboardData {
   recentComplaints: AdminComplaint[];
   recentAuditLogs: AdminAuditLog[];
   lastUpdatedAt: string;
+  feedItems?: {
+    id: string;
+    title: string;
+    subtitle: string;
+    status: string;
+    statusTone: 'warning' | 'danger' | 'info' | 'success';
+  }[];
 }
 
 export interface SocietySettings {

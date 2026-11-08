@@ -39,7 +39,7 @@ export function deriveVisitorExitAlert(visitor: Visitor, nowIso = visitorExitAss
         expectedExitAtIso: tracking.expectedExitAtIso,
         alertDueAtIso,
         elapsedMinutes: Math.max(0, Math.floor((new Date(nowIso).getTime() - new Date(tracking.actualEntryAtIso ?? tracking.expectedEntryAtIso).getTime()) / 60000)),
-        status: tracking.alertStatus === 'scheduled' ? 'sent' : tracking.alertStatus,
+        status: (tracking.alertStatus === 'scheduled' ? 'sent' : tracking.alertStatus) ?? 'sent',
     };
 }
 export function deriveVisitorExitAlerts(visitors: Visitor[], nowIso = visitorExitAssuranceMockNowIso): VisitorExitAlert[] {

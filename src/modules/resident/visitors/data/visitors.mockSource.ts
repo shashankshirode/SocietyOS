@@ -26,7 +26,7 @@ function appendExitTimeline(visitor: Visitor, status: VisitorExitStatus, titleKe
         exitTracking: {
             ...tracking,
             timeline: [
-                ...tracking.timeline,
+                ...(tracking.timeline ?? []),
                 {
                     id: `exit-event-${visitor.id}-${Date.now()}`,
                     titleKey,
@@ -45,7 +45,10 @@ function persistVisitor(visitor: Visitor): Visitor {
     mockStore.updateVisitor(visitor.id, visitor);
     return findVisitorById(visitor.id) ?? visitor;
 }
-export const visitorsMockSource: ResidentVisitorsRepository = {
+export const visitorsMockSource: ResidentVisitorsRepository & {
+    validateCredential(visitorPassId: string, otp: string): 'VALID' | 'CANCELLED' | 'EXPIRED' | 'USED';
+    validatePassAtGate(visitorPassId: string, otp: string): Promise<RepositoryResult<{ visitor: Visitor; gateEventId: string }>>;
+} = {
     async list(context?: ResidentRepositoryRequestContext): Promise<RepositoryResult<Visitor[]>> {
         await withMockDelay();
         const ctx = resolveRequestContext(context);
@@ -276,8 +279,8 @@ export const visitorsMockSource: ResidentVisitorsRepository = {
         const persisted = persistVisitor(updated);
         return repositorySuccess({
             visitorPassId: persisted.id,
-            alertStatus: persisted.exitTracking!.alertStatus,
-            exitStatus: persisted.exitTracking!.exitStatus
+            alertStatus: persisted.exitTracking?.alertStatus ?? 'escalated',
+            exitStatus: persisted.exitTracking?.exitStatus ?? 'escalatedToSecurity'
         });
     },
     async cancelVisitorPass(context: ResidentRepositoryRequestContext | CancelVisitorPassRequest, request?: CancelVisitorPassRequest): Promise<RepositoryResult<CancelVisitorPassResult>> {

@@ -120,13 +120,13 @@ export type AiRequest = {
   templateVersion: number;
   input: Record<string, unknown>;
   minimizedInput: Record<string, unknown>;
-  contextReferences: Array<{
+  contextReferences: {
     type: AiEvidenceType;
     entityId: string;
     entityType: string;
     asOf: string;
     excerpt?: string;
-  }>;
+  }[];
   societyId: string;
   requestedBy: string;
   requestedAt: string;
@@ -142,12 +142,12 @@ export type AiClassificationCandidate = {
   suggestedPriority?: string;
   suggestedSlaHours?: number;
   tags: string[];
-  evidenceReferences: Array<{
+  evidenceReferences: {
     type: AiEvidenceType;
     entityId: string;
     entityType: string;
     asOf: string;
-  }>;
+  }[];
   warnings: string[];
 };
 
@@ -155,17 +155,17 @@ export type AiDraftOutput = {
   content: string;
   format: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML';
   language: string;
-  placeholders: Array<{
+  placeholders: {
     key: string;
     description: string;
     required: boolean;
     exampleValue?: string;
-  }>;
-  factualReferences: Array<{
+  }[];
+  factualReferences: {
     field: string;
     value: unknown;
     source: string;
-  }>;
+  }[];
   warnings: string[];
 };
 
@@ -173,7 +173,7 @@ export type AiAnswerOutput = {
   answer: string;
   answerType: 'FOUND_IN_SOURCE' | 'INFERRED' | 'NOT_FOUND';
   confidence: number;
-  sourceReferences: Array<{
+  sourceReferences: {
     type: AiEvidenceType;
     entityId: string;
     entityType: string;
@@ -182,57 +182,57 @@ export type AiAnswerOutput = {
     chunkId?: string;
     asOf: string;
     excerpt?: string;
-  }>;
+  }[];
   warnings: string[];
 };
 
 export type AiSummaryOutput = {
   summary: string;
   keyPoints: string[];
-  actionItems: Array<{
+  actionItems: {
     description: string;
     assigneeRole?: string;
     dueDate?: string;
     priority?: 'LOW' | 'NORMAL' | 'HIGH';
     sourceReference: string;
-  }>;
-  decisions: Array<{
+  }[];
+  decisions: {
     description: string;
     outcome: 'APPROVED' | 'REJECTED' | 'DEFERRED' | 'DISCUSSED';
     sourceReference: string;
-  }>;
+  }[];
   confidence: number;
-  sourceReferences: Array<{
+  sourceReferences: {
     type: AiEvidenceType;
     entityId: string;
     entityType: string;
     asOf: string;
-  }>;
+  }[];
   warnings: string[];
 };
 
 export type AiRiskOutput = {
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   riskScore: number;
-  factors: Array<{
+  factors: {
     factor: string;
     value: unknown;
     weight: number;
     description: string;
-  }>;
-  evidence: Array<{
+  }[];
+  evidence: {
     type: AiEvidenceType;
     entityId: string;
     entityType: string;
     metric: string;
     value: number;
     asOf: string;
-  }>;
-  recommendations: Array<{
+  }[];
+  recommendations: {
     action: string;
     priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
     rationale: string;
-  }>;
+  }[];
   confidence: number;
   dataFreshness: string;
   modelVersion: string;
@@ -254,7 +254,7 @@ export type AiResponse = {
     | AiAnswerOutput
     | AiSummaryOutput
     | AiRiskOutput;
-  alternatives?: Array<AiClassificationCandidate | AiDraftOutput>;
+  alternatives?: (AiClassificationCandidate | AiDraftOutput)[];
   processingTimeMs: number;
   tokenUsage?: {
     promptTokens: number;
@@ -375,6 +375,12 @@ export type SubmitAiReviewCommand = {
   status: 'ACCEPTED' | 'CORRECTED' | 'REJECTED';
   correctedOutput?: AiResponse['primaryOutput'];
   correctionReason?: string;
+  capability?: AiCapability;
+  originalOutput?: AiResponse['primaryOutput'];
+  feedback?: 'ACCEPTED' | 'CORRECTED' | 'REJECTED';
+  modelVersion?: string;
+  templateVersion?: number;
+  complaintId?: string;
 };
 
 export type RequestAiAnalysisCommand = {

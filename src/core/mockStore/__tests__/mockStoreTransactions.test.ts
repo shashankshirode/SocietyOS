@@ -19,17 +19,25 @@ describe('MockStore Atomic Transactions', () => {
         flatNumber: 'B-804',
         purpose: 'GUEST',
         type: 'GUEST',
-        status: 'PENDING',
+        status: 'EXPECTED',
         createdAt: new Date().toISOString(),
         expectedDate: '2026-10-02',
         expectedTime: '10:00 AM',
-        passCode: '1234',
+        otp: '1234',
         visitorCategory: 'GUEST',
+        societyName: 'Greenwood Residency',
+        exitTracking: {
+          expectedEntryAtIso: new Date().toISOString(),
+          expectedExitAtIso: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+          gracePeriodMinutes: 15,
+          exitStatus: 'notEntered',
+          alertStatus: 'notRequired',
+        },
       });
 
       store.addLedgerEntry({
         id: 'led-atomic-1',
-        residenceId: 'unit-b804',
+        unitId: 'unit-b804',
         type: 'CREDIT',
         amount: 500,
         description: 'Atomic Deposit',
@@ -60,12 +68,20 @@ describe('MockStore Atomic Transactions', () => {
           flatNumber: 'B-804',
           purpose: 'GUEST',
           type: 'GUEST',
-          status: 'PENDING',
+          status: 'EXPECTED',
           createdAt: new Date().toISOString(),
           expectedDate: '2026-10-02',
           expectedTime: '10:00 AM',
-          passCode: '5678',
+          otp: '5678',
           visitorCategory: 'GUEST',
+          societyName: 'Greenwood Residency',
+          exitTracking: {
+            expectedEntryAtIso: new Date().toISOString(),
+            expectedExitAtIso: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+            gracePeriodMinutes: 15,
+            exitStatus: 'notEntered',
+            alertStatus: 'notRequired',
+          },
         });
 
         // Intentional failure mid-transaction

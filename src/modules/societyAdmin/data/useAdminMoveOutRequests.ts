@@ -318,7 +318,7 @@ export function useAdminMoveOutAccess() {
   }, []);
 
   const getStatus = useCallback(async (residentId: string, unitId: string) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError(null);
     try {
       const result = await accessService.getResidentAccessStatus(residentId, unitId);
@@ -328,7 +328,7 @@ export function useAdminMoveOutAccess() {
       setError(err);
       throw err;
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   }, []);
 

@@ -57,6 +57,7 @@ export function SettingsScreen({ navigation }: SettingsScreenProps) {
       <ScrollView contentContainerStyle={[styles.scrollContent, createScrollViewPaddingBottomStyle(Math.max(insets.bottom, 20))]} showsVerticalScrollIndicator={false}>
         <View style={styles.responsiveContainer}>
           <SettingsSection title={copy.preferences.title}>
+            <SettingsRow icon={<Ionicons name="time-outline" size={20} color={colors.primary}/>} title="Date & Time" description="Date and time format preferences" onPress={() => navigation.navigate('DateTime' as never)}/>
             <SettingsRow icon={<Ionicons name="language-outline" size={20} color={colors.primary}/>} title={copy.language.title} description={copy.language.description} onPress={() => navigation.navigate('Language')}/>
             <SettingsRow icon={<Ionicons name="color-palette-outline" size={20} color={colors.primary}/>} title={copy.appearance.title} description={copy.appearance.description} onPress={() => navigation.navigate('Appearance')}/>
             <SettingsRow icon={<Ionicons name="notifications-outline" size={20} color={colors.primary}/>} title={copy.notifications.title} description={copy.notifications.description} onPress={() => navigation.navigate('Notifications')}/>

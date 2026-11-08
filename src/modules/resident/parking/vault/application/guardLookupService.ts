@@ -1,45 +1,7 @@
-import type { ParkingVaultErrorCode, ParkingVaultClock, VaultActor, ParkingVaultScope, } from '../domain/types/primitives';
+import type { ParkingVaultErrorCode, ParkingVaultClock, VaultActor, ParkingVaultScope } from '../domain/types/primitives';
 import { violation, denied, allowedWith } from '../domain/types/primitives';
-import type { VehicleRecord, ParkingSlotRecord, AllocationRecord, ParkingCredential, StickerRfidRecord, VisitorParkingPassRecord, ParkingVaultScope, } from '../domain/types/parking';
+import type { VehicleRecord, ParkingSlotRecord, AllocationRecord, ParkingCredential, StickerRfidRecord, VisitorParkingPassRecord } from '../domain/types/parking';
 import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
-export interface GuardLookupService {
-    lookupVehicle(actor: VaultActor, query: string): Promise<{
-        ok: true;
-        value: GuardLookupResult;
-        warnings: readonly string[];
-    } | {
-        ok: false;
-        code: ParkingVaultErrorCode;
-        message: string;
-    }>;
-    getVehicleAuthorization(actor: VaultActor, vehicleId: string): Promise<{
-        ok: true;
-        value: VehicleAuthorization;
-        warnings: readonly string[];
-    } | {
-        ok: false;
-        code: ParkingVaultErrorCode;
-        message: string;
-    }>;
-    validateRfidCredential(actor: VaultActor, rfidTagNumber: string, gateId: string): Promise<{
-        ok: true;
-        value: RfidValidationResult;
-        warnings: readonly string[];
-    } | {
-        ok: false;
-        code: ParkingVaultErrorCode;
-        message: string;
-    }>;
-    validateAnprMatch(actor: VaultActor, plateCandidate: string, confidence: number, cameraId: string): Promise<{
-        ok: true;
-        value: AnprValidationResult;
-        warnings: readonly string[];
-    } | {
-        ok: false;
-        code: ParkingVaultErrorCode;
-        message: string;
-    }>;
-}
 export interface GuardLookupResult {
     readonly vehicleId: string;
     readonly vehicleNumber: string;
@@ -147,7 +109,7 @@ export interface GuardLookupService {
         message: string;
     }>;
 }
-function fail(code: ParkingVaultErrorCode, message: string) {
+function fail(code: ParkingVaultErrorCode, message: string): { ok: false; code: ParkingVaultErrorCode; message: string } {
     return { ok: false, code, message };
 }
 export function createGuardLookupService(ports: {
@@ -179,10 +141,6 @@ export function createGuardLookupService(ports: {
         readonly read: (recordId: string) => any;
         readonly listByVehicle: (vehicleId: string) => readonly any[];
     };
-    readonly visitorPasses: {
-        readonly findActiveByVehicle: (societyId: string, vehicleNumber: string) => any;
-    };
-    readonly clock: ParkingVaultClock;
 }): GuardLookupService {
     const normalizeVehicleNumber = (number: string): string => {
         return number.trim().toUpperCase().replace(/\s+/g, '');
@@ -201,7 +159,7 @@ export function createGuardLookupService(ports: {
             return vehicle;
         return null;
     };
-    const buildLookupResult = (vehicle: any, allocation: any, temporaryAllocation: any, visitorPass: any): GuardLookupResult => {
+    const buildLookupResult = (vehicle: any, allocation: any, _temporaryAllocation: any, _visitorPass: any): GuardLookupResult => {
         const activeAllocation = vehicle.activeAllocationId ? {
             allocationId: vehicle.activeAllocationId,
             slotId: vehicle.parkingSlotId,
@@ -243,22 +201,22 @@ export function createGuardLookupService(ports: {
         async lookupVehicle(actor, query) {
             if (actor.societyId !== 'society-001')
                 return fail('CROSS_SOCIETY_BLOCKED', 'Cross-society lookup not allowed.');
-            const vehicle = await findVehicleByQuery({ vehicles: { listBySociety: () => [] } }, query);
+            const vehicle = await findVehicleByQuery(ports, query);
             if (!vehicle) {
                 return { ok: true, value: { vehicleId: '', vehicleNumber: '', vehicleType: '', linkedFlat: '', residentName: '', parkingSlotNumber: undefined, stickerStatus: '', rfidStatus: '', verificationStatus: '', watchlistWarning: undefined, recentEntryStatus: '', activeAllocation: undefined, temporaryAllocation: undefined, visitorPass: undefined }, warnings: [] };
             }
-            const allocation = await this.allocations.findActiveByVehicle(vehicle.id);
-            const temporaryAllocation = await this.allocations.findTemporaryByVehicle(vehicle.id);
-            const visitorPass = await this.visitorPasses.findActiveByVehicle(actor.societyId, vehicle.vehicleNumber);
+            const allocation = await ports.allocations.findActiveByVehicle(vehicle.id);
+            const temporaryAllocation = await ports.allocations.findTemporaryByVehicle(vehicle.id);
+            const visitorPass = await ports.visitorPasses.findActiveByVehicle(actor.societyId, vehicle.vehicleNumber);
             return { ok: true, value: buildLookupResult(vehicle, allocation, temporaryAllocation, visitorPass), warnings: [] };
         },
         async getVehicleAuthorization(actor, vehicleId) {
             const vehicle = ports.vehicles.read(vehicleId);
             if (!vehicle)
                 return fail('AGGREGATE_NOT_FOUND', 'Vehicle not found.');
-            const allocation = await this.allocations.findActiveByVehicle(vehicle.id);
-            const temporaryAllocation = await this.allocations.findTemporaryByVehicle(vehicle.id);
-            const visitorPass = await this.visitorPasses.findActiveByVehicle(actor.societyId, vehicle.vehicleNumber);
+            const allocation = await ports.allocations.findActiveByVehicle(vehicle.id);
+            const temporaryAllocation = await ports.allocations.findTemporaryByVehicle(vehicle.id);
+            const visitorPass = await ports.visitorPasses.findActiveByVehicle(actor.societyId, vehicle.vehicleNumber);
             const isAuthorized = allocation || temporaryAllocation || visitorPass;
             const authorizationType = allocation ? 'PERMANENT' : temporaryAllocation ? 'TEMPORARY' : visitorPass ? 'VISITOR' : 'NONE';
             return {
@@ -285,20 +243,20 @@ export function createGuardLookupService(ports: {
         async validateRfidCredential(actor, rfidTagNumber, gateId) {
             const credential = ports.credentials.readByRfid(rfidTagNumber);
             if (!credential)
-                return { ok: true, value: { valid: false, errorCode: 'RFID_NOT_FOUND', errorMessage: 'RFID tag not registered.' }, warnings: [] };
+                return { ok: true, value: { valid: false, vehicleId: undefined, vehicleNumber: undefined, allocationId: undefined, errorCode: 'RFID_NOT_FOUND', errorMessage: 'RFID tag not registered.' }, warnings: [] };
             if (credential.status !== 'ACTIVE')
-                return { ok: true, value: { valid: false, errorCode: 'RFID_INACTIVE', errorMessage: `RFID credential is ${credential.status}.` }, warnings: [] };
+                return { ok: true, value: { valid: false, vehicleId: undefined, vehicleNumber: undefined, allocationId: undefined, errorCode: 'RFID_INACTIVE', errorMessage: `RFID credential is ${credential.status}.` }, warnings: [] };
             if (credential.expiresAt && new Date(credential.expiresAt) < new Date())
-                return { ok: true, value: { valid: false, errorCode: 'RFID_EXPIRED', errorMessage: 'RFID credential has expired.' }, warnings: [] };
+                return { ok: true, value: { valid: false, vehicleId: undefined, vehicleNumber: undefined, allocationId: undefined, errorCode: 'RFID_EXPIRED', errorMessage: 'RFID credential has expired.' }, warnings: [] };
             const vehicle = ports.vehicles.read(credential.vehicleId);
             if (!vehicle)
-                return { ok: true, value: { valid: false, errorCode: 'VEHICLE_NOT_FOUND', errorMessage: 'Associated vehicle not found.' }, warnings: [] };
-            const allocation = await this.allocations.findActiveByVehicle(vehicle.id);
+                return { ok: true, value: { valid: false, vehicleId: undefined, vehicleNumber: undefined, allocationId: undefined, errorCode: 'VEHICLE_NOT_FOUND', errorMessage: 'Associated vehicle not found.' }, warnings: [] };
+            const allocation = await ports.allocations.findActiveByVehicle(vehicle.id);
             if (!allocation)
-                return { ok: true, value: { valid: false, errorCode: 'NO_ACTIVE_ALLOCATION', errorMessage: 'No active parking allocation for this vehicle.' }, warnings: [] };
-            const slot = this.slots.read(allocation.slotId);
+                return { ok: true, value: { valid: false, vehicleId: vehicle.id, vehicleNumber: vehicle.vehicleNumber, allocationId: undefined, errorCode: 'NO_ACTIVE_ALLOCATION', errorMessage: 'No active parking allocation for this vehicle.' }, warnings: [] };
+            const slot = ports.slots.read(allocation.slotId);
             if (!slot)
-                return { ok: true, value: { valid: false, errorCode: 'SLOT_NOT_FOUND', errorMessage: 'Allocated slot not found.' }, warnings: [] };
+                return { ok: true, value: { valid: false, vehicleId: vehicle.id, vehicleNumber: vehicle.vehicleNumber, allocationId: allocation.id, errorCode: 'SLOT_NOT_FOUND', errorMessage: 'Allocated slot not found.' }, warnings: [] };
             return {
                 ok: true,
                 value: {
@@ -306,6 +264,8 @@ export function createGuardLookupService(ports: {
                     vehicleId: vehicle.id,
                     vehicleNumber: vehicle.vehicleNumber,
                     allocationId: allocation.id,
+                    errorCode: undefined,
+                    errorMessage: undefined,
                 },
                 warnings: [],
             };
@@ -318,6 +278,8 @@ export function createGuardLookupService(ports: {
                     ok: true,
                     value: {
                         matched: false,
+                        vehicleId: undefined,
+                        vehicleNumber: undefined,
                         confidence,
                         matchType: 'NONE',
                         errorCode: 'VEHICLE_NOT_FOUND',
@@ -335,6 +297,8 @@ export function createGuardLookupService(ports: {
                         vehicleNumber: vehicle.vehicleNumber,
                         confidence,
                         matchType: 'EXACT',
+                        errorCode: undefined,
+                        errorMessage: undefined,
                     },
                     warnings: [],
                 };
@@ -348,6 +312,8 @@ export function createGuardLookupService(ports: {
                         vehicleNumber: vehicle.vehicleNumber,
                         confidence,
                         matchType: 'PARTIAL',
+                        errorCode: undefined,
+                        errorMessage: undefined,
                     },
                     warnings: [],
                 };
@@ -356,6 +322,8 @@ export function createGuardLookupService(ports: {
                 ok: true,
                 value: {
                     matched: false,
+                    vehicleId: undefined,
+                    vehicleNumber: undefined,
                     confidence,
                     matchType: 'NONE',
                     errorCode: 'VEHICLE_NOT_FOUND',
@@ -365,8 +333,5 @@ export function createGuardLookupService(ports: {
             };
         },
     };
-    function fail(code: ParkingVaultErrorCode, message: string) {
-        return { ok: false, code, message };
-    }
 }
 

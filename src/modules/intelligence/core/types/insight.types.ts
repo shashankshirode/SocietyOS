@@ -427,22 +427,22 @@ export type Insight = {
     sortOrder: number;
   };
   relatedInsights: string[];
-  relatedEntities: Array<{
+  relatedEntities: {
     entityType: string;
     entityId: string;
     relationship: string;
-  }>;
+  }[];
   createdAt: string;
   updatedAt: string;
   createdBy: string;
   updatedBy?: string;
   version: number;
-  versionHistory: Array<{
+  versionHistory: {
     version: number;
     changedAt: string;
     changedBy: string;
     changes: string[];
-  }>;
+  }[];
 };
 
 export type InsightAction =
@@ -556,11 +556,11 @@ export type InsightEligibility = {
   minRoleLevel?: number;
   requiredCapabilities?: string[];
   requiredPermissions?: string[];
-  visibilityConditions?: Array<{
+  visibilityConditions?: {
     condition: string;
     operator: 'EQUALS' | 'NOT_EQUALS' | 'IN' | 'NOT_IN' | 'CONTAINS' | 'NOT_CONTAINS' | 'GREATER_THAN' | 'LESS_THAN' | 'GREATER_THAN_OR_EQUAL' | 'LESS_THAN_OR_EQUAL';
     value: any;
-  }>;
+  }[];
   timeWindow?: {
     from: string;
     to: string;
@@ -569,11 +569,11 @@ export type InsightEligibility = {
     timeOfDayStart?: string;
     timeOfDayEnd?: string;
   };
-  contextConditions?: Array<{
+  contextConditions?: {
     contextKey: string;
     operator: 'EQUALS' | 'NOT_EQUALS' | 'IN' | 'NOT_IN' | 'CONTAINS' | 'NOT_CONTAINS' | 'GREATER_THAN' | 'LESS_THAN' | 'GREATER_THAN_OR_EQUAL' | 'LESS_THAN_OR_EQUAL';
     value: any;
-  }>;
+  }[];
 };
 
 export type ContextualInsight = {
@@ -650,22 +650,22 @@ export type ContextualInsight = {
     sortOrder: number;
   };
   relatedInsights: string[];
-  relatedEntities: Array<{
+  relatedEntities: {
     entityType: string;
     entityId: string;
     relationship: string;
-  }>;
+  }[];
   createdAt: string;
   updatedAt: string;
   createdBy: string;
   updatedBy?: string;
   version: number;
-  versionHistory: Array<{
+  versionHistory: {
     version: number;
     changedAt: string;
     changedBy: string;
     changes: string[];
-  }>;
+  }[];
 };
 
 export type ContextualInsightResult = {

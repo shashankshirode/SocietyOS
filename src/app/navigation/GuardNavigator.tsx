@@ -19,6 +19,9 @@ import { OfflineQueueScreen } from "../../modules/guard/screens/OfflineQueueScre
 import { EmergencyAlertScreen } from "../../modules/guard/screens/EmergencyAlertScreen";
 import { ShiftHandoverScreen } from "../../modules/guard/screens/ShiftHandoverScreen";
 import { GuardMoreScreen } from "../../modules/guard/screens/GuardMoreScreen";
+import { GuardCurrentVisitorsScreen } from "../../modules/guard/screens/GuardCurrentVisitorsScreen";
+import { DeliveryEntryScreen } from "../../modules/guard/screens/DeliveryEntryScreen";
+import { CabEntryScreen } from "../../modules/guard/screens/CabEntryScreen";
 import { GuardVehicleLookupScreen } from "../../modules/resident/parking/screens/GuardVehicleLookupScreen";
 import { GuardResidentInboxScreen } from "../../modules/guard/chat/screens/GuardResidentInboxScreen";
 import { GuardResidentConversationScreen } from "../../modules/guard/chat/screens/GuardResidentConversationScreen";
@@ -98,6 +101,9 @@ export function GuardNavigator() {
         <Stack.Screen name="EmergencyAlert" component={EmergencyAlertScreen}/>
         <Stack.Screen name="ShiftHandover" component={ShiftHandoverScreen}/>
         <Stack.Screen name="GuardVehicleLookup" component={GuardVehicleLookupScreen}/>
+        <Stack.Screen name="GuardCurrentVisitors" component={GuardCurrentVisitorsScreen}/>
+        <Stack.Screen name="DeliveryEntry" component={DeliveryEntryScreen}/>
+        <Stack.Screen name="CabEntry" component={CabEntryScreen}/>
         <Stack.Screen name="GuardChatInbox" component={GuardResidentInboxScreen}/>
         <Stack.Screen name="GuardChatConversation" component={GuardResidentConversationScreen}/>
       </Stack.Navigator>

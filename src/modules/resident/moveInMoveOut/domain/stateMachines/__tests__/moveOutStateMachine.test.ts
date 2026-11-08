@@ -393,7 +393,7 @@ describe('moveOutStateMachine', () => {
   });
 
   it('refuses privileged operations to the SYSTEM actor', () => {
-    const privileged: ReadonlyArray<readonly [MoveOutCommandKind, MoveOutStatus]> = [
+    const privileged: readonly (readonly [MoveOutCommandKind, MoveOutStatus])[] = [
       ['BEGIN_CLEARANCE_CHECK', 'REQUESTED'],
       ['RECORD_CLEARANCE_SNAPSHOT', 'CLEARANCE_CHECK'],
       ['RECORD_CLEARANCE_EXCEPTION', 'CLEARANCE_CHECK'],

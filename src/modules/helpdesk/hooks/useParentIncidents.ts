@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { parentIncidentService } from '../services/parentIncidentService';
+import type { CorrelationResult } from '../services/parentIncidentService';
 import { useAuth } from '../../../core/auth/AuthProvider';
-import type { ParentIncident, CorrelationCandidate, CorrelationResult } from '../../../shared/types/complaintPhase6';
+import type { ParentIncident, CorrelationCandidate } from '../../../shared/types/complaintPhase6';
 
 export function useParentIncidents(societyId: string) {
   const [data, setData] = useState<ParentIncident[]>([]);
@@ -100,6 +101,8 @@ export function useCorrelationCandidates(societyId: string) {
 }
 
 export function useConfirmCorrelation() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -107,7 +110,6 @@ export function useConfirmCorrelation() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       const result = await parentIncidentService.confirmCandidate(candidateId, user.id);
@@ -119,12 +121,14 @@ export function useConfirmCorrelation() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useRejectCorrelation() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -132,7 +136,6 @@ export function useRejectCorrelation() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       await parentIncidentService.rejectCandidate(candidateId, user.id);
@@ -143,12 +146,14 @@ export function useRejectCorrelation() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useResolveParentIncident() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -160,7 +165,6 @@ export function useResolveParentIncident() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       await parentIncidentService.resolveParentIncident({
@@ -176,12 +180,14 @@ export function useResolveParentIncident() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useCloseParentIncident() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -189,7 +195,6 @@ export function useCloseParentIncident() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       await parentIncidentService.closeParentIncident({
@@ -203,12 +208,14 @@ export function useCloseParentIncident() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useCreateParentIncident() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -220,7 +227,6 @@ export function useCreateParentIncident() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await parentIncidentService.createParentIncidentFromComplaints(
@@ -236,12 +242,14 @@ export function useCreateParentIncident() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useUnlinkFromParent() {
+  const { session } = useAuth();
+  const user = session?.user;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -249,7 +257,6 @@ export function useUnlinkFromParent() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await parentIncidentService.unlinkFromParent(complaintId);
@@ -260,7 +267,7 @@ export function useUnlinkFromParent() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }

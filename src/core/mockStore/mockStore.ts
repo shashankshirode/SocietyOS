@@ -1,4 +1,17 @@
 import type { MockStoreState, GateLog, LedgerEntry } from './mockStore.types';
+import type { JsonObject } from '../api/api.types';
+import type {
+  Adjustment,
+  BankReconciliationRecord,
+  InvoicePenalty,
+  PaymentAllocation,
+  PaymentAttempt,
+  PaymentTransaction,
+  Receipt,
+  ReceiptAllocation,
+  Refund,
+} from '../../shared/types/financial.types';
+import type { ManualPaymentRecord } from '../../shared/types/accounting.types';
 import type { Visitor } from '../../shared/types/visitor.types';
 import type { Complaint } from '../../shared/types/complaint.types';
 import type { Notice } from '../../shared/types/notice.types';
@@ -51,28 +64,66 @@ const initialStoreState: MockStoreState = {
     ...mockComplaints,
     {
       id: 'comp-nashik-1',
+      ticketNumber: 'CMP-2026-0001',
       title: 'Plumbing leakage in kitchen sink',
       description: 'Continuous leakage under the kitchen counter has started damaging the woodwork.',
       category: 'PLUMBING',
-      status: 'OPEN',
+      status: 'IN_PROGRESS',
       priority: 'HIGH',
       location: 'C-503, Kitchen',
       flatNumber: 'C-503',
+      unitId: 'unit-c-503',
+      unitNumber: 'C-503',
+      societyId: 'soc-greenwood-pune',
+      reportedByUserId: 'usr-amit-01',
+      reportedByDisplayName: 'Amit',
+      reportedByRole: 'RESIDENT',
       residentName: 'Amit',
+      visibility: 'PUBLIC',
+      source: 'RESIDENT_APP',
+      escalationLevel: 'TECHNICIAN',
+      slaIsPaused: false,
+      isPrivate: false,
+      isSensitive: false,
+      isParentIncident: false,
+      childComplaintIds: [],
+      evidenceIds: [],
+      comments: [],
+      statusHistory: [],
+      dataVersion: 1,
       createdAt: '2026-07-09T09:00:00Z',
       updatedAt: '2026-07-09T09:00:00Z',
       slaText: 'Resolution expected within 24 hours',
     },
     {
       id: 'comp-ra-1',
+      ticketNumber: 'CMP-2026-0002',
       title: 'Clubhouse AC remote missing',
       description: 'AC remote in the indoor game room is missing since yesterday.',
       category: 'OTHER',
-      status: 'OPEN',
+      status: 'IN_PROGRESS',
       priority: 'LOW',
       location: 'Clubhouse, 1st Floor',
       flatNumber: 'B-2101',
+      unitId: 'unit-b-2101',
+      unitNumber: 'B-2101',
+      societyId: 'soc-greenwood-pune',
+      reportedByUserId: 'usr-shashank-01',
+      reportedByDisplayName: 'Shashank',
+      reportedByRole: 'RESIDENT',
       residentName: 'Shashank',
+      visibility: 'PUBLIC',
+      source: 'RESIDENT_APP',
+      escalationLevel: 'TECHNICIAN',
+      slaIsPaused: false,
+      isPrivate: false,
+      isSensitive: false,
+      isParentIncident: false,
+      childComplaintIds: [],
+      evidenceIds: [],
+      comments: [],
+      statusHistory: [],
+      dataVersion: 1,
       createdAt: '2026-07-09T10:00:00Z',
       updatedAt: '2026-07-09T10:00:00Z',
       slaText: 'Expected resolution in 48 hours',
@@ -202,6 +253,7 @@ const initialStoreState: MockStoreState = {
   invoicePenalties: [],
   invoices: [],
   leaveRecords: [],
+  manualPayments: [],
   missingCheckouts: [],
   monthlyAttendance: [],
   moveOutRequests: [],
@@ -216,6 +268,7 @@ const initialStoreState: MockStoreState = {
   payrollRecords: [],
   payslips: [],
   receipts: [],
+  receiptAllocations: [],
   refunds: [],
   registrationDocuments: [],
   registrationInvitations: [],
@@ -301,9 +354,29 @@ function normalizeVisitorInput(visitor: VisitorStoreInput): Visitor {
 }
 
 function normalizeComplaintInput(complaint: ComplaintStoreInput): Complaint {
+  const category = (complaint.category === 'Plumbing' ? 'PLUMBING' : complaint.category) as Complaint['category'];
   return {
+    ticketNumber: `CMP-${Date.now().toString().slice(-4)}`,
+    visibility: 'PUBLIC',
+    source: 'RESIDENT_APP',
+    escalationLevel: 'TECHNICIAN',
+    slaIsPaused: false,
+    isPrivate: false,
+    isSensitive: false,
+    isParentIncident: false,
+    childComplaintIds: [],
+    evidenceIds: [],
+    comments: [],
+    statusHistory: [],
+    dataVersion: 1,
+    unitId: '',
+    unitNumber: complaint.flatNumber ?? '',
+    societyId: '',
+    reportedByUserId: '',
+    reportedByDisplayName: '',
+    reportedByRole: 'RESIDENT',
     ...complaint,
-    category: complaint.category === 'Plumbing' ? 'PLUMBING' : complaint.category,
+    category,
     location: complaint.location ?? '',
     flatNumber: complaint.flatNumber ?? complaint.raisedBy ?? '',
     residentName: complaint.residentName ?? '',
@@ -394,11 +467,6 @@ class MockStore {
     this.listeners.forEach((listener) => listener());
   }
 
-  /**
-   * Run multiple mutations atomically.
-   * If the mutator throws, state changes are rolled back to the pre-transaction snapshot.
-   * If the mutator succeeds, listeners are notified once at the end and state is persisted.
-   */
   runTransaction<R>(mutator: (store: MockStore) => R): R {
     const snapshot = JSON.stringify(this.state);
     const wasBatching = this.isBatching;
@@ -586,6 +654,113 @@ class MockStore {
     this.notify();
   }
 
+  addInvoice(invoice: NonNullable<MockStoreState['invoices']>[number]) {
+    this.state.invoices = [invoice, ...(this.state.invoices ?? [])];
+    this.notify();
+  }
+
+  updateInvoice(id: string, updates: Partial<NonNullable<MockStoreState['invoices']>[number]>) {
+    this.state.invoices = (this.state.invoices ?? []).map((i) =>
+      i.id === id ? { ...i, ...updates } : i
+    );
+    this.notify();
+  }
+
+  addInvoiceLine(line: NonNullable<MockStoreState['invoiceLines']>[number]) {
+    this.state.invoiceLines = [line, ...(this.state.invoiceLines ?? [])];
+    this.notify();
+  }
+
+  updateBillingRun(id: string, updates: Partial<NonNullable<MockStoreState['billingRuns']>[number]>) {
+    this.state.billingRuns = (this.state.billingRuns ?? []).map((r) =>
+      r.id === id ? { ...r, ...updates } : r
+    );
+    this.notify();
+  }
+
+  addPaymentTransaction(txn: NonNullable<MockStoreState['paymentTransactions']>[number]) {
+    this.state.paymentTransactions = [txn, ...(this.state.paymentTransactions ?? [])];
+    this.notify();
+  }
+
+  updatePaymentTransaction(id: string, updates: Partial<PaymentTransaction>) {
+    this.state.paymentTransactions = (this.state.paymentTransactions ?? []).map((t) =>
+      t.id === id ? { ...t, ...updates } : t
+    );
+    this.notify();
+  }
+
+  addBillingRun(run: NonNullable<MockStoreState['billingRuns']>[number]) {
+    this.state.billingRuns = [run, ...(this.state.billingRuns ?? [])];
+    this.notify();
+  }
+
+  addAdjustment(adjustment: Adjustment) {
+    this.state.adjustments = [adjustment, ...(this.state.adjustments ?? [])];
+    this.notify();
+  }
+
+  updateAdjustment(id: string, updates: Partial<Adjustment>) {
+    this.state.adjustments = (this.state.adjustments ?? []).map((a) =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    this.notify();
+  }
+
+  addBankReconciliationRecord(record: BankReconciliationRecord) {
+    this.state.bankReconciliationRecords = [record, ...(this.state.bankReconciliationRecords ?? [])];
+    this.notify();
+  }
+
+  updateBankReconciliationRecord(id: string, updates: Partial<BankReconciliationRecord>) {
+    this.state.bankReconciliationRecords = (this.state.bankReconciliationRecords ?? []).map((r) =>
+      r.id === id ? { ...r, ...updates } : r
+    );
+    this.notify();
+  }
+
+  addInvoicePenalty(penalty: InvoicePenalty) {
+    this.state.invoicePenalties = [penalty, ...(this.state.invoicePenalties ?? [])];
+    this.notify();
+  }
+
+  addPaymentAttempt(attempt: PaymentAttempt) {
+    this.state.paymentAttempts = [attempt, ...(this.state.paymentAttempts ?? [])];
+    this.notify();
+  }
+
+  updatePaymentAttempt(id: string, updates: Partial<PaymentAttempt>) {
+    this.state.paymentAttempts = (this.state.paymentAttempts ?? []).map((a) =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    this.notify();
+  }
+
+  addPaymentAllocation(allocation: PaymentAllocation) {
+    this.state.paymentAllocations = [allocation, ...(this.state.paymentAllocations ?? [])];
+    this.notify();
+  }
+
+  addReceipt(receipt: Receipt) {
+    this.state.receipts = [receipt, ...(this.state.receipts ?? [])];
+    this.notify();
+  }
+
+  addReceiptAllocation(allocation: ReceiptAllocation) {
+    this.state.receiptAllocations = [allocation, ...(this.state.receiptAllocations ?? [])];
+    this.notify();
+  }
+
+  addManualPayment(payment: ManualPaymentRecord) {
+    this.state.manualPayments = [payment, ...(this.state.manualPayments ?? [])];
+    this.notify();
+  }
+
+  addRefund(refund: Refund) {
+    this.state.refunds = [refund, ...(this.state.refunds ?? [])];
+    this.notify();
+  }
+
   
   updateResidentNew(id: string, updates: Partial<MockStoreState['residentsNew'][number]>) {
     this.state.residentsNew = this.state.residentsNew.map((r) =>
@@ -617,6 +792,18 @@ class MockStore {
       ...this.state.advanceBalances,
       [residenceId]: amount,
     };
+    this.notify();
+  }
+
+  addResidentDocument(doc: NonNullable<MockStoreState['residentDocuments']>[number]) {
+    this.state.residentDocuments = [doc, ...(this.state.residentDocuments ?? [])];
+    this.notify();
+  }
+
+  updateResidentDocument(id: string, updates: Partial<NonNullable<MockStoreState['residentDocuments']>[number]>) {
+    this.state.residentDocuments = (this.state.residentDocuments ?? []).map((d) =>
+      d.id === id ? { ...d, ...updates } : d
+    );
     this.notify();
   }
 }

@@ -11,8 +11,7 @@ import type {
   MalwareScanRecord,
 } from '../domain/types/document.types';
 import type { UploadSession } from '../domain/types/upload.types';
-import type { VerificationCase } from '../domain/types/verification.types';
-import type { SignatureEnvelope } from '../domain/types/verification.types';
+import type { VerificationCase , SignatureEnvelope } from '../domain/types/verification.types';
 import type { AccessLogEntry, RetrievalTicket } from '../domain/types/access.types';
 import type { LegalHold } from '../domain/types/retention.types';
 import type { DigestProvider } from '../domain/engines/integrityEngine';
@@ -31,7 +30,7 @@ import type {
   SignatureProviderPort,
   NotificationPort,
   VaultPorts,
-} from './application/ports';
+} from '../application/ports';
 
 type StoredDocument = DocumentRecord & { _versions: DocumentVersionRecord[] };
 type StoredUploadSession = UploadSession;

@@ -102,7 +102,7 @@ export function formatResidentDateTime(
 ): string {
   const dateLabel = formatResidentDate(value, context);
   const timeLabel = formatResidentTime(value, context);
-  return dateLabel === '—' || timeLabel === '—' ? '—' : `${dateLabel}, ${timeLabel}`;
+  return dateLabel === '—' || timeLabel === '—' ? '—' : `${dateLabel} · ${timeLabel}`;
 }
 
 export function formatResidentMonthYear(

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ScrollView, View, Text, Switch, Alert } from "react-native";
+import { ScrollView, View, Text, Switch, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenContainer } from "../../../shared/layouts/ScreenContainer";
 import { ResponsivePageHeader } from "../../../shared/layouts/ResponsivePageHeader";

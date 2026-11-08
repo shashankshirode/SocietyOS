@@ -1,4 +1,5 @@
-import type { AutomationActionType, AutomationActionRisk, AutomationTriggerType } from './rule.types';
+import type { AutomationActionType, AutomationActionRisk } from './rule.types';
+import type { AutomationTriggerType } from './trigger.types';
 
 export type AutomationExecutionStatus =
   | 'TRIGGERED'
@@ -138,12 +139,12 @@ export type AutomationDryRunResult = {
   ruleVersion: number;
   wouldExecute: boolean;
   conditionEvaluations: AutomationConditionEvaluation[];
-  wouldRunActions: Array<{
+  wouldRunActions: {
     actionId: string;
     actionType: AutomationActionType;
     config: Record<string, unknown>;
     suppressionReason?: string;
-  }>;
+  }[];
   suppressionReasons: string[];
   evaluatedAt: string;
 };

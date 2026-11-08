@@ -215,7 +215,7 @@ export function getRequiredDocumentsForRelationship(
   relationshipType: ClaimedRelationshipType,
   policy: SocietyRegistrationPolicy
 ): RegistrationDocumentRequirement[] {
-  return resolveRequirements(policy, relationshipType, unitId, []).required;
+  return [...resolveRequirements(policy, relationshipType, unitId, []).required];
 }
 
 export function getAllDocumentsForRelationship(

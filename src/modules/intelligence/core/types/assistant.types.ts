@@ -706,12 +706,12 @@ export type AssistantMessage = {
     dataFreshness: string;
     confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
   };
-  toolCalls?: Array<{
+  toolCalls?: {
     toolName: string;
     toolArgs: Record<string, any>;
     toolResult?: any;
     error?: string;
-  }>;
+  }[];
   feedback?: {
     type: 'USEFUL' | 'NOT_USEFUL' | 'WRONG' | 'OUTDATED' | 'NOT_RELEVANT' | 'PRIVACY_CONCERN';
     comment?: string;

@@ -38,13 +38,13 @@ export class InvoiceMatchingService {
       vendorName: string;
       poId?: string;
       workOrderId?: string;
-      lines: Array<{
+      lines: {
         description: string;
         quantity: number;
         unitPrice: number;
         totalPrice: number;
         poLineId?: string;
-      }>;
+      }[];
       subtotal: number;
       taxAmount: number;
       totalAmount: number;

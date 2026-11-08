@@ -11,6 +11,7 @@ import type { ParkingIncidentListParams } from './parking.dto';
 import { residentScopedVehicles } from '../../mock/residentMockDomainBuilders';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
 import type { Absent } from "../../../../shared/types/absence.types";
+import { mockStore } from '../../../../core/mockStore/mockStore';
 const vehicles: Vehicle[] = [...residentScopedVehicles, ...mockVehicles];
 const visitorPasses: VisitorParkingPass[] = [...mockVisitorParkingPasses];
 const incidents: ParkingIncident[] = [...mockParkingIncidents];
@@ -90,11 +91,23 @@ export const parkingMockSource = {
     },
     async addVehicle(input: AddVehicleInput): Promise<RepositoryResult<Vehicle>> {
         await withMockDelay();
+        const normalizedNumber = input.vehicleNumber.toUpperCase().replace(/[\s-]/g, '');
+        const duplicateInLocal = vehicles.find((v) => v.societyId === input.societyId && v.vehicleNumber.replace(/[\s-]/g, '') === normalizedNumber);
+        const duplicateInStore = mockStore.getState().vehicles.find((v) => v.societyId === input.societyId && v.vehicleNumber.replace(/[\s-]/g, '') === normalizedNumber);
+        if (duplicateInLocal || duplicateInStore) {
+            return {
+                ok: false,
+                error: {
+                    code: 'VEHICLE_ALREADY_REGISTERED',
+                    message: `Vehicle ${normalizedNumber} is already registered in this society.`
+                }
+            };
+        }
         const vehicle: Vehicle = {
             id: `vehicle-${Date.now()}`,
             societyId: input.societyId,
             unitId: input.unitId,
-            vehicleNumber: input.vehicleNumber.toUpperCase().replace(/\s/g, ''),
+            vehicleNumber: normalizedNumber,
             vehicleType: input.vehicleType,
             makeModel: input.makeModel,
             color: input.color,
@@ -118,6 +131,7 @@ export const parkingMockSource = {
             ...includeWhenPresent("notes", input.notes)
         };
         vehicles.unshift(vehicle);
+        mockStore.addVehicle(vehicle);
         return repositorySuccess(vehicle);
     },
     async getParkingSlots(unitId: string): Promise<RepositoryResult<ParkingSlot[]>> {
@@ -321,12 +335,40 @@ export const parkingMockSource = {
         if (!normalized) {
             return repositorySuccess([]);
         }
-        return repositorySuccess(mockGuardVehicleLookupResults.filter((result) => filterByQuery(normalized, [
+        const staticResults = mockGuardVehicleLookupResults.filter((result) => filterByQuery(normalized, [
             result.vehicleNumber,
             result.linkedFlat,
             result.parkingSlotNumber,
             result.residentName,
-        ])));
+        ]));
+        const allKnownVehicles = [...vehicles, ...mockStore.getState().vehicles];
+        const dynamicResults: GuardVehicleLookupResult[] = allKnownVehicles
+            .filter((v) => filterByQuery(normalized, [
+                v.vehicleNumber,
+                v.linkedFlat,
+                v.parkingSlotNumber,
+                v.linkedResidentName,
+                v.ownerName,
+                v.makeModel,
+            ]))
+            .map((v) => ({
+                id: v.id,
+                vehicleId: v.id,
+                vehicleNumber: v.vehicleNumber,
+                vehicleType: v.vehicleType,
+                residentName: v.linkedResidentName || v.ownerName,
+                linkedFlat: v.linkedFlat,
+                parkingSlotNumber: v.parkingSlotNumber || 'Unassigned',
+                stickerStatus: v.stickerStatus,
+                rfidStatus: v.rfidStatus,
+                verificationStatus: v.verificationStatus,
+                recentEntryStatus: v.lastGateEntry ? `Last entered ${v.lastGateEntry}` : 'No recent entry',
+            }));
+        const combined = [...dynamicResults, ...staticResults];
+        const unique = combined.filter((item, index, self) =>
+            index === self.findIndex((c) => c.vehicleNumber.replace(/[\s-]/g, '') === item.vehicleNumber.replace(/[\s-]/g, ''))
+        );
+        return repositorySuccess(unique);
     },
     async getHardwareReadiness(societyId: string): Promise<RepositoryResult<ParkingHardwareReadiness>> {
         await withMockDelay();
@@ -336,19 +378,65 @@ export const parkingMockSource = {
         await withMockDelay();
         return repositorySuccess(mockParkingRules);
     },
-    async registerVehicle(params?: JsonValue) {
-        return [{
-                id: 'mock-1',
-                name: 'Mock Item 1',
-                status: 'ACTIVE'
-            }];
+    async registerVehicle(input: AddVehicleInput): Promise<RepositoryResult<Vehicle>> {
+        return this.addVehicle(input);
     },
-    async allocateParkingSlot(params?: JsonValue) {
-        return [{
-                id: 'mock-1',
-                name: 'Mock Item 1',
-                status: 'ACTIVE'
-            }];
+    async allocateParkingSlot(params?: {
+        slotId: string;
+        unitId: string;
+        vehicleId?: string;
+        flatNumber?: string;
+    } | JsonValue): Promise<RepositoryResult<ParkingSlot>> {
+        await withMockDelay();
+        if (!params || typeof params !== 'object') {
+            return {
+                ok: false,
+                error: {
+                    code: 'INVALID_ALLOCATION_PARAMS',
+                    message: 'Invalid parking allocation parameters'
+                }
+            };
+        }
+        const input = params as { slotId: string; unitId: string; vehicleId?: string; flatNumber?: string };
+        const slot = mockParkingSlots.find((s) => s.id === input.slotId || s.slotNumber === input.slotId);
+        if (!slot) {
+            return {
+                ok: false,
+                error: {
+                    code: 'SLOT_NOT_FOUND',
+                    message: 'Requested parking slot was not found.'
+                }
+            };
+        }
+        if (slot.allocationStatus === 'ALLOCATED' && slot.linkedUnitId && slot.linkedUnitId !== input.unitId) {
+            return {
+                ok: false,
+                error: {
+                    code: 'SLOT_ALREADY_ALLOCATED',
+                    message: `Parking slot ${slot.slotNumber} is already allocated to flat ${slot.linkedFlat || slot.linkedUnitId}.`
+                }
+            };
+        }
+        slot.allocationStatus = 'ALLOCATED';
+        slot.linkedUnitId = input.unitId;
+        if (input.flatNumber) {
+            slot.linkedFlat = input.flatNumber;
+        }
+        if (input.vehicleId) {
+            slot.linkedVehicleId = input.vehicleId;
+            const targetVehicle = vehicles.find((v) => v.id === input.vehicleId) ||
+                mockStore.getState().vehicles.find((v) => v.id === input.vehicleId);
+            if (targetVehicle) {
+                targetVehicle.parkingSlotId = slot.id;
+                targetVehicle.parkingSlotNumber = slot.slotNumber;
+                slot.linkedVehicleNumber = targetVehicle.vehicleNumber;
+                mockStore.updateVehicle(targetVehicle.id, {
+                    parkingSlotId: slot.id,
+                    parkingSlotNumber: slot.slotNumber,
+                });
+            }
+        }
+        return repositorySuccess(slot);
     },
     async createTemporaryVehiclePass(params?: JsonValue) {
         return [{

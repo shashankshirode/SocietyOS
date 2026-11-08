@@ -52,9 +52,9 @@ export const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   chipActive: {
-    backgroundColor: Colors.accentSoft,
+    backgroundColor: Colors.primarySoft,
     borderWidth: 1,
-    borderColor: Colors.accent,
+    borderColor: Colors.primary,
   },
   chipText: {
     fontSize: Typography.caption.fontSize,
@@ -63,7 +63,7 @@ export const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   chipTextActive: {
-    color: Colors.accent,
+    color: Colors.primary,
     fontWeight: '600',
   },
   buttonRow: {

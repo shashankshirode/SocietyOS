@@ -36,8 +36,6 @@ export function SocietyScreen({
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }, style]} testID={testID}>
       <StatusBar
         barStyle={dark ? 'light-content' : 'dark-content'}
-        backgroundColor="transparent"
-        translucent
       />
       <KeyboardAvoidingView
         style={styles.keyboardContainer}

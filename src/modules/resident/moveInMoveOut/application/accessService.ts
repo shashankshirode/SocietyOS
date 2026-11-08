@@ -1,8 +1,7 @@
-import { planAccessTransition } from '../domain/engines/accessTransitionEngine';
+import { planAccessTransition , isActivationIntent } from '../domain/engines/accessTransitionEngine';
 import type { AccessPlan } from '../domain/engines/accessTransitionEngine';
 import type { AccessTransitionRequest } from '../domain/types/access.types';
 import type { IntegrationStatus } from '../domain/types/primitives';
-import { isActivationIntent } from '../domain/engines/accessTransitionEngine';
 import { auditService } from '../../../../core/audit/auditService';
 import { toAuditEntry } from './phase8Audit';
 

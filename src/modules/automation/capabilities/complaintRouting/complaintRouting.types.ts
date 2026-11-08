@@ -19,26 +19,26 @@ export type ComplaintClassificationResult = {
     suggestedSlaHours: number;
     tags: string[];
   };
-  alternativeClassifications: Array<{
+  alternativeClassifications: {
     category: string;
     confidence: number;
     reasoning: string;
     suggestedPriority: string;
     suggestedSlaHours: number;
     tags: string[];
-  }>;
+  }[];
   modelVersion: string;
   templateVersion: number;
   source: 'AI_PROVIDER' | 'RULE_FALLBACK';
   confidence: number;
   confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
   warnings: string[];
-  evidenceReferences: Array<{
+  evidenceReferences: {
     type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE';
     entityId: string;
     entityType: string;
     asOf: string;
-  }>;
+  }[];
   requiresReview: boolean;
   processingTimeMs: number;
   completedAt: string;

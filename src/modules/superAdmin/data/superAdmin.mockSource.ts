@@ -23,8 +23,10 @@ import { mockPlatformReleases } from '../../../shared/mock/platformReleaseRollou
 import type { CreateOnboardingDraftRequest, FeatureFlagChangeRequestDto, SupportTicketEscalationDto, DataExportRequestCreateDto, SocietyFeatureFlagUpdateDto } from './superAdmin.dto';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
-const delay = (ms = 400) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const delay = (ms = 400) =>
+  process.env.NODE_ENV === 'test' ? Promise.resolve() : new Promise<void>((resolve) => setTimeout(resolve, ms));
 const ok = <T>(data: T): RepositoryResult<T> => ({ ok: true, data });
+let mutablePlatformSocieties = [...mockPlatformSocieties];
 export const superAdminMockSource = {
     getDashboard: async (): Promise<RepositoryResult<PlatformDashboardMetrics>> => {
         await delay();
@@ -36,18 +38,55 @@ export const superAdminMockSource = {
     },
     getSocieties: async (): Promise<RepositoryResult<PlatformSociety[]>> => {
         await delay();
-        return ok([...mockPlatformSocieties]);
+        return ok([...mutablePlatformSocieties]);
     },
     listSocieties: async (): Promise<RepositoryResult<PlatformSociety[]>> => {
         await delay();
-        return ok([...mockPlatformSocieties]);
+        return ok([...mutablePlatformSocieties]);
     },
     getSocietyDetail: async (societyId: string): Promise<RepositoryResult<PlatformSociety>> => {
         await delay();
-        const s = mockPlatformSocieties.find((s) => s.id === societyId);
+        const s = mutablePlatformSocieties.find((soc) => soc.id === societyId);
         if (!s)
             return { ok: false, error: { message: 'Society not found', code: 'NOT_FOUND' } };
         return ok(s);
+    },
+    activateSociety: async (societyId: string): Promise<RepositoryResult<PlatformSociety>> => {
+        await delay();
+        const s = mutablePlatformSocieties.find((soc) => soc.id === societyId);
+        if (!s) {
+            return { ok: false, error: { message: 'Society not found', code: 'NOT_FOUND' } };
+        }
+        s.status = 'ACTIVE';
+        return ok({ ...s });
+    },
+    deactivateSociety: async (societyId: string, _reason?: string): Promise<RepositoryResult<PlatformSociety>> => {
+        await delay();
+        const s = mutablePlatformSocieties.find((soc) => soc.id === societyId);
+        if (!s) {
+            return { ok: false, error: { message: 'Society not found', code: 'NOT_FOUND' } };
+        }
+        s.status = 'SUSPENDED_PLACEHOLDER';
+        return ok({ ...s });
+    },
+    createDemoSociety: async (name: string, type?: PlatformSocietyType): Promise<RepositoryResult<PlatformSociety>> => {
+        await delay();
+        const newSociety: PlatformSociety = {
+            id: `soc-demo-${Date.now()}`,
+            name,
+            city: 'Mumbai',
+            state: 'Maharashtra',
+            type: type || 'COOPERATIVE_HOUSING_SOCIETY',
+            status: 'ACTIVE',
+            planCode: 'INTERNAL_DEMO',
+            billingMode: 'DISABLED',
+            totalUnits: 50,
+            activeUsers: 1,
+            enabledModulesCount: 15,
+            createdAt: new Date().toISOString(),
+        };
+        mutablePlatformSocieties.unshift(newSociety);
+        return ok(newSociety);
     },
     getOnboardingDrafts: async (): Promise<RepositoryResult<SocietyOnboardingDraft[]>> => {
         await delay();

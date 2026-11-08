@@ -11,6 +11,10 @@ import {
   ExportConfig,
   ExportJob,
 } from './dataMigration.types';
+import { createIdempotencyKey } from '../../core/api/idempotency';
+import { auditService, createAuditEntry } from '../../core/audit';
+import { apiClient } from '../../core/api/apiClient';
+import { apiEndpoints } from '../../core/api/apiEndpoints';
 
 export type {
   ImportTemplate,
@@ -20,10 +24,6 @@ export type {
   ExportConfig,
   ExportJob,
 } from './dataMigration.types';
-import { createIdempotencyKey } from '../../core/api/idempotency';
-import { auditService, createAuditEntry } from '../../core/audit';
-import { apiClient } from '../../core/api/apiClient';
-import { apiEndpoints } from '../../core/api/apiEndpoints';
 
 const DEFAULT_TEMPLATES: ImportTemplate[] = [
   {
@@ -97,7 +97,7 @@ class DataMigrationEngine {
   private batches: Map<string, ImportBatch> = new Map();
   private rowResults: Map<string, ImportRowResult[]> = new Map();
   private exportJobs: Map<string, ExportJob> = new Map();
-  private listeners: Array<(batch: ImportBatch) => void> = [];
+  private listeners: ((batch: ImportBatch) => void)[] = [];
 
   constructor() {
     DEFAULT_TEMPLATES.forEach(t => this.templates.set(t.id, t));
@@ -505,7 +505,7 @@ class DataMigrationEngine {
     try {
       const response = await apiClient.post<{
         committed: number;
-        errors: Array<{ rowIndex: number; error: string }>;
+        errors: { rowIndex: number; error: string }[];
       }>(apiEndpoints.accounting.importData, {
         batchId,
         entityType: batch.entityType,

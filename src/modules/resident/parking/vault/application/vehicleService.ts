@@ -1,6 +1,6 @@
 import type { ParkingVaultErrorCode, ParkingVaultViolation, ParkingVaultClock, VaultActor, ParkingVaultScope, TraceContext, Revision, } from '../domain/types/primitives';
 import { violation, denied, allowedWith } from '../domain/types/primitives';
-import type { VehicleRecord, VehicleVerificationStatus, ParkingVehicleType, FuelType, ParkingStickerStatus, RfidStatus, ParkingVaultScope, } from '../domain/types/parking';
+import type { VehicleRecord, VehicleVerificationStatus, ParkingVehicleType, FuelType, ParkingStickerStatus, RfidStatus, } from '../domain/types/parking';
 import { canTransitionVerification, canTransitionVehicleState, isVerificationReviewable, isVerificationTerminal, isVehicleActive, canVehicleBeReplaced, } from '../domain/stateMachines/vehicleStateMachine';
 import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
 export interface VehicleService {
@@ -122,7 +122,7 @@ export type ReplacementRequest = {
     readonly newVehicle: Omit<VehicleRegistrationRequest, 'scope' | 'idempotencyKey'>;
     readonly idempotencyKey: string;
 };
-function fail(code: ParkingVaultErrorCode, message: string) {
+function fail(code: ParkingVaultErrorCode, message: string): { ok: false; code: ParkingVaultErrorCode; message: string } {
     return { ok: false, code, message };
 }
 function firstViolation(violations: readonly ParkingVaultViolation[]): ParkingVaultViolation {
@@ -191,7 +191,7 @@ export function createVehicleService(ports: {
         const vehicleId = `vehicle-${input.idempotencyKey}`;
         const replay = ports.vehicles.read(vehicleId);
         if (replay)
-            return { ok: true, value: replay, warnings: ['IDEMPOTENT_REPLAY'] };
+            return { ok: true as const, value: replay, warnings: ['IDEMPOTENT_REPLAY'] as const };
         const now = ports.clock.now().toISOString();
         const vehicle: VehicleRecord = {
             id: vehicleId,
@@ -247,7 +247,7 @@ export function createVehicleService(ports: {
             metadata: { idempotencyKey: input.idempotencyKey, source: 'MOBILE' },
             outcome: 'SUCCESS',
         });
-        return { ok: true, value: vehicle, warnings: [] };
+        return { ok: true as const, value: vehicle, warnings: [] as const };
     };
     const verifyVehicle = async (actor: VaultActor, input: VerificationRequest) => {
         const vehicle = ports.vehicles.read(input.vehicleId);
@@ -550,14 +550,6 @@ export function createVehicleService(ports: {
     const getVehicleByNumber = (societyId: string, normalizedNumber: string) => ports.vehicles.readByNumber(societyId, normalizedNumber);
     const getVehiclesByUnit = (unitId: string) => ports.vehicles.listByUnit('society-001', unitId);
     const getVehiclesBySociety = (societyId: string) => ports.vehicles.listBySociety(societyId);
-    function persist(vehicle: VehicleRecord) {
-        return ports.vehicles.update(vehicle, vehicle.revision.revision)
-            ? { ok: true as const, value: vehicle, warnings: [] as const }
-            : fail('CONCURRENT_WRITE', 'Vehicle was modified concurrently.');
-    }
-    function fail(code: ParkingVaultErrorCode, message: string) {
-        return { ok: false, code, message };
-    }
     return {
         registerVehicle,
         verifyVehicle,

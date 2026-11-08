@@ -24,20 +24,24 @@ export function useMockStore() {
     if (!activeContext) return state;
 
     const flatNumber = activeContext.flatNumber;
-    const matchesScope = (entity: { homeContextId?: string; societyId?: string; flatNumber?: string }) => {
-      if (entity.homeContextId) return entity.homeContextId === activeContext.homeContextId;
-      if (entity.societyId) return entity.societyId === activeContext.societyId;
-      return activeContext.homeContextId === 'context-001' && entity.flatNumber === flatNumber;
+    const matchesScope = (entity: { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined }) => {
+      if (entity.homeContextId !== undefined) {
+        return entity.homeContextId === activeContext.homeContextId;
+      }
+      if (entity.societyId !== undefined) {
+        return entity.societyId === activeContext.societyId;
+      }
+      return activeContext.homeContextId === 'context-001' && entity.flatNumber !== undefined && entity.flatNumber === flatNumber;
     };
 
     return {
       ...state,
-      bills: state.bills.filter(matchesScope),
-      notices: state.notices.filter(matchesScope),
-      complaints: state.complaints.filter(matchesScope),
-      visitors: state.visitors.filter(matchesScope),
-      nocs: state.nocs.filter(matchesScope),
-      documents: state.documents.filter((d) => d.flatNumber === flatNumber),
+      bills: state.bills.filter((bill) => matchesScope(bill as { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined })),
+      notices: state.notices.filter((notice) => matchesScope(notice as { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined })),
+      complaints: state.complaints.filter((complaint) => matchesScope(complaint as { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined })),
+      visitors: state.visitors.filter((visitor) => matchesScope(visitor as { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined })),
+      nocs: state.nocs.filter((noc) => matchesScope(noc as { homeContextId?: string | undefined; societyId?: string | undefined; flatNumber?: string | undefined })),
+      documents: state.documents.filter((d) => d.flatNumber !== undefined && d.flatNumber === flatNumber),
     };
   }, [context.state, activeContext]);
 

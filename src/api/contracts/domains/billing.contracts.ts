@@ -1,5 +1,4 @@
-import type { EndpointDefinition } from '../api.types';
-import type { PaginatedResponse, JsonObject } from '../api.types';
+import type { EndpointDefinition , PaginatedResponse, JsonObject } from '../api.types';
 import type { Absent } from "../../../shared/types/absence.types";
 export interface Bill {
     id: string;

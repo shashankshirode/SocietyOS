@@ -359,9 +359,9 @@ export class InventoryService {
       .reduce((sum, t) => sum + t.quantity, 0);
   }
 
-  public evaluateReorderRecommendations(): Array<{ item: InventoryItem; recommendedQuantity: number }> {
-    const recommendations: Array<{ item: InventoryItem; recommendedQuantity: number }> = [];
-    for (const item of this.items.values()) {
+  public evaluateReorderRecommendations(): { item: InventoryItem; recommendedQuantity: number }[] {
+    const recommendations: { item: InventoryItem; recommendedQuantity: number }[] = [];
+    for (const item of Array.from(this.items.values())) {
       if (item.stockStatus === 'LOW_STOCK' || item.stockStatus === 'OUT_OF_STOCK') {
         const targetStock = (item.reorderThreshold ?? item.minimumStockLevel) * 2;
         const recommendedQuantity = Math.max(targetStock - item.currentStock, item.minimumStockLevel);

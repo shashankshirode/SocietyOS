@@ -7,6 +7,8 @@ import type {
   ExtendVisitorExpectedExitInput,
   Visitor,
   VisitorExitEscalationResult,
+  VisitorExitAlert,
+  VisitorStatus,
   CancelVisitorPassRequest,
   CancelVisitorPassResult,
 } from '../../../../shared/types/visitor.types';
@@ -30,4 +32,12 @@ export interface ResidentVisitorsRepository {
   contactSecurityForVisitorExit(
     input: ContactSecurityForVisitorExitInput
   ): Promise<RepositoryResult<VisitorExitEscalationResult>>;
+  updateStatus(
+    context: ResidentRepositoryRequestContext | string,
+    idOrStatus?: string,
+    status?: VisitorStatus | string
+  ): Promise<RepositoryResult<Visitor>>;
+  getVisitorExitAlerts(
+    context?: ResidentRepositoryRequestContext
+  ): Promise<RepositoryResult<VisitorExitAlert[]>>;
 }

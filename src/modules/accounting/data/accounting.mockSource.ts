@@ -1,5 +1,6 @@
 import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-import type { TreasurerDashboardData, ChargeHead, BillingCycle, DraftBill, ManualPaymentRecord, Defaulter, GenerateBillsInput, ManualPaymentInput, } from '../../../shared/types/accounting.types';
+import type { TreasurerDashboardData, ChargeHead, BillingCycle, DraftBill, ManualPaymentRecord, Defaulter, GenerateBillsInput, ManualPaymentInput, PaymentMode } from '../../../shared/types/accounting.types';
+import type { PaymentMethod, PaymentRecord } from '../../../shared/types/bill.types';
 import type { FlatLedger } from '../../../shared/types/ledger.types';
 import { mockAccountingDashboard } from '../../../shared/mock/accountingDashboard.mock';
 import { mockChargeHeads } from '../../../shared/mock/chargeHeads.mock';
@@ -10,6 +11,21 @@ import { mockFlatLedger } from '../../../shared/mock/ledgers.mock';
 import { getRequiredItem } from "../../../shared/utils/requiredItem";
 import { includeWhenPresent } from "../../../shared/utils/presentProperty";
 import { mockStore } from '../../../core/mockStore/mockStore';
+
+function toPaymentMethod(mode: PaymentMode): PaymentMethod {
+    switch (mode) {
+        case 'UPI':
+            return 'UPI';
+        case 'PAYMENT_GATEWAY':
+            return 'CARD';
+        case 'BANK_TRANSFER':
+            return 'NET_BANKING';
+        case 'CASH':
+        case 'CHEQUE':
+        default:
+            return 'CASH_CHEQUE';
+    }
+}
 let mutableBillingCycles = [...mockBillingCycles];
 let mutableDraftBills = [...mockDraftBills];
 export const accountingMockSource = {
@@ -40,7 +56,7 @@ export const accountingMockSource = {
                         unitId: bill.unitId || 'unit-001',
                         unitNumber: bill.flatNumber || 'A-1204',
                         wing,
-                        residentName: bill.residentName || 'Resident',
+                        residentName: 'Resident',
                         amount: p.amountPaid,
                         paymentMode: (p.paymentMethod as PaymentMode) || 'UPI',
                         paymentDate: p.paymentDate,
@@ -48,7 +64,7 @@ export const accountingMockSource = {
                         receivedBy: 'Society Treasurer',
                         status: 'RECEIPT_GENERATED',
                         receiptId: `rcpt-${p.id}`,
-                        receiptNumber: p.receiptNumber,
+                        ...(p.receiptNumber ? { receiptNumber: p.receiptNumber } : {}),
                         createdAt: p.paymentDate,
                         requiresApproval: false,
                     });
@@ -62,14 +78,14 @@ export const accountingMockSource = {
                     unitId: bill.unitId || 'unit-001',
                     unitNumber: bill.flatNumber || 'A-1204',
                     wing,
-                    residentName: bill.residentName || 'Resident',
+                    residentName: 'Resident',
                     amount: bill.paidAmount,
                     paymentMode: 'UPI',
                     paymentDate: bill.paidDate || new Date().toISOString(),
                     referenceNumber: bill.transactionId || 'TXN-DIRECT',
                     receivedBy: 'Society Treasurer',
                     status: 'RECEIPT_GENERATED',
-                    receiptNumber: bill.receiptNumber,
+                    ...(bill.receiptNumber ? { receiptNumber: bill.receiptNumber } : {}),
                     createdAt: bill.paidDate || new Date().toISOString(),
                     requiresApproval: false,
                 });
@@ -258,7 +274,7 @@ export const accountingMockSource = {
                         id: `pay-${Date.now()}`,
                         amountPaid: input.amount,
                         paymentDate: input.paymentDate,
-                        paymentMethod: input.paymentMode,
+                        paymentMethod: toPaymentMethod(input.paymentMode),
                         transactionId: input.referenceNumber,
                         receiptNumber,
                     }

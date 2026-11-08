@@ -1,5 +1,5 @@
 import { unifiedVisitorStateMachine } from '../services/unifiedVisitorStateMachine';
-import type { VisitorStatus, VisitorPassStatus, VisitorApprovalStatus, VisitorEscalationStatus } from '../../../../shared/types/visitorPhase5';
+import type { VisitorStatus, VisitorPassStatus, VisitorApprovalStatus, VisitorEscalationStatus } from '../../../shared/types/visitorPhase5';
 
 describe('Unified Visitor State Machine', () => {
   describe('Visitor Status Transitions', () => {

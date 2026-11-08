@@ -1,10 +1,9 @@
 import type { DisputeActorType } from '../../domain/types/primitives';
 import type { AppRole } from '../../../../../core/permissions/permission.types';
-import type { ActorContextInput } from '../../application/caseService';
-import { disputeCommand, type DisputeCommand } from '../../application/caseService';
+import type { ActorContextInput, DisputeCommand, OpenCaseInput } from '../../application/caseService';
+import { disputeCommand } from '../../application/caseService';
 import type { DisputeRuntime } from '../../infrastructure/disputeRuntime';
 import { createDisputeRuntime } from '../../infrastructure/disputeRuntime';
-import type { OpenCaseInput } from '../../application/caseService';
 
 export const SOCIETY_ID = 'soc-test-1';
 export const OTHER_SOCIETY_ID = 'soc-test-2';

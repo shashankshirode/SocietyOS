@@ -125,6 +125,7 @@ export interface Vehicle {
   rfidReadinessStatus: 'PENDING' | 'READY' | 'SUSPENDED';
   stickerStatus: 'NOT_ISSUED' | 'ISSUED' | 'LOST' | 'RETURNED' | 'EXPIRED';
   verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  status?: string;
   lastGateEntry?: string;
 }
 

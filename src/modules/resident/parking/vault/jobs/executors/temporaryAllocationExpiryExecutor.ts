@@ -1,11 +1,11 @@
 import type { JobExecution, JobResult } from '../../../../../../core/jobs/job.types';
 import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
-import type { VaultClock } from '../../../../../../core/identity/personaRegistry';
+import type { ParkingVaultClock } from '../../domain/types/primitives';
 import type { AllocationRecord, ParkingSlotRecord } from '../../domain/types/parking';
 
-interface ParkingBookingPorts extends JobPortsInterface {
+interface ParkingBookingPorts extends Omit<JobPortsInterface, 'vault'> {
   vault: {
-    clock: VaultClock;
+    clock: ParkingVaultClock;
     allocations: {
       findActiveTemporaryByExpiry: (beforeIso: string) => readonly AllocationRecord[];
       update: (allocation: AllocationRecord) => boolean;
@@ -26,7 +26,7 @@ interface ParkingBookingPorts extends JobPortsInterface {
 
 export class TemporaryAllocationExpiryExecutor implements JobExecutor {
   async execute(execution: JobExecution, ports: JobPorts): Promise<JobResult> {
-    const vault = (ports as ParkingBookingPorts).vault;
+    const vault = (ports as unknown as ParkingBookingPorts).vault;
     if (!vault) {
       return { success: false, processedCount: 0, succeededCount: 0, failedCount: 0, details: { error: 'Vault not available' } };
     }

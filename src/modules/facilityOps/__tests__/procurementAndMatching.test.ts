@@ -63,12 +63,13 @@ describe('Procurement, PO Revisions and Three-Way Match', () => {
     expect(po2.previousVersionId).toBe(po1.id);
     expect(po2.totalAmount).toBe(120 * 190);
 
+    const firstLine = po2.lines[0];
     const gr = procService.receiveGoods(
       {
         poId: po2.id,
         lines: [
           {
-            poLineId: po2.lines[0].id,
+            poLineId: firstLine?.id ?? '',
             deliveredQuantity: 90,
             acceptedQuantity: 85,
             rejectedQuantity: 5,
@@ -79,13 +80,14 @@ describe('Procurement, PO Revisions and Three-Way Match', () => {
       manager
     );
 
-    expect(gr.lines[0].deliveredQuantity).toBe(90);
-    expect(gr.lines[0].acceptedQuantity).toBe(85);
-    expect(gr.lines[0].rejectedQuantity).toBe(5);
+    const grLine = gr.lines[0];
+    expect(grLine?.deliveredQuantity).toBe(90);
+    expect(grLine?.acceptedQuantity).toBe(85);
+    expect(grLine?.rejectedQuantity).toBe(5);
 
     const poAfterReceipt = procService.getPurchaseOrder(po2.id)!;
     expect(poAfterReceipt.status).toBe('PARTIALLY_RECEIVED');
-    expect(poAfterReceipt.lines[0].acceptedQuantity).toBe(85);
+    expect(poAfterReceipt.lines[0]?.acceptedQuantity).toBe(85);
   });
 
   test('resolves match exception and completes finance handoff', () => {
@@ -114,10 +116,13 @@ describe('Procurement, PO Revisions and Three-Way Match', () => {
       manager
     );
 
+    const poLine = po.lines[0];
+    const poLineId = poLine?.id ?? '';
+
     procService.receiveGoods(
       {
         poId: po.id,
-        lines: [{ poLineId: po.lines[0].id, deliveredQuantity: 50, acceptedQuantity: 50, rejectedQuantity: 0 }],
+        lines: [{ poLineId, deliveredQuantity: 50, acceptedQuantity: 50, rejectedQuantity: 0 }],
       },
       manager
     );
@@ -128,7 +133,7 @@ describe('Procurement, PO Revisions and Three-Way Match', () => {
         vendorId: 'vnd-filters',
         vendorName: 'FilterCorp',
         poId: po.id,
-        lines: [{ description: 'Activated Carbon 25kg', quantity: 50, unitPrice: 520, totalPrice: 26000, poLineId: po.lines[0].id }],
+        lines: [{ description: 'Activated Carbon 25kg', quantity: 50, unitPrice: 520, totalPrice: 26000, poLineId }],
         subtotal: 26000,
         taxAmount: 4680,
         totalAmount: 30680,
@@ -140,7 +145,7 @@ describe('Procurement, PO Revisions and Three-Way Match', () => {
 
     const matchResult = invService.performThreeWayMatch(invoice.id);
     expect(matchResult.status).toBe('EXCEPTION');
-    expect(matchResult.exceptions[0].type).toBe('PRICE_MISMATCH');
+    expect(matchResult.exceptions[0]?.type).toBe('PRICE_MISMATCH');
 
     invService.resolveMatchException(
       invoice.id,

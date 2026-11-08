@@ -75,7 +75,7 @@ export function UnitVehiclesScreen({ navigation, route }: UnitVehiclesScreenProp
 
             <View style={styles.badgesCol}>
               <StatusBadge label={formatUiLiteral(localizedUiText.m_e6a0bc303b1d, [item.rfidReadinessStatus])} type={getRfidBadgeType(item.rfidReadinessStatus)} style={styles.badge}/>
-              <StatusBadge label={formatUiLiteral(localizedUiText.m_0e53135bc79a, [item.stickerStatus])} type={getStickerBadgeType(item.stickerStatus)} style={StyleSheet.flatten([styles.badge, styles.statusBadgeMarginTop])}/>
+              <StatusBadge label={formatUiLiteral(localizedUiText.m_0e53135bc79a, [item.stickerStatus])} type={getStickerBadgeType(item.stickerStatus)} style={StyleSheet.flatten([styles.badge, styles.statusBadgeMarginTop]) ?? {}}/>
             </View>
           </View>
         </AppCard>

@@ -1,5 +1,5 @@
 import { forwardRef, useState } from "react";
-import { TextInput, type NativeSyntheticEvent, type TextInputContentSizeChangeEventData, type TextInputProps } from "react-native";
+import { type TextInputInstance, TextInput, type TextInputContentSizeChangeEvent, type TextInputProps } from "react-native";
 import { useAppTheme } from "../../shared/theme/useAppTheme";
 import { APP_TEXT_AREA_MAXIMUM_HEIGHT, APP_TEXT_AREA_MINIMUM_HEIGHT, styles, createTextInputHeightBackgroundColorBorderColorColorShadowColorSpread6Style } from './styles/AppTextArea.styles';
 export type AppTextAreaProps = Omit<TextInputProps, 'multiline' | 'style' | 'value' | 'onChangeText' | 'scrollEnabled' | 'textAlignVertical'> & {
@@ -7,11 +7,11 @@ export type AppTextAreaProps = Omit<TextInputProps, 'multiline' | 'style' | 'val
     onChangeText: (value: string) => void;
     hasError?: boolean;
 };
-export const AppTextArea = forwardRef<TextInput, AppTextAreaProps>(function AppTextArea({ value, onChangeText, hasError = false, editable = true, onContentSizeChange, ...props }, ref) {
+export const AppTextArea = forwardRef<TextInputInstance, AppTextAreaProps>(function AppTextArea({ value, onChangeText, hasError = false, editable = true, onContentSizeChange, ...props }, ref) {
     const { colors, shadows } = useAppTheme();
     const [contentHeight, setContentHeight] = useState(APP_TEXT_AREA_MINIMUM_HEIGHT);
     const resolvedHeight = Math.min(APP_TEXT_AREA_MAXIMUM_HEIGHT, Math.max(APP_TEXT_AREA_MINIMUM_HEIGHT, contentHeight));
-    const handleContentSizeChange = (event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>): void => {
+    const handleContentSizeChange = (event: TextInputContentSizeChangeEvent): void => {
         const newHeight = event.nativeEvent.contentSize.height;
         setContentHeight((prev) => {
             if (Math.abs(prev - newHeight) > 2) {

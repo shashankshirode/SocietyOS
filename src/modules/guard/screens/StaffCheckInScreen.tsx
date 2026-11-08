@@ -40,9 +40,9 @@ export function StaffCheckInScreen({ navigation }: StaffCheckInScreenProps) {
         const member = staffList.find((s) => s.id === memberId);
         if (!member)
             return;
-        if (member.verificationStatus === 'BLOCKED') {
-            AppAlert.alert(String(localizedUiText.m_fceca6a72c80), String(localizedUiText.m_a1e60aa4a9c1), [
-                { text: String(localizedUiText.m_565339bc4d33) },
+        if (member.verificationStatus === 'BLOCKED' || (member as any).employmentStatus === 'SUSPENDED' || (member as any).employmentStatus === 'BLOCKED') {
+            AppAlert.alert('Access Suspended', 'This staff member is suspended or blocked. Gate entry is denied.', [
+                { text: 'OK' },
             ]);
             return;
         }

@@ -110,6 +110,8 @@ export interface SimulationParameters {
   randomSeed?: number;
   monteCarloRuns?: number;
   confidenceLevel?: number;
+  outputFormat?: SimulationOutputFormat;
+  outputDataTypes?: SimulationOutputType[];
 }
 
 export interface SimulationAssumption {
@@ -207,32 +209,6 @@ export interface SimulationRun {
   priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
   tags: string[];
 }
-
-export interface SimulationParameters {
-  scenarioSpecific: Record<string, any>;
-  durationMinutes: number;
-  timeStepMinutes: number;
-  startTimeOffsetMinutes: number;
-  randomSeed?: number;
-  monteCarloRuns?: number;
-  confidenceLevel?: number;
-  outputFormat: SimulationOutputFormat;
-  outputDataTypes: SimulationOutputType[];
-}
-
-export interface SimulationAssumption {
-  assumptionId: string;
-  description: string;
-  source: SimulationAssumptionSource;
-  value: any;
-  confidence: number;
-  effectiveFrom: string;
-  effectiveTo?: string;
-  sensitivity: 'LOW' | 'MEDIUM' | 'HIGH';
-  impactIfWrong: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  validationRule?: string;
-}
-
 
 export interface SimulationMetrics {
   totalSteps: number;
@@ -381,30 +357,30 @@ export interface ComparisonData {
 }
 
 export interface VisualizationData {
-  timelineData: Array<{
+  timelineData: {
     timestamp: string;
     metrics: Record<string, number>;
     events: SimulationEvent[];
-  }>;
-  capacityCharts: Array<{
+  }[];
+  capacityCharts: {
     capacityType: string;
     capacityId: string;
-    dataPoints: Array<{
+    dataPoints: {
       timestamp: string;
       baseline: number;
       simulated: number;
       threshold?: number;
-    }>;
-  }>;
-  heatmapData?: Array<{
+    }[];
+  }[];
+  heatmapData?: {
     entityId: string;
     entityType: string;
     metric: string;
-    values: Array<{ timestamp: string; value: number }>;
-  }>;
+    values: { timestamp: string; value: number }[];
+  }[];
   networkDiagram?: {
-    nodes: Array<{ id: string; label: string; x: number; y: number; status: string }>;
-    edges: Array<{ from: string; to: string; label: string; capacity?: number }>;
+    nodes: { id: string; label: string; x: number; y: number; status: string }[];
+    edges: { from: string; to: string; label: string; capacity?: number }[];
   };
 }
 

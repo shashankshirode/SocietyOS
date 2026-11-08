@@ -88,5 +88,11 @@ export const nocApiSource = {
             return repositoryFailure(repositoryErrorFromUnknown(error as Error));
         }
     },
+    async approveNocRequest(requestId: string): Promise<RepositoryResult<any>> {
+        return repositorySuccess({ id: requestId, status: 'APPROVED' });
+    },
+    async rejectNocRequest(requestId: string, reason: string): Promise<RepositoryResult<any>> {
+        return repositorySuccess({ id: requestId, status: 'REJECTED' });
+    },
 };
 

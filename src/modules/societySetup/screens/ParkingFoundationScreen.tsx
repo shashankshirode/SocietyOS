@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ScrollView, View, Text, Alert } from "react-native";
+import { ScrollView, View, Text, Alert , TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenContainer } from "../../../shared/layouts/ScreenContainer";
 import { ResponsivePageHeader } from "../../../shared/layouts/ResponsivePageHeader";
@@ -17,6 +17,7 @@ import { getActiveUiLiteral } from "../../../shared/localization/activeUiLiteral
 import { SocietyService } from "../services/societyService";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { SuperAdminStackParamList } from "../../../app/navigation/navigation.types";
+
 
 type Props = NativeStackScreenProps<SuperAdminStackParamList, 'PARKING_FOUNDATION'>;
 
@@ -277,5 +278,3 @@ export function ParkingFoundationScreen({ route, navigation }: Props) {
         </ScreenContainer>
     );
 }
-
-import { TouchableOpacity } from "react-native";

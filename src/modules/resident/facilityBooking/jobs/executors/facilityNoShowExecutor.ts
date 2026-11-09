@@ -1,7 +1,7 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../../../../../core/jobs/job.types';
-import type { JobPorts as JobPortsInterface } from '../../../../../core/jobs/job.ports';
+import type { JobExecution, JobResult } from '../../../../../core/jobs/job.types';
+import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../core/jobs/job.ports';
 import type { VaultClock } from '../../../../../core/identity/personaRegistry';
-import type { FacilityBookingStatus } from '../../../models/facilityBooking.enums';
+import type { FacilityBookingStatus } from '../../models/facilityBooking.enums';
 
 interface FacilityBookingPorts extends JobPortsInterface {
   vault: {

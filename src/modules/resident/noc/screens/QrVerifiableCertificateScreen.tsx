@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, ScrollView, TextInput, Alert } from 'react-native';
+import { View, ScrollView, TextInput } from 'react-native';
+import { AppAlert } from '../../../../ui/modal/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useResidentTheme } from '../../../../ui/foundation/residentTheme';
@@ -52,7 +53,7 @@ export function QrVerifiableCertificateScreen({ verificationCode }: QrVerificati
   const handleVerify = useCallback(async () => {
     const code = inputCode.trim();
     if (!code) {
-      Alert.alert('Error', 'Please enter a verification code');
+      AppAlert.alert('Error', 'Please enter a verification code');
       return;
     }
 
@@ -80,7 +81,7 @@ export function QrVerifiableCertificateScreen({ verificationCode }: QrVerificati
   }, [verificationCode, handleVerify]);
 
   const handleScan = useCallback(() => {
-    Alert.alert('QR Scanner', 'QR code scanning would be implemented here');
+    AppAlert.alert('QR Scanner', 'QR code scanning would be implemented here');
   }, []);
 
   const getStatusConfig = (status: QrVerificationStatus): { tone: StatusTone; label: string; icon: IconName; description: string } => {

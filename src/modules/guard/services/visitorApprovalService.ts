@@ -1,16 +1,14 @@
 import { mockStore } from '../../../core/mockStore/mockStore';
-import type { VisitorApprovalRequest, VisitorApprovalStatus, VisitorEscalationStatus, VisitorType, } from '../../../shared/types/visitorPhase8.types';
+import type { VisitorApprovalRequest, VisitorApprovalStatus, VisitorEscalationStatus, VisitorType } from '../../../shared/types/visitorPhase8.types';
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
 import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
 import { unknownVisitorPolicyEngine, type PolicyEvaluationResult } from './unknownVisitorPolicyEngine';
 import { visitorNotificationService } from './visitorNotificationService';
 import { visitorStateMachine } from './visitorStateMachine';
 import { gateIdempotencyService } from './gateIdempotencyService';
-import { format } from 'date-fns';
-const withMockDelay = <T>(data: T, ms = 500): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), ms));
+
 function generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -47,12 +45,12 @@ export const visitorApprovalService = {
                         });
                         finalExpiresInMinutes = Math.ceil(policyResult.waitTimeoutMs / 60000);
                         if (policyResult.action === 'DENY') {
-                            const deniedRequest = {
+                            const deniedRequest: VisitorApprovalRequest = {
                                 id: generateId('appr'),
                                 visitorId,
                                 visitorName,
                                 visitorPhone,
-                                visitorType: visitorType,
+                                visitorType: visitorType as VisitorType,
                                 flatNumber,
                                 unitId,
                                 gateId,
@@ -95,12 +93,12 @@ export const visitorApprovalService = {
                         }
                     }
                     const expiresAtIso = new Date(Date.now() + finalExpiresInMinutes * 60 * 1000).toISOString();
-                    const request = {
+                    const request: VisitorApprovalRequest = {
                         id: generateId('appr'),
                         visitorId,
                         visitorName,
                         visitorPhone,
-                        visitorType: visitorType,
+                        visitorType: visitorType as VisitorType,
                         flatNumber,
                         unitId,
                         gateId,
@@ -202,31 +200,37 @@ export const visitorApprovalService = {
                         return;
                     }
                     const request = requests[index];
+                    if (!request) {
+                        reject(new Error('Approval request not found'));
+                        return;
+                    }
                     if (request.status !== 'PENDING') {
                         reject(new Error('Request already processed'));
                         return;
                     }
                     const now = new Date().toISOString();
-                    const updated = {
-                        ...requests[index],
+                    const updated: VisitorApprovalRequest = {
+                        ...request,
                         status: action === 'APPROVE' ? 'APPROVED' : 'DENIED',
                         respondedAtIso: now,
                         respondedBy: residentId,
                         respondedByRole: residentRole,
                         decision: action === 'APPROVE' ? 'APPROVE' : 'DENY',
                         denialReason: action === 'DENY' ? denialReason : undefined,
-                        statusChangedAtIso: now,
                     };
-                    mockStore.getState().visitorApprovalRequests[index] = updated;
+                    const storeRequests = mockStore.getState().visitorApprovalRequests;
+                    if (storeRequests) {
+                        storeRequests[index] = updated;
+                    }
                     mockStore.notify();
                     if (action === 'APPROVE') {
                         const visitors = mockStore.getState().visitors || [];
-                        const visitorIndex = visitors.findIndex((v) => v.id === requests[index].visitorId);
+                        const visitorIndex = visitors.findIndex((v) => v.id === request.visitorId);
                         if (visitorIndex !== -1) {
                             const visitor = visitors[visitorIndex];
-                            if (visitorStateMachine.canTransitionVisitorStatus(visitor.status as any, 'APPROVED')) {
-                                const visitorsUpdated = mockStore.getState().visitors?.map((v) => v.id === requests[index].visitorId
-                                    ? { ...v, status: 'APPROVED', approvalStatus: 'APPROVED', approvalSource: 'RESIDENT', approvedAtIso: new Date().toISOString(), approvedBy: residentId }
+                            if (visitor && visitorStateMachine.canTransitionVisitorStatus(visitor.status as any, 'APPROVED')) {
+                                const visitorsUpdated = mockStore.getState().visitors?.map((v) => v.id === request.visitorId
+                                    ? { ...v, status: 'APPROVED' as const, approvalStatus: 'APPROVED' as const, approvalSource: 'RESIDENT' as const, approvedAtIso: new Date().toISOString(), approvedBy: residentId }
                                     : v);
                                 mockStore.getState().visitors = visitorsUpdated;
                                 mockStore.notify();
@@ -234,7 +238,7 @@ export const visitorApprovalService = {
                                     ?.filter(r => r.flatNumber === visitor.flatNumber)
                                     .map(r => r.id) || [];
                                 if (residentUserIds.length > 0) {
-                                    await visitorNotificationService.sendVisitorApproved(request, residentUserIds, request.societyId);
+                                    await visitorNotificationService.sendVisitorApproved(request, residentUserIds, request.societyId || '');
                                 }
                             }
                         }
@@ -244,13 +248,13 @@ export const visitorApprovalService = {
                             ?.filter(r => r.flatNumber === request.flatNumber)
                             .map(r => r.id) || [];
                         if (residentUserIds.length > 0) {
-                            await visitorNotificationService.sendVisitorDenied(request, denialReason || '', residentUserIds, request.societyId);
+                            await visitorNotificationService.sendVisitorDenied(request, denialReason || '', residentUserIds, request.societyId || '');
                         }
                     }
                     createAuditEntry({
                         actorUserId: residentId,
                         actorType: 'RESIDENT',
-                        societyId: requests[index].societyId,
+                        societyId: request.societyId || '',
                         action: action === 'APPROVE' ? 'VISITOR_APPROVED' : 'VISITOR_DENIED',
                         entityType: 'VISITOR_APPROVAL_REQUEST',
                         entityId: requestId,
@@ -277,26 +281,32 @@ export const visitorApprovalService = {
                     return;
                 }
                 const request = requests[index];
+                if (!request) {
+                    reject(new Error('Approval request not found'));
+                    return;
+                }
                 if (!visitorStateMachine.canTransitionVisitorEscalationStatus(request.escalationStatus as any, escalationStatus)) {
                     reject(new Error(`Invalid escalation transition from ${request.escalationStatus} to ${escalationStatus}`));
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
-                    ...requests[index],
+                const updated: VisitorApprovalRequest = {
+                    ...request,
                     escalationStatus: escalationStatus,
                     escalationReason,
                     escalatedAtIso: now,
                     escalatedBy,
                     status: 'ESCALATED',
-                    statusChangedAtIso: now,
                 };
-                mockStore.getState().visitorApprovalRequests[index] = updated;
+                const storeRequests = mockStore.getState().visitorApprovalRequests;
+                if (storeRequests) {
+                    storeRequests[index] = updated;
+                }
                 mockStore.notify();
                 createAuditEntry({
                     actorUserId: escalatedBy,
                     actorType: 'RESIDENT',
-                    societyId: requests[index].societyId,
+                    societyId: request.societyId || '',
                     action: 'VISITOR_APPROVAL_ESCALATED',
                     entityType: 'VISITOR_APPROVAL_REQUEST',
                     entityId: requestId,
@@ -308,24 +318,6 @@ export const visitorApprovalService = {
                 });
                 resolve(updated);
             }, 400);
-        });
-    },
-    async getPendingApprovalsForUnit(unitId: string): Promise<any[]> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const requests = mockStore.getState().visitorApprovalRequests || [];
-                const filtered = requests.filter((r) => r.unitId === unitId && r.status === 'PENDING');
-                resolve(filtered);
-            }, 300);
-        });
-    },
-    async getPendingApprovalsForGuard(guardId: string): Promise<any[]> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const requests = mockStore.getState().visitorApprovalRequests || [];
-                const filtered = requests.filter((r) => r.guardId === guardId && r.status === 'PENDING');
-                resolve(filtered);
-            }, 300);
         });
     },
     async getApprovalHistory(visitorId: string): Promise<any[]> {

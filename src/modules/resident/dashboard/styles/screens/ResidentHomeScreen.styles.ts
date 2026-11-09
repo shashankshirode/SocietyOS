@@ -3,13 +3,60 @@ import { StyleSheet, Platform, ImageStyle } from 'react-native';
 export const createRootStyle = (backgroundColor: string) => ({ backgroundColor });
 export const createScrollContentStyle = (topInset: number, bottomInset: number) => ({
   paddingTop: topInset,
-  paddingBottom: bottomInset + 32,
+  paddingBottom: bottomInset + 24, // Extra space for content breathing room above bottom nav
 });
+export const createConnectLabTopStyle = (top: number) => ({ top });
+export const createLabTextColorStyle = (color: string) => ({ color });
+
+export const createSocietyNameStyle = (color: string) => ({ color });
+export const createSocietyUnitTextStyle = (color: string) => ({ color });
+export const createNotificationBtnStyle = (backgroundColor: string, borderColor: string) => ({
+  backgroundColor,
+  borderColor,
+});
+export const createNotificationBadgeStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createNotificationBadgeTextStyle = (color: string) => ({ color });
+export const createAvatarContainerStyle = (borderColor: string) => ({ borderColor });
+export const createGreetingIntroStyle = (color: string) => ({ color });
+export const createGreetingNameStyle = (color: string) => ({ color });
+export const createGreetingTaglineStyle = (color: string) => ({ color });
+export const createWeatherPillStyle = (backgroundColor: string, borderColor: string) => ({
+  backgroundColor,
+  borderColor,
+});
+export const createWeatherTempStyle = (color: string) => ({ color });
+export const createWeatherConditionStyle = (color: string) => ({ color });
+export const createSectionHeadingStyle = (color: string) => ({ color });
+export const createSectionLinkStyle = (color: string) => ({ color });
+export const createAttentionCardStyle = (backgroundColor: string, borderColor: string) => ({
+  backgroundColor,
+  borderColor,
+});
+export const createAttentionCategoryTextStyle = (color: string) => ({ color });
+export const createAttentionValueTextStyle = (color: string) => ({ color });
+export const createAttentionDueTextStyle = (color: string) => ({ color });
+export const createAttentionVisitorTimeStyle = (color: string) => ({ color });
+export const createPayNowBtnStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createPayNowBtnTextStyle = (color: string) => ({ color });
+export const createViewPassBtnStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createViewPassBtnTextStyle = (color: string) => ({ color });
+export const createGlanceCardStyle = (backgroundColor: string, borderColor: string) => ({
+  backgroundColor,
+  borderColor,
+});
+export const createGlanceValueStyle = (color: string) => ({ color });
+export const createGlanceLabelStyle = (color: string) => ({ color });
+export const createEventCardStyle = (backgroundColor: string, borderColor: string) => ({
+  backgroundColor,
+  borderColor,
+});
+export const createEventIconBadgeStyle = (backgroundColor: string) => ({ backgroundColor });
+export const createEventTitleStyle = (color: string) => ({ color });
+export const createEventSubtitleStyle = (color: string) => ({ color });
 
 export const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#FAF8F1',
   },
   scrollContent: {
     paddingBottom: 40,
@@ -19,6 +66,19 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+  },
+  connectLabButton: {
+    position: 'absolute',
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  connectLabText: {
+    fontWeight: '700',
   },
   headerBar: {
     flexDirection: 'row',
@@ -51,12 +111,10 @@ export const styles = StyleSheet.create({
   societyName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
     letterSpacing: -0.2,
   },
   societyUnitText: {
     fontSize: 11,
-    color: '#64748B',
     marginTop: 1,
   },
   headerActionsRight: {
@@ -68,9 +126,7 @@ export const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -82,12 +138,10 @@ export const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#EF4444',
     alignItems: 'center',
     justifyContent: 'center',
   },
   notificationBadgeText: {
-    color: '#FFFFFF',
     fontSize: 9,
     fontWeight: '700',
     lineHeight: 11,
@@ -97,15 +151,12 @@ export const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
     overflow: 'hidden',
   },
   avatarImage: {
     width: '100%',
     height: '100%',
   } as ImageStyle,
-
-  // Greeting & Weather
   greetingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -118,60 +169,54 @@ export const styles = StyleSheet.create({
   },
   greetingIntro: {
     fontSize: 14,
-    color: '#475569',
-    fontWeight: '400',
+    fontWeight: '500',
   },
   greetingName: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: -0.4,
-    marginTop: 1,
+    letterSpacing: -0.5,
+    marginTop: 2,
   },
   greetingTagline: {
     fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
+    marginTop: 4,
+    fontWeight: '500',
   },
   weatherPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 4,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 2,
+        elevation: 1,
       },
     }),
   },
   weatherTemp: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#0F172A',
   },
   weatherCondition: {
     fontSize: 11,
-    color: '#64748B',
+    fontWeight: '500',
   },
-
-  // Hero Spotlight
   heroContainer: {
     marginHorizontal: 20,
     marginTop: 18,
-    height: 165,
     borderRadius: 20,
     overflow: 'hidden',
+    height: 180,
     position: 'relative',
     ...Platform.select({
       ios: {
@@ -189,57 +234,43 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'absolute',
+    top: 0,
+    left: 0,
   } as ImageStyle,
   heroOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(4, 27, 23, 0.45)',
+    flex: 1,
+    backgroundColor: 'rgba(5, 10, 18, 0.45)',
+    justifyContent: 'flex-end',
     padding: 18,
-    justifyContent: 'space-between',
   },
   heroContentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: 'auto',
   },
   heroTextCol: {
     flex: 1,
-    paddingRight: 12,
+    marginRight: 12,
   },
   heroTitle: {
-    color: '#FFFFFF',
-    fontSize: 19,
+    fontSize: 22,
     fontWeight: '800',
-    lineHeight: 24,
-    letterSpacing: -0.2,
+    lineHeight: 26,
+    letterSpacing: -0.3,
   },
   heroSubtitle: {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: 12,
-    marginTop: 4,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 6,
+    letterSpacing: 0.2,
   },
   heroArrowBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
   },
-
-  // Section Headers
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -251,15 +282,12 @@ export const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
+    letterSpacing: -0.2,
   },
   sectionLink: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#0D5C4D',
   },
-
-  // Needs your attention row
   attentionCardsRow: {
     flexDirection: 'row',
     gap: 12,
@@ -267,13 +295,11 @@ export const styles = StyleSheet.create({
   },
   attentionCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderRadius: 18,
     padding: 14,
+    borderWidth: 1,
     justifyContent: 'space-between',
-    minHeight: 146,
+    minHeight: 142,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -290,87 +316,74 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginBottom: 8,
   },
   attentionIconBox: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   attentionCategoryText: {
     fontSize: 11,
-    color: '#64748B',
-    fontWeight: '500',
-    flex: 1,
+    fontWeight: '600',
   },
   attentionValueText: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#0F172A',
-    marginTop: 8,
+    letterSpacing: -0.3,
   },
   attentionDueText: {
     fontSize: 11,
-    color: '#EF4444',
     fontWeight: '600',
     marginTop: 2,
   },
   attentionVisitorTime: {
     fontSize: 11,
-    color: '#64748B',
+    fontWeight: '500',
     marginTop: 2,
   },
   payNowBtn: {
-    backgroundColor: '#11382E',
-    height: 34,
-    borderRadius: 17,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 10,
   },
   payNowBtnText: {
-    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
   },
   viewPassBtn: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    height: 34,
-    borderRadius: 17,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 10,
   },
   viewPassBtnText: {
-    color: '#1E293B',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-
-  // Today at a glance
   glanceRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 20,
   },
   glanceCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     paddingVertical: 12,
+    paddingHorizontal: 6,
     alignItems: 'center',
-    gap: 4,
+    borderWidth: 1,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.03,
-        shadowRadius: 4,
+        shadowRadius: 3,
       },
       android: {
         elevation: 1,
@@ -380,23 +393,19 @@ export const styles = StyleSheet.create({
   glanceValue: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#0F172A',
+    marginTop: 4,
   },
   glanceLabel: {
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 11,
     fontWeight: '500',
+    marginTop: 2,
+    textAlign: 'center',
   },
-
-  // Event Card
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     padding: 14,
     marginHorizontal: 20,
     marginTop: 14,
@@ -416,7 +425,6 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#DCFCE7',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -426,15 +434,11 @@ export const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0F172A',
   },
   eventSubtitle: {
     fontSize: 12,
-    color: '#64748B',
     marginTop: 2,
   },
-
-  // Compatibility styles preserved
   greetingBlock: {
     paddingHorizontal: 20,
     marginTop: 8,

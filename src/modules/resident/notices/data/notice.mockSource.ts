@@ -29,15 +29,21 @@ export const noticeMockSource = {
     async acknowledge(context: ResidentRepositoryRequestContext | string, noticeId?: string): Promise<RepositoryResult<Notice | Absent>> {
         await withMockDelay();
         let actualId: string;
+        let residentId = 'resident-001';
         if (typeof context === 'string') {
             actualId = context;
         }
         else {
             actualId = noticeId || '';
+            residentId = context.activeHome.residentId || context.activeHome.unitId || 'resident-001';
         }
+        const existing = mockStore.getState().notices.find((n) => n.id === actualId);
+        const acknowledgedResidents = new Set(existing?.acknowledgedResidents ?? []);
+        acknowledgedResidents.add(residentId);
         mockStore.updateNotice(actualId, {
             acknowledged: true,
             status: 'READ',
+            acknowledgedResidents: Array.from(acknowledgedResidents),
         });
         const updated = mockStore.getState().notices.find((notice) => notice.id === actualId);
         return repositorySuccess(updated);

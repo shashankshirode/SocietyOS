@@ -1,8 +1,7 @@
 import type { Absent } from '../../../../../shared/types/absence.types';
 import type { VaultClock, DocumentVaultErrorCode } from '../domain/types/primitives';
 import { violation, denied, allowedWith } from '../domain/types/primitives';
-import type { DocumentRecord } from '../domain/types/document.types';
-import type { ExpiryLifecycleState } from '../domain/types/document.types';
+import type { DocumentRecord , ExpiryLifecycleState } from '../domain/types/document.types';
 import { resolveExpiryState } from '../domain/stateMachines/retentionStateMachine';
 import { evaluateActionPermission } from '../domain/guards/authorizationGuard';
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { AppModal } from '../../../../ui/modal/AppModal';
 import Svg, { Path } from 'react-native-svg';
 import { OnboardingDocument } from '../data/residentOnboarding.types';
 import { PrimaryCTA } from './PrimaryCTA';
@@ -46,7 +47,7 @@ export function DocumentUploader({ document, visible, onClose, onConfirmUpload, 
         setStagedFile(null);
         onClose();
     };
-    return (<Modal visible={visible} transparent animationType="slide" onRequestClose={handleCancel}>
+    return (<AppModal visible={visible} onClose={handleCancel}>
       <View style={styles.modalOverlay}>
         <View style={styles.sheetContainer}>
           
@@ -116,7 +117,7 @@ export function DocumentUploader({ document, visible, onClose, onConfirmUpload, 
           </View>
         </View>
       </View>
-    </Modal>);
+    </AppModal>);
 }
 const styles = StyleSheet.create({
     modalOverlay: {

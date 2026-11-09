@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { apiService, ApiService } from '../services/ApiService';
-import type { ApiResponse } from '../contracts/api.types';
-import type { PaginatedResponse } from '../contracts/api.types';
+import type { ApiResponse , PaginatedResponse } from '../contracts/api.types';
 
 export function useApi(): ApiService {
   return apiService;
@@ -55,6 +54,7 @@ export function useQuery<T>(
   const retryCountRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fetchRef = useRef<((isRetry: boolean) => Promise<void>) | null>(null);
 
   const fetch = useCallback(async (isRetry = false) => {
     if (!enabled) return;
@@ -83,7 +83,7 @@ export function useQuery<T>(
       
       if (retryCountRef.current < retry && !abortControllerRef.current?.signal.aborted) {
         retryCountRef.current++;
-        setTimeout(() => fetch(true), retryDelay * retryCountRef.current);
+        setTimeout(() => fetchRef.current?.(true), retryDelay * retryCountRef.current);
         return;
       }
       
@@ -94,6 +94,8 @@ export function useQuery<T>(
       onSettled?.(data, error);
     }
   }, [enabled, queryFn, onSuccess, onError, onSettled, retry, retryDelay]);
+
+  fetchRef.current = fetch;
 
   const refetch = useCallback(async () => {
     retryCountRef.current = 0;

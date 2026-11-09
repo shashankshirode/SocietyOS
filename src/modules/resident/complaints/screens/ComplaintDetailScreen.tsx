@@ -1,31 +1,37 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { StackActions } from '@react-navigation/native';
 import { useComplaintDetail } from '../data/useComplaintDetail';
 import { useUpdateComplaintStatus } from '../hooks/useUpdateComplaintStatus';
 import type { ComplaintDetailScreenProps } from '../../../../app/navigation/navigation.types';
+import type { Complaint } from '../../../../shared/types/complaint.types';
 import { SocietyDetailHeader } from '../../../../shared/components/SocietyDetailHeader';
-import { SocietyStatusPill } from '../../../../shared/components/SocietyStatusPill';
+import { SocietyStatusPill, type StatusTone } from '../../../../shared/components/SocietyStatusPill';
 import { SocietyTimeline, type TimelineStep } from '../../../../shared/components/SocietyTimeline';
 import { LoadingState } from '../../../../shared/feedback/LoadingState';
 import {
-  FONT_FAMILY_INTER,
-  FONT_FAMILY_INTER_MEDIUM,
-  FONT_FAMILY_INTER_BOLD,
-} from '../../../../shared/theme/typography';
+  styles,
+  createRootTopInset,
+  createScrollPadding,
+} from '../styles/screens/ComplaintDetailScreen.styles';
 
 export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const { navigation, route } = props;
-  const initialComplaint = route.params?.complaint || {
+  const initialComplaint: Complaint = route.params?.complaint || {
     id: route.params?.complaintId || 'comp-1024',
     title: 'Water leakage in bathroom',
     category: 'PLUMBING',
     status: 'IN_PROGRESS',
+    priority: 'HIGH',
     description: 'Water is leaking from the ceiling onto the bathroom floor.',
     createdAt: '2026-10-02T10:15:00Z',
+    updatedAt: '2026-10-02T10:15:00Z',
+    homeContextId: 'ctx-1',
+    societyId: 'soc-1',
+    unitId: 'unit-1',
+    dataScopeKey: 'scope-1',
   };
 
   const { data: fetchedComplaint, isLoading } = useComplaintDetail(initialComplaint.id);
@@ -40,62 +46,107 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     ? `#C-${complaint.id.replace('comp-', '')}`
     : `#${complaint.id}`;
 
-  const timelineSteps: TimelineStep[] = [
-    {
-      id: 'step-raised',
-      title: 'Complaint raised',
-      timestamp: '02 Oct, 10:15 AM',
-      status: 'completed',
-    },
-    {
-      id: 'step-assigned',
-      title: 'Assigned to staff',
-      timestamp: '02 Oct, 11:30 AM',
-      status: 'completed',
-    },
-    {
-      id: 'step-progress',
-      title: 'In progress',
-      timestamp: '02 Oct, 02:45 PM',
-      status: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? 'completed' : 'active',
-    },
-    {
-      id: 'step-resolved',
-      title: 'Resolved',
-      timestamp: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? '02 Oct, 05:00 PM' : 'Pending',
-      status: complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? 'completed' : 'upcoming',
-    },
-  ];
+  const isResolved = complaint.status === 'RESOLVED';
+  const isClosed = complaint.status === 'CLOSED';
+  const isReopened = complaint.status === 'REOPENED';
+
+  const timelineSteps: TimelineStep[] =
+    complaint.updates && complaint.updates.length > 0
+      ? complaint.updates.map((u, idx) => ({
+          id: u.id || `step-${idx}`,
+          title: u.note || `Status: ${u.status}`,
+          timestamp: new Date(u.timestamp).toLocaleDateString([], {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          status: idx === complaint.updates.length - 1 ? 'completed' : 'completed',
+        }))
+      : [
+          {
+            id: 'step-raised',
+            title: 'Complaint raised',
+            timestamp: '02 Oct, 10:15 AM',
+            status: 'completed',
+          },
+          {
+            id: 'step-assigned',
+            title: complaint.assignedTo ? `Assigned to ${complaint.assignedTo}` : 'Awaiting assignment',
+            timestamp: complaint.assignedTo ? '02 Oct, 11:30 AM' : 'Pending',
+            status: complaint.assignedTo ? 'completed' : 'upcoming',
+          },
+          {
+            id: 'step-progress',
+            title: isResolved || isClosed ? 'Work completed' : 'In progress',
+            timestamp: isResolved || isClosed ? '02 Oct, 02:45 PM' : 'Active',
+            status: isResolved || isClosed ? 'completed' : 'active',
+          },
+          {
+            id: 'step-resolved',
+            title: isClosed ? 'Closed' : isResolved ? 'Resolved' : 'Resolution',
+            timestamp: isResolved || isClosed ? '02 Oct, 05:00 PM' : 'Pending',
+            status: isResolved || isClosed ? 'completed' : 'upcoming',
+          },
+        ];
+
+  const handleConfirmResolution = async () => {
+    await updateComplaintStatus.submit({
+      complaintId: complaint.id,
+      status: 'CLOSED',
+      note: 'Resolution confirmed by resident.',
+    });
+    navigation.dispatch(
+      StackActions.push('ComplaintFeedback', { complaintId: complaint.id }),
+    );
+  };
+
+  const handleReopen = () => {
+    navigation.dispatch(
+      StackActions.push('ComplaintReopen', { complaintId: complaint.id }),
+    );
+  };
+
+  const statusTone: StatusTone = isClosed
+    ? 'neutral'
+    : isResolved
+    ? 'success'
+    : isReopened
+    ? 'danger'
+    : 'warning';
+
+  const statusLabel = isClosed
+    ? 'Closed'
+    : isResolved
+    ? 'Resolved'
+    : isReopened
+    ? 'Reopened'
+    : complaint.status === 'ASSIGNED'
+    ? 'Assigned'
+    : 'In Progress';
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
+    <View style={[styles.root, createRootTopInset(insets.top)]}>
       <SocietyDetailHeader
         title={`Complaint ${formattedId}`}
         onBackPress={() => navigation.goBack()}
       />
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          createScrollPadding(insets.bottom),
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Status Pill Header */}
-        <View style={styles.statusPillRow}>
+        <View style={styles.statusRow}>
           <SocietyStatusPill
-            label={
-              complaint.status === 'RESOLVED' || complaint.status === 'CLOSED'
-                ? 'Resolved'
-                : 'In Progress'
-            }
-            tone={
-              complaint.status === 'RESOLVED' || complaint.status === 'CLOSED'
-                ? 'success'
-                : 'warning'
-            }
+            label={statusLabel}
+            tone={statusTone}
             showDot={true}
           />
         </View>
 
-        {/* Title & Metadata */}
         <Text style={styles.complaintTitle}>{complaint.title}</Text>
 
         <View style={styles.metaCard}>
@@ -105,12 +156,27 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
           </View>
           <View style={styles.metaDivider} />
           <View style={styles.metaRow}>
-            <Text style={styles.metaLabel}>Created</Text>
-            <Text style={styles.metaValue}>02 Oct 2026, 10:15 AM</Text>
+            <Text style={styles.metaLabel}>Location</Text>
+            <Text style={styles.metaValue}>
+              {complaint.location || complaint.flatNumber || 'Flat A-1204'}
+            </Text>
+          </View>
+          <View style={styles.metaDivider} />
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>Assigned Technician</Text>
+            <Text style={styles.metaValue}>
+              {complaint.assignedTo || 'Facility Team'}
+            </Text>
+          </View>
+          <View style={styles.metaDivider} />
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>SLA Commitment</Text>
+            <Text style={styles.metaValue}>
+              {complaint.slaText || 'Resolution within 24h'}
+            </Text>
           </View>
         </View>
 
-        {/* Description Section */}
         {complaint.description ? (
           <View style={styles.descCard}>
             <Text style={styles.descLabel}>Description</Text>
@@ -118,7 +184,17 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
           </View>
         ) : null}
 
-        {/* Timeline Section */}
+        {complaint.rating ? (
+          <View style={styles.feedbackCard}>
+            <Text style={styles.feedbackTitle}>
+              Resident Rating: {'★'.repeat(complaint.rating)} ({complaint.rating}/5)
+            </Text>
+            {complaint.feedbackComment ? (
+              <Text style={styles.feedbackComment}>"{complaint.feedbackComment}"</Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <View style={styles.timelineSection}>
           <Text style={styles.sectionHeaderTitle}>Status Timeline</Text>
           <View style={styles.timelineCard}>
@@ -126,33 +202,64 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
           </View>
         </View>
 
-        {/* Bottom Actions */}
         <View style={styles.actionButtonsCol}>
-          {complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? (
-            <Pressable
-              style={styles.primaryActionBtn}
-              onPress={() =>
-                navigation.dispatch(
-                  StackActions.push('ComplaintFeedback', { complaintId: complaint.id })
-                )
-              }
-              accessibilityRole="button"
-              accessibilityLabel="Add Feedback"
-            >
-              <Text style={styles.primaryActionBtnText}>Add Feedback</Text>
-            </Pressable>
+          {isResolved ? (
+            <>
+              <Pressable
+                style={styles.primaryActionBtn}
+                onPress={handleConfirmResolution}
+                accessibilityRole="button"
+                accessibilityLabel="Confirm resolution"
+              >
+                <Text style={styles.primaryActionBtnText}>
+                  Confirm Resolution & Rate
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.reopenBtn}
+                onPress={handleReopen}
+                accessibilityRole="button"
+                accessibilityLabel="Reopen complaint"
+              >
+                <Text style={styles.reopenBtnText}>
+                  Issue Persists · Reopen Complaint
+                </Text>
+              </Pressable>
+            </>
+          ) : isClosed ? (
+            !complaint.rating ? (
+              <Pressable
+                style={styles.primaryActionBtn}
+                onPress={() =>
+                  navigation.dispatch(
+                    StackActions.push('ComplaintFeedback', {
+                      complaintId: complaint.id,
+                    }),
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Add feedback"
+              >
+                <Text style={styles.primaryActionBtnText}>Add Feedback</Text>
+              </Pressable>
+            ) : null
           ) : (
             <Pressable
               style={styles.primaryActionBtn}
               onPress={() =>
                 navigation.dispatch(
-                  StackActions.push('ComplaintFeedback', { complaintId: complaint.id })
+                  StackActions.push('ComplaintFeedback', {
+                    complaintId: complaint.id,
+                  }),
                 )
               }
               accessibilityRole="button"
-              accessibilityLabel="Resolve & Feedback"
+              accessibilityLabel="Resolve and feedback"
             >
-              <Text style={styles.primaryActionBtnText}>Resolve & Give Feedback</Text>
+              <Text style={styles.primaryActionBtnText}>
+                Resolve & Give Feedback
+              </Text>
             </Pressable>
           )}
 
@@ -160,7 +267,7 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
             style={styles.secondaryActionBtn}
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
-            accessibilityLabel="Back to Complaints"
+            accessibilityLabel="Back to complaints"
           >
             <Text style={styles.secondaryActionBtnText}>Back to Complaints</Text>
           </Pressable>
@@ -169,126 +276,5 @@ export function ComplaintDetailScreen(props: ComplaintDetailScreenProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#F8F6F0',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    gap: 16,
-  },
-  statusPillRow: {
-    flexDirection: 'row',
-  },
-  complaintTitle: {
-    fontSize: 22,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#111613',
-    lineHeight: 28,
-  },
-  metaCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    gap: 12,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  metaLabel: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#626A65',
-  },
-  metaValue: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER_MEDIUM,
-    fontWeight: '600',
-    color: '#111613',
-  },
-  metaDivider: {
-    height: 1,
-    backgroundColor: '#F2F1EB',
-  },
-  descCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    gap: 8,
-  },
-  descLabel: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY_INTER_MEDIUM,
-    fontWeight: '600',
-    color: '#8C928E',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  descText: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#111613',
-    lineHeight: 22,
-  },
-  timelineSection: {
-    gap: 10,
-    marginTop: 4,
-  },
-  sectionHeaderTitle: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#111613',
-  },
-  timelineCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-  },
-  actionButtonsCol: {
-    gap: 10,
-    marginTop: 12,
-  },
-  primaryActionBtn: {
-    backgroundColor: '#064F43',
-    height: 52,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryActionBtnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-  },
-  secondaryActionBtn: {
-    backgroundColor: '#FFFFFF',
-    height: 52,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryActionBtnText: {
-    color: '#064F43',
-    fontSize: 15,
-    fontFamily: FONT_FAMILY_INTER_MEDIUM,
-    fontWeight: '600',
-  },
-});
 
 export default ComplaintDetailScreen;

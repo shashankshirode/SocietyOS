@@ -1,11 +1,52 @@
 import { residentAuthService, resetResidentAuthServiceState, setExistingProfileForTesting } from '../services/otpVerificationService';
-import { registrationService } from '../services/registrationService';
 import { mockStore } from '../../../../core/mockStore/mockStore';
+import type {
+  ResidentOtpRequestResult,
+  ResidentOtpVerificationResult,
+  ResidentOtpPurpose,
+  ResidentGlobalProfile,
+  ResidentMembership,
+} from '../data/residentAuth.types';
+
+function expectSent(result: ResidentOtpRequestResult): asserts result is {
+  status: 'sent';
+  challengeId: string;
+  purpose: ResidentOtpPurpose;
+  expiresAt: string;
+  retryAfterSeconds: number;
+} {
+  expect(result.status).toBe('sent');
+  if (result.status !== 'sent') {
+    throw new Error(`Expected OTP request to be sent, received: ${result.status}`);
+  }
+}
+
+function expectVerified(result: ResidentOtpVerificationResult): asserts result is {
+  status: 'verified';
+  purpose: ResidentOtpPurpose;
+  profile: ResidentGlobalProfile;
+  memberships: readonly ResidentMembership[];
+} {
+  expect(result.status).toBe('verified');
+  if (result.status !== 'verified') {
+    throw new Error(`Expected OTP verification to succeed, received: ${result.status}`);
+  }
+}
+
+function expectIncorrectOtp(result: ResidentOtpVerificationResult): asserts result is {
+  status: 'incorrectOtp';
+  attemptsRemaining: number;
+} {
+  expect(result.status).toBe('incorrectOtp');
+  if (result.status !== 'incorrectOtp') {
+    throw new Error(`Expected incorrectOtp status, received: ${result.status}`);
+  }
+}
 
 describe('OTP Verification Service', () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    mockStore.getState().residentProfiles = new Map();
+    mockStore.getState().residentProfiles = [];
     mockStore.getState().residentMemberships = [];
     resetResidentAuthServiceState();
   });
@@ -18,7 +59,7 @@ describe('OTP Verification Service', () => {
   describe('requestOtp', () => {
     it('should send OTP for new registration', async () => {
       const result = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
-      expect(result.status).toBe('sent');
+      expectSent(result);
       expect(result.challengeId).toBeDefined();
       expect(result.purpose).toBe('newRegistration');
       expect(result.retryAfterSeconds).toBe(30);
@@ -35,19 +76,21 @@ describe('OTP Verification Service', () => {
         locale: 'en-IN',
       });
       const result = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(result);
       expect(result.purpose).toBe('existingUser');
     });
 
     it('should send OTP for invitation', async () => {
       const result = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '8888888888' });
+      expectSent(result);
       expect(result.purpose).toBe('invitation');
     });
 
     it('should reuse existing challenge for repeated requests', async () => {
       const result1 = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
-      expect(result1.status).toBe('sent');
+      expectSent(result1);
       const result2 = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
-      expect(result2.status).toBe('sent');
+      expectSent(result2);
       expect(result2.challengeId).toBe(result1.challengeId);
     });
 
@@ -60,7 +103,7 @@ describe('OTP Verification Service', () => {
   describe('resendOtp', () => {
     it('should resend OTP after cooldown', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
-      expect(requestResult.status).toBe('sent');
+      expectSent(requestResult);
       
       jest.advanceTimersByTime(35000);
       
@@ -70,6 +113,7 @@ describe('OTP Verification Service', () => {
 
     it('should rate limit resend before cooldown', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       const resendResult = await residentAuthService.resendOtp(requestResult.challengeId);
       expect(resendResult.status).toBe('rateLimited');
     });
@@ -83,20 +127,23 @@ describe('OTP Verification Service', () => {
   describe('verifyOtp', () => {
     it('should verify correct OTP', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       const result = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '123456' });
-      expect(result.status).toBe('verified');
+      expectVerified(result);
       expect(result.profile).toBeDefined();
     });
 
     it('should reject incorrect OTP', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       const result = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '000000' });
-      expect(result.status).toBe('incorrectOtp');
+      expectIncorrectOtp(result);
       expect(result.attemptsRemaining).toBe(2);
     });
 
     it('should expire OTP after time', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       jest.advanceTimersByTime(6 * 60 * 1000);
       const result = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '123456' });
       expect(result.status).toBe('expiredOtp');
@@ -104,6 +151,7 @@ describe('OTP Verification Service', () => {
 
     it('should handle idempotent verification', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       const result1 = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '123456' });
       const result2 = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '123456' });
       expect(result1.status).toBe('verified');
@@ -117,10 +165,11 @@ describe('OTP Verification Service', () => {
 
     it('should lock after max attempts', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '000000' });
       await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '000000' });
       const result = await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '000000' });
-      expect(result.status).toBe('incorrectOtp');
+      expectIncorrectOtp(result);
       expect(result.attemptsRemaining).toBe(0);
     });
   });
@@ -128,14 +177,16 @@ describe('OTP Verification Service', () => {
   describe('registerResident', () => {
     it('should register resident after verified OTP', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       await residentAuthService.verifyOtp({ challengeId: requestResult.challengeId, otp: '123456' });
       const result = await residentAuthService.registerResident({ challengeId: requestResult.challengeId, fullName: 'Test User' });
-      expect(result.status).toBe('verified');
+      expectVerified(result);
       expect(result.profile.fullName).toBe('Test User');
     });
 
     it('should reject registration without verified OTP', async () => {
       const requestResult = await residentAuthService.requestOtp({ countryCode: '+91', mobileNumber: '9876543210' });
+      expectSent(requestResult);
       const result = await residentAuthService.registerResident({ challengeId: requestResult.challengeId, fullName: 'Test User' });
       expect(result.status).toBe('incorrectOtp');
     });

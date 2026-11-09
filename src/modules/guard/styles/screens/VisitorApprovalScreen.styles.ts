@@ -176,17 +176,6 @@ export const styles = StyleSheet.create({
     gap: Spacing.md,
     marginTop: Spacing.sm,
   },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.xl,
-  },
 });
 
 export function createTextColorStyle(color: string) {

@@ -17,7 +17,6 @@ import { useMessages as useGeneratedUiMessages } from '../../../messages/useMess
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { AppText } from '../../../shared/components/AppText';
 import { useSociety } from '../../../core/auth/SocietyProvider';
-import { format } from 'date-fns';
 
 type Step = 'verify' | 'profile' | 'documents' | 'complete';
 

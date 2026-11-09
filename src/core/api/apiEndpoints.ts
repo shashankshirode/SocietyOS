@@ -19,6 +19,11 @@ export const apiEndpoints = {
     logoutAllDevices: "/auth/logout-all-devices",
     me: "/auth/me",
   },
+  audit: {
+    log: "/api/audit/logs",
+    logBatch: "/api/audit/logs/batch",
+    query: "/api/audit/logs",
+  },
   resident: {
     me: "/residents/me",
     dashboard: "/residents/me/dashboard",

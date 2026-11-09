@@ -9,13 +9,7 @@ import { AppIcon } from '../../../shared/icons/AppIcon';
 import { EmptyState } from '../../../shared/feedback/EmptyState';
 import { FormField } from '../../../shared/forms/FormField';
 import { AppTextArea } from '../../../shared/forms/AppTextArea';
-import { useAdminMoveOutRequest } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutClearance } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutApproval } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutNoc } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutAccess } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutOccupancy } from '../data/useAdminMoveOutRequests';
-import { useAdminMoveOutCancel } from '../data/useAdminMoveOutRequests';
+import { useAdminMoveOutRequest , useAdminMoveOutClearance , useAdminMoveOutApproval , useAdminMoveOutNoc , useAdminMoveOutAccess , useAdminMoveOutOccupancy , useAdminMoveOutCancel } from '../data/useAdminMoveOutRequests';
 import { moveOutService } from '../services/moveOutService';
 import { nocService } from '../services/nocService';
 import { useSociety } from '../../../core/auth/SocietyProvider';
@@ -25,7 +19,7 @@ import { styles, createTextColorStyle, createViewBackgroundColorStyle } from '..
 import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { AppText } from '../../../shared/components/AppText';
-import { format } from 'date-fns';
+import { formatDate, formatDateTime } from '../../../shared/utils/formatters';
 
 interface MoveOutDetailScreenProps {
   route: { params: { requestId: string } };
@@ -317,7 +311,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>{localizedUiText.m_225e2abb60c4}</AppText>
-              <AppText variant="body" style={styles.infoValue}>{format(new Date(request.requestedExitDate), 'MMM d, yyyy')}</AppText>
+              <AppText variant="body" style={styles.infoValue}>{formatDate(request.requestedExitDate)}</AppText>
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>{localizedUiText.m_5704b7c3727f}</AppText>
@@ -349,18 +343,18 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>Requested</AppText>
-              <AppText variant="body" style={styles.infoValue}>{format(new Date(request.requestedAt), 'MMM d, yyyy HH:mm')}</AppText>
+              <AppText variant="body" style={styles.infoValue}>{formatDateTime(request.requestedAt)}</AppText>
             </View>
             {request.approvedAt && (
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Approved</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(request.approvedAt), 'MMM d, yyyy HH:mm')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDateTime(request.approvedAt)}</AppText>
               </View>
             )}
             {request.completedAt && (
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Completed</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(request.completedAt), 'MMM d, yyyy HH:mm')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDateTime(request.completedAt)}</AppText>
               </View>
             )}
           </View>
@@ -441,7 +435,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
               </View>
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Revoked At</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(request.accessRevocationAt), 'MMM d, yyyy HH:mm')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{request.accessRevocationAt ? formatDateTime(request.accessRevocationAt) : 'N/A'}</AppText>
               </View>
             </View>
           </AppCard>
@@ -457,7 +451,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
               </View>
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Closed At</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(request.occupancyClosedAt), 'MMM d, yyyy HH:mm')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{request.occupancyClosedAt ? formatDateTime(request.occupancyClosedAt) : 'N/A'}</AppText>
               </View>
             </View>
           </AppCard>

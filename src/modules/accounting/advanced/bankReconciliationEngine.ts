@@ -9,7 +9,7 @@ class BankReconciliationEngine {
     private matches: Map<string, ReconciliationMatch[]> = new Map();
     private discrepancies: Map<string, ReconciliationDiscrepancy[]> = new Map();
     private rules: Map<string, MatchingRule> = new Map();
-    private listeners: Array<(session: ReconciliationSession) => void> = [];
+    private listeners: ((session: ReconciliationSession) => void)[] = [];
     constructor() {
         this.loadFromStorage();
     }

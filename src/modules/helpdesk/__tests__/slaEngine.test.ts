@@ -131,11 +131,12 @@ describe('Complaint State Machine', () => {
             expect(getComplaintStatusOrder('CONFIRMED')).toBe(10);
             expect(getComplaintStatusOrder('CLOSED')).toBe(11);
             expect(getComplaintStatusOrder('REOPENED')).toBe(12);
-            expect(getComplaintStatusOrder('ESCALATED')).toBe(13);
-            expect(getComplaintStatusOrder('CANCELLED')).toBe(14);
-            expect(getComplaintStatusOrder('REJECTED')).toBe(15);
-            expect(getComplaintStatusOrder('DUPLICATE')).toBe(16);
-            expect(getComplaintStatusOrder('LINKED_TO_PARENT')).toBe(17);
+            expect(getComplaintStatusOrder('REASSIGNED')).toBe(13);
+            expect(getComplaintStatusOrder('ESCALATED')).toBe(14);
+            expect(getComplaintStatusOrder('CANCELLED')).toBe(15);
+            expect(getComplaintStatusOrder('REJECTED')).toBe(16);
+            expect(getComplaintStatusOrder('DUPLICATE')).toBe(17);
+            expect(getComplaintStatusOrder('LINKED_TO_PARENT')).toBe(18);
         });
     });
     describe('Status Order Consistency', () => {

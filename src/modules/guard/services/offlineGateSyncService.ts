@@ -10,7 +10,7 @@ import type {
   EmergencyType,
   VisitorPassStatus,
 } from '../../../shared/types/visitorPhase8.types';
-import type { OfflineQueueItem, OfflineSyncStatus, ConflictType, ConflictResolution } from './offlineSync.types';
+import type { OfflineQueueItem, OfflineSyncStatus, ConflictType, ConflictResolution } from '../data/offlineSync.types';
 
 export interface OfflineGateEvent {
   id: string;
@@ -82,7 +82,7 @@ class OfflineGateSyncService {
   private pendingConflicts: Map<string, OfflineGateEvent> = new Map();
   private isSyncing = false;
   private syncInterval: ReturnType<typeof setInterval> | null = null;
-  private listeners: Array<(item: OfflineGateEvent) => void> = [];
+  private listeners: ((item: OfflineGateEvent) => void)[] = [];
   private deviceId: string;
   private lastSyncedAt: string | null = null;
 
@@ -164,6 +164,7 @@ class OfflineGateSyncService {
       localId,
       ...event,
       deviceTimestamp: now.toISOString(),
+      createdAt: now.toISOString(),
       retryCount: 0,
       maxRetries: DEFAULT_MAX_RETRIES,
       syncStatus: 'LOCAL_CAPTURED',
@@ -206,7 +207,7 @@ class OfflineGateSyncService {
 
   async sync(
     apiSyncFn: (items: OfflineGateEvent[]) => Promise<
-      Array<{
+      {
         localId: string;
         status: 'ACCEPTED' | 'CONFLICT' | 'REJECTED';
         serverId?: string;
@@ -216,7 +217,7 @@ class OfflineGateSyncService {
           serverState: Record<string, unknown>;
           suggestedResolution: ConflictResolution;
         };
-      }>
+      }[]
     >
   ): Promise<{ success: number; conflicts: number; failed: number }> {
     if (this.isSyncing) return { success: 0, conflicts: 0, failed: 0 };
@@ -240,15 +241,18 @@ class OfflineGateSyncService {
       try {
         const results = await apiSyncFn([item]);
         const result = results[0];
+        if (!result) continue;
 
         if (result.status === 'ACCEPTED') {
           item.syncStatus = 'ACCEPTED';
           item.syncedAt = new Date().toISOString();
           if (result.serverId) item.id = result.serverId;
-          if (result.serverResponse) item.conflict = undefined;
+          if (result.serverResponse) delete item.conflict;
           success += 1;
         } else if (result.status === 'CONFLICT') {
-          await this.handleConflict(item, result.conflict!);
+          if (result.conflict) {
+            await this.handleConflict(item, result.conflict);
+          }
           conflicts += 1;
         } else {
           await this.handleRejection(item, result);
@@ -431,7 +435,7 @@ class OfflineGateSyncService {
     for (const item of failedItems) {
       item.syncStatus = 'QUEUED';
       item.retryCount = 0;
-      item.errorMessage = undefined;
+      delete item.errorMessage;
     }
     this.saveToStorage();
     return failedItems.length;

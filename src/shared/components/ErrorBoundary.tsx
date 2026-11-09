@@ -5,7 +5,7 @@ import { safeLog } from '../../core/logging/safeLog';
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-  diagnosticId?: string;
+  diagnosticId: string | undefined;
 }
 
 interface ErrorBoundaryProps {
@@ -104,7 +104,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
 export class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean; error: Error | null; diagnosticId?: string }
+  { hasError: boolean; error: Error | null; diagnosticId: string | undefined }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);

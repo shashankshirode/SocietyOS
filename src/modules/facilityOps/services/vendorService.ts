@@ -31,22 +31,22 @@ export class VendorService {
     return VendorService.instance;
   }
 
-  getRequiredDocumentsForCategory(category: VendorCategory): Array<{
+  getRequiredDocumentsForCategory(category: VendorCategory): {
     documentType: string;
     documentCategory: VendorDocument['documentCategory'];
     expiryDate?: string;
-  }> {
-    const baseDocs: Array<{
+  }[] {
+    const baseDocs: {
       documentType: string;
       documentCategory: VendorDocument['documentCategory'];
       expiryDate?: string;
-    }> = [
+    }[] = [
       { documentType: 'GST Certificate', documentCategory: 'GST' },
       { documentType: 'PAN Card', documentCategory: 'PAN' },
       { documentType: 'Insurance Certificate', documentCategory: 'INSURANCE', expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '' },
     ];
 
-    const categoryDocs: Record<string, Array<{ documentType: string; documentCategory: VendorDocument['documentCategory']; expiryDate?: string }>> = {
+    const categoryDocs: Record<string, { documentType: string; documentCategory: VendorDocument['documentCategory']; expiryDate?: string }[]> = {
       LIFT_MAINTENANCE: [
         { documentType: 'Lift License', documentCategory: 'LICENSE', expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '' },
         { documentType: 'Safety Certificate', documentCategory: 'CERTIFICATE', expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] ?? '' },
@@ -93,6 +93,8 @@ export class VendorService {
       maskedPhone: input.mobileNumber.replace(/\d(?=\d{4})/g, '*'),
       maskedEmail: input.email ? `${input.email.slice(0, 2)}****${input.email.slice(input.email.indexOf('@'))}` : '****@example.com',
       officeAddress: input.officeAddress,
+      contractStatus: 'ACTIVE',
+      lastServiceDate: new Date().toISOString(),
       status: 'VERIFICATION_PENDING',
       verificationStatus: 'PENDING',
       complianceStatus: 'PENDING',

@@ -25,17 +25,17 @@ export type NoticeDraftingResult = {
   content: string;
   format: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML';
   language: string;
-  placeholders: Array<{
+  placeholders: {
     key: string;
     description: string;
     required: boolean;
     exampleValue?: string;
-  }>;
-  factualReferences: Array<{
+  }[];
+  factualReferences: {
     field: string;
     value: unknown;
     source: string;
-  }>;
+  }[];
   modelVersion: string;
   templateVersion: number;
   source: 'AI_PROVIDER' | 'RULE_FALLBACK';
@@ -53,12 +53,12 @@ export type NoticeTemplate = {
   description?: string;
   audience: NoticeDraftingRequest['audience'];
   template: string;
-  placeholders: Array<{
+  placeholders: {
     key: string;
     description: string;
     required: boolean;
     exampleValue?: string;
-  }>;
+  }[];
   supportedLanguages: string[];
   createdAt: string;
   updatedAt: string;

@@ -9,6 +9,7 @@ import type {
 } from '../../../shared/types/workOrder.types';
 import type { FacilityOperationsActor } from '../data/facilityOpsActor.types';
 import { generateOperationId } from '../../../core/api/idempotency';
+import { mockStore } from '../../../core/mockStore/mockStore';
 
 export class WorkOrderService {
   private static instance: WorkOrderService;
@@ -239,6 +240,25 @@ export class WorkOrderService {
       actorName: actor.name,
       createdAt: now.toISOString(),
     });
+
+    if (wo.linkedComplaintId) {
+      const storeComplaint = mockStore.getState().complaints?.find((c) => c.id === wo.linkedComplaintId);
+      if (storeComplaint) {
+        mockStore.updateComplaint(wo.linkedComplaintId, {
+          status: 'RESOLVED',
+          updatedAt: now.toISOString(),
+          updates: [
+            ...(storeComplaint.updates || []),
+            {
+              id: `update-${Date.now()}`,
+              status: 'RESOLVED',
+              note: input.technicianNotes ?? 'Work order completed by maintenance technician.',
+              timestamp: now.toISOString(),
+            },
+          ],
+        });
+      }
+    }
 
     return wo;
   }

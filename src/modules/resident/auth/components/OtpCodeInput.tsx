@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { TextInput, View, Platform } from "react-native";
+import { type TextInputInstance, TextInput, View, Platform } from "react-native";
 import { AppText } from "../../../../shared/components/AppText";
 import { useAppTheme } from "../../../../shared/theme/useAppTheme";
 import { styles, createViewBorderColorBackgroundColorStyle, createAppTextColorStyle, createViewBackgroundColorStyle } from "../styles/components/OtpCodeInput.styles";
@@ -16,7 +16,7 @@ interface OtpCodeInputProps {
 export function OtpCodeInput({ value, onChangeText, onComplete, length = 6, error = false, disabled = false, }: OtpCodeInputProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
     const { colors } = useAppTheme();
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<TextInputInstance>(null);
     const handleChange = useCallback((text: string) => {
         const sanitized = text.replace(/[^0-9]/g, '').slice(0, length);
         onChangeText(sanitized);

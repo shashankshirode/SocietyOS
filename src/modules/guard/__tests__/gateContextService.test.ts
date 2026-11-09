@@ -1,5 +1,5 @@
-import { gateContextService, visitorValidationService, gateEntryService } from '../services/gateContextService';
-import type { GateContext, VisitorPass, ValidationContext, VisitorPassStatus } from '../../../../shared/types/visitorPhase5';
+import { gateContextService, visitorValidationService, gateEntryService, type GateContext, type ValidationContext } from '../services/gateContextService';
+import type { VisitorPass, VisitorPassStatus } from '../../../shared/types/visitorPhase5';
 
 describe('Gate Context Service', () => {
   describe('getGateContext', () => {

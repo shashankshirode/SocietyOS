@@ -1,4 +1,4 @@
-import type { Bill, BillStatus, PaymentMethod } from '../../../../shared/types/bill.types';
+import type { Bill, BillStatus, PaymentMethod, PaymentRecord } from '../../../../shared/types/bill.types';
 import { D, type Decoder } from '../../../../core/api/decoders';
 
 export interface BillChargeDto {
@@ -10,13 +10,20 @@ export interface BillChargeDto {
 
 export interface BillDto {
   readonly id: string;
+  readonly billNumber?: string;
+  readonly flatNumber?: string;
+  readonly societyName?: string;
   readonly title?: string;
   readonly amount?: number;
   readonly dueDate?: string;
   readonly status?: BillStatus;
+  readonly billingPeriod?: string;
   readonly charges?: readonly BillChargeDto[];
   readonly paidAmount?: number;
+  readonly lateFee?: number;
   readonly receiptNumber?: string;
+  readonly payments?: readonly PaymentRecord[];
+  readonly notes?: string;
 }
 
 export interface ResidentBillListPageDto {
@@ -46,6 +53,9 @@ export const billChargeDtoDecoder: Decoder<BillChargeDto> = D.object({
 
 export const billDtoDecoder: Decoder<BillDto> = D.object({
   id: D.string,
+  billNumber: D.optional(D.string),
+  flatNumber: D.optional(D.string),
+  societyName: D.optional(D.string),
   title: D.optional(D.string),
   amount: D.optional(D.number),
   dueDate: D.optional(D.string),
@@ -57,9 +67,12 @@ export const billDtoDecoder: Decoder<BillDto> = D.object({
     'GENERATED',
     'CANCELLED',
   ] as const)),
+  billingPeriod: D.optional(D.string),
   charges: D.optional(D.array(billChargeDtoDecoder)),
   paidAmount: D.optional(D.number),
+  lateFee: D.optional(D.number),
   receiptNumber: D.optional(D.string),
+  notes: D.optional(D.string),
 });
 
 export const residentBillListPageDtoDecoder: Decoder<ResidentBillListPageDto> = D.object({

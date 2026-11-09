@@ -50,7 +50,7 @@ describe('Phase 7: Ledger Integrity, Ageing, Defaulters, Late Fees, Reconciliati
         });
         expect(run1.appliedCount).toBe(1);
         expect(run1.totalFee).toBe(500);
-        const invAfterFee = mockStore.getState().invoices.find((i) => i.id === invoice.id);
+        const invAfterFee = (mockStore.getState().invoices ?? []).find((i) => i.id === invoice.id);
         expect(invAfterFee?.balance).toBe(10500);
         expect(invAfterFee?.totalPenalties).toBe(500);
         const ledger = mockStore.getState().ledgerEntries.filter((e) => e.unitId === unitId);

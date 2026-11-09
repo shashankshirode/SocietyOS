@@ -27,7 +27,7 @@ import type {
   UpdateHardwareSettingsCommand,
 } from '../../../shared/types/hardware.types';
 import type { RfidEvent, RfidTagMapping, AnprEvent, AnprVehicleMatchReview, BoomBarrierDevice, GateHardwareDashboardData } from '../../../shared/types/gateHardware.types';
-import type { CctvCamera } from '../../../shared/types/cctv.types';
+import type { CctvCamera, CctvAccessRequest } from '../../../shared/types/cctv.types';
 import type {
   SmartMeter,
   SmartMeterReading,

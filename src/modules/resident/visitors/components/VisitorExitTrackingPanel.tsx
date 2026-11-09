@@ -30,7 +30,7 @@ export function VisitorExitTrackingPanel({ visitor }: VisitorExitTrackingPanelPr
       <SafeText variant="tiny" style={createSafeTextColorStyle2(theme.textSecondary)}>
         {t(messages, 'visitor.exitAssurance.residentConfirmationNote')}
       </SafeText>
-      <VisitorExitTimeline events={tracking.timeline}/>
+      <VisitorExitTimeline events={tracking.timeline ?? []}/>
     </View>);
 }
 function InfoRow({ label, value }: {

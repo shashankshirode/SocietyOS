@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { AppModal } from '../../../../ui/modal/AppModal';
 import {
   FONT_FAMILY_INTER,
   FONT_FAMILY_INTER_MEDIUM,
@@ -13,7 +14,7 @@ interface VisitorArrivalAlertModalProps {
   visitorName: string;
   gateName: string;
   scanTime: string;
-  vehicleNumber?: string;
+  vehicleNumber: string | undefined;
   onAllow: () => void;
   onWait: () => void;
   onDeny: () => void;
@@ -30,105 +31,78 @@ export function VisitorArrivalAlertModal({
   onDeny,
 }: VisitorArrivalAlertModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.overlay}>
-        <View style={styles.sheetContainer}>
-          {/* Accent Header Bar */}
-          <View style={styles.topPill} />
-
-          <View style={styles.headerRow}>
-            <View style={styles.gateBadge}>
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-                  stroke="#064F45"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-              <Text style={styles.gateBadgeText}>{gateName}</Text>
-            </View>
-            <Text style={styles.timeText}>Scanned at {scanTime}</Text>
+    <AppModal visible={visible} onClose={onWait} showDragHandle={true}>
+      <View style={styles.sheetContainer}>
+        <View style={styles.headerRow}>
+          <View style={styles.gateBadge}>
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                stroke="#064F45"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+            <Text style={styles.gateBadgeText}>{gateName}</Text>
           </View>
+          <Text style={styles.timeText}>Scanned at {scanTime}</Text>
+        </View>
 
-          <Text style={styles.titleText}>{visitorName} is at {gateName}</Text>
-          <Text style={styles.subtitleText}>
-            Your visitor pass was scanned by security. Please confirm if they may be admitted to your home.
-          </Text>
+        <Text style={styles.titleText}>{visitorName} is at {gateName}</Text>
+        <Text style={styles.subtitleText}>
+          Your visitor pass was scanned by security. Please confirm if they may be admitted to your home.
+        </Text>
 
-          {vehicleNumber ? (
-            <View style={styles.vehicleRow}>
-              <Text style={styles.vehicleLabel}>Vehicle:</Text>
-              <Text style={styles.vehicleValue}>{vehicleNumber}</Text>
-            </View>
-          ) : null}
+        {vehicleNumber ? (
+          <View style={styles.vehicleRow}>
+            <Text style={styles.vehicleLabel}>Vehicle:</Text>
+            <Text style={styles.vehicleValue}>{vehicleNumber}</Text>
+          </View>
+        ) : null}
 
-          {/* Security Action CTAs */}
-          <View style={styles.actionsContainer}>
+        <View style={styles.actionsContainer}>
+          <Pressable
+            style={styles.allowButton}
+            onPress={onAllow}
+            accessibilityRole="button"
+            accessibilityLabel="Allow entry"
+            testID="allow-arrival-btn"
+          >
+            <Text style={styles.allowButtonText}>Allow entry</Text>
+          </Pressable>
+
+          <View style={styles.secondaryRow}>
             <Pressable
-              style={styles.allowButton}
-              onPress={onAllow}
+              style={styles.waitButton}
+              onPress={onWait}
               accessibilityRole="button"
-              accessibilityLabel="Allow entry"
-              testID="allow-arrival-btn"
+              accessibilityLabel="Keep waiting"
             >
-              <Text style={styles.allowButtonText}>Allow entry</Text>
+              <Text style={styles.waitButtonText}>Keep waiting</Text>
             </Pressable>
 
-            <View style={styles.secondaryRow}>
-              <Pressable
-                style={styles.waitButton}
-                onPress={onWait}
-                accessibilityRole="button"
-                accessibilityLabel="Keep waiting"
-              >
-                <Text style={styles.waitButtonText}>Keep waiting</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.denyButton}
-                onPress={onDeny}
-                accessibilityRole="button"
-                accessibilityLabel="Deny entry"
-                testID="deny-arrival-btn"
-              >
-                <Text style={styles.denyButtonText}>Deny entry</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              style={styles.denyButton}
+              onPress={onDeny}
+              accessibilityRole="button"
+              accessibilityLabel="Deny entry"
+              testID="deny-arrival-btn"
+            >
+              <Text style={styles.denyButtonText}>Deny entry</Text>
+            </Pressable>
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(16, 32, 29, 0.65)',
-    justifyContent: 'flex-end',
-  },
   sheetContainer: {
-    backgroundColor: '#FAF8F1',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingTop: 14,
-    paddingBottom: 36,
-    shadowColor: '#10201D',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  topPill: {
-    width: 44,
-    height: 4,
-    backgroundColor: '#D1D5DB',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
   headerRow: {
     flexDirection: 'row',

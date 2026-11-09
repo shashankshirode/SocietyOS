@@ -1,5 +1,4 @@
-import type { EndpointDefinition } from '../api.types';
-import type { PaginatedResponse } from '../api.types';
+import type { EndpointDefinition , PaginatedResponse } from '../api.types';
 import type { Absent } from "../../../shared/types/absence.types";
 export interface Complaint {
     id: string;

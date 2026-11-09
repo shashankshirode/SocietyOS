@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, } from 'react-native';
+import { type TextInputInstance, View, Text, StyleSheet, TextInput, Pressable } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { OnboardingShell } from '../../components/OnboardingShell';
 import { PrimaryCTA } from '../../components/PrimaryCTA';
@@ -25,7 +25,7 @@ export function VerifyMobileStep({ maskedMobile, mobileNumber, countryCode, isMo
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [otpRequested, setOtpRequested] = useState(Boolean(maskedMobile) || process.env.NODE_ENV === 'test');
-    const inputRefs = useRef<Array<TextInput | null>>([]);
+    const inputRefs = useRef<(TextInputInstance | null)[]>([]);
     useEffect(() => {
         if (process.env.NODE_ENV === 'test' || countdown <= 0) {
             if (countdown <= 0 && !canResend)

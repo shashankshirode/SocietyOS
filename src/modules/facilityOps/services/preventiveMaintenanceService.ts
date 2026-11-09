@@ -117,7 +117,7 @@ export class PreventiveMaintenanceService {
     }
 
     const key = this.generateOccurrenceKey(societyId, plan.id, scheduledDate);
-    for (const occ of this.occurrences.values()) {
+    for (const occ of Array.from(this.occurrences.values())) {
       if (occ.occurrenceKey === key) {
         return occ;
       }

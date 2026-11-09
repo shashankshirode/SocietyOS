@@ -6,13 +6,6 @@
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F5F1E7"
-    },
-    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -52,6 +45,14 @@
         "expo-calendar",
         {
           "calendarPermission": "Calendar access is used only when you choose to add a confirmed facility reservation."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F5F1E7"
         }
       ]
     ],

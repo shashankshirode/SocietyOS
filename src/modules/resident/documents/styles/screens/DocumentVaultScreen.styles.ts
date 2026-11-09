@@ -57,13 +57,13 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabButtonActive: {
-    backgroundColor: Colors.accentSoft,
+    backgroundColor: Colors.primarySoft,
   },
   tabButtonText: {
     fontSize: Typography.caption.fontSize,
   },
   tabButtonTextActive: {
-    color: Colors.accent,
+    color: Colors.primary,
     fontWeight: '600',
   },
   tabButtonTextInactive: {
@@ -116,7 +116,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: Layout.borderRadius.sm,
-    backgroundColor: Colors.accentSoft,
+    backgroundColor: Colors.primarySoft,
   },
   tagRemove: {
     padding: 2,
@@ -269,8 +269,8 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceMuted,
   },
   fileDropZoneSelected: {
-    borderColor: Colors.accent,
-    backgroundColor: Colors.accentSoft,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primarySoft,
   },
   dropZoneContent: {
     alignItems: 'center',
@@ -351,9 +351,9 @@ export const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   chipActive: {
-    backgroundColor: Colors.accentSoft,
+    backgroundColor: Colors.primarySoft,
     borderWidth: 1,
-    borderColor: Colors.accent,
+    borderColor: Colors.primary,
   },
   chipText: {
     fontSize: Typography.caption.fontSize,
@@ -362,7 +362,7 @@ export const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   chipTextActive: {
-    color: Colors.accent,
+    color: Colors.primary,
     fontWeight: '600',
   },
   buttonRow: {

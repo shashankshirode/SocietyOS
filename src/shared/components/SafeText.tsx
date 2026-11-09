@@ -25,7 +25,7 @@ export function SafeText({ variant = 'body', color = 'primary', align = 'left', 
         inverse: colors.textInverse,
     };
     const resolvedColor = tokenColors[color as SafeTextColor] ?? color;
-    return (<Text {...props} numberOfLines={numberOfLines} ellipsizeMode={numberOfLines ? 'tail' : undefined} style={[styles.base, Typography[variant], createTextColorTextAlignStyle(resolvedColor, align), style]}>
+    return (<Text maxFontSizeMultiplier={props.maxFontSizeMultiplier ?? 1.5} {...props} numberOfLines={numberOfLines} ellipsizeMode={numberOfLines ? 'tail' : undefined} style={[styles.base, Typography[variant], createTextColorTextAlignStyle(resolvedColor, align), style]}>
       {children}
     </Text>);
 }

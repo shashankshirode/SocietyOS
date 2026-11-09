@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { View, Text, Image, StyleSheet, ViewStyle, TextStyle, ImageStyle, type ImageSourcePropType } from 'react-native';
+import { type ViewInstance, View, Text, Image, ViewStyle, TextStyle, ImageStyle, type ImageSourcePropType } from 'react-native';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { spacing } from '../tokens/premium-spacing';
 import { radius } from '../tokens/premium-radius';
@@ -56,7 +56,7 @@ const statusColors = {
     busy: '#EF4444',
     away: '#F59E0B',
 };
-export const Avatar = forwardRef<View, AvatarProps>(({ source, name, size = 'md', variant = 'circle', status, style, testID }, ref) => {
+export const Avatar = forwardRef<ViewInstance, AvatarProps>(({ source, name, size = 'md', variant = 'circle', status, style, testID }, ref) => {
     const { dark } = useAppTheme();
     const themeColors = getColors(dark ? 'dark' : 'light');
     const { width, height, fontSize, statusSize } = sizeMap[size];

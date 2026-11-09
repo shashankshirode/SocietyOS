@@ -1,6 +1,7 @@
 import { AtomicSlotReservationService } from './atomicSlotReservation';
-import type { VaultActor, VaultClock, FacilitySlot, Facility } from '../../../../../core/identity/personaRegistry';
-import type { FacilitySlotStatus } from '../../../models/facilityBooking.enums';
+import type { VaultActor, VaultClock } from '../../../../../core/identity/personaRegistry';
+import type { FacilitySlot, Facility } from '../../models/facilityBooking.models';
+import type { FacilitySlotStatus } from '../../models/facilityBooking.enums';
 
 const mockClock: VaultClock = {
   now: () => new Date('2026-07-11T10:00:00.000Z'),

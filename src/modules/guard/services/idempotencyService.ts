@@ -23,7 +23,7 @@ export const idempotencyService = {
   ): Promise<{ exists: boolean; record?: IdempotencyRecord }> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const records = mockStore.getState().idempotencyRecords || [];
+        const records = (mockStore.getState().idempotencyRecords || []) as unknown as IdempotencyRecord[];
         const record = records.find(
           (r) => r.idempotencyKey === idempotencyKey && r.societyId === societyId
         );
@@ -33,7 +33,7 @@ export const idempotencyService = {
           return;
         }
         
-        resolve({ exists: !!record, record });
+        resolve({ exists: !!record, ...(record ? { record } : {}) });
       }, 100);
     });
   },
@@ -57,10 +57,13 @@ export const idempotencyService = {
           action,
           createdAt: now,
           expiresAt: new Date(Date.now() + IDEMPOTENCY_TTL_MS).toISOString(),
-          metadata,
+          ...(metadata ? { metadata } : {}),
         };
         
-        mockStore.getState().idempotencyRecords?.push(record);
+        mockStore.getState().idempotencyRecords = [
+          ...(mockStore.getState().idempotencyRecords || []),
+          record as any,
+        ];
         mockStore.notify();
         
         createAuditEntry({
@@ -72,7 +75,7 @@ export const idempotencyService = {
           entityId: idempotencyKey,
           newState: { entityType, entityId, action },
           idempotencyKey,
-          source: 'SYSTEM',
+          source: 'SYSTEM_JOB',
           outcome: 'SUCCESS',
         });
         
@@ -110,16 +113,16 @@ export const idempotencyService = {
   async cleanupExpired(): Promise<number> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const records = mockStore.getState().idempotencyRecords || [];
+        const records = (mockStore.getState().idempotencyRecords || []) as unknown as IdempotencyRecord[];
         const now = new Date();
         const initialLength = records.length;
         
         mockStore.getState().idempotencyRecords = records.filter(
-          (r) => new Date(r.expiresAt) > now
-        );
+          (r) => new Date(r.expiresAt ?? 0) > now
+        ) as any[];
         mockStore.notify();
         
-        resolve(initialLength - mockStore.getState().idempotencyRecords.length);
+        resolve(initialLength - (mockStore.getState().idempotencyRecords?.length ?? 0));
       }, 200);
     });
   },
@@ -127,7 +130,7 @@ export const idempotencyService = {
   async getRecords(societyId: string, entityType?: string): Promise<IdempotencyRecord[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const records = mockStore.getState().idempotencyRecords || [];
+        const records = (mockStore.getState().idempotencyRecords || []) as unknown as IdempotencyRecord[];
         let filtered = records.filter((r) => r.societyId === societyId);
         
         if (entityType) {

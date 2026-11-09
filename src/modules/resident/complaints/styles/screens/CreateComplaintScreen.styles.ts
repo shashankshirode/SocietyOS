@@ -1,247 +1,221 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
+import {
+  FONT_FAMILY_INTER,
+  FONT_FAMILY_INTER_MEDIUM,
+  FONT_FAMILY_INTER_BOLD,
+} from '../../../../../shared/theme/typography';
+
 export const styles = StyleSheet.create({
-    root: {
-        flex: 1
-    },
-    scrollContent: {
-        paddingBottom: 24
-    },
-    formContainer: {
-        paddingHorizontal: 20,
-        gap: 16,
-        paddingTop: 12
-    },
-    categoryGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10
-    },
-    gridItem: {
-        width: '48%',
-        flexGrow: 1
-    },
-    catCard: {
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 14,
-        borderWidth: 1,
-        gap: 8
-    },
-    chip: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
-        borderWidth: 1
-    },
-    switchRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 12,
-        borderTopWidth: 1,
-        borderBottomWidth: 1,
-        marginTop: 8
-    },
-    switchText: {
-        flex: 1,
-        gap: 2
-    },
-    evidenceGrid: {
-        flexDirection: 'row',
-        gap: 12,
-        marginTop: 8
-    },
-    evidenceBtn: {
-        flex: 1
-    },
-    evidenceBox: {
-        borderWidth: 1,
-        borderStyle: 'dashed',
-        borderRadius: 16,
-        padding: 24,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8
-    },
-    evidencePreview: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1
-    },
-    reviewCard: {
-        padding: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        gap: 10
-    },
-    reviewHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    reviewFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: '#F5F5F5',
-        paddingTop: 8
-    },
-    bottomBar: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: 16,
-        borderTopWidth: 1,
-        backgroundColor: 'transparent'
-    },
-    formCommand: {
-        borderTopWidth: 1
-    }
+  root: {
+    flex: 1,
+    backgroundColor: '#F8F6F0',
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+    marginBottom: 4,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  categoryItem: {
+    width: '31%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  categoryItemSelected: {
+    backgroundColor: '#EEF7F4',
+    borderColor: '#064F43',
+    borderWidth: 1.5,
+  },
+  categoryIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F2F1EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryIconBoxSelected: {
+    backgroundColor: '#064F43',
+  },
+  categoryText: {
+    fontSize: 12,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    color: '#626A65',
+    textAlign: 'center',
+  },
+  categoryTextSelected: {
+    color: '#064F43',
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+  },
+  inputCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    padding: 16,
+    gap: 12,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    fontWeight: '600',
+    color: '#111613',
+  },
+  textInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#111613',
+  },
+  textArea: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_INTER,
+    color: '#111613',
+    minHeight: 88,
+    textAlignVertical: 'top',
+  },
+  locationScroll: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  locationChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+  },
+  locationChipSelected: {
+    backgroundColor: '#064F43',
+    borderColor: '#064F43',
+  },
+  locationChipText: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    color: '#626A65',
+  },
+  locationChipTextSelected: {
+    color: '#FFFFFF',
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '600',
+  },
+  priorityRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  priorityChip: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  priorityChipSelectedLow: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#10B981',
+  },
+  priorityChipSelectedMedium: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+  },
+  priorityChipSelectedHigh: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#F59E0B',
+  },
+  priorityChipSelectedUrgent: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#EF4444',
+  },
+  priorityChipText: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY_INTER_MEDIUM,
+    color: '#626A65',
+  },
+  priorityChipTextSelected: {
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+    color: '#111613',
+  },
+  mediaSection: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  photoThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E3DC',
+  },
+  addPhotoBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#064F43',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF7F4',
+  },
+  submitBtn: {
+    backgroundColor: '#064F43',
+    borderRadius: 16,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  submitBtnDisabled: {
+    opacity: 0.6,
+  },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: FONT_FAMILY_INTER_BOLD,
+    fontWeight: '700',
+  },
 });
-export function createSafeTextColorStyle(colorValue: string) {
-    return {
-        color: colorValue,
-        marginBottom: 8
-    } as const;
+
+export function createRootTopInset(inset: number) {
+  return { paddingTop: inset } as const;
 }
-export function createSafeTextColorStyle2(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createSafeTextColorStyle3(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle4(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle5(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createSafeTextColorStyle6(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle7(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle8(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle9(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createSafeTextColorStyle10(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createSafeTextColorStyle11(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700',
-        flex: 1
-    } as const;
-}
-export function createSafeTextColorStyle12(colorValue: string) {
-    return {
-        color: colorValue,
-        marginBottom: 12
-    } as const;
-}
-export function createSafeTextColorStyle13(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle14(colorValue: string) {
-    return {
-        color: colorValue,
-        fontWeight: '700'
-    } as const;
-}
-export function createSafeTextColorStyle15(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createSafeTextColorStyle16(colorValue: string) {
-    return {
-        color: colorValue
-    } as const;
-}
-export function createViewBackgroundColorStyle(backgroundColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle2(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBorderColorStyle(borderColorValue: string) {
-    return {
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBorderColorBackgroundColorStyle(borderColorValue: string, backgroundColorValue: string) {
-    return {
-        borderColor: borderColorValue,
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBorderColorBackgroundColorStyle2(borderColorValue: string, backgroundColorValue: string) {
-    return {
-        borderColor: borderColorValue,
-        backgroundColor: backgroundColorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle3(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewBackgroundColorBorderColorStyle4(backgroundColorValue: string, borderColorValue: string) {
-    return {
-        backgroundColor: backgroundColorValue,
-        borderColor: borderColorValue
-    } as const;
-}
-export function createViewPaddingBottomBorderTopColorBackgroundColorStyle(paddingBottomValue: number, borderTopColorValue: string, backgroundColorValue: string) {
-    return {
-        paddingBottom: paddingBottomValue,
-        borderTopColor: borderTopColorValue,
-        backgroundColor: backgroundColorValue
-    } as const;
+
+export function createScrollPadding(bottom: number) {
+  return { paddingBottom: bottom + 48 } as const;
 }

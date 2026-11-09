@@ -1,7 +1,23 @@
 import type { ResidentScopedEntity } from './residentScope.types';
 import type { JsonObject } from '../../core/api/api.types';
-import type { StaffCategory, StaffEmploymentStatus, StaffVerificationStatus, RegisterStaffInput } from './staff.types';
-export type { StaffCategory, StaffEmploymentStatus, StaffVerificationStatus, RegisterStaffInput };
+import type {
+  StaffCategory,
+  StaffEmploymentStatus,
+  StaffVerificationStatus,
+  RegisterStaffInput,
+  StaffDocument,
+  StaffAssignment,
+  StaffVerificationRecord,
+} from './staff.types';
+export type {
+  StaffCategory,
+  StaffEmploymentStatus,
+  StaffVerificationStatus,
+  RegisterStaffInput,
+  StaffDocument,
+  StaffAssignment,
+  StaffVerificationRecord,
+};
 export type {
   BiometricDevice,
   BiometricDeviceStatus,
@@ -213,44 +229,6 @@ export interface StaffProfile extends ResidentScopedEntity {
   updatedAt: string;
   createdBy: string;
   metadata?: JsonObject;
-}
-
-export interface StaffDocument extends ResidentScopedEntity {
-  id: string;
-  staffId: string;
-  type: string;
-  name: string;
-  fileUrl?: string;
-  expiryDate?: string;
-  status: 'VALID' | 'EXPIRED' | 'PENDING' | 'REJECTED';
-  uploadedAt: string;
-  verifiedAt?: string;
-  verifiedBy?: string;
-  notes?: string;
-}
-
-export interface StaffAssignment extends ResidentScopedEntity {
-  id: string;
-  staffId: string;
-  type: 'DEPARTMENT' | 'LOCATION' | 'GATE' | 'FACILITY' | 'SHIFT' | 'VENDOR_CONTEXT';
-  referenceId: string;
-  referenceName: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
-  isPrimary: boolean;
-  notes?: string;
-}
-
-export interface StaffVerificationRecord extends ResidentScopedEntity {
-  id: string;
-  staffId: string;
-  status: 'NOT_STARTED' | 'SUBMITTED' | 'UNDER_REVIEW' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
-  submittedAt?: string;
-  reviewedAt?: string;
-  reviewedBy?: string;
-  rejectionReason?: string;
-  documentsVerified: string[];
-  notes?: string;
 }
 
 export interface StaffExitRecord extends ResidentScopedEntity {

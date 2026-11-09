@@ -107,7 +107,7 @@ class NotificationEngine {
   private rules: Map<string, NotificationRule> = new Map();
   private channelConfigs: Map<NotificationChannel, ChannelConfig> = new Map(Object.entries(CHANNEL_CONFIGS) as [NotificationChannel, ChannelConfig][]);
   private processingInterval: ReturnType<typeof setInterval> | null = null;
-  private listeners: Array<(job: NotificationJob) => void> = [];
+  private listeners: ((job: NotificationJob) => void)[] = [];
 
   private initMetrics(): NotificationMetrics {
     return {

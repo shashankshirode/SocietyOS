@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Pressable, Platform, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated, {
@@ -12,7 +12,7 @@ import { useResidentTabVisibility } from './useResidentTabVisibility';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { SafeText } from '../../../shared/components/SafeText';
 import { useReducedMotion } from '../../../shared/motion/useReducedMotion';
-import { createBottomStyle, createColorStyle, createDockHorizontalStyle, createLensWidthStyle, createResidentTabBarStyles } from './styles/ResidentTabBar.styles';
+import { createBottomStyle, createColorStyle, createDockHorizontalStyle, createResidentTabBarStyles } from './styles/ResidentTabBar.styles';
 import type { AppTheme } from '../../../shared/theme';
 import { isResidentPrimaryTabRoute, residentTabIcons } from './residentPrimaryNavigation';
 import { IdentityCenterHost } from '../experience/IdentityCenterHost';
@@ -43,7 +43,8 @@ function TabBarItem({
   const iconConfig = isResidentPrimaryTabRoute(route) ? residentTabIcons[route] : residentTabIcons.HomeTab;
   const iconName = isFocused ? iconConfig.filled : iconConfig.outline;
   const styles = useMemo(() => createResidentTabBarStyles(theme), [theme]);
-  const color = isFocused ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)';
+  const activeColor = '#10201D';
+  const color = isFocused ? activeColor : inactiveColor;
   const displayLabel = route === 'HomeTab' ? 'Home' : route === 'ActivityTab' ? 'Updates' : route === 'CommunityTab' ? 'Community' : 'You';
 
   const animatedIconStyle = useAnimatedStyle(() => ({
@@ -71,7 +72,7 @@ function TabBarItem({
       accessibilityRole="tab"
       accessibilityState={{ selected: isFocused }}
       accessibilityLabel={label}
-      style={styles.tabItem}
+      style={[styles.tabItem, isFocused && styles.tabItemActive]}
     >
       <Animated.View style={animatedIconStyle}>
         <View style={{ alignItems: 'center' }}>
@@ -113,12 +114,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
   const styles = useMemo(() => createResidentTabBarStyles(theme), [theme]);
   const reducedMotion = useReducedMotion();
   const keyboard = useKeyboardExperience();
-  const [dockContentWidth, setDockContentWidth] = useState(0);
   const [actionHubVisible, setActionHubVisible] = useState(false);
-  const lensX = useSharedValue(0);
-  const primaryRoutes = props.state.routes.filter((route) => isResidentPrimaryTabRoute(route.name));
-  const activePrimaryIndex = primaryRoutes.findIndex((route) => route.key === activeRoute?.key);
-  const itemWidth = primaryRoutes.length > 0 ? dockContentWidth / primaryRoutes.length : 0;
 
   const handleActionHubSelect = (actionId: string) => {
     switch (actionId) {
@@ -142,22 +138,6 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
     }
   };
 
-  useEffect(() => {
-    if (activePrimaryIndex >= 0) {
-      const nextX = activePrimaryIndex * itemWidth;
-      lensX.value = reducedMotion ? nextX : withTiming(nextX, { duration: theme.navigation.motionDuration });
-    }
-  }, [activePrimaryIndex, itemWidth, lensX, reducedMotion, theme.navigation.motionDuration]);
-
-  const lensStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: lensX.value }],
-    opacity: activePrimaryIndex >= 0 ? withTiming(1, { duration: 150 }) : withTiming(0, { duration: 150 }),
-  }));
-
-  const handleDockLayout = (event: LayoutChangeEvent) => {
-    setDockContentWidth(Math.max(0, event.nativeEvent.layout.width - theme.navigation.internalPadding * 2));
-  };
-
   if (hideTabBar || keyboard.isOpen || !activeRoute) {
     return <IdentityCenterHost navigation={props.navigation} />;
   }
@@ -168,14 +148,12 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
   return (<>
     <IdentityCenterHost navigation={navigation} />
     <View
-      onLayout={handleDockLayout}
       style={[
         styles.container,
         createDockHorizontalStyle(screenWidth, theme.navigation.capsuleInset, theme.navigation.tabletMaxWidth),
         createBottomStyle(bottomOffset + theme.navigation.dockBottomGap),
       ]}
     >
-      {itemWidth > 0 && activePrimaryIndex >= 0 ? <Animated.View pointerEvents="none" style={[styles.activeLens, createLensWidthStyle(itemWidth), lensStyle]} /> : null}
       {state.routes.map((route, index) => {
         if (!isResidentPrimaryTabRoute(route.name)) return null;
         const descriptor = descriptors[route.key];
@@ -224,6 +202,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
         );
 
         if (route.name === 'ActivityTab') {
+          const centerIconColor = theme.dark ? '#FFFFFF' : '#171C18';
           return (
             <React.Fragment key={route.key}>
               {tabItemElement}
@@ -235,7 +214,7 @@ export function SocietyNavigationDock(props: BottomTabBarProps) {
                 onPress={() => setActionHubVisible(true)}
               >
                 <View style={styles.centerActionButton}>
-                  <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+                  <Ionicons name="sparkles" size={20} color={centerIconColor} />
                 </View>
                 <SafeText style={styles.centerActionLabel}>Actions</SafeText>
               </Pressable>

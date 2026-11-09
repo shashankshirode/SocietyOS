@@ -1,5 +1,5 @@
-import type { DocumentCategory, DocumentStatus, DocumentSensitivity, DocumentEntityType } from '../types/documentVault.types';
-import { format } from 'date-fns';
+import type { DocumentCategory, DocumentStatus, DocumentSensitivity, DocumentEntityType } from '../../../../shared/types/documentVault.types';
+import { formatDate as sharedFormatDate, formatDateTime as sharedFormatDateTime } from '../../../../shared/utils/formatters';
 
 export function getDocumentCategoryLabel(category: DocumentCategory): string {
   const labels: Record<DocumentCategory, string> = {
@@ -86,7 +86,7 @@ export function getDocumentEntityTypeLabel(entityType: DocumentEntityType): stri
 export function formatDate(dateString?: string): string {
   if (!dateString) return 'N/A';
   try {
-    return format(new Date(dateString), 'MMM d, yyyy HH:mm');
+    return sharedFormatDateTime(dateString);
   } catch {
     return dateString;
   }
@@ -95,7 +95,7 @@ export function formatDate(dateString?: string): string {
 export function formatDateShort(dateString?: string): string {
   if (!dateString) return 'N/A';
   try {
-    return format(new Date(dateString), 'MMM d, yyyy');
+    return sharedFormatDate(dateString);
   } catch {
     return dateString;
   }
@@ -145,6 +145,6 @@ export function getExpiryStatus(expiryDate?: string): { isExpired: boolean; isEx
   return {
     isExpired: expiry < now,
     isExpiringSoon: daysRemaining <= 30 && daysRemaining > 0,
-    daysRemaining: daysRemaining > 0 ? daysRemaining : undefined,
+    ...(daysRemaining > 0 ? { daysRemaining } : {}),
   };
 }

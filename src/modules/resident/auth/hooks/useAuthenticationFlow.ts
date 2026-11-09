@@ -87,6 +87,10 @@ export function useAuthenticationFlow() {
                 setError('Verification session expired. Please start over.');
                 return null;
             }
+            if (result.status === 'rateLimited') {
+                setError(`Too many attempts. Please try again in ${result.retryAfterSeconds} seconds.`);
+                return null;
+            }
             const state = resolveAuthenticatedState(result.memberships, result.purpose === 'newRegistration');
             setAuthState(state);
             return { profile: result.profile, state };

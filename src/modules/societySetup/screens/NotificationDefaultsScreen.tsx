@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ScrollView, View, Text, Switch, Alert } from "react-native";
+import { ScrollView, View, Text, Switch, Alert, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenContainer } from "../../../shared/layouts/ScreenContainer";
 import { ResponsivePageHeader } from "../../../shared/layouts/ResponsivePageHeader";
@@ -17,6 +17,15 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { SuperAdminStackParamList } from "../../../app/navigation/navigation.types";
 
 type Props = NativeStackScreenProps<SuperAdminStackParamList, 'NOTIFICATION_DEFAULTS'>;
+
+interface NotificationConfig {
+    channels: Record<string, boolean>;
+    categories: Record<string, { channels: string[] }>;
+    templates: Record<string, string>;
+    emergencyOverride: boolean;
+    quietHours: { enabled: boolean; start: string; end: string };
+    retryPolicy: { maxRetries: number; intervalMinutes: number };
+}
 
 const NOTIFICATION_CHANNELS = [
     { key: 'push', label: 'Push Notifications', description: 'Mobile push notifications via FCM/APNs' },
@@ -55,7 +64,7 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
     const { societyId } = route.params;
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
     const { colors } = useAppTheme();
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<NotificationConfig>({
         channels: { push: true, sms: false, email: false, in_app: true },
         categories: {},
         templates: {},
@@ -99,22 +108,23 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
     };
 
     const toggleChannel = (channel: string) => {
-        setConfig(prev => ({ ...prev, channels: { ...prev.channels, [channel]: !prev.channels[channel] } }));
+        setConfig((prev: NotificationConfig) => ({ ...prev, channels: { ...prev.channels, [channel]: !prev.channels[channel] } }));
     };
 
     const toggleCategoryChannel = (category: string, channel: string) => {
-        setConfig(prev => ({
-            ...prev,
-            categories: {
-                ...prev.categories,
-                [category]: {
-                    ...(prev.categories[category] || { channels: [] }),
-                    channels: prev.categories[category]?.channels?.includes(channel)
-                        ? prev.categories[category].channels.filter((c: string) => c !== channel)
-                        : [...(prev.categories[category]?.channels || []), channel],
+        setConfig((prev: NotificationConfig) => {
+            const cat = prev.categories[category] || { channels: [] };
+            const channels = cat.channels?.includes(channel)
+                ? cat.channels.filter((c: string) => c !== channel)
+                : [...(cat.channels || []), channel];
+            return {
+                ...prev,
+                categories: {
+                    ...prev.categories,
+                    [category]: { ...cat, channels },
                 },
-            },
-        }));
+            };
+        });
     };
 
     const isCategoryChannelEnabled = (category: string, channel: string) => {
@@ -221,8 +231,9 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
                             <View key={template.key} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                                 <Text style={{ fontSize: 14, color: colors.textPrimary }}>{template.label}</Text>
                                 <AppSelect
+                                    label=""
                                     value={config.templates[template.key] || template.channel}
-                                    onChange={(v) => setConfig(prev => ({ ...prev, templates: { ...prev.templates, [template.key]: v } }))}
+                                    onChange={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, templates: { ...prev.templates, [template.key]: v } }))}
                                     options={NOTIFICATION_CHANNELS.filter(c => config.channels[c.key]).map(c => ({ label: c.label, value: c.key }))}
                                 />
                             </View>
@@ -238,7 +249,7 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
                             </View>
                             <Switch
                                 value={config.emergencyOverride ?? true}
-                                onValueChange={(v) => setConfig(prev => ({ ...prev, emergencyOverride: v }))}
+                                onValueChange={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, emergencyOverride: v }))}
                                 trackColor={{ false: colors.border, true: colors.danger }}
                                 thumbColor={config.emergencyOverride ? colors.danger : colors.textMuted}
                             />
@@ -250,7 +261,7 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
                             </View>
                             <Switch
                                 value={config.quietHours?.enabled ?? true}
-                                onValueChange={(v) => setConfig(prev => ({ ...prev, quietHours: { ...prev.quietHours, enabled: v } }))}
+                                onValueChange={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, quietHours: { ...prev.quietHours, enabled: v } }))}
                                 trackColor={{ false: colors.border, true: colors.primary }}
                             />
                         </View>
@@ -259,11 +270,11 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
                                 <View style={{ flexDirection: 'row', gap: 12 }}>
                                     <AppCard style={{ flex: 1, padding: 12 }}>
                                         <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Start</Text>
-                                        <FormField value={config.quietHours.start} onChangeText={(v) => setConfig(prev => ({ ...prev, quietHours: { ...prev.quietHours, start: v } }))} placeholder="22:00" />
+                                        <FormField label="" value={config.quietHours.start} onChangeText={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, quietHours: { ...prev.quietHours, start: v } }))} placeholder="22:00" />
                                     </AppCard>
                                     <AppCard style={{ flex: 1, padding: 12 }}>
                                         <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>End</Text>
-                                        <FormField value={config.quietHours.end} onChangeText={(v) => setConfig(prev => ({ ...prev, quietHours: { ...prev.quietHours, end: v } }))} placeholder="07:00" />
+                                        <FormField label="" value={config.quietHours.end} onChangeText={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, quietHours: { ...prev.quietHours, end: v } }))} placeholder="07:00" />
                                     </AppCard>
                                 </View>
                             </View>
@@ -275,11 +286,11 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
                         <View style={{ flexDirection: 'row', gap: 12 }}>
                             <AppCard style={{ flex: 1, padding: 12 }}>
                                 <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Max Retries</Text>
-                                <FormField value={String(config.retryPolicy?.maxRetries ?? 3)} onChangeText={(v) => setConfig(prev => ({ ...prev, retryPolicy: { ...prev.retryPolicy, maxRetries: parseInt(v, 10) || 3 } }))} keyboardType="numeric" />
+                                <FormField label="" value={String(config.retryPolicy?.maxRetries ?? 3)} onChangeText={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, retryPolicy: { ...prev.retryPolicy, maxRetries: parseInt(v, 10) || 3 } }))} keyboardType="numeric" />
                             </AppCard>
                             <AppCard style={{ flex: 1, padding: 12 }}>
                                 <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Retry Interval (minutes)</Text>
-                                <FormField value={String(config.retryPolicy?.intervalMinutes ?? 15)} onChangeText={(v) => setConfig(prev => ({ ...prev, retryPolicy: { ...prev.retryPolicy, intervalMinutes: parseInt(v, 10) || 15 } }))} keyboardType="numeric" />
+                                <FormField label="" value={String(config.retryPolicy?.intervalMinutes ?? 15)} onChangeText={(v) => setConfig((prev: NotificationConfig) => ({ ...prev, retryPolicy: { ...prev.retryPolicy, intervalMinutes: parseInt(v, 10) || 15 } }))} keyboardType="numeric" />
                             </AppCard>
                         </View>
                     </AppCard>

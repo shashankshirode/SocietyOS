@@ -213,13 +213,13 @@ export function useUnits(societyId: string, floorId?: string) {
 
 export function useBulkUnitGeneration(societyId: string) {
   const [preview, setPreview] = useState<{
-    items: Array<{
+    items: {
       unitNumber: string;
       floorNumber: number;
       towerName: string;
       isDuplicate: boolean;
       errors: string[];
-    }>;
+    }[];
     totalGenerated: number;
     valid: number;
     duplicates: number;

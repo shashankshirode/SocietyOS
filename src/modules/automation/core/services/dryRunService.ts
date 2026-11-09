@@ -48,7 +48,7 @@ export const dryRunService = {
   simulateMultiple(
     ruleIds: string[],
     testPayload: Record<string, unknown>
-  ): Array<AutomationDryRunResult | null> {
+  ): (AutomationDryRunResult | null)[] {
     return ruleIds.map(id => this.simulate(id, testPayload));
   },
 
@@ -121,22 +121,22 @@ export const dryRunService = {
     testPayload: Record<string, unknown>
   ): {
     rule: { id: string; name: string; version: number; status: string };
-    conditions: Array<{
+    conditions: {
       id: string;
       field: string;
       operator: string;
       value: unknown;
       actualValue: unknown;
       passed: boolean;
-    }>;
-    actions: Array<{
+    }[];
+    actions: {
       id: string;
       type: string;
       risk: string;
       config: Record<string, unknown>;
       wouldRun: boolean;
       suppressionReason?: string;
-    }>;
+    }[];
     summary: {
       wouldExecute: boolean;
       conditionsPassed: number;

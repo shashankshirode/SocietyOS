@@ -140,12 +140,12 @@ export interface Risk {
   assessedAt?: string;
   assessedBy?: string;
   assessedByRole?: string;
-  riskScoreHistory: Array<{
+  riskScoreHistory: {
     score: number;
     assessedAt: string;
     assessedBy: string;
     reason?: string;
-  }>;
+  }[];
   likelihoodJustification: string;
   impactJustification: string;
   velocityJustification: string;
@@ -290,12 +290,12 @@ export interface RiskHeatmap {
   generatedAt: string;
   generatedBy: string;
   timeHorizon: RiskTimeHorizon;
-  matrix: Array<Array<{
+  matrix: {
     likelihood: RiskLikelihood;
     impact: RiskImpact;
     count: number;
     riskIds: string[];
-  }>>;
+  }[][];
   summary: {
     totalRisks: number;
     criticalRisks: number;
@@ -303,7 +303,7 @@ export interface RiskHeatmap {
     mediumRisks: number;
     lowRisks: number;
     riskTrend: 'INCREASING' | 'STABLE' | 'DECREASING';
-    topRisks: Array<{ riskId: string; title: string; riskLevel: RiskLevel; riskScore: number }>;
+    topRisks: { riskId: string; title: string; riskLevel: RiskLevel; riskScore: number }[];
   };
   byCategory: Record<RiskCategory, { count: number; averageScore: number }>;
   bySource: Record<string, number>;
@@ -353,7 +353,7 @@ export interface RiskDashboard {
     escalatedRisks: number;
     overdueReviews: number;
   };
-  topRisks: Array<{
+  topRisks: {
     riskId: string;
     title: string;
     riskLevel: RiskLevel;
@@ -361,35 +361,35 @@ export interface RiskDashboard {
     riskCategory: RiskCategory;
     nextReviewDate?: string;
     escalationLevel: number;
-  }>;
-  escalatedRisks: Array<{
+  }[];
+  escalatedRisks: {
     riskId: string;
     title: string;
     escalationLevel: number;
     escalatedAt: string;
     escalatedBy: string;
     escalationPath: string[];
-  }>;
-  upcomingReviews: Array<{
+  }[];
+  upcomingReviews: {
     riskId: string;
     title: string;
     reviewDate: string;
     ownerId: string;
-  }>;
-  newRisks: Array<{
+  }[];
+  newRisks: {
     riskId: string;
     title: string;
     riskLevel: RiskLevel;
     identifiedAt: string;
     identifiedBy: string;
-  }>;
-  riskTrends: Array<{
+  }[];
+  riskTrends: {
     period: string;
     totalRisks: number;
     averageRiskScore: number;
     newRisks: number;
     closedRisks: number;
-  }>;
+  }[];
   heatmap: RiskHeatmap;
 }
 
@@ -410,7 +410,7 @@ export interface RiskAppetite {
     maxLikelihoodForCriticalImpact: RiskLikelihood;
     maxImpactForAlmostCertainLikelihood: RiskImpact;
   };
-  exceptions: Array<{
+  exceptions: {
     exceptionId: string;
     riskType: RiskType;
     reason: string;
@@ -418,7 +418,7 @@ export interface RiskAppetite {
     approvedAt: string;
     expiresAt?: string;
     conditions: string[];
-  }>;
+  }[];
   reviewFrequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY';
   nextReviewDate: string;
   version: number;
@@ -435,11 +435,11 @@ export interface RiskReport {
   executiveSummary: string;
   keyFindings: string[];
   riskSummary: RiskDashboard['summary'];
-  topRisks: Array<{ riskId: string; title: string; riskLevel: RiskLevel; riskScore: number; trend: 'INCREASING' | 'STABLE' | 'DECREASING' }>;
-  criticalRisks: Array<{ riskId: string; title: string; riskScore: number; mitigationStatus: string; ownerId: string; nextReviewDate?: string }>;
-  emergingRisks: Array<{ riskId: string; title: string; riskLevel: RiskLevel; riskScore: number; identifiedAt: string }>;
-  mitigatedRisks: Array<{ riskId: string; title: string; mitigationEffectiveness: number; residualRisk: number }>;
-  riskTrends: Array<{ period: string; totalRisks: number; avgRiskScore: number; newRisks: number; closedRisks: number }>;
+  topRisks: { riskId: string; title: string; riskLevel: RiskLevel; riskScore: number; trend: 'INCREASING' | 'STABLE' | 'DECREASING' }[];
+  criticalRisks: { riskId: string; title: string; riskScore: number; mitigationStatus: string; ownerId: string; nextReviewDate?: string }[];
+  emergingRisks: { riskId: string; title: string; riskLevel: RiskLevel; riskScore: number; identifiedAt: string }[];
+  mitigatedRisks: { riskId: string; title: string; mitigationEffectiveness: number; residualRisk: number }[];
+  riskTrends: { period: string; totalRisks: number; avgRiskScore: number; newRisks: number; closedRisks: number }[];
   recommendations: string[];
   appendices?: Record<string, any>;
   format: 'PDF' | 'HTML' | 'EXCEL' | 'POWERPOINT' | 'JSON';

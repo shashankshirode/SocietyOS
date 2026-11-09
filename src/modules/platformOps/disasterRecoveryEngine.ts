@@ -9,7 +9,7 @@ class DisasterRecoveryEngine {
     private restorePlans: Map<string, RestorePlan> = new Map();
     private incidents: Map<string, RecoveryIncident> = new Map();
     private config: DisasterRecoveryConfig = DEFAULT_DR_CONFIG;
-    private listeners: Array<(incident: RecoveryIncident) => void> = [];
+    private listeners: ((incident: RecoveryIncident) => void)[] = [];
     constructor() {
         this.loadFromStorage();
     }

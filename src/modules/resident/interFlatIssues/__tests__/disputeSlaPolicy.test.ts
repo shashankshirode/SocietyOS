@@ -1,7 +1,6 @@
 import { openStandardCase, newRuntime, reporter, command, revisionOf } from './fixtures/disputeHarness';
-import { evaluateSla, validateSlaPolicy } from '../domain/engines/slaEngine';
+import { evaluateSla, validateSlaPolicy , responseDueHours } from '../domain/engines/slaEngine';
 import { resolveRequiredPolicies } from '../domain/types/policy.types';
-import { responseDueHours } from '../domain/engines/slaEngine';
 describe('dispute SLA policy', () => {
     it('flags a missing SLA configuration instead of silently defaulting', () => {
         const resolution = resolveRequiredPolicies({

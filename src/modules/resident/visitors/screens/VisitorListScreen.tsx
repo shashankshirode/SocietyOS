@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ScrollView,
   TextInput,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisitors } from '../data/useVisitors';
+import { useVisitorLifecycle } from '../data/visitorLifecycle.store';
 import { useAppTheme } from '../../../../shared/theme/useAppTheme';
 import { useFeatureFlags } from '../../../../core/featureFlags/useFeatureFlag';
 import { SocietySegmentedControl } from '../../../../shared/components/SocietySegmentedControl';
@@ -16,11 +17,10 @@ import { SocietyStatusPill } from '../../../../shared/components/SocietyStatusPi
 import type { VisitorListScreenProps } from '../../../../app/navigation/navigation.types';
 import type { Visitor } from '../../../../shared/types/visitor.types';
 import {
-  FONT_FAMILY_INTER,
-  FONT_FAMILY_INTER_MEDIUM,
-  FONT_FAMILY_INTER_BOLD,
-} from '../../../../shared/theme/typography';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  styles,
+  createRootTopInset,
+  createScrollContentPadding,
+} from '../styles/screens/VisitorListScreen.styles';
 
 export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
   const insets = useSafeAreaInsets();
@@ -30,6 +30,17 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const { data: rawVisitors = [], isLoading } = useVisitors();
+  const {
+    getPendingApprovals,
+    respondToWalkIn,
+    getParcels,
+    confirmParcelPickup,
+  } = useVisitorLifecycle();
+
+  const pendingApprovals = getPendingApprovals('A-1204');
+  const pendingParcels = getParcels('A-1204').filter(
+    (p) => p.status === 'WAITING_COLLECTION',
+  );
 
   const visitorsList = useMemo(() => {
     return rawVisitors.filter((v: Visitor) => {
@@ -67,8 +78,7 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
   const canGoBack = Boolean(navigation?.canGoBack && navigation.canGoBack());
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
-      {/* Top Header */}
+    <View style={[styles.root, createRootTopInset(insets.top)]}>
       <View style={styles.topHeader}>
         <View style={styles.titleRow}>
           {canGoBack ? (
@@ -83,7 +93,7 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
             </Pressable>
           ) : null}
           <Text style={styles.screenTitle}>Visitors</Text>
-          <Text style={{ position: 'absolute', opacity: 0, height: 0 }}>Visitor Passes</Text>
+          <Text style={styles.hiddenAccessibilityText}>Visitor Passes</Text>
         </View>
 
         <View style={styles.headerActions}>
@@ -107,10 +117,14 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         </View>
       </View>
 
-      {/* Expandable Search Input */}
       {showSearch && (
         <View style={styles.searchBarBox}>
-          <Ionicons name="search-outline" size={18} color="#626A65" style={{ marginRight: 8 }} />
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color="#626A65"
+            style={styles.searchIcon}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name, purpose, vehicle..."
@@ -127,7 +141,6 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         </View>
       )}
 
-      {/* Segmented Control */}
       <View style={styles.segmentedWrapper}>
         <SocietySegmentedControl
           items={[
@@ -139,11 +152,74 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
         />
       </View>
 
-      {/* Main Content Area */}
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 84 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          createScrollContentPadding(insets.bottom),
+        ]}
         showsVerticalScrollIndicator={false}
       >
+        {selectedSegment === 'Upcoming' && (pendingApprovals.length > 0 || pendingParcels.length > 0) ? (
+          <View style={styles.bannerSection}>
+            {pendingApprovals.map((req) => (
+              <View key={req.requestId} style={styles.approvalCard}>
+                <View style={styles.approvalHeader}>
+                  <View style={styles.approvalIconBox}>
+                    <Ionicons name="person-outline" size={20} color="#7D4A00" />
+                  </View>
+                  <View style={styles.approvalInfo}>
+                    <Text style={styles.approvalTitle}>
+                      {req.visitorName} is at {req.gateName || 'Main Gate'}
+                    </Text>
+                    <Text style={styles.approvalSubtitle}>
+                      {req.visitorCategory} · Waiting for your approval
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.approvalActions}>
+                  <Pressable
+                    style={styles.allowBtn}
+                    onPress={() => respondToWalkIn(req.requestId || req.id, 'APPROVE')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Allow entry"
+                  >
+                    <Text style={styles.allowBtnText}>Allow Entry</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.denyBtn}
+                    onPress={() => respondToWalkIn(req.requestId || req.id, 'DENY', 'res-001', 'Denied by resident')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Deny entry"
+                  >
+                    <Text style={styles.denyBtnText}>Deny</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+
+            {pendingParcels.map((parcel) => (
+              <View key={parcel.id} style={styles.parcelCard}>
+                <View style={styles.parcelInfo}>
+                  <Text style={styles.parcelTitle}>
+                    {parcel.deliveryPartner} parcel at {parcel.gateName}
+                  </Text>
+                  <Text style={styles.parcelSubtitle}>
+                    Tracking: {parcel.trackingNumber} · Awaiting pickup
+                  </Text>
+                </View>
+                <Pressable
+                  style={styles.collectBtn}
+                  onPress={() => confirmParcelPickup(parcel.id, 'Resident')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Confirm pickup"
+                >
+                  <Text style={styles.collectBtnText}>Collected</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.groupHeaderRow}>
           <Text style={styles.groupTitle}>Today</Text>
           <Text style={styles.groupCount}>{visitorsList.length}</Text>
@@ -183,12 +259,10 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
                   accessibilityLabel={`${item.name}, ${item.purpose}`}
                 >
                   <View style={styles.cardContentRow}>
-                    {/* Avatar */}
                     <View style={styles.avatarCircle}>
                       <Text style={styles.avatarInitials}>{initials}</Text>
                     </View>
 
-                    {/* Middle Info */}
                     <View style={styles.infoCol}>
                       <Text style={styles.visitorNameText}>{item.name}</Text>
                       <Text style={styles.visitorSublineText}>
@@ -203,7 +277,6 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
                       </View>
                     </View>
 
-                    {/* Right Menu Action */}
                     <Pressable
                       style={styles.moreActionBtn}
                       onPress={() => handleCardPress(item)}
@@ -222,208 +295,5 @@ export function VisitorListScreen({ navigation }: VisitorListScreenProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#F8F6F0',
-  },
-  topHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backBtn: {
-    padding: 4,
-    marginRight: -4,
-  },
-  screenTitle: {
-    fontSize: 24,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#111613',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconActionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addBtnCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#064F43',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#064F43',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  searchBarBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginBottom: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    paddingHorizontal: 14,
-    height: 44,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#111613',
-  },
-  segmentedWrapper: {
-    paddingHorizontal: 20,
-    marginBottom: 14,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-  },
-  groupHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  groupTitle: {
-    fontSize: 17,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#111613',
-  },
-  groupCount: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#8C928E',
-  },
-  listGrid: {
-    gap: 12,
-  },
-  visitorCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  cardContentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F2F1EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-    borderWidth: 1,
-    borderColor: '#E5E3DC',
-  },
-  avatarInitials: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#064F43',
-  },
-  infoCol: {
-    flex: 1,
-    gap: 4,
-  },
-  visitorNameText: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '700',
-    color: '#111613',
-  },
-  visitorSublineText: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#626A65',
-  },
-  pillRow: {
-    marginTop: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  moreActionBtn: {
-    padding: 8,
-    marginRight: -4,
-  },
-  emptyStateBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-    gap: 12,
-  },
-  emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F2F1EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '600',
-    color: '#111613',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER,
-    color: '#626A65',
-    textAlign: 'center',
-    maxWidth: 260,
-    lineHeight: 20,
-  },
-  emptyCtaBtn: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#064F43',
-    borderRadius: 14,
-  },
-  emptyCtaText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontFamily: FONT_FAMILY_INTER_BOLD,
-    fontWeight: '600',
-  },
-});
 
 export default VisitorListScreen;

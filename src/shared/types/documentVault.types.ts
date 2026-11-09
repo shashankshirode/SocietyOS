@@ -142,6 +142,8 @@ export interface Document extends ResidentScopedEntity {
   rejectionReason?: string;
 }
 
+export type DocumentVaultRecord = Document;
+
 export interface DocumentAccessLog extends ResidentScopedEntity {
   id: string;
   documentId: string;

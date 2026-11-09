@@ -5,17 +5,12 @@ import type { ResidentRegistrationStatus } from '../data/residentRegistration.ty
 
 describe('Society Admin Registration Service', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockStore.getState().residentRegistrations = [];
     mockStore.getState().residentInvitations = [];
     mockStore.getState().residentDocuments = [];
     mockStore.getState().societyUnits = [
       { id: 'unit-1', unitNumber: 'A-101', towerId: 'tower-a', wingId: 'wing-1', floorId: 'floor-1', occupancyStatus: 'VACANT', societyId: 'society-gv' },
     ];
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe('createRegistration', () => {
@@ -319,7 +314,10 @@ describe('Society Admin Registration Service', () => {
         recipientEmail: 'john@example.com',
       });
       
-      jest.advanceTimersByTime(8 * 24 * 60 * 60 * 1000);
+      invitation.expiresAt = new Date(Date.now() - 1000).toISOString();
+      mockStore.getState().residentInvitations = mockStore.getState().residentInvitations.map((inv) =>
+        inv.id === invitation.id ? { ...inv, expiresAt: invitation.expiresAt } : inv
+      );
       
       const accepted = await residentRegistrationService.acceptInvitation(invitation.token);
       expect(accepted).toBeUndefined();
@@ -412,17 +410,12 @@ describe('Society Admin Registration Service', () => {
 
 describe('Edge Cases', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockStore.getState().residentRegistrations = [];
     mockStore.getState().residentInvitations = [];
     mockStore.getState().residentDocuments = [];
     mockStore.getState().societyUnits = [
       { id: 'unit-1', unitNumber: 'A-101', towerId: 'tower-a', wingId: 'wing-1', floorId: 'floor-1', occupancyStatus: 'VACANT', societyId: 'society-gv' },
     ];
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('should handle revoked invitation', async () => {
@@ -450,7 +443,7 @@ describe('Edge Cases', () => {
     });
     
     mockStore.getState().residentInvitations = mockStore.getState().residentInvitations.map((inv) =>
-      inv.invitationId === invitation.id ? { ...inv, status: 'REVOKED' as const, revokedAt: new Date().toISOString() } : inv
+      inv.id === invitation.id ? { ...inv, status: 'REVOKED' as const, revokedAt: new Date().toISOString() } : inv
     );
     
     const accepted = await residentRegistrationService.acceptInvitation(invitation.token);

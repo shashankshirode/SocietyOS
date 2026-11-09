@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { type ViewInstance, View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -24,7 +24,7 @@ export interface AppBarProps {
     testID?: string | Absent;
 }
 
-export const AppBar = forwardRef<View, AppBarProps>(function AppBar({ title, subtitle, showBackButton = true, onBackPress, rightActions, style, testID }, ref) {
+export const AppBar = forwardRef<ViewInstance, AppBarProps>(function AppBar({ title, subtitle, showBackButton = true, onBackPress, rightActions, style, testID }, ref) {
     const insets = useSafeAreaInsets();
     const { dark } = useAppTheme();
     const tc = getColors(dark ? 'dark' : 'light');

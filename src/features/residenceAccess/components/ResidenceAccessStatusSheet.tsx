@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useRef } from "react";
-import { AccessibilityInfo, findNodeHandle, KeyboardAvoidingView, ScrollView, View } from "react-native";
+import { type ViewInstance, AccessibilityInfo, findNodeHandle, KeyboardAvoidingView, ScrollView, View } from "react-native";
 import { AppText } from "../../../shared/components/AppText";
 import { useAppTheme } from "../../../shared/theme/useAppTheme";
 import { getPlatformKeyboardConfig } from "../../../shared/platform/platformKeyboard";
@@ -62,7 +62,7 @@ function MetadataRow({ label, value }: {
 export function ResidenceAccessStatusSheet({ visible, residence, accessRecord, eligibility, timeline, primaryAction, secondaryActions, onAction, onDismiss, }: ResidenceAccessStatusSheetProps) {
     const { colors } = useAppTheme();
     const keyboard = getPlatformKeyboardConfig();
-    const focusRef = useRef<View>(null);
+    const focusRef = useRef<ViewInstance>(null);
     const submitted = presentResidenceDate(accessRecord.submittedAt);
     const updated = presentResidenceDate(accessRecord.statusUpdatedAt);
     const expected = presentResidenceDate(accessRecord.expectedReviewAt);

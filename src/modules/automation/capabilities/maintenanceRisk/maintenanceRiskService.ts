@@ -80,14 +80,14 @@ function getAllMetrics(societyId: string): AssetMaintenanceMetrics[] {
 function generateDeterministicRisk(metrics: AssetMaintenanceMetrics): {
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   riskScore: number;
-  factors: Array<{ factor: string; value: unknown; weight: number; description: string }>;
-  recommendations: Array<{ action: string; priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'; rationale: string }>;
-  evidence: Array<{ type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE'; entityId: string; entityType: string; metric: string; value: number; asOf: string }>;
+  factors: { factor: string; value: unknown; weight: number; description: string }[];
+  recommendations: { action: string; priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT'; rationale: string }[];
+  evidence: { type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE'; entityId: string; entityType: string; metric: string; value: number; asOf: string }[];
 } {
   const riskCalc = calculateRiskScore(metrics);
   const recommendations = getRiskRecommendations(riskCalc.riskLevel, riskCalc.factors);
 
-  const evidence: Array<{ type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE'; entityId: string; entityType: string; metric: string; value: number; asOf: string }> = [
+  const evidence: { type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE'; entityId: string; entityType: string; metric: string; value: number; asOf: string }[] = [
     { type: 'REPORT_METRIC' as const, entityId: metrics.assetId, entityType: 'ASSET', metric: 'breakdownCount', value: metrics.breakdownCount, asOf: new Date().toISOString() },
     { type: 'REPORT_METRIC' as const, entityId: metrics.assetId, entityType: 'ASSET', metric: 'totalDowntimeHours', value: metrics.totalDowntimeHours, asOf: new Date().toISOString() },
   ];

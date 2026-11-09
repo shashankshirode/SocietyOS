@@ -152,8 +152,8 @@ describe('SocietyOS Adversarial Resilience & Flow Certification', () => {
       if (!updated.ok) return;
 
       expect(updated.data.status).toBe('IN_PROGRESS');
-      expect(updated.data.updates.length).toBeGreaterThanOrEqual(2);
-      expect(updated.data.updates.some(u => u.note === 'Technician dispatched')).toBe(true);
+      expect(updated.data.updates?.length).toBeGreaterThanOrEqual(2);
+      expect(updated.data.updates?.some(u => u.note === 'Technician dispatched')).toBe(true);
     });
 
     it('rejects update on a non-existent complaint cleanly with COMPLAINT_NOT_FOUND', async () => {
@@ -261,6 +261,7 @@ describe('SocietyOS Adversarial Resilience & Flow Certification', () => {
       // 2. Cancellation
       const cancelRes = await facilityMockSource.cancelBooking(bookRes.data.id, {
         reason: 'Weather',
+        consentAccepted: true,
       });
       expect(cancelRes.ok).toBe(true);
 

@@ -128,7 +128,7 @@ export function createHardenedFormHandler<T>(
 }
 
 export class OfflineQueue<T> {
-  private queue: Array<{
+  private queue: {
     id: string;
     operation: 'CREATE' | 'UPDATE' | 'DELETE';
     entityType: string;
@@ -136,9 +136,9 @@ export class OfflineQueue<T> {
     data: T;
     timestamp: string;
     retries: number;
-  }> = [];
+  }[] = [];
   private processing = false;
-  private listeners: Array<(queue: typeof this.queue) => void> = [];
+  private listeners: ((queue: typeof this.queue) => void)[] = [];
   private syncFn: ((item: typeof this.queue[0]) => Promise<void>) | null = null;
   private maxRetries = 5;
 
@@ -229,7 +229,7 @@ export class OfflineQueue<T> {
 }
 
 export function useOfflineQueue<T>(storageKey: string) {
-  const [queue, setQueue] = React.useState<Array<{
+  const [queue, setQueue] = React.useState<{
     id: string;
     operation: 'CREATE' | 'UPDATE' | 'DELETE';
     entityType: string;
@@ -237,7 +237,7 @@ export function useOfflineQueue<T>(storageKey: string) {
     data: T;
     timestamp: string;
     retries: number;
-  }>>([]);
+  }[]>([]);
 
   React.useEffect(() => {
     const q = new OfflineQueue<T>(storageKey);

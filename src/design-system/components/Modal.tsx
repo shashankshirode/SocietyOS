@@ -1,16 +1,5 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
-  Modal as RNModal,
-  Pressable,
-  TouchableOpacity,
-  Animated,
-  Easing,
-} from 'react-native';
+import { type ViewInstance, View, Text, StyleSheet, ViewStyle, Modal as RNModal, Pressable, TouchableOpacity, Animated, Easing } from 'react-native';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { glassStyles, colors, getColors } from '../tokens/premium-colors';
 import { radius } from '../tokens/premium-radius';
@@ -49,7 +38,7 @@ const sizeWidth = (size: ModalSize) => {
   }
 };
 
-export const Modal = forwardRef<View, ModalProps>(
+export const Modal = forwardRef<ViewInstance, ModalProps>(
   (
     {
       visible,

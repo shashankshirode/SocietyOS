@@ -98,7 +98,7 @@ describe('Phase 7: Payment Verification, Allocation & Receipt Invariants', () =>
         expect(validCallback.isValid).toBe(true);
         expect(validCallback.status).toBe('SETTLED');
         expect(validCallback.duplicate).toBe(false);
-        const receiptsAfter1st = mockStore.getState().receipts;
+        const receiptsAfter1st = mockStore.getState().receipts ?? [];
         expect(receiptsAfter1st).toHaveLength(1);
         expect(receiptsAfter1st[0]!.amount).toBe(10000);
         expect(receiptsAfter1st[0]!.receiptNumber).toMatch(/^RCPT-SOC-\d{4}-\d{4}$/);
@@ -112,7 +112,7 @@ describe('Phase 7: Payment Verification, Allocation & Receipt Invariants', () =>
         });
         expect(duplicateCallback.isValid).toBe(true);
         expect(duplicateCallback.duplicate).toBe(true);
-        const receiptsAfter2nd = mockStore.getState().receipts;
+        const receiptsAfter2nd = mockStore.getState().receipts ?? [];
         expect(receiptsAfter2nd).toHaveLength(1);
         const ledgerEntries = mockStore.getState().ledgerEntries.filter((e) => e.unitId === unitId);
         expect(ledgerEntries).toHaveLength(2);
@@ -149,7 +149,7 @@ describe('Phase 7: Payment Verification, Allocation & Receipt Invariants', () =>
         expect(updatedInv?.balance).toBe(0);
         const advances = mockStore.getState().advanceBalances;
         expect(advances[unitId]).toBe(2500);
-        const allocations = mockStore.getState().paymentAllocations.filter((a) => a.paymentTransactionId === result.transaction.id);
+        const allocations = (mockStore.getState().paymentAllocations ?? []).filter((a) => a.paymentTransactionId === result.transaction.id);
         expect(allocations).toHaveLength(2);
         expect(allocations.find((a) => !a.isAdvance)?.allocatedAmount).toBe(10000);
         expect(allocations.find((a) => a.isAdvance)?.allocatedAmount).toBe(2500);

@@ -3,10 +3,9 @@ import type {
   ClearanceEvaluation,
   ClearanceEvaluationInput,
 } from '../domain/types/clearance.types';
-import type { DomainViolation } from '../domain/types/primitives';
+import type { DomainViolation , LifecycleActor } from '../domain/types/primitives';
 import { auditService } from '../../../../core/audit/auditService';
 import { toAuditEntry, violationsToAuditError } from './phase8Audit';
-import type { LifecycleActor } from '../domain/types/primitives';
 
 export type ClearanceServiceOutcome =
   | {

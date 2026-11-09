@@ -17,7 +17,7 @@ import { styles, createTextColorStyle, createViewBackgroundColorStyle } from '..
 import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { AppText } from '../../../shared/components/AppText';
-import { format } from 'date-fns';
+import { formatDate } from '../../../shared/utils/formatters';
 
 interface ResidentDetailScreenProps {
   route: { params: { residentId: string } };
@@ -203,13 +203,13 @@ export function ResidentDetailScreen({ route, navigation }: ResidentDetailScreen
             {resident.registeredAt && (
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Registered</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(resident.registeredAt), 'MMM d, yyyy')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDate(resident.registeredAt)}</AppText>
               </View>
             )}
             {resident.activatedAt && (
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Activated</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(resident.activatedAt), 'MMM d, yyyy')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDate(resident.activatedAt)}</AppText>
               </View>
             )}
           </View>
@@ -225,17 +225,17 @@ export function ResidentDetailScreen({ route, navigation }: ResidentDetailScreen
               </View>
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Sent</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(resident.invitation.createdAt), 'MMM d, yyyy')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDate(resident.invitation.createdAt)}</AppText>
               </View>
               {resident.invitation.acceptedAt && (
                 <View style={styles.infoItem}>
                   <AppText variant="caption" style={styles.infoLabel}>Accepted</AppText>
-                  <AppText variant="body" style={styles.infoValue}>{format(new Date(resident.invitation.acceptedAt), 'MMM d, yyyy')}</AppText>
+                  <AppText variant="body" style={styles.infoValue}>{formatDate(resident.invitation.acceptedAt)}</AppText>
                 </View>
               )}
               <View style={styles.infoItem}>
                 <AppText variant="caption" style={styles.infoLabel}>Expires</AppText>
-                <AppText variant="body" style={styles.infoValue}>{format(new Date(resident.invitation.expiresAt), 'MMM d, yyyy')}</AppText>
+                <AppText variant="body" style={styles.infoValue}>{formatDate(resident.invitation.expiresAt)}</AppText>
               </View>
             </View>
           </AppCard>
@@ -254,7 +254,7 @@ export function ResidentDetailScreen({ route, navigation }: ResidentDetailScreen
                   <View style={styles.docInfo}>
                     <AppText variant="body" style={styles.docName}>{doc.fileName}</AppText>
                     <AppText variant="caption" style={styles.docMeta}>
-                      {doc.type} • {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}
+                      {doc.type} • {formatDate(doc.uploadedAt)}
                     </AppText>
                   </View>
                   <StatusBadge

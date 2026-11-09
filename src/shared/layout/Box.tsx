@@ -21,6 +21,7 @@ export interface BoxProps {
     flex?: number;
     flexShrink?: number;
     flexGrow?: number;
+    flexDirection?: ViewStyle['flexDirection'];
     width?: ViewStyle['width'];
     height?: ViewStyle['height'];
     backgroundColor?: string;
@@ -37,7 +38,7 @@ const getSpacingValue = (tokenOrValue?: SpacingToken | number): number | Absent 
         return tokenOrValue;
     return Spacing[tokenOrValue];
 };
-export function Box({ children, p, px, py, pt, pb, pl, pr, m, mx, my, mt, mb, ml, mr, flex, flexShrink, flexGrow, width, height, backgroundColor, alignItems, justifyContent, borderRadius, style, testID, }: BoxProps) {
+export function Box({ children, p, px, py, pt, pb, pl, pr, m, mx, my, mt, mb, ml, mr, flex, flexShrink, flexGrow, flexDirection, width, height, backgroundColor, alignItems, justifyContent, borderRadius, style, testID, }: BoxProps) {
     const boxStyle: ViewStyle = {
         padding: getSpacingValue(p),
         paddingHorizontal: getSpacingValue(px),
@@ -56,6 +57,7 @@ export function Box({ children, p, px, py, pt, pb, pl, pr, m, mx, my, mt, mb, ml
         flex,
         flexShrink,
         flexGrow,
+        flexDirection,
         width,
         height,
         backgroundColor,

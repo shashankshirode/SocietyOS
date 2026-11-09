@@ -20,7 +20,7 @@ describe('Milestone 30 shared components', () => {
 
   it('hides disabled advanced FeatureGate content', async () => {
     const screen = await renderWithProviders(
-      <FeatureGate flag="smartAutomation" fallback={<Text>Hidden</Text>}>
+      <FeatureGate flag="eVoting" fallback={<Text>Hidden</Text>}>
         <Text>Marketplace</Text>
       </FeatureGate>
     );

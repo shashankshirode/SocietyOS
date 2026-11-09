@@ -7,7 +7,7 @@ class ParentIncidentEngine {
     private parentIncidents: Map<string, ParentIncident> = new Map();
     private correlationRules: Map<string, CorrelationRule> = new Map();
     private candidates: Map<string, CorrelationCandidate> = new Map();
-    private listeners: Array<(incident: ParentIncident | null, type: 'created' | 'updated' | 'resolved' | 'candidate') => void> = [];
+    private listeners: ((incident: ParentIncident | null, type: 'created' | 'updated' | 'resolved' | 'candidate') => void)[] = [];
     constructor() {
         DEFAULT_CORRELATION_RULES.forEach(r => this.correlationRules.set(r.id, r));
         this.loadFromStorage();

@@ -170,7 +170,7 @@ export function SuperAdminStack() {
       <Stack.Screen name="PUBLISH_BILLS_CONFIRMATION" component={PublishBillsConfirmationScreen} />
       <Stack.Screen name="RESIDENT_BILL_LIST" component={ResidentBillListScreen as React.ComponentType} />
       <Stack.Screen name="MOCK_PAYMENT" component={MockPaymentScreen as React.ComponentType} />
-      <Stack.Screen name="RECEIPT_DETAIL" component={ReceiptDetailScreen} />
+      <Stack.Screen name="RECEIPT_DETAIL" component={ReceiptDetailScreen as React.ComponentType} />
       <Stack.Screen name="FLAT_LEDGER" component={FlatLedgerScreen} />
       <Stack.Screen name="DEFAULTER_REPORT" component={DefaulterReportScreen} />
       <Stack.Screen name="MANUAL_PAYMENT_ENTRY" component={ManualPaymentEntryScreen} />

@@ -48,6 +48,8 @@ import { TenantHistoryScreen } from "../../modules/resident/profile/screens/Tena
 import { OccupancyTimelineScreen } from "../../modules/resident/profile/screens/OccupancyTimelineScreen";
 import { PreviousResidentDetailScreen } from "../../modules/resident/profile/screens/PreviousResidentDetailScreen";
 import { PreviousResidentDocumentsScreen } from "../../modules/resident/profile/screens/PreviousResidentDocumentsScreen";
+import { NotificationInboxScreen } from "../../modules/resident/notifications/screens/NotificationInboxScreen";
+import { DigitalHomePassportScreen } from "../../modules/resident/profile/screens/DigitalHomePassportScreen";
 import { MoveInRequestScreen } from "../../modules/resident/profile/screens/MoveInRequestScreen";
 import { UnitAccessStatusScreen } from "../../modules/resident/profile/screens/UnitAccessStatusScreen";
 import { OwnershipTenancySummaryScreen } from "../../modules/resident/profile/screens/OwnershipTenancySummaryScreen";
@@ -82,6 +84,8 @@ import { styles } from "./styles/ResidentNavigator.styles";
 import { residentTabIcons } from "../../modules/resident/navigation/residentPrimaryNavigation";
 import { SocietyExperienceProvider } from "../../modules/resident/experience/SocietyExperienceContext";
 import { KeyboardExperienceProvider } from "../../modules/resident/experience/KeyboardExperienceContext";
+import { ResidentScreenLayoutOptions, residentScreenDefaults, isScreenHeaderVisible } from "./residentScreenConfiguration";
+export { ResidentScreenLayoutOptions, residentScreenDefaults, isScreenHeaderVisible };
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const VisitorStack = createNativeStackNavigator<VisitorStackParamList>();
@@ -91,7 +95,8 @@ const ChatStack = createNativeStackNavigator<ChatStackParamList>();
 const stackScreenOptions = {
     headerShown: false,
     animation: 'fade' as const,
-    animationDuration: 220
+    animationDuration: 220,
+    showHeader: residentScreenDefaults.showHeader,
 };
 
 function CreateVisitorFromHomeAdapter(props: NativeStackScreenProps<HomeStackParamList, 'CreateVisitorFromHome'>) {
@@ -158,6 +163,8 @@ const PreviousResidentDocumentsCapabilityScreen = withResidentCapability(Previou
 const MoveInRequestCapabilityScreen = withResidentCapability(MoveInRequestScreen, 'resident.tenantLifecycle');
 const UnitAccessStatusCapabilityScreen = withResidentCapability(UnitAccessStatusScreen, 'resident.tenantLifecycle');
 const OwnershipTenancySummaryCapabilityScreen = withResidentCapability(OwnershipTenancySummaryScreen, 'resident.tenantLifecycle');
+const DigitalHomePassportCapabilityScreen = withResidentCapability(DigitalHomePassportScreen, 'resident.homeContext');
+const NotificationInboxCapabilityScreen = withResidentCapability(NotificationInboxScreen, 'resident.homeContext');
 const ResidentConnectCapabilityStack = withResidentCapability(ResidentConnectStack, 'resident.residentConnect');
 const ParkingCapabilityStack = withResidentCapability(ParkingStack, 'resident.parking');
 const FacilityCapabilityStack = withResidentCapability(FacilityStack, 'resident.facilities');
@@ -171,6 +178,8 @@ const DomesticHelpCapabilityStack = withResidentCapability(DomesticHelpStack, 'r
 function HomeStackNavigator() {
     return (<HomeStack.Navigator screenOptions={stackScreenOptions}>
       <HomeStack.Screen name="ResidentHome" component={ResidentHomeScreen}/>
+      <HomeStack.Screen name="NotificationInbox" component={NotificationInboxCapabilityScreen}/>
+      <HomeStack.Screen name="DigitalHomePassport" component={DigitalHomePassportCapabilityScreen}/>
       <HomeStack.Screen name="CreateVisitorFromHome" component={CreateVisitorFromHomeAdapter}/>
       <HomeStack.Screen name="CreateComplaintFromHome" component={CreateComplaintFromHomeCapabilityScreen}/>
       <HomeStack.Screen name="ComplaintDetailFromHome" component={ComplaintDetailFromHomeCapabilityScreen}/>

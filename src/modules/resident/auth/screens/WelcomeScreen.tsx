@@ -32,7 +32,7 @@ export function WelcomeScreen({ onGetStarted, onSkip }: WelcomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Accessible text for test suite compatibility */}
       <View style={styles.accessibleHidden}>

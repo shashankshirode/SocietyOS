@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { visitorInvitationService } from '../services/visitorInvitationService';
-import type { VisitorInvitation, CreateVisitorInvitationPayload } from '../../../../shared/types/visitorPhase8.types';
+import type { VisitorInvitation, CreateVisitorInvitationPayload } from '../../../shared/types/visitorPhase8.types';
 export function useVisitorInvitations(societyId: string) {
     const [invitations, setInvitations] = useState<VisitorInvitation[]>([]);
     const [isLoading, setIsLoading] = useState(false);

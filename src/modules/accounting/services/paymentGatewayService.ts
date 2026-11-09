@@ -24,7 +24,7 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         this.config = config;
     }
     async createPayment(request: CreatePaymentRequest): Promise<PaymentResponse> {
-        const attempts = (mockStore.getState().paymentAttempts ?? []) as PaymentAttempt[];
+        const attempts = mockStore.getState().paymentAttempts ?? [];
         const existing = attempts.find((a) => a.idempotencyKey === request.idempotencyKey);
         if (existing) {
             return {
@@ -76,7 +76,7 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         const transactions = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
         const tx = transactions.find((t) => t.gatewayReference === reference || t.gatewayTransactionId === reference || t.id === reference);
         if (!tx) {
-            const attempts = (mockStore.getState().paymentAttempts ?? []) as PaymentAttempt[];
+            const attempts = mockStore.getState().paymentAttempts ?? [];
             const att = attempts.find((a) => a.gatewayReference === reference || a.id === reference);
             if (att) {
                 return {
@@ -114,7 +114,7 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         if (!paymentId) {
             return { isValid: false, error: 'Missing payment reference' };
         }
-        const attempts = (mockStore.getState().paymentAttempts ?? []) as PaymentAttempt[];
+        const attempts = mockStore.getState().paymentAttempts ?? [];
         const attempt = attempts.find((a) => a.id === paymentId || a.gatewayReference === paymentId);
         if (!attempt) {
             return { isValid: false, error: 'PAYMENT_REFERENCE_MISMATCH' };
@@ -204,7 +204,7 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
                 ps.gatewayResponse = tx.gatewayResponse;
             return ps;
         }
-        const attempts = (mockStore.getState().paymentAttempts ?? []) as PaymentAttempt[];
+        const attempts = mockStore.getState().paymentAttempts ?? [];
         const att = attempts.find((a) => a.gatewayReference === reference || a.id === reference);
         const attStatus: PaymentStatus = {
             status: att?.status === 'SUCCESS' ? 'SETTLED' : 'PENDING',

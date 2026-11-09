@@ -26,7 +26,7 @@ export class OutstandingService {
     const invoices = (mockStore.getState().invoices ?? []) as Invoice[];
     const payments = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
     const advances = mockStore.getState().advanceBalances ?? {};
-    const adjustments = (mockStore.getState().adjustments ?? []) as Adjustment[];
+    const adjustments = mockStore.getState().adjustments ?? [];
 
     const unitInvoices = invoices.filter(
       (i) => i.unitId === unitId && ['PUBLISHED', 'PARTIALLY_PAID', 'OVERDUE'].includes(i.status)

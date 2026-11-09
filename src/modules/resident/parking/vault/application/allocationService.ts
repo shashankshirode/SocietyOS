@@ -1,6 +1,6 @@
 import type { ParkingVaultErrorCode, ParkingVaultViolation, ParkingVaultClock, ParkingVaultActor, VaultActor, ParkingVaultScope, TraceContext, Revision, } from '../domain/types/primitives';
 import { violation, denied, allowedWith } from '../domain/types/primitives';
-import type { ParkingSlotRecord, AllocationRecord, AllocationType, AllocationStatus, AllocationApproval, ParkingVaultScope, } from '../domain/types/parking';
+import type { ParkingSlotRecord, AllocationRecord, AllocationType, AllocationStatus, AllocationApproval, } from '../domain/types/parking';
 import { canTransitionAllocation, canTransitionTemporary, isAllocationActive, isAllocationAvailable, getValidNextStates, } from '../domain/stateMachines/allocationStateMachine';
 import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
 export interface AllocationService {
@@ -139,7 +139,7 @@ export type TemporaryAllocationRequest = {
     readonly approvalChain: readonly AllocationApproval[];
     readonly idempotencyKey: string;
 };
-function fail(code: ParkingVaultErrorCode, message: string) {
+function fail(code: ParkingVaultErrorCode, message: string): { ok: false; code: ParkingVaultErrorCode; message: string } {
     return { ok: false, code, message };
 }
 function firstViolation(violations: readonly ParkingVaultViolation[]): ParkingVaultViolation {
@@ -235,9 +235,9 @@ export function createAllocationService(ports: {
         const allocationId = `alloc-${input.idempotencyKey}`;
         const replay = ports.allocations.read(allocationId);
         if (replay) {
-            return { ok: true, value: replay, warnings: ['IDEMPOTENT_REPLAY'] };
+            return { ok: true as const, value: replay, warnings: ['IDEMPOTENT_REPLAY'] as const };
         }
-        const now = ports.clock.now().toISOString();
+        const nowIso = ports.clock.now().toISOString();
         const allocation: AllocationRecord = {
             id: allocationId,
             scope: input.scope,
@@ -258,9 +258,9 @@ export function createAllocationService(ports: {
             supersededAt: undefined,
             supersededByAllocationId: undefined,
             transferReason: undefined,
-            createdAt: now(),
+            createdAt: nowIso,
             createdBy: actor.userId,
-            updatedAt: now(),
+            updatedAt: nowIso,
             revision: { revision: 1, revisionToken: `rev-${allocationId}-1` },
             trace: { correlationId: input.idempotencyKey, causationId: undefined },
         };
@@ -274,7 +274,7 @@ export function createAllocationService(ports: {
         }
         ports.audit.emit({
             id: `aud-${allocationId}`,
-            timestamp: now(),
+            timestamp: nowIso,
             correlationId: allocation.trace.correlationId,
             actor: { userId: actor.userId, type: 'RESIDENT', role: actor.role, societyId: actor.societyId },
             action: 'CREATE',
@@ -567,7 +567,7 @@ export function createAllocationService(ports: {
         const replay = ports.allocations.read(allocationId);
         if (replay)
             return { ok: true as const, value: replay, warnings: ['IDEMPOTENT_REPLAY'] as const };
-        const now = ports.clock.now().toISOString();
+        const nowIso = ports.clock.now().toISOString();
         const allocation: AllocationRecord = {
             id: allocationId,
             scope: input.scope,
@@ -588,9 +588,9 @@ export function createAllocationService(ports: {
             supersededAt: undefined,
             supersededByAllocationId: undefined,
             transferReason: undefined,
-            createdAt: now(),
+            createdAt: nowIso,
             createdBy: actor.userId,
-            updatedAt: now(),
+            updatedAt: nowIso,
             revision: { revision: 1, revisionToken: `rev-${allocationId}-1` },
             trace: { correlationId: input.idempotencyKey, causationId: undefined },
         };
@@ -602,7 +602,7 @@ export function createAllocationService(ports: {
             return fail('CONCURRENT_WRITE', 'Slot was modified concurrently.');
         ports.audit.emit({
             id: `aud-${allocationId}`,
-            timestamp: now(),
+            timestamp: nowIso,
             correlationId: allocation.trace.correlationId,
             actor: { userId: actor.userId, type: 'RESIDENT', role: actor.role, societyId: actor.societyId },
             action: 'CREATE',
@@ -737,7 +737,7 @@ export function createAllocationService(ports: {
     const getAllocation = (allocationId: string) => ports.allocations.read(allocationId);
     const getAllocationsBySlot = (slotId: string) => ports.allocations.listBySlot(slotId);
     const getAllocationsByVehicle = (vehicleId: string) => ports.allocations.listByVehicle(vehicleId);
-    const getAllocationsByUnit = (unitId: string) => ports.allocations.listByUnit(unitId);
+    const getAllocationsByUnit = (unitId: string) => ports.allocations.listByUnit('society-001', unitId);
     const getActiveAllocationBySlot = (slotId: string) => ports.allocations.findActiveBySlot(slotId);
     const getActiveAllocationByVehicle = (vehicleId: string) => ports.allocations.findActiveByVehicle(vehicleId);
     const sweepExpiredTemporaryAllocations = (): readonly string[] => {

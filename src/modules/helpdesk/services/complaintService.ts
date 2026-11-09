@@ -7,7 +7,6 @@ import type {
   ComplaintSubcategory,
   ComplaintVisibility,
   ComplaintComment,
-  ComplaintCommentDto,
   ComplaintEvidence,
   ComplaintSlaMetrics,
   ComplaintSearchFilters,
@@ -17,6 +16,7 @@ import type {
   ComplaintAssignment,
   ComplaintHold,
   HoldReason,
+  SlaPauseReason,
   ComplaintEscalation,
   ComplaintResolution,
   ComplaintReopen,
@@ -127,8 +127,10 @@ export class ComplaintService {
     if (idempotencyResult.exists) {
       const payload = idempotencyResult.record?.responsePayload as { complaint?: Complaint } | undefined;
       const existingComplaint = payload?.complaint ||
-        mockStore.getState().complaints.find(c => c.id === idempotencyResult.record?.entityId);
-      return { success: true, complaint: existingComplaint };
+        (mockStore.getState().complaints.find(c => c.id === idempotencyResult.record?.entityId) as Complaint | undefined);
+      return existingComplaint
+        ? { success: true, complaint: existingComplaint }
+        : { success: true };
     }
 
     const slaPolicies = mockStore.getState().slaPolicies || [];
@@ -157,66 +159,24 @@ export class ComplaintService {
       title: input.payload.title.trim(),
       description: input.payload.description.trim(),
       category: input.payload.category,
-      subcategory: input.payload.subcategory,
       priority: input.payload.priority,
       status: 'CREATED',
       visibility: input.isPrivate ? 'PRIVATE' : 'PUBLIC',
       source: 'RESIDENT_APP',
-      unitId: input.unitId,
-      unitNumber: input.unitNumber,
-      tower: input.tower,
-      floor: input.floor,
-      location: input.payload.location?.trim(),
+      unitId: input.unitId || '',
+      unitNumber: input.unitNumber || '',
       reportedByUserId: input.reporterUserId,
       reportedByDisplayName: input.reporterDisplayName,
       reportedByRole: input.reporterRole,
-      isPrivate: input.isPrivate,
+      isPrivate: Boolean(input.isPrivate),
       isSensitive: false,
       slaPolicyId: slaPolicy.id,
       slaPolicyVersion: slaPolicy.version,
-      slaResponseDeadline: slaDeadlines.responseDeadline,
-      slaResolutionDeadline: slaDeadlines.resolutionDeadline,
-      slaAcknowledgementDeadline: slaDeadlines.acknowledgementDeadline,
       slaIsPaused: false,
-      slaPausePolicy: undefined,
-      slaPausedAt: undefined,
-      slaPauseReason: undefined,
-      slaPauseStartedBy: undefined,
-      escalationPolicyId: slaPolicy.escalationPolicyId,
       escalationLevel: 'TECHNICIAN',
-      assignedToUserId: undefined,
-      assignedToDisplayName: undefined,
-      assignedAt: undefined,
-      acknowledgedAt: undefined,
-      workStartedAt: undefined,
-      holdReason: undefined,
-      holdStartedAt: undefined,
-      holdExpectedResumeAt: undefined,
-      holdNotes: undefined,
-      resolvedAt: undefined,
-      resolvedBy: undefined,
-      resolutionOutcome: undefined,
-      resolutionSummary: undefined,
-      resolutionEvidenceIds: [],
-      confirmationPolicy: undefined,
-      confirmationRequestedAt: undefined,
-      confirmedAt: undefined,
-      confirmedBy: undefined,
-      closedAt: undefined,
-      closedBy: undefined,
-      reopenedAt: undefined,
-      reopenedBy: undefined,
-      reopenReason: undefined,
-      reopenSlaPolicy: undefined,
-      cancelledAt: undefined,
-      cancelledBy: undefined,
-      cancellationReason: undefined,
-      duplicateOfId: undefined,
-      parentIncidentId: undefined,
       isParentIncident: false,
       childComplaintIds: [],
-      correlationConfidence: undefined,
-      correlationRuleId: undefined,
+      resolutionEvidenceIds: [],
       evidenceIds: [],
       comments: [],
       statusHistory: [],
@@ -225,6 +185,14 @@ export class ComplaintService {
       metadata: {},
       dataVersion: 1,
       societyId: input.societyId,
+      ...(input.payload.subcategory ? { subcategory: input.payload.subcategory } : {}),
+      ...(input.tower ? { tower: input.tower } : {}),
+      ...(input.floor !== undefined ? { floor: input.floor } : {}),
+      ...(input.payload.location?.trim() ? { location: input.payload.location.trim() } : {}),
+      ...(slaDeadlines.responseDeadline ? { slaResponseDeadline: slaDeadlines.responseDeadline } : {}),
+      ...(slaDeadlines.resolutionDeadline ? { slaResolutionDeadline: slaDeadlines.resolutionDeadline } : {}),
+      ...(slaDeadlines.acknowledgementDeadline ? { slaAcknowledgementDeadline: slaDeadlines.acknowledgementDeadline } : {}),
+      ...(slaPolicy.escalationPolicyId ? { escalationPolicyId: slaPolicy.escalationPolicyId } : {}),
     };
 
     mockStore.getState().complaints = [...(mockStore.getState().complaints || []), complaint];
@@ -267,7 +235,10 @@ export class ComplaintService {
       return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
     }
 
-    const complaint = complaints[index];
+    const complaint = complaints[index] as Complaint | undefined;
+    if (!complaint) {
+      return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
+    }
     const currentStatus = complaint.status;
 
     if (!canTransitionComplaintStatus(currentStatus, newStatus)) {
@@ -275,7 +246,7 @@ export class ComplaintService {
     }
 
     const now = new Date().toISOString();
-    const updated = { ...complaint, status: newStatus, updatedAt: now, dataVersion: complaint.dataVersion + 1 };
+    const updated: Complaint = { ...complaint, status: newStatus, updatedAt: now, dataVersion: (complaint.dataVersion || 1) + 1 } as Complaint;
 
     if (newStatus === 'ACKNOWLEDGED') updated.acknowledgedAt = now;
     if (newStatus === 'IN_PROGRESS') updated.workStartedAt = now;
@@ -301,15 +272,15 @@ export class ComplaintService {
       automated,
       metadata,
       createdAt: now,
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
     };
 
-    mockStore.getState().complaintStatusHistory = [...(mockStore.getState().complaintStatusHistory || []), historyEntry];
+    mockStore.getState().complaintStatusHistory = [...(mockStore.getState().complaintStatusHistory || []), historyEntry as any];
 
     await createAuditEntry({
       actorUserId: changedByUserId,
       actorType: changedByRole === 'RESIDENT' ? 'RESIDENT' : changedByRole === 'TECHNICIAN' ? 'TECHNICIAN' : 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: `COMPLAINT_STATUS_${newStatus}`,
       entityType: 'Complaint',
       entityId: complaintId,
@@ -319,14 +290,14 @@ export class ComplaintService {
       source: changedByRole === 'TECHNICIAN' ? 'GATE_DEVICE' : 'MOBILE',
       outcome: 'SUCCESS',
       reason,
-      metadata: { automated },
     });
 
     if (newStatus === 'RESOLVED' || newStatus === 'CLOSED') {
       await this.checkAndUpdateParentIncident(complaint.id);
     }
 
-    return { success: true, complaint: mockStore.getState().complaints?.find(c => c.id === complaintId) };
+    const updatedComp = mockStore.getState().complaints?.find(c => c.id === complaintId) as Complaint | undefined;
+    return updatedComp ? { success: true, complaint: updatedComp } : { success: true };
   }
 
   async classifyComplaint(input: {
@@ -348,6 +319,9 @@ export class ComplaintService {
     }
 
     const complaint = complaints[index];
+    if (!complaint) {
+      return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
+    }
     if (input.societyId && complaint.societyId !== input.societyId) {
       return { success: false, errorCode: 'FORBIDDEN_SOCIETY_MISMATCH', errorMessage: 'Cross-society operation denied' };
     }
@@ -359,9 +333,9 @@ export class ComplaintService {
     const priority = input.priority || complaint.priority;
 
     let updatedDeadlines = {
-      responseDeadline: complaint.slaResponseDeadline,
-      resolutionDeadline: complaint.slaResolutionDeadline,
-      acknowledgementDeadline: complaint.slaAcknowledgementDeadline,
+      ...(complaint.slaResponseDeadline ? { responseDeadline: complaint.slaResponseDeadline } : {}),
+      ...(complaint.slaResolutionDeadline ? { resolutionDeadline: complaint.slaResolutionDeadline } : {}),
+      ...(complaint.slaAcknowledgementDeadline ? { acknowledgementDeadline: complaint.slaAcknowledgementDeadline } : {}),
     };
 
     const slaPolicies = mockStore.getState().slaPolicies || [];
@@ -383,16 +357,16 @@ export class ComplaintService {
     const updated: Complaint = {
       ...complaint,
       category: input.category,
-      subcategory: input.subcategory || complaint.subcategory,
       priority,
       status: 'CLASSIFIED',
-      slaResponseDeadline: updatedDeadlines.responseDeadline,
-      slaResolutionDeadline: updatedDeadlines.resolutionDeadline,
-      slaAcknowledgementDeadline: updatedDeadlines.acknowledgementDeadline,
       slaPolicyId: slaPolicy?.id || complaint.slaPolicyId,
       slaPolicyVersion: slaPolicy?.version || complaint.slaPolicyVersion,
       updatedAt: now,
-      dataVersion: complaint.dataVersion + 1,
+      dataVersion: (complaint.dataVersion ?? 1) + 1,
+      ...(input.subcategory || complaint.subcategory ? { subcategory: input.subcategory || complaint.subcategory } : {}),
+      ...(updatedDeadlines.responseDeadline ? { slaResponseDeadline: updatedDeadlines.responseDeadline } : {}),
+      ...(updatedDeadlines.resolutionDeadline ? { slaResolutionDeadline: updatedDeadlines.resolutionDeadline } : {}),
+      ...(updatedDeadlines.acknowledgementDeadline ? { slaAcknowledgementDeadline: updatedDeadlines.acknowledgementDeadline } : {}),
     };
 
     mockStore.updateComplaint(complaint.id, updated);
@@ -401,7 +375,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.classifiedByUserId,
       actorType: 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: isReclassification ? 'COMPLAINT_RECLASSIFIED' : 'COMPLAINT_CLASSIFIED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -466,6 +440,9 @@ export class ComplaintService {
     }
 
     const complaint = complaints[index];
+    if (!complaint) {
+      return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
+    }
     if (input.societyId && complaint.societyId !== input.societyId) {
       return { success: false, errorCode: 'FORBIDDEN_SOCIETY_MISMATCH', errorMessage: 'Cross-society operation denied' };
     }
@@ -490,11 +467,14 @@ export class ComplaintService {
       notes: input.notes,
       expectedResumeAt: input.expectedResumeAt,
       holdStartedAt: now,
-      holdStartedByUserId: input.actorUserId,
-      holdStartedByDisplayName: input.actorDisplayName,
+      startedByUserId: input.actorUserId,
+      startedByDisplayName: input.actorDisplayName,
+      startedAt: now,
       pausePolicy,
       createdAt: now,
       updatedAt: now,
+      isActive: true,
+      societyId: complaint.societyId || '',
     };
 
     mockStore.getState().complaintHolds = [...(mockStore.getState().complaintHolds || []), holdRecord];
@@ -508,10 +488,10 @@ export class ComplaintService {
       holdNotes: input.notes,
       slaIsPaused: paused,
       slaPausedAt: paused ? now : undefined,
-      slaPauseReason: paused ? input.holdReason : undefined,
+      slaPauseReason: paused ? (input.holdReason as SlaPauseReason) : undefined,
       slaPausePolicy: pausePolicy,
       updatedAt: now,
-      dataVersion: complaint.dataVersion + 1,
+      dataVersion: (complaint.dataVersion ?? 1) + 1,
     };
 
     mockStore.updateComplaint(complaint.id, updated);
@@ -520,7 +500,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.actorUserId,
       actorType: input.actorRole === 'TECHNICIAN' ? 'TECHNICIAN' : 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_HOLD_STARTED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -551,6 +531,9 @@ export class ComplaintService {
     }
 
     const complaint = complaints[index];
+    if (!complaint) {
+      return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
+    }
     if (input.societyId && complaint.societyId !== input.societyId) {
       return { success: false, errorCode: 'FORBIDDEN_SOCIETY_MISMATCH', errorMessage: 'Cross-society operation denied' };
     }
@@ -564,7 +547,7 @@ export class ComplaintService {
       ...complaint,
       status: 'WAITING',
       updatedAt: now,
-      dataVersion: complaint.dataVersion + 1,
+      dataVersion: (complaint.dataVersion ?? 1) + 1,
     };
 
     mockStore.updateComplaint(complaint.id, updated);
@@ -573,7 +556,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.actorUserId,
       actorType: input.actorRole === 'TECHNICIAN' ? 'TECHNICIAN' : 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_WAIT_STARTED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -602,6 +585,9 @@ export class ComplaintService {
     }
 
     const complaint = complaints[index];
+    if (!complaint) {
+      return { success: false, errorCode: 'COMPLAINT_NOT_FOUND', errorMessage: 'Complaint not found' };
+    }
     if (input.societyId && complaint.societyId !== input.societyId) {
       return { success: false, errorCode: 'FORBIDDEN_SOCIETY_MISMATCH', errorMessage: 'Cross-society operation denied' };
     }
@@ -613,7 +599,7 @@ export class ComplaintService {
     const now = new Date().toISOString();
 
     if (complaint.slaIsPaused) {
-      await slaEngine.resumeSla(complaint);
+      await slaEngine.resumeSla(complaint, input.actorUserId);
     }
 
     const updated: Complaint = {
@@ -627,7 +613,7 @@ export class ComplaintService {
       holdExpectedResumeAt: undefined,
       holdNotes: undefined,
       updatedAt: now,
-      dataVersion: complaint.dataVersion + 1,
+      dataVersion: (complaint.dataVersion ?? 1) + 1,
     };
 
     mockStore.updateComplaint(complaint.id, updated);
@@ -636,7 +622,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.actorUserId,
       actorType: input.actorRole === 'TECHNICIAN' ? 'TECHNICIAN' : 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_RESUMED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -727,6 +713,7 @@ export class ComplaintService {
       submittedAt: now,
       createdAt: now,
       updatedAt: now,
+      societyId: complaint.societyId || '',
     };
 
     mockStore.getState().complaintFeedback = [...feedbacks, feedbackRecord];
@@ -735,7 +722,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.residentUserId,
       actorType: 'RESIDENT',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'FEEDBACK_SUBMITTED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -863,7 +850,6 @@ export class ComplaintService {
       reopenSlaPolicy: input.slaPolicy,
       updatedAt: now,
       dataVersion: 1,
-      status: newStatus,
     };
 
     if (['RESET', 'NEW_SLA'].includes(input.slaPolicy)) {
@@ -891,7 +877,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.reopenedByUserId,
       actorType: 'RESIDENT',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_REOPENED',
       entityType: 'Complaint',
       entityId: input.complaintId,
@@ -902,7 +888,8 @@ export class ComplaintService {
       outcome: 'SUCCESS',
     });
 
-    return { success: true, complaint: mockStore.getState().complaints?.find(c => c.id === input.complaintId) };
+    const reopened = mockStore.getState().complaints?.find(c => c.id === input.complaintId);
+    return reopened ? { success: true, complaint: reopened } : { success: true };
   }
 
   async cancelComplaint(input: CancelComplaintInput): Promise<TransitionResult> {
@@ -995,7 +982,7 @@ export class ComplaintService {
     await createAuditEntry({
       actorUserId: input.updatedByUserId,
       actorType: 'ADMIN',
-      societyId: complaint.societyId,
+      societyId: complaint.societyId || '',
       action: 'COMPLAINT_VISIBILITY_CHANGED',
       entityType: 'Complaint',
       entityId: complaint.id,
@@ -1016,6 +1003,34 @@ export class ComplaintService {
 
   async deleteEvidence(evidenceId: string, deletedByUserId: string, deletedByDisplayName: string) {
     return evidenceService.deleteEvidence(evidenceId, deletedByUserId, deletedByDisplayName);
+  }
+
+  async getComplaints(filters: ComplaintSearchFilters): Promise<{ items: Complaint[]; total: number }> {
+    const all = (mockStore.getState().complaints || []) as Complaint[];
+    let filtered = all.filter(c => !filters.societyId || c.societyId === filters.societyId);
+    if (filters.unitId) {
+      filtered = filtered.filter(c => c.unitId === filters.unitId);
+    }
+    if (filters.status && filters.status.length > 0) {
+      filtered = filtered.filter(c => filters.status!.includes(c.status));
+    }
+    if (filters.category && filters.category.length > 0) {
+      filtered = filtered.filter(c => filters.category!.includes(c.category));
+    }
+    if (filters.priority && filters.priority.length > 0) {
+      filtered = filtered.filter(c => filters.priority!.includes(c.priority));
+    }
+    if (filters.reporterUserId) {
+      filtered = filtered.filter(c => c.reportedByUserId === filters.reporterUserId);
+    }
+    if (filters.assigneeUserId) {
+      filtered = filtered.filter(c => c.assignedToUserId === filters.assigneeUserId);
+    }
+    const page = filters.page || 1;
+    const pageSize = filters.pageSize || 20;
+    const start = (page - 1) * pageSize;
+    const items = filtered.slice(start, start + pageSize);
+    return { items, total: filtered.length };
   }
 
   async getComplaint(complaintId: string, viewer?: { userId?: string; role?: string; societyId?: string }): Promise<Complaint | null> {
@@ -1145,7 +1160,9 @@ export class ComplaintService {
   }
 
   async getComplaintSlaMetrics(complaintId: string): Promise<ComplaintSlaMetrics | null> {
-    return slaEngine.calculateSlaMetrics(complaintId);
+    const complaint = mockStore.getState().complaints?.find(c => c.id === complaintId);
+    if (!complaint) return null;
+    return slaEngine.calculateSlaMetrics(complaint);
   }
 
   private async checkAndUpdateParentIncident(complaintId: string): Promise<void> {

@@ -1,8 +1,79 @@
 import { Complaint } from '../types/complaint.types';
 
+function createMockComplaint(item: {
+  id: string;
+  title: string;
+  description: string;
+  category: any;
+  status: any;
+  priority: any;
+  location: string;
+  flatNumber: string;
+  residentName: string;
+  createdAt: string;
+  updatedAt: string;
+  slaText: string;
+  assignedTo?: string;
+  resolutionNote?: string;
+  isPrivate?: boolean;
+}): Complaint {
+  const statusMap: Record<string, string> = {
+    OPEN: 'CREATED',
+    WAITING_FOR_RESIDENT: 'WAITING',
+  };
+  const priorityMap: Record<string, string> = {
+    URGENT: 'CRITICAL',
+  };
+  const categoryMap: Record<string, string> = {
+    WATER_LEAKAGE: 'PLUMBING',
+    LIFT: 'ELEVATOR',
+    PARKING: 'PARKING_ISSUE',
+    HOUSEKEEPING: 'CLEANING',
+  };
+
+  const status = (statusMap[item.status] || item.status) as any;
+  const priority = (priorityMap[item.priority] || item.priority) as any;
+  const category = (categoryMap[item.category] || item.category) as any;
+
+  return {
+    id: item.id,
+    ticketNumber: `CMP-${item.id.replace('comp-', '')}`,
+    title: item.title,
+    description: item.description,
+    category,
+    status,
+    priority,
+    visibility: 'PUBLIC',
+    source: 'RESIDENT_APP',
+    unitId: `unit-${item.flatNumber.toLowerCase()}`,
+    unitNumber: item.flatNumber,
+    societyId: 'soc-greenwood-pune',
+    reportedByUserId: 'usr-shashank-01',
+    reportedByDisplayName: item.residentName,
+    reportedByRole: 'RESIDENT',
+    isPrivate: item.isPrivate ?? false,
+    isSensitive: false,
+    escalationLevel: 'TECHNICIAN',
+    slaIsPaused: false,
+    isParentIncident: false,
+    childComplaintIds: [],
+    evidenceIds: [],
+    comments: [],
+    statusHistory: [],
+    dataVersion: 1,
+    location: item.location,
+    flatNumber: item.flatNumber,
+    residentName: item.residentName,
+    slaText: item.slaText,
+    ...(item.assignedTo ? { assignedTo: item.assignedTo } : {}),
+    ...(item.resolutionNote ? { resolutionNote: item.resolutionNote } : {}),
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
 
 export const mockComplaints: Complaint[] = [
-  {
+  createMockComplaint({
     id: 'comp-1024',
     title: 'Water leakage in bathroom',
     description:
@@ -16,8 +87,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-10-02T10:15:00Z',
     updatedAt: '2026-10-02T14:45:00Z',
     slaText: 'Technician assigned — in progress',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-001',
     title: 'Water leakage in master bathroom',
     description:
@@ -31,8 +102,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-27T09:00:00Z',
     updatedAt: '2026-06-27T09:00:00Z',
     slaText: 'Resolution expected within 24 hours',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-002',
     title: 'Lift not working in A Wing',
     description:
@@ -47,8 +118,8 @@ export const mockComplaints: Complaint[] = [
     updatedAt: '2026-06-28T10:00:00Z',
     slaText: 'Technician assigned — ETA 2 hours',
     assignedTo: 'Sharma Elevators Pvt. Ltd.',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-003',
     title: 'Parking slot blocked by unknown vehicle',
     description:
@@ -62,8 +133,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-28T07:00:00Z',
     updatedAt: '2026-06-28T14:00:00Z',
     slaText: 'Awaiting vehicle owner identification',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-004',
     title: 'Corridor lights not working on 12th floor',
     description:
@@ -79,8 +150,8 @@ export const mockComplaints: Complaint[] = [
     slaText: 'Resolved on 22 Jun',
     assignedTo: 'Building Maintenance Team',
     resolutionNote: 'All three LED panels replaced. Wiring checked and secured.',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-005',
     title: 'Low water pressure on upper floors',
     description:
@@ -94,8 +165,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-28T06:30:00Z',
     updatedAt: '2026-06-28T06:30:00Z',
     slaText: 'Resolution expected within 48 hours',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-006',
     title: 'Intercom wiring repaired — confirmation required',
     description: 'The lobby intercom wiring was replaced and is awaiting resident confirmation.',
@@ -108,8 +179,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-18T10:00:00Z',
     updatedAt: '2026-06-19T13:00:00Z',
     slaText: 'Awaiting resident confirmation',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-007',
     title: 'Closed housekeeping follow-up',
     description: 'The housekeeping follow-up was completed and confirmed by the resident.',
@@ -122,8 +193,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-15T08:00:00Z',
     updatedAt: '2026-06-16T09:00:00Z',
     slaText: 'Closed on 16 Jun',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-008',
     title: 'Reopened water pressure issue',
     description: 'Water pressure dropped again after the earlier repair and requires another inspection.',
@@ -136,8 +207,8 @@ export const mockComplaints: Complaint[] = [
     createdAt: '2026-06-14T06:00:00Z',
     updatedAt: '2026-06-17T06:30:00Z',
     slaText: 'Reopened — response overdue by 3 hours',
-  },
-  {
+  }),
+  createMockComplaint({
     id: 'comp-009',
     title: 'Private security access concern',
     description: 'A private access-control concern was submitted for management review.',
@@ -151,5 +222,5 @@ export const mockComplaints: Complaint[] = [
     updatedAt: '2026-06-13T21:00:00Z',
     slaText: 'SLA overdue by 2 hours',
     isPrivate: true,
-  },
+  }),
 ];

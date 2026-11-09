@@ -36,7 +36,7 @@ export type SearchIndexConfig = {
 export type SearchQuery = {
   query: string;
   entityTypes?: SearchEntityType[];
-  filters?: Record<string, string | number | boolean | Array<string | number>>;
+  filters?: Record<string, string | number | boolean | (string | number)[]>;
   sortBy?: string;
   sortDirection?: 'ASC' | 'DESC';
   page?: number;
@@ -74,10 +74,10 @@ export type SearchResponse<T = JsonObject> = {
 
 export type SearchFacet = {
   field: string;
-  values: Array<{
+  values: {
     value: string | number;
     count: number;
-  }>;
+  }[];
 };
 
 export type SearchSuggestion = {

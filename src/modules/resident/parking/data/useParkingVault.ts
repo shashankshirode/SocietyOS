@@ -1,8 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLatestValue } from '../../../../shared/hooks/useLatestValue';
 import type { ParkingSlotRecord, VehicleRecord, AllocationRecord, VisitorParkingPassRecord, ParkingIncidentRecord, ParkingViolationRecord, StickerRfidRecord, ParkingRulesRecord, ParkingHomeRecord } from '../vault/domain/types/parking';
+import type { ParkingVaultActor } from '../vault/domain/types/primitives';
 import { createParkingVaultService } from '../vault/application/parkingVaultService';
 import { parkingVaultRepository } from '../vault/infrastructure/parkingVaultRepository';
+
+function createParkingActor(
+  societyId: string,
+  actorType: 'RESIDENT_OWNER' | 'SECURITY_GUARD' = 'RESIDENT_OWNER',
+  userId = 'current-user'
+): ParkingVaultActor {
+  return {
+    userId,
+    role: actorType === 'SECURITY_GUARD' ? 'SECURITY_GUARD' : 'RESIDENT_OWNER',
+    actorType,
+    societyId,
+    sessionId: 'sess-1',
+    authenticatedAt: new Date().toISOString(),
+  };
+}
 
 let parkingVaultService: ReturnType<typeof createParkingVaultService> | null = null;
 
@@ -39,7 +55,7 @@ export function useParkingHomeVault(unitId: string) {
 }
 
 export function useMyVehicles(unitId: string) {
-  const [data, setData] = useState<VehicleRecord[]>([]);
+  const [data, setData] = useState<readonly VehicleRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const unitIdRef = { current: unitId };
@@ -111,14 +127,7 @@ export function useVehicleRegistration() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: input.societyId,
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor(input.societyId);
 
       const scope = {
         societyId: input.societyId,
@@ -127,7 +136,7 @@ export function useVehicleRegistration() {
       };
 
       const normalizedNumber = input.vehicleNumber.trim().toUpperCase().replace(/\s+/g, '');
-      const duplicate = service.checkDuplicate(input.societyId, normalizedNumber);
+      const duplicate = service.vehicle.checkDuplicate(input.societyId, normalizedNumber);
       if (duplicate) {
         throw new Error('A vehicle with this registration number already exists.');
       }
@@ -182,10 +191,10 @@ export function useVehicleRegistration() {
           owningEntityId: input.unitId,
         },
         vehicleNumber: input.vehicleNumber,
-        vehicleType: input.vehicleType,
+        vehicleType: input.vehicleType as any,
         makeModel: input.makeModel,
         color: input.color,
-        fuelType: input.fuelType,
+        fuelType: input.fuelType as any,
         ownerName: input.ownerName,
         linkedResidentName: input.linkedResidentName,
         linkedFlat: input.linkedFlat,
@@ -231,23 +240,23 @@ export function useVehicleReplacement() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const result = await service.vehicle.replaceVehicle(actor, {
         oldVehicleId: input.oldVehicleId,
         newVehicle: {
-          ...input.newVehicle,
-          societyId: 'society-001',
-          unitId: 'unit-a-1204',
-          idempotencyKey: `replace-${Date.now()}`,
+          vehicleNumber: input.newVehicle.vehicleNumber,
+          vehicleType: input.newVehicle.vehicleType as any,
+          makeModel: input.newVehicle.makeModel,
+          color: input.newVehicle.color,
+          fuelType: input.newVehicle.fuelType as any,
+          ownerName: input.newVehicle.ownerName,
+          linkedResidentName: input.newVehicle.linkedResidentName,
+          linkedFlat: input.newVehicle.linkedFlat,
+          insuranceExpiry: input.newVehicle.insuranceExpiry,
+          pollutionCertificateExpiry: input.newVehicle.pollutionCertificateExpiry,
         },
+        idempotencyKey: `replace-${Date.now()}`,
       });
 
       if (!result.ok) throw new Error(result.message);
@@ -283,14 +292,7 @@ export function useParkingAllocation() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const scope = {
         societyId: 'society-001',
@@ -336,14 +338,7 @@ export function useParkingAllocation() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const scope = { societyId: 'society-001', owningEntityType: 'UNIT', owningEntityId: 'unit-a-1204' };
       const idempotencyKey = `transfer-${Date.now()}`;
@@ -373,14 +368,7 @@ export function useParkingAllocation() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const result = await service.allocation.endAllocation(actor, allocationId, reason);
       if (!result.ok) throw new Error(result.message);
@@ -415,20 +403,13 @@ export function useTemporaryParking() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const scope = { societyId: 'society-001', owningEntityType: 'UNIT', owningEntityId: 'unit-a-1204' };
       const idempotencyKey = `temp-${Date.now()}`;
 
       const result = await service.allocation.createTemporaryAllocation(
-        { ...actor, societyId: 'society-001' },
+        actor,
         {
           scope,
           slotId: input.slotId,
@@ -461,14 +442,7 @@ export function useTemporaryParking() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const result = await service.allocation.extendTemporaryAllocation(actor, allocationId, newEndDate);
       if (!result.ok) throw new Error(result.message);
@@ -487,14 +461,7 @@ export function useTemporaryParking() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001');
 
       const result = await service.allocation.expireTemporaryAllocation(actor, allocationId);
       if (!result.ok) throw new Error(result.message);
@@ -532,20 +499,13 @@ export function useParkingIncidents() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'RESIDENT_OWNER',
-        actorType: 'RESIDENT_OWNER' as const,
-        societyId: input.societyId,
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor(input.societyId);
 
       const scope = { societyId: input.societyId, owningEntityType: 'UNIT', owningEntityId: input.unitId };
       const idempotencyKey = `incident-${Date.now()}`;
 
       const result = await service.incident.reportIncident(
-        { ...actor, societyId: input.societyId },
+        actor,
         {
           scope,
           issueType: input.issueType as any,
@@ -577,14 +537,7 @@ export function useParkingIncidents() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'SECURITY_GUARD',
-        actorType: 'SECURITY_GUARD' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001', 'SECURITY_GUARD');
 
       const result = await service.incident.resolveIncident(actor, incidentId, resolutionNotes);
       if (!result.ok) throw new Error(result.message);
@@ -603,14 +556,7 @@ export function useParkingIncidents() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'current-user',
-        role: 'SECURITY_GUARD',
-        actorType: 'SECURITY_GUARD' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001', 'SECURITY_GUARD');
 
       const result = await service.incident.escalateIncident(actor, incidentId);
       if (!result.ok) throw new Error(result.message);
@@ -628,7 +574,7 @@ export function useParkingIncidents() {
 }
 
 export function useParkingViolations(unitId: string) {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<readonly any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -684,17 +630,10 @@ export function useGuardVehicleLookup() {
     setError(null);
     try {
       const service = getParkingVaultService();
-      const actor = {
-        userId: 'guard-1',
-        role: 'SECURITY_GUARD',
-        actorType: 'SECURITY_GUARD' as const,
-        societyId: 'society-001',
-        sessionId: 'sess-1',
-        authenticatedAt: new Date().toISOString(),
-      };
+      const actor = createParkingActor('society-001', 'SECURITY_GUARD', 'guard-1');
 
       const result = await service.guardLookup.lookupVehicle(
-        { ...actor, societyId: 'society-001' },
+        actor,
         query
       );
 

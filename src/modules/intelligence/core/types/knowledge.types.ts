@@ -258,16 +258,8 @@ export type KnowledgeSource = {
     bookmarkCount?: number;
     headingCount?: number;
     listCount?: number;
-    tableCount?: number;
-    formCount?: number;
-    fieldCount?: number;
-    inputCount?: number;
-    buttonCount?: number;
-    linkCount?: number;
-    imageCount?: number;
     videoCount?: number;
     audioCount?: number;
-    embeddedObjectCount?: number;
   };
   checksum: string;
   checksumAlgorithm: 'SHA256' | 'SHA512' | 'MD5' | 'SHA1' | 'BLAKE2' | 'BLAKE3';
@@ -425,11 +417,9 @@ export type KnowledgeSearchRequest = {
     locales?: string[];
     formats?: string[];
     mimeTypes?: string[];
-    tags?: string[];
     entities?: string[];
     keywords?: string[];
     topics?: string[];
-    categories?: string[];
   };
   sortBy?: 'relevance' | 'date' | 'title' | 'version' | 'relevanceScore' | 'popularity' | 'usageCount' | 'rating' | 'recency' | 'freshness' | 'popularity' | 'authority' | 'credibility' | 'reliability' | 'accuracy' | 'completeness' | 'freshness' | 'recency';
   sortOrder?: 'ASC' | 'DESC';
@@ -476,7 +466,7 @@ export type KnowledgeSearchResult = {
   pageSize: number;
   hasMore: boolean;
   results: KnowledgeSearchResultItem[];
-  facets?: Record<string, Array<{ value: string; count: number }>>;
+  facets?: Record<string, { value: string; count: number }[]>;
   suggestions?: string[];
   corrections?: string[];
   relatedQueries?: string[];
@@ -499,7 +489,6 @@ export type KnowledgeSearchResultItem = {
   highlightedSnippet?: string;
   relevanceScore: number;
   confidence: number;
-  sourceType: KnowledgeSourceType;
   sourceTitle: string;
   sourceCategory: string;
   sourceStatus: KnowledgeSourceStatus;
@@ -510,7 +499,6 @@ export type KnowledgeSearchResultItem = {
   effectiveTo?: string;
   supersededBy?: string;
   supersedes?: string;
-  version: string;
   versionNumber: number;
   versionHistory?: KnowledgeVersion[];
   authorId: string;
@@ -519,11 +507,9 @@ export type KnowledgeSearchResultItem = {
   approverRole?: string;
   approvedAt?: string;
   publishedAt?: string;
-  effectiveFrom: string;
-  effectiveTo?: string;
   metadata: KnowledgeSource['metadata'];
   chunks?: KnowledgeChunk[];
-  chunkMatches?: Array<{
+  chunkMatches?: {
     chunkId: string;
     snippet: string;
     highlightedSnippet: string;
@@ -532,10 +518,8 @@ export type KnowledgeSearchResultItem = {
     position: number;
     sectionTitle?: string;
     sectionPath?: string;
-  }>;
-  relevanceScore: number;
-  confidence: number;
-  sourceReferences: Array<{
+  }[];
+  sourceReferences: {
     type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE' | 'EXTERNAL_API';
     entityId: string;
     entityType: string;
@@ -545,7 +529,7 @@ export type KnowledgeSearchResultItem = {
     asOf: string;
     excerpt?: string;
     relevanceScore: number;
-  }>;
+  }[];
   deepLink?: string;
   permissionChecked: boolean;
   accessGranted: boolean;
@@ -583,7 +567,7 @@ export type KnowledgeRetrievalResult = {
   answerType: 'FACTUAL' | 'SUMMARY' | 'EXPLANATION' | 'RECOMMENDATION' | 'FORECAST' | 'DRAFT' | 'UNAVAILABLE' | 'NEEDS_CLARIFICATION';
   confidence: number;
   confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
-  sources: Array<{
+  sources: {
     sourceId: string;
     sourceType: string;
     sourceVersion: string;
@@ -601,7 +585,7 @@ export type KnowledgeRetrievalResult = {
     permissionChecked: boolean;
     accessGranted: boolean;
     accessDeniedReason?: string;
-  }>;
+  }[];
   warnings: string[];
   dataFreshness: string;
   modelVersion: string;
@@ -612,8 +596,6 @@ export type KnowledgeRetrievalResult = {
     completionTokens: number;
     totalTokens: number;
   };
-  confidenceBand: 'HIGH' | 'MEDIUM' | 'LOW' | 'UNCERTAIN';
-  warnings: string[];
   completedAt: string;
   expiresAt?: string;
 };
@@ -631,14 +613,10 @@ export type KnowledgeIndexConfig = {
   maxChunkSize: number;
   minChunkSize: number;
   chunkOverlapStrategy: 'FIXED' | 'PROPORTIONAL' | 'ADAPTIVE' | 'SEMANTIC' | 'CONTEXTUAL' | 'OVERLAP_AWARE' | 'CONTEXT_AWARE' | 'SEMANTIC_AWARE' | 'STRUCTURAL' | 'HIERARCHICAL';
-  embeddingModel: string;
-  embeddingVersion: string;
-  embeddingDimensions: number;
   embeddingBatchSize: number;
   embeddingMaxTokens: number;
   embeddingTimeoutMs: number;
   embeddingRetries: number;
-  embeddingTimeoutMs: number;
   embeddingProvider: string;
   embeddingApiKey?: string;
   embeddingEndpoint?: string;
@@ -700,12 +678,12 @@ export type KnowledgeIndexConfig = {
   };
   sanitization: {
     enabled: boolean;
-    rules: Array<{
+    rules: {
       pattern: string;
       replacement: string;
       flags?: string;
       type: 'REGEX' | 'EXACT' | 'PREFIX' | 'SUFFIX' | 'CONTAINS' | 'STARTS_WITH' | 'ENDS_WITH' | 'MATCHES' | 'NOT_MATCHES';
-    }>;
+    }[];
     piiDetection: boolean;
     piiAction: 'REDACT' | 'MASK' | 'HASH' | 'TOKENIZE' | 'REMOVE' | 'REPLACE' | 'ENCRYPT' | 'HASH' | 'SALT' | 'PEPPER';
     secretDetection: boolean;
@@ -734,7 +712,6 @@ export type KnowledgeIndexConfig = {
     archiveOldVersions: boolean;
     purgeDeletedVersions: boolean;
     purgeIntervalDays: number;
-    versionHashAlgorithm: 'SHA256' | 'SHA512' | 'MD5' | 'SHA1' | 'BLAKE2' | 'BLAKE3' | 'SHA3_256' | 'SHA3_512' | 'KECCAK256' | 'KECCAK512' | 'BLAKE2B' | 'BLAKE2S' | 'BLAKE3' | 'SHA3' | 'KECCAK' | 'RIPEMD160' | 'RIPEMD256' | 'RIPEMD320' | 'WHIRLPOOL' | 'SM3' | 'STREEBOG' | 'BLAKE2' | 'BLAKE2B' | 'BLAKE2S';
     versionHashAlgorithm: 'SHA256' | 'SHA512' | 'MD5' | 'SHA1' | 'BLAKE2' | 'BLAKE3' | 'SHA3_256' | 'SHA3_512' | 'KECCAK256' | 'KECCAK512' | 'BLAKE2B' | 'BLAKE2S' | 'BLAKE3' | 'SHA3' | 'KECCAK' | 'RIPEMD160' | 'RIPEMD256' | 'RIPEMD320' | 'WHIRLPOOL' | 'SM3' | 'STREEBOG' | 'BLAKE2' | 'BLAKE2B' | 'BLAKE2S';
   };
   reindexPolicy: {
@@ -778,9 +755,6 @@ export type KnowledgeIndexJob = {
   status: 'QUEUED' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'RETRYING' | 'PARTIAL' | 'PARTIAL_SUCCESS' | 'PARTIAL_FAILURE' | 'TIMEOUT' | 'CANCELLED' | 'RETRYING' | 'WAITING' | 'SCHEDULED' | 'PENDING' | 'READY' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'RETRYING' | 'PARTIAL' | 'PARTIAL_SUCCESS' | 'PARTIAL_FAILURE' | 'TIMEOUT' | 'CANCELLED';
   triggeredBy: 'SCHEDULE' | 'MANUAL' | 'EVENT' | 'WEBHOOK' | 'API' | 'USER' | 'SYSTEM' | 'AUTO' | 'RETRY' | 'REPLAY' | 'RECOVERY' | 'RECOVERY_REPLAY' | 'RECOVERY_RETRY' | 'FAILOVER' | 'FAILOVER_REPLAY' | 'FAILOVER_RETRY' | 'FAILOVER_RECOVERY' | 'FAILOVER_RECOVERY_REPLAY' | 'FAILOVER_RECOVERY_RETRY' | 'DISASTER_RECOVERY' | 'DISASTER_RECOVERY_REPLAY' | 'DISASTER_RECOVERY_RETRY' | 'BACKUP_RESTORE' | 'BACKUP_RESTORE_REPLAY' | 'BACKUP_RESTORE_RETRY' | 'POINT_IN_TIME_RECOVERY' | 'POINT_IN_TIME_RECOVERY_REPLAY' | 'POINT_IN_TIME_RECOVERY_RETRY';
   triggeredAt: string;
-  startedAt?: string;
-  completedAt?: string;
-  failedAt?: string;
   progress: number;
   totalItems: number;
   processedItems: number;
@@ -790,8 +764,6 @@ export type KnowledgeIndexJob = {
   retryCount: number;
   maxRetries: number;
   error?: string;
-  errorDetails?: string;
-  logs: string[];
   metrics: {
     itemsPerSecond: number;
     avgProcessingTimeMs: number;
@@ -825,7 +797,6 @@ export type KnowledgeIndexJob = {
   recoveringAt?: string;
   recoveringCompletedAt?: string;
   failedPermanentlyAt?: string;
-  cancelledAt?: string;
   abortedAt?: string;
   timedOutAt?: string;
   retryLimitReachedAt?: string;
@@ -860,7 +831,6 @@ export type KnowledgeIndexJob = {
   completedWithComplianceAt?: string;
   completedWithSecurityAt?: string;
   completedWithPrivacyAt?: string;
-  completedWithComplianceAt?: string;
   completedWithGovernanceAt?: string;
   completedWithRiskAt?: string;
   completedWithQualityAt?: string;
@@ -875,11 +845,6 @@ export type KnowledgeIndexJob = {
   completedWithPrecisionAt?: string;
   completedWithRecallAt?: number;
   completedWithF1At?: number;
-  completedWithAccuracyAt?: number;
-  completedWithPrecisionAt?: number;
-  completedWithRecallAt?: number;
-  completedWithF1At?: number;
-  completedWithAccuracyAt?: number;
 };
 
 export type KnowledgeIndexCheckpoint = {
@@ -892,7 +857,6 @@ export type KnowledgeIndexCheckpoint = {
   processedItems: number;
   totalItems: number;
   data: any;
-  metadata: any;
   sizeBytes: number;
   checksum: string;
   checksumAlgorithm: 'SHA256' | 'SHA512' | 'MD5' | 'SHA1' | 'BLAKE2' | 'BLAKE3' | 'SHA3_256' | 'SHA3_512' | 'KECCAK256' | 'KECCAK512' | 'BLAKE2B' | 'BLAKE2S' | 'BLAKE3' | 'SHA3' | 'KECCAK' | 'RIPEMD160' | 'RIPEMD256' | 'RIPEMD320' | 'WHIRLPOOL' | 'SM3' | 'STREEBOG' | 'BLAKE2' | 'BLAKE2B' | 'BLAKE2S';
@@ -902,8 +866,6 @@ export type KnowledgeIndexCheckpoint = {
   originalSizeBytes: number;
   compressedSizeBytes: number;
   compressionRatio: number;
-  checksum: string;
-  checksumAlgorithm: 'SHA256' | 'SHA512' | 'MD5' | 'SHA1' | 'BLAKE2' | 'BLAKE3' | 'SHA3_256' | 'SHA3_512' | 'KECCAK256' | 'KECCAK512' | 'BLAKE2B' | 'BLAKE2S' | 'BLAKE3' | 'SHA3' | 'KECCAK' | 'RIPEMD160' | 'RIPEMD256' | 'RIPEMD320' | 'WHIRLPOOL' | 'SM3' | 'STREEBOG' | 'BLAKE2' | 'BLAKE2B' | 'BLAKE2S';
   encrypted: boolean;
   encryptionAlgorithm: 'AES-256-GCM' | 'AES-256-CBC' | 'AES-256-CTR' | 'AES-256-GCM' | 'CHACHA20-POLY1305' | 'XCHACHA20-POLY1305' | 'AES-128-GCM' | 'AES-128-CBC' | 'AES-128-CTR' | 'AES-128-GCM' | 'CHACHA20-POLY1305' | 'XCHACHA20-POLY1305';
   encryptionKeyId?: string;
@@ -931,8 +893,4 @@ export type KnowledgeIndexCheckpoint = {
   summary: string;
   details: string;
   metadata: Record<string, any>;
-  tags: string[];
-  labels: string[];
-  annotations: string[];
-  notes: string[];
 };

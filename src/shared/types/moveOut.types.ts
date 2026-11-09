@@ -24,6 +24,31 @@ export type MoveOutStatus =
   | 'CLEARED'
   | 'NOC_GENERATED';
 
+export const MOVE_OUT_STATUS_LABELS: Record<MoveOutStatus, string> = {
+  DRAFT: 'Draft',
+  REQUESTED: 'Requested',
+  CLEARANCE_CHECK: 'Clearance Check',
+  EXCEPTION: 'Exception',
+  READY: 'Ready',
+  PENDING_APPROVAL: 'Pending Approval',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected',
+  RESUBMIT: 'Resubmit',
+  SCHEDULED: 'Scheduled',
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed',
+  FAILED: 'Failed',
+  SIGNED: 'Signed',
+  ISSUED: 'Issued',
+  ACCESS_REVOKED: 'Access Revoked',
+  OCCUPANCY_CLOSED: 'Occupancy Closed',
+  ARCHIVED: 'Archived',
+  CANCELLED: 'Cancelled',
+  PENDING_CLEARANCE: 'Pending Clearance',
+  CLEARED: 'Cleared',
+  NOC_GENERATED: 'NOC Generated',
+};
+
 export type ClearanceStatus =
   | 'NOT_STARTED'
   | 'PENDING'
@@ -33,6 +58,17 @@ export type ClearanceStatus =
   | 'OVERRIDDEN'
   | 'WAIVED'
   | 'NOT_APPLICABLE';
+
+export const CLEARANCE_STATUS_LABELS: Record<ClearanceStatus, string> = {
+  NOT_STARTED: 'Not Started',
+  PENDING: 'Pending',
+  IN_PROGRESS: 'In Progress',
+  CLEARED: 'Cleared',
+  BLOCKED: 'Blocked',
+  OVERRIDDEN: 'Overridden',
+  WAIVED: 'Waived',
+  NOT_APPLICABLE: 'Not Applicable',
+};
 
 export type ClearanceCategory =
   | 'FINANCIAL'
@@ -214,7 +250,7 @@ export interface MoveOutRequestFilters {
   search?: string;
 }
 
-export const DEFAULT_CLEARANCE_CHECKLIST_TEMPLATE: Array<Omit<ClearanceChecklistItem, 'id' | 'status'>> = [
+export const DEFAULT_CLEARANCE_CHECKLIST_TEMPLATE: Omit<ClearanceChecklistItem, 'id' | 'status'>[] = [
   {
     title: 'Financial Dues Clearance',
     description: 'Verify all maintenance, utility, and penalty dues are cleared.',

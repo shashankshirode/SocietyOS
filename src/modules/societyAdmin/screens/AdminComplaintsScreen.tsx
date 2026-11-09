@@ -1,25 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   FlatList,
+  RefreshControl,
   Pressable,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { formatRelativeDate } from '../../../shared/utils/formatters';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
 import { SafeText } from '../../../shared/components/SafeText';
 import { AppButton } from '../../../shared/components/AppButton';
 import { AppIcon } from '../../../shared/icons/AppIcon';
 import { useAdminComplaints } from '../data/useAdminComplaints';
-import { useAdminComplaintDashboard } from '../../helpdesk/hooks/useParentIncidents';
+import { useAuthSession } from '../../../core/auth/useAuthSession';
+import { ResidentPageHeader } from '../../../ui/patterns/ResidentPageHeader';
 import type { AdminComplaint, AdminComplaintStatus } from '../../../shared/types/admin.types';
-
-import { styles, createTextColorStyle, createViewBackgroundColorStyle } from './styles/AdminComplaintsScreen.styles';
-import { formatDistanceToNowStrict } from 'date-fns';
+import {
+  styles,
+  createTextColorStyle,
+  createDynamicBgColor,
+} from './styles/AdminComplaintsScreen.styles';
 
 const STATUS_CONFIG: Record<AdminComplaintStatus, { label: string; color: string; icon: string }> = {
   OPEN: { label: 'Open', color: '#3B82F6', icon: 'document-text-outline' },
@@ -46,19 +50,38 @@ const SLA_STATUS_CONFIG = {
   BREACHED: { label: 'Breached', color: '#EF4444', icon: 'alert-circle-outline' },
 };
 
-export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: () => void; navigate: (route: string, params?: any) => void } }) {
+export function AdminComplaintsScreen({
+  navigation,
+}: {
+  navigation: { goBack: () => void; navigate: (route: string, params?: unknown) => void };
+}) {
   const localizedUiText = useGeneratedUiMessages().uiLiterals;
   const theme = useAppTheme();
-  const { user } = require('../../../../core/auth/AuthProvider').useAuth();
-  const { currentSociety } = require('../../../../core/auth/SocietyProvider').useSociety();
+  const { session } = useAuthSession();
 
-  const { data: complaints, isLoading, error, refetch } = useAdminComplaints({ societyId: currentSociety?.id });
-  const { data: dashboard } = useAdminComplaintDashboard(currentSociety?.id);
+  const { data: complaints, isLoading, error, refetch } = useAdminComplaints({
+    societyId: session?.societyId,
+  });
+
+  const dashboard = useMemo(() => {
+    const totalOpen = complaints.filter((c) => c.status === 'OPEN').length;
+    const inProgress = complaints.filter(
+      (c) => c.status === 'IN_PROGRESS' || c.status === 'ASSIGNED',
+    ).length;
+    const slaBreached = complaints.filter((c) => c.slaStatus === 'BREACHED').length;
+    const totalReopened = complaints.filter((c) => c.status === 'REOPENED').length;
+    const escalationCount = complaints.filter((c) => c.status === 'ESCALATED').length;
+    return { totalOpen, inProgress, slaBreached, totalReopened, escalationCount };
+  }, [complaints]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<AdminComplaintStatus | 'ALL'>('ALL');
-  const [selectedPriority, setSelectedPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'ALL'>('ALL');
-  const [selectedSlaStatus, setSelectedSlaStatus] = useState<'ON_TIME' | 'AT_RISK' | 'BREACHED' | 'ALL'>('ALL');
+  const [selectedPriority, setSelectedPriority] = useState<
+    'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'ALL'
+  >('ALL');
+  const [selectedSlaStatus, setSelectedSlaStatus] = useState<
+    'ON_TIME' | 'AT_RISK' | 'BREACHED' | 'ALL'
+  >('ALL');
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -67,8 +90,9 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
     setRefreshing(false);
   }, [refetch]);
 
-  const filteredComplaints = complaints.filter(c => {
-    const matchesSearch = c.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredComplaints = complaints.filter((c) => {
+    const matchesSearch =
+      c.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.unitNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
@@ -78,40 +102,57 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
   });
 
   const renderItem = ({ item }: { item: AdminComplaint }) => {
-    const statusConfig = STATUS_CONFIG[item.status];
-    const priorityConfig = PRIORITY_CONFIG[item.priority];
-    const slaConfig = SLA_STATUS_CONFIG[item.slaStatus];
-    const timeAgo = formatDistanceToNowStrict(new Date(item.createdAt), { addSuffix: true });
+    const statusConfig = STATUS_CONFIG[item.status] || STATUS_CONFIG.OPEN;
+    const priorityConfig = PRIORITY_CONFIG[item.priority] || PRIORITY_CONFIG.MEDIUM;
+    const slaConfig = SLA_STATUS_CONFIG[item.slaStatus] || SLA_STATUS_CONFIG.ON_TIME;
+    const timeAgo = formatRelativeDate(item.createdAt);
 
     return (
       <Pressable
         style={styles.complaintCard}
         onPress={() => navigation.navigate('AdminComplaintDetail', { complaint: item })}
-        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.ticketNumber}, ${item.category}`}
       >
         <View style={styles.cardHeader}>
           <View style={styles.headerLeft}>
-            <View style={[
-              styles.statusBadge,
-              { backgroundColor: statusConfig.color + '20' },
-            ]}>
-              <Ionicons name={statusConfig.icon} size={16} color={statusConfig.color} />
+            <View
+              style={[
+                styles.statusBadge,
+                createDynamicBgColor(statusConfig.color, '20'),
+              ]}
+            >
+              <Ionicons
+                name={statusConfig.icon as keyof typeof Ionicons.glyphMap}
+                size={16}
+                color={statusConfig.color}
+              />
             </View>
             <View style={styles.headerText}>
-              <SafeText variant="bodyStrong" style={styles.ticketTitle}>{item.ticketNumber}</SafeText>
-              <SafeText variant="caption" style={styles.ticketTitleSub}>{item.category}</SafeText>
+              <SafeText variant="bodyStrong" style={styles.ticketTitle}>
+                {item.ticketNumber}
+              </SafeText>
+              <SafeText variant="caption" style={styles.ticketTitleSub}>
+                {item.category}
+              </SafeText>
             </View>
           </View>
           <View style={styles.headerRight}>
-            <View style={[
-              styles.slaBadge,
-              { backgroundColor: slaConfig.color + '20' },
-            ]}>
-              <Ionicons name={slaConfig.icon} size={12} color={slaConfig.color} />
-              <SafeText variant="tiny" style={[
-                styles.slaBadgeText,
-                { color: slaConfig.color },
-              ]}>
+            <View
+              style={[
+                styles.slaBadge,
+                createDynamicBgColor(slaConfig.color, '20'),
+              ]}
+            >
+              <Ionicons
+                name={slaConfig.icon as keyof typeof Ionicons.glyphMap}
+                size={12}
+                color={slaConfig.color}
+              />
+              <SafeText
+                variant="tiny"
+                style={[styles.slaBadgeText, createTextColorStyle(slaConfig.color)]}
+              >
                 {slaConfig.label}
               </SafeText>
             </View>
@@ -121,55 +162,73 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
             <AppIcon name="home-outline" size={14} color={theme.colors.textMuted} />
-            <SafeText variant="caption" style={styles.metaText}>{item.unitNumber}</SafeText>
+            <SafeText variant="caption" style={styles.metaText}>
+              {item.unitNumber}
+            </SafeText>
           </View>
           <View style={styles.metaItem}>
             <AppIcon name="business-outline" size={14} color={theme.colors.textMuted} />
-            <SafeText variant="caption" style={styles.metaText}>{item.wing}</SafeText>
+            <SafeText variant="caption" style={styles.metaText}>
+              {item.wing}
+            </SafeText>
           </View>
-          {item.assigneeName && (
+          {item.assigneeName ? (
             <View style={styles.metaItem}>
               <AppIcon name="person-outline" size={14} color={theme.colors.textMuted} />
-              <SafeText variant="caption" style={styles.metaText}>{item.assigneeName}</SafeText>
+              <SafeText variant="caption" style={styles.metaText}>
+                {item.assigneeName}
+              </SafeText>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.actionRow}>
           <View style={styles.statusRow}>
-            <View style={[
-              styles.statusPill,
-              { backgroundColor: statusConfig.color + '15' },
-            ]}>
-              <Ionicons name={statusConfig.icon} size={12} color={statusConfig.color} />
-              <SafeText variant="tiny" style={[
-                styles.statusPillText,
-                { color: statusConfig.color },
-              ]}>
+            <View
+              style={[
+                styles.statusPill,
+                createDynamicBgColor(statusConfig.color, '15'),
+              ]}
+            >
+              <Ionicons
+                name={statusConfig.icon as keyof typeof Ionicons.glyphMap}
+                size={12}
+                color={statusConfig.color}
+              />
+              <SafeText
+                variant="tiny"
+                style={[styles.statusPillText, createTextColorStyle(statusConfig.color)]}
+              >
                 {statusConfig.label}
               </SafeText>
             </View>
-            <View style={[
-              styles.priorityPill,
-              { backgroundColor: priorityConfig.color + '15' },
-            ]}>
-              <SafeText variant="tiny" style={[
-                styles.priorityPillText,
-                { color: priorityConfig.color },
-              ]}>
+            <View
+              style={[
+                styles.priorityPill,
+                createDynamicBgColor(priorityConfig.color, '15'),
+              ]}
+            >
+              <SafeText
+                variant="tiny"
+                style={[styles.priorityPillText, createTextColorStyle(priorityConfig.color)]}
+              >
                 {priorityConfig.label}
               </SafeText>
             </View>
           </View>
-          <SafeText variant="tiny" style={styles.timeAgo}>{timeAgo}</SafeText>
+          <SafeText variant="tiny" style={styles.timeAgo}>
+            {timeAgo}
+          </SafeText>
         </View>
 
-        {item.isVendorLinked && (
+        {item.isVendorLinked ? (
           <View style={styles.vendorBadge}>
             <AppIcon name="link-outline" size={12} color={theme.colors.primary} />
-            <SafeText variant="caption" style={styles.vendorText}>{item.vendorName}</SafeText>
+            <SafeText variant="caption" style={styles.vendorText}>
+              {item.vendorName}
+            </SafeText>
           </View>
-        )}
+        ) : null}
       </Pressable>
     );
   };
@@ -193,7 +252,12 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
           <SafeText variant="body" style={createTextColorStyle(theme.colors.danger)}>
             {error.message}
           </SafeText>
-          <AppButton title={localizedUiText.m_retry} onPress={refetch} variant="primary" fullWidth />
+          <AppButton
+            title={localizedUiText.m_retry}
+            onPress={refetch}
+            variant="primary"
+            fullWidth
+          />
         </View>
       </SafeAreaView>
     );
@@ -204,34 +268,58 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
       <ResidentPageHeader
         title={localizedUiText.m_admin_complaints}
         showBack
-        subtitle={dashboard ? `${dashboard.totalOpen} open · ${dashboard.slaBreached} breached` : undefined}
+        subtitle={`${dashboard.totalOpen} open · ${dashboard.slaBreached} breached`}
       />
 
-      {/* Dashboard Summary */}
-      {dashboard && (
-        <View style={styles.dashboardSummary}>
-          <View style={styles.summaryCard}>
-            <SafeText variant="caption" style={styles.summaryLabel}>{localizedUiText.m_open}</SafeText>
-            <SafeText variant="h3" style={styles.summaryValue}>{dashboard.totalOpen}</SafeText>
-          </View>
-          <View style={styles.summaryCard}>
-            <SafeText variant="caption" style={styles.summaryLabel}>{localizedUiText.m_sla_breached}</SafeText>
-            <SafeText variant="h3" style={[styles.summaryValue, { color: theme.colors.danger }]}>{dashboard.slaBreached}</SafeText>
-          </View>
-          <View style={styles.summaryCard}>
-            <SafeText variant="caption" style={styles.summaryLabel}>{localizedUiText.m_escalated}</SafeText>
-            <SafeText variant="h3" style={[styles.summaryValue, { color: theme.colors.warning }]}>{dashboard.escalationCount}</SafeText>
-          </View>
-          <View style={styles.summaryCard}>
-            <SafeText variant="caption" style={styles.summaryLabel}>{localizedUiText.m_reopened}</SafeText>
-            <SafeText variant="h3" style={styles.summaryValue}>{dashboard.totalReopened}</SafeText>
-          </View>
+      <View style={styles.dashboardSummary}>
+        <View style={styles.summaryCard}>
+          <SafeText variant="caption" style={styles.summaryLabel}>
+            {localizedUiText.m_open}
+          </SafeText>
+          <SafeText variant="h3" style={styles.summaryValue}>
+            {dashboard.totalOpen}
+          </SafeText>
         </View>
-      )}
+        <View style={styles.summaryCard}>
+          <SafeText variant="caption" style={styles.summaryLabel}>
+            {localizedUiText.m_sla_breached}
+          </SafeText>
+          <SafeText
+            variant="h3"
+            style={[styles.summaryValue, createTextColorStyle(theme.colors.danger)]}
+          >
+            {dashboard.slaBreached}
+          </SafeText>
+        </View>
+        <View style={styles.summaryCard}>
+          <SafeText variant="caption" style={styles.summaryLabel}>
+            {localizedUiText.m_escalated}
+          </SafeText>
+          <SafeText
+            variant="h3"
+            style={[styles.summaryValue, createTextColorStyle(theme.colors.warning)]}
+          >
+            {dashboard.escalationCount}
+          </SafeText>
+        </View>
+        <View style={styles.summaryCard}>
+          <SafeText variant="caption" style={styles.summaryLabel}>
+            {localizedUiText.m_reopened}
+          </SafeText>
+          <SafeText variant="h3" style={styles.summaryValue}>
+            {dashboard.totalReopened}
+          </SafeText>
+        </View>
+      </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputWrapper}>
-          <Ionicons name="search" size={20} color={theme.colors.textMuted} style={styles.searchIcon} />
+          <Ionicons
+            name="search"
+            size={20}
+            color={theme.colors.textMuted}
+            style={styles.searchIcon}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder={localizedUiText.m_search_complaints}
@@ -244,24 +332,63 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
 
       <View style={styles.filterRow}>
         <View style={styles.filterGroup}>
-          <SafeText variant="caption" style={styles.filterLabel}>{localizedUiText.m_status}</SafeText>
-          <Pressable style={styles.filterSelect} onPress={() => setSelectedStatus(selectedStatus === 'ALL' ? 'OPEN' : 'ALL')}>
-            <SafeText variant="caption" style={styles.filterValue}>{selectedStatus === 'ALL' ? localizedUiText.m_all : selectedStatus}</SafeText>
-            <AppIcon name="chevron-down-outline" size={16} color={theme.colors.textMuted} />
+          <SafeText variant="caption" style={styles.filterLabel}>
+            {localizedUiText.m_status}
+          </SafeText>
+          <Pressable
+            style={styles.filterSelect}
+            onPress={() =>
+              setSelectedStatus(selectedStatus === 'ALL' ? 'OPEN' : 'ALL')
+            }
+          >
+            <SafeText variant="caption" style={styles.filterValue}>
+              {selectedStatus === 'ALL' ? localizedUiText.m_all : selectedStatus}
+            </SafeText>
+            <AppIcon
+              name="chevron-down-outline"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </Pressable>
         </View>
         <View style={styles.filterGroup}>
-          <SafeText variant="caption" style={styles.filterLabel}>{localizedUiText.m_priority}</SafeText>
-          <Pressable style={styles.filterSelect} onPress={() => setSelectedPriority(selectedPriority === 'ALL' ? 'LOW' : 'ALL')}>
-            <SafeText variant="caption" style={styles.filterValue}>{selectedPriority === 'ALL' ? localizedUiText.m_all : selectedPriority}</SafeText>
-            <AppIcon name="chevron-down-outline" size={16} color={theme.colors.textMuted} />
+          <SafeText variant="caption" style={styles.filterLabel}>
+            {localizedUiText.m_priority}
+          </SafeText>
+          <Pressable
+            style={styles.filterSelect}
+            onPress={() =>
+              setSelectedPriority(selectedPriority === 'ALL' ? 'LOW' : 'ALL')
+            }
+          >
+            <SafeText variant="caption" style={styles.filterValue}>
+              {selectedPriority === 'ALL' ? localizedUiText.m_all : selectedPriority}
+            </SafeText>
+            <AppIcon
+              name="chevron-down-outline"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </Pressable>
         </View>
         <View style={styles.filterGroup}>
-          <SafeText variant="caption" style={styles.filterLabel}>{localizedUiText.m_sla_status}</SafeText>
-          <Pressable style={styles.filterSelect} onPress={() => setSelectedSlaStatus(selectedSlaStatus === 'ALL' ? 'ON_TIME' : 'ALL')}>
-            <SafeText variant="caption" style={styles.filterValue}>{selectedSlaStatus === 'ALL' ? localizedUiText.m_all : selectedSlaStatus}</SafeText>
-            <AppIcon name="chevron-down-outline" size={16} color={theme.colors.textMuted} />
+          <SafeText variant="caption" style={styles.filterLabel}>
+            {localizedUiText.m_sla_status}
+          </SafeText>
+          <Pressable
+            style={styles.filterSelect}
+            onPress={() =>
+              setSelectedSlaStatus(selectedSlaStatus === 'ALL' ? 'ON_TIME' : 'ALL')
+            }
+          >
+            <SafeText variant="caption" style={styles.filterValue}>
+              {selectedSlaStatus === 'ALL' ? localizedUiText.m_all : selectedSlaStatus}
+            </SafeText>
+            <AppIcon
+              name="chevron-down-outline"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </Pressable>
         </View>
       </View>
@@ -269,29 +396,38 @@ export function AdminComplaintsScreen({ navigation }: { navigation: { goBack: ()
       <FlatList
         data={filteredComplaints}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <ActivityIndicator
+          <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            color={theme.colors.primary}
+            tintColor={theme.colors.primary}
             style={styles.refreshControl}
           />
         }
         ListEmptyComponent={
-          filteredComplaints.length === 0 && (
+          filteredComplaints.length === 0 ? (
             <View style={styles.emptyState}>
-              <AppIcon name="document-text-outline" size={48} color={theme.colors.textMuted} />
+              <AppIcon
+                name="document-text-outline"
+                size={48}
+                color={theme.colors.textMuted}
+              />
               <SafeText variant="body" style={styles.emptyText}>
-                {searchQuery || selectedStatus !== 'ALL' || selectedPriority !== 'ALL' || selectedSlaStatus !== 'ALL'
-                  ? localizedUiText.m_no_complaints_match
-                  : localizedUiText.m_no_complaints_yet}
+                {searchQuery ||
+                selectedStatus !== 'ALL' ||
+                selectedPriority !== 'ALL' ||
+                selectedSlaStatus !== 'ALL'
+                  ? 'No matching complaints found'
+                  : 'No complaints reported yet'}
               </SafeText>
             </View>
-          )
+          ) : <></>
         }
       />
     </SafeAreaView>
   );
 }
+
+export default AdminComplaintsScreen;

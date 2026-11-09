@@ -35,7 +35,8 @@ export type ResidentOtpVerificationResult =
   | { status: 'verified'; purpose: ResidentOtpPurpose; profile: ResidentGlobalProfile; memberships: readonly ResidentMembership[] }
   | { status: 'incorrectOtp'; attemptsRemaining: number }
   | { status: 'expiredOtp' }
-  | { status: 'challengeNotFound' };
+  | { status: 'challengeNotFound' }
+  | { status: 'rateLimited'; retryAfterSeconds: number };
 
 export type RegisterResidentInput = {
   challengeId: string;

@@ -1,6 +1,6 @@
 import { AppAlert } from "../../../../ui/modal/AppAlert";
 import { useState, useEffect, useRef } from "react";
-import { View, TextInput, ScrollView, KeyboardAvoidingView } from "react-native";
+import { type ScrollViewInstance, View, TextInput, ScrollView, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useChatConversation } from "../data/useChatConversation";
@@ -25,7 +25,7 @@ export function ChatConversationScreen({ navigation, route }: ChatConversationSc
     const { submit: sendMessage, isSubmitting } = useSendMessage();
     const [inputText, setInputText] = useState('');
     const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-    const scrollRef = useRef<ScrollView>(null);
+    const scrollRef = useRef<ScrollViewInstance>(null);
     useEffect(() => {
         if (messages) {
             setLocalMessages(messages);

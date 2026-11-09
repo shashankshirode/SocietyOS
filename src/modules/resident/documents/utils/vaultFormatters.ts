@@ -23,7 +23,7 @@ import type {
   VerificationChecklist,
   VerificationChecklistItem,
   TraceContext,
-} from './vault/domain/types';
+} from '../vault/domain/types';
 
 export {
   type DocumentCategoryGroup,

@@ -1,6 +1,5 @@
 import { actorTypeAllowed, allViolations, isAbsent } from '../guards/commandSupport';
-import type { DomainViolation } from '../types/primitives';
-import type { LifecycleActor, LifecycleActorType, LifecycleScope } from '../types/primitives';
+import type { DomainViolation , LifecycleActor, LifecycleActorType, LifecycleScope } from '../types/primitives';
 import {
   SETTLEMENT_STAGE_PATH,
   SETTLEMENT_TERMINAL_STAGES,

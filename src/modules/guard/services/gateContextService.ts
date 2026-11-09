@@ -10,10 +10,11 @@ import type {
   ApprovalSource,
   VisitorCategory,
   VisitorPassStatus,
-} from '../../../../shared/types/visitorPhase5';
+} from '../../../shared/types/visitorPhase5';
 import { unifiedVisitorStateMachine } from './unifiedVisitorStateMachine';
 import { auditService, createAuditEntry } from '../../../core/audit';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
+import { gateIdempotencyService } from './gateIdempotencyService';
 
 export interface GateContext {
   readonly gateId: string;
@@ -26,30 +27,30 @@ export interface GateContext {
   readonly allowedVisitorCategories: readonly string[];
   readonly requiresGuard: boolean;
   readonly emergencyBypassEnabled: boolean;
-  readonly maxConcurrentVisitors?: number;
+  readonly maxConcurrentVisitors?: number | undefined;
   readonly currentOccupancy: number;
 }
 
 export interface VisitorValidationResult {
   readonly valid: boolean;
-  readonly errorCode?: string;
-  readonly errorMessage?: string;
-  readonly pass?: VisitorPass;
-  readonly approvalRequest?: VisitorApprovalRequest;
-  readonly watchlistMatch?: boolean;
-  readonly watchlistEntry?: WatchlistEntry;
+  readonly errorCode?: string | undefined;
+  readonly errorMessage?: string | undefined;
+  readonly pass?: VisitorPass | undefined;
+  readonly approvalRequest?: VisitorApprovalRequest | undefined;
+  readonly watchlistMatch?: boolean | undefined;
+  readonly watchlistEntry?: WatchlistEntry | undefined;
 }
 
 export interface GateEntryValidation {
   readonly valid: boolean;
-  readonly errorCode?: string;
-  readonly errorMessage?: string;
-  readonly pass?: VisitorPass;
-  readonly requiresResidentApproval?: boolean;
-  readonly approvalRequestId?: string;
-  readonly watchlistMatch?: boolean;
-  readonly watchlistEntry?: WatchlistEntry;
-  readonly hostAccessActive?: boolean;
+  readonly errorCode?: string | undefined;
+  readonly errorMessage?: string | undefined;
+  readonly pass?: VisitorPass | undefined;
+  readonly requiresResidentApproval?: boolean | undefined;
+  readonly approvalRequestId?: string | undefined;
+  readonly watchlistMatch?: boolean | undefined;
+  readonly watchlistEntry?: WatchlistEntry | undefined;
+  readonly hostAccessActive?: boolean | undefined;
 }
 
 export interface ValidationContext {
@@ -70,11 +71,11 @@ export class GateContextService {
   }
 
   async getGateContext(gateId: string, guardId: string, guardName: string): Promise<GateContext | null> {
-    const gates = mockStore.getState().gates || [];
+    const gates = (mockStore.getState().gates || []) as unknown as Gate[];
     const gate = gates.find(g => g.gateId === gateId);
     if (!gate) return null;
 
-    const guards = mockStore.getState().guards || [];
+    const guards = (mockStore.getState().guards || []) as unknown as any[];
     const guard = guards.find(g => g.id === guardId);
     if (!guard || guard.societyId !== gate.societyId) return null;
 
@@ -99,7 +100,7 @@ export class GateContextService {
     entrySource: string,
     visitorCategory: string,
     isEmergency: boolean = false
-  ): { valid: boolean; errorCode?: string; errorMessage?: string } {
+  ): { valid: boolean; errorCode?: string | undefined; errorMessage?: string | undefined } {
     if (gateContext.isOnline === false) {
       return { valid: false, errorCode: 'GATE_OFFLINE', errorMessage: 'Gate is currently offline' };
     }
@@ -155,22 +156,23 @@ export class VisitorValidationService {
     context: ValidationContext
   ): Promise<VisitorValidationResult> {
     const visitors = mockStore.getState().visitors || [];
-    const pass = visitors.find(v =>
+    const visitor = visitors.find(v =>
       v.id === credential ||
-      v.qrCredential === credential ||
-      v.otpCredential === credential
+      v.qrCode === credential ||
+      v.qrCodeData === credential ||
+      v.otp === credential
     );
 
-    if (!pass) {
+    if (!visitor) {
       return { valid: false, errorCode: 'PASS_NOT_FOUND', errorMessage: 'Visitor pass not found' };
     }
 
-    if (pass.societyId !== gateContext.societyId) {
+    if (visitor.societyId !== gateContext.societyId) {
       return { valid: false, errorCode: 'CROSS_SOCIETY_PASS', errorMessage: 'Pass belongs to a different society' };
     }
 
-    if (!unifiedVisitorStateMachine.isVisitorPassActive(pass.status)) {
-      const errorMap: Record<VisitorPassStatus, { code: string; message: string }> = {
+    if (!unifiedVisitorStateMachine.isVisitorPassActive(visitor.status as any)) {
+      const errorMap: Partial<Record<VisitorPassStatus, { code: string; message: string }>> = {
         EXPIRED: { code: 'PASS_EXPIRED', message: 'This visitor pass has expired' },
         CANCELLED: { code: 'PASS_CANCELLED', message: 'This visitor pass was cancelled by the resident' },
         REVOKED: { code: 'PASS_REVOKED', message: 'This visitor pass has been revoked' },
@@ -178,22 +180,49 @@ export class VisitorValidationService {
         REJECTED: { code: 'PASS_REJECTED', message: 'This visitor pass was rejected' },
         DENIED: { code: 'PASS_DENIED', message: 'This visitor pass was denied' },
       };
-      const error = errorMap[pass.status] || { code: 'PASS_INVALID_STATUS', message: 'This visitor pass cannot be used for entry' };
+      const error = (errorMap as any)[visitor.status] || { code: 'PASS_INVALID_STATUS', message: 'This visitor pass cannot be used for entry' };
       return { valid: false, errorCode: error.code, errorMessage: error.message };
     }
 
-    if (pass.credentialExpiresAt && new Date(pass.credentialExpiresAt) < context.currentTime) {
+    if (visitor.qrCodeExpiryAtIso && new Date(visitor.qrCodeExpiryAtIso) < context.currentTime) {
       return { valid: false, errorCode: 'CREDENTIAL_EXPIRED', errorMessage: 'Entry credential has expired' };
     }
 
-    if (pass.expectedExitAt && new Date(pass.expectedExitAt) < context.currentTime) {
+    if (visitor.expectedExitAtIso && new Date(visitor.expectedExitAtIso) < context.currentTime) {
       return { valid: false, errorCode: 'PASS_EXPIRED', errorMessage: 'Visitor pass validity window has ended' };
     }
 
-    const watchlistMatch = await this.checkWatchlist(pass.visitorName, pass.visitorPhone);
+    const watchlistMatch = await this.checkWatchlist(visitor.name, visitor.phone);
     if (watchlistMatch) {
       return { valid: false, errorCode: 'WATCHLIST_MATCH', errorMessage: 'Visitor matches watchlist entry', watchlistMatch: true, watchlistEntry: watchlistMatch };
     }
+
+    const pass: VisitorPass = {
+      passId: visitor.id,
+      personId: visitor.id,
+      visitorName: visitor.name,
+      visitorPhone: visitor.phone,
+      visitorCategory: (visitor.category || visitor.visitorCategory || 'GUEST') as any,
+      purpose: visitor.purpose || '',
+      unitId: (visitor as any).unitId || '',
+      flatNumber: visitor.flatNumber || '',
+      societyId: visitor.societyId,
+      status: visitor.status as any,
+      approvalSource: (visitor.approvalSource || 'WALK_IN_PASS') as any,
+      createdByUserId: visitor.createdByUserId || '',
+      createdByDisplayName: visitor.createdByDisplayName || '',
+      createdAt: visitor.createdAt,
+      updatedAt: visitor.updatedAt || visitor.createdAt,
+      expectedEntryAt: visitor.expectedEntryAtIso || visitor.createdAt,
+      expectedExitAt: visitor.expectedExitAtIso || new Date(Date.now() + 240 * 60 * 1000).toISOString(),
+      ...(visitor.actualEntryAtIso ? { actualEntryAt: visitor.actualEntryAtIso } : {}),
+      ...(visitor.actualExitAtIso ? { actualExitAt: visitor.actualExitAtIso } : {}),
+      ...((visitor.qrCode || visitor.qrCodeData) ? { qrCredential: visitor.qrCode || visitor.qrCodeData } : {}),
+      ...(visitor.otp ? { otpCredential: visitor.otp } : {}),
+      ...(visitor.qrCodeExpiryAtIso ? { credentialExpiresAt: visitor.qrCodeExpiryAtIso } : {}),
+      isRecurring: false,
+      dataVersion: (visitor as any).dataVersion || 1,
+    };
 
     const hostAccessActive = await this.validateHostAccess(pass);
     if (!hostAccessActive) {
@@ -239,10 +268,10 @@ export class VisitorValidationService {
   }
 
   private async checkWatchlist(visitorName: string, visitorPhone?: string): Promise<WatchlistEntry | null> {
-    const watchlist = mockStore.getState().watchlistEntries || [];
+    const watchlist = (mockStore.getState().watchlistEntries || []) as unknown as WatchlistEntry[];
     return watchlist.find(w =>
       w.status === 'ACTIVE' &&
-      (w.visitorName.toLowerCase() === visitorName.toLowerCase() ||
+      ((w.visitorName && w.visitorName.toLowerCase() === visitorName.toLowerCase()) ||
        (visitorPhone && w.visitorPhone === visitorPhone))
     ) || null;
   }
@@ -285,15 +314,16 @@ export class GateEntryService {
     vehicleType?: string,
     isOffline: boolean = false,
     idempotencyKey?: string
-  ): Promise<{ success: boolean; errorCode?: string; errorMessage?: string; entryId?: string; dataVersion: number }> {
+  ): Promise<{ success: boolean; errorCode?: string | undefined; errorMessage?: string | undefined; entryId?: string | undefined; dataVersion: number }> {
     const key = idempotencyKey || createIdempotencyKey(`gate-entry-${pass.passId}-${gateContext.gateId}-${Date.now()}`);
 
     const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, gateContext.societyId);
     if (idempotencyResult.exists) {
+      const resp = idempotencyResult.record?.responsePayload;
       return {
         success: true,
-        entryId: idempotencyResult.record?.entryId,
-        dataVersion: idempotencyResult.record?.dataVersion || 1,
+        entryId: resp?.['entryId'] as string | undefined,
+        dataVersion: (resp?.['dataVersion'] as number | undefined) || 1,
       };
     }
 
@@ -303,7 +333,7 @@ export class GateEntryService {
       passId: pass.passId,
       personId: pass.personId,
       visitorName: pass.visitorName,
-      visitorPhone: pass.visitorPhone,
+      ...(pass.visitorPhone ? { visitorPhone: pass.visitorPhone } : {}),
       visitorCategory: pass.visitorCategory,
       flatNumber: pass.flatNumber,
       unitId: pass.unitId,
@@ -316,30 +346,31 @@ export class GateEntryService {
       approvalSource: approvalSource as any,
       status: 'CHECKED_IN',
       entryAt: now.toISOString(),
-      vehicleRegistration,
-      vehicleType: vehicleType as any,
+      ...(vehicleRegistration ? { vehicleRegistration } : {}),
+      ...(vehicleType ? { vehicleType: vehicleType as any } : {}),
       isOfflineCapture: false,
       dataVersion: 1,
       societyId: gateContext.societyId,
-      unitId: pass.unitId,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
     };
 
     const visitors = mockStore.getState().visitors || [];
-    const passIndex = visitors.findIndex(v => v.passId === pass.passId);
+    const passIndex = visitors.findIndex(v => v.id === pass.passId || (v as any).passId === pass.passId);
     if (passIndex !== -1) {
-      visitors[passIndex] = {
-        ...visitors[passIndex],
-        status: 'CHECKED_IN',
-        actualEntryAt: now.toISOString(),
-        entryGateId: gateContext.gateId,
-        entryGateName: gateContext.gateName,
-        dataVersion: (visitors[passIndex].dataVersion || 0) + 1,
-      };
+      const currentVis = visitors[passIndex];
+      if (currentVis) {
+        visitors[passIndex] = {
+          ...currentVis,
+          status: 'CHECKED_IN',
+          actualEntryAtIso: now.toISOString(),
+          checkInGateId: gateContext.gateId,
+          checkInGateName: gateContext.gateName,
+          gateId: gateContext.gateId,
+          gateName: gateContext.gateName,
+        };
+      }
     }
 
-    mockStore.getState().gateEntries?.push(entry);
+    (mockStore.getState().gateEntries as any[])?.push(entry);
     mockStore.notify();
 
     await gateIdempotencyService.completeIdempotency(key, gateContext.societyId, entry.entryId, { entryId: entry.entryId, dataVersion: entry.dataVersion });
@@ -366,16 +397,17 @@ export class GateEntryService {
     vehicleRegistration?: string,
     isOffline: boolean = false,
     idempotencyKey?: string
-  ): Promise<{ success: boolean; errorCode?: string; errorMessage?: string; exitId?: string; durationMinutes: number; dataVersion: number }> {
+  ): Promise<{ success: boolean; errorCode?: string | undefined; errorMessage?: string | undefined; exitId?: string | undefined; durationMinutes: number; dataVersion: number }> {
     const key = idempotencyKey || createIdempotencyKey(`gate-exit-${pass.passId}-${gateContext.gateId}-${Date.now()}`);
 
     const idempotencyResult = await gateIdempotencyService.checkIdempotency(key, gateContext.societyId);
     if (idempotencyResult.exists) {
+      const resp = idempotencyResult.record?.responsePayload;
       return {
         success: true,
-        exitId: idempotencyResult.record?.exitId,
-        durationMinutes: idempotencyResult.record?.durationMinutes || 0,
-        dataVersion: idempotencyResult.record?.dataVersion || 1,
+        exitId: resp?.['exitId'] as string | undefined,
+        durationMinutes: (resp?.['durationMinutes'] as number | undefined) || 0,
+        dataVersion: (resp?.['dataVersion'] as number | undefined) || 1,
       };
     }
 
@@ -401,24 +433,24 @@ export class GateEntryService {
       dataVersion: 1,
       societyId: gateContext.societyId,
       unitId: pass.unitId,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
     };
 
     const visitors = mockStore.getState().visitors || [];
-    const passIndex = visitors.findIndex(v => v.passId === pass.passId);
+    const passIndex = visitors.findIndex(v => v.id === pass.passId || (v as any).passId === pass.passId);
     if (passIndex !== -1) {
-      visitors[passIndex] = {
-        ...visitors[passIndex],
-        status: 'CHECKED_OUT',
-        actualExitAt: now.toISOString(),
-        exitGateId: gateContext.gateId,
-        exitGateName: gateContext.gateName,
-        dataVersion: (visitors[passIndex].dataVersion || 0) + 1,
-      };
+      const currentVis = visitors[passIndex];
+      if (currentVis) {
+        visitors[passIndex] = {
+          ...currentVis,
+          status: 'COMPLETED',
+          actualExitAtIso: now.toISOString(),
+          checkOutGateId: gateContext.gateId,
+          checkOutGateName: gateContext.gateName,
+        };
+      }
     }
 
-    mockStore.getState().gateExits?.push(exit);
+    (mockStore.getState().gateExits as any[])?.push(exit);
     mockStore.notify();
 
     await gateIdempotencyService.completeIdempotency(key, gateContext.societyId, exit.exitId, { exitId: exit.exitId, durationMinutes, dataVersion: exit.dataVersion });
@@ -445,7 +477,7 @@ export class GateEntryService {
     vehicleRegistration?: string,
     vehicleType?: string,
     idempotencyKey?: string
-  ): Promise<{ success: boolean; errorCode?: string; errorMessage?: string; entryId?: string; dataVersion: number }> {
+  ): Promise<{ success: boolean; errorCode?: string | undefined; errorMessage?: string | undefined; entryId?: string | undefined; dataVersion: number }> {
     const key = idempotencyKey || createIdempotencyKey(`emergency-bypass-${gateContext.gateId}-${Date.now()}`);
 
     const now = new Date();
@@ -453,7 +485,7 @@ export class GateEntryService {
       entryId: `emergency-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       passId: 'EMERGENCY',
       visitorName: `EMERGENCY: ${reason}`,
-      visitorCategory: 'EMERGENCY',
+      visitorCategory: 'EMERGENCY' as any,
       flatNumber: 'ALL_CAMPUS',
       unitId: 'ALL',
       gateId: gateContext.gateId,
@@ -461,21 +493,18 @@ export class GateEntryService {
       guardId: gateContext.guardId,
       guardName: gateContext.guardName,
       entryType: 'EMERGENCY_BYPASS',
-      entrySource: 'EMERGENCY_BYPASS',
-      approvalSource: 'SYSTEM_POLICY',
+      entrySource: 'EMERGENCY_BYPASS' as any,
+      approvalSource: 'SYSTEM_POLICY' as any,
       status: 'CHECKED_IN',
       entryAt: now.toISOString(),
-      vehicleRegistration,
-      vehicleType: vehicleType as any,
+      ...(vehicleRegistration ? { vehicleRegistration } : {}),
+      ...(vehicleType ? { vehicleType: vehicleType as any } : {}),
       isOfflineCapture: false,
       dataVersion: 1,
       societyId: gateContext.societyId,
-      unitId: 'ALL',
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
     };
 
-    mockStore.getState().gateEntries?.push(entry);
+    (mockStore.getState().gateEntries as any[])?.push(entry);
     mockStore.notify();
 
     await gateIdempotencyService.completeIdempotency(key, gateContext.societyId, entry.entryId, { entryId: entry.entryId, dataVersion: entry.dataVersion });

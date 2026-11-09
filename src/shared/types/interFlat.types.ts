@@ -1,3 +1,5 @@
+import type { JsonObject } from '../../core/api/api.types';
+
 export type InterFlatIssueType =
   | 'WATER_LEAKAGE'
   | 'NOISE_DISTURBANCE'

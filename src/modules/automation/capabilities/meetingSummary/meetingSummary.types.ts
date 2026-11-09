@@ -4,11 +4,11 @@ export type MeetingSummaryRequest = {
   transcript?: string;
   notes?: string;
   agenda?: string;
-  participants: Array<{
+  participants: {
     id: string;
     name: string;
     role: string;
-  }>;
+  }[];
   societyId: string;
   requestedBy: string;
   language?: 'en' | 'hi' | 'mr';
@@ -19,19 +19,19 @@ export type MeetingSummaryResult = {
   meetingId: string;
   summary: string;
   keyPoints: string[];
-  actionItems: Array<{
+  actionItems: {
     description: string;
     assigneeRole?: string;
     assigneeId?: string;
     dueDate?: string;
     priority?: 'LOW' | 'NORMAL' | 'HIGH';
     sourceReference: string;
-  }>;
-  decisions: Array<{
+  }[];
+  decisions: {
     description: string;
     outcome: 'APPROVED' | 'REJECTED' | 'DEFERRED' | 'DISCUSSED';
     sourceReference: string;
-  }>;
+  }[];
   modelVersion: string;
   templateVersion: number;
   source: 'AI_PROVIDER' | 'RULE_FALLBACK';

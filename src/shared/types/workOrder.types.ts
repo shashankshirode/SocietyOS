@@ -1,18 +1,52 @@
+import type { Absent } from './absence.types';
+
 export type WorkOrderType =
   | 'PREVENTIVE_MAINTENANCE' | 'BREAKDOWN' | 'INSPECTION' | 'REPAIR' | 'REPLACEMENT'
   | 'COMPLAINT_LINKED' | 'INSTALLATION' | 'OTHER';
 
-export type WorkOrderStatus = 'DRAFT' | 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'VERIFIED' | 'CLOSED' | 'CANCELLED' | 'OVERDUE';
+export type WorkOrderStatus =
+  | 'DRAFT'
+  | 'OPEN'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  | 'ON_HOLD'
+  | 'COMPLETION_SUBMITTED'
+  | 'COMPLETED'
+  | 'VERIFIED'
+  | 'CLOSED'
+  | 'CANCELLED'
+  | 'OVERDUE';
+
 export type WorkOrderPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export type BreakdownSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type OperationalImpact = 'NO_IMPACT' | 'PARTIAL_IMPACT' | 'SERVICE_DOWN' | 'SAFETY_RISK' | 'MAJOR_DISRUPTION';
+export type WorkOrderSource = 'MANUAL' | 'COMPLAINT' | 'SCHEDULE' | 'BREAKDOWN' | 'EMERGENCY';
+
+export type WorkOrderHoldReason =
+  | 'WAITING_FOR_PARTS'
+  | 'WAITING_FOR_VENDOR'
+  | 'WAITING_FOR_ACCESS'
+  | 'WEATHER_DELAY'
+  | 'BUDGET_APPROVAL'
+  | 'OTHER';
+
+export type WorkOrderPartUsage = {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+  unitCost?: number | Absent;
+  totalCost?: number | Absent;
+};
 
 export type WorkOrderTimelineItem = {
   id: string;
   title: string;
   note: string;
   createdAt: string;
-  event?: string;
+  event?: string | Absent;
+  eventType?: string | Absent;
+  actorId?: string | Absent;
+  actorName?: string | Absent;
 };
 
 export type WorkOrder = {
@@ -20,28 +54,39 @@ export type WorkOrder = {
   workOrderNumber: string;
   title: string;
   type: WorkOrderType;
-  linkedAssetId?: string;
-  linkedAssetName?: string;
-  vendorId?: string;
-  vendorName?: string;
+  linkedAssetId?: string | Absent;
+  linkedAssetName?: string | Absent;
+  vendorId?: string | Absent;
+  assignedVendorId?: string | Absent;
+  vendorName?: string | Absent;
   priority: WorkOrderPriority;
   status: WorkOrderStatus;
   dueDate: string;
   assignedTo: string;
   slaStatus: string;
-  source: 'MANUAL' | 'COMPLAINT' | 'SCHEDULE' | 'BREAKDOWN';
+  source: WorkOrderSource;
   description: string;
-  notes?: string;
-  evidenceLabel?: string;
-  completionProofLabel?: string;
+  notes?: string | Absent;
+  evidenceLabel?: string | Absent;
+  completionProofLabel?: string | Absent;
   verificationStatus: string;
-  linkedComplaintId?: string;
-  linkedEmergencyIncidentId?: string;
-  maintenancePlanId?: string;
-  maintenanceOccurrenceId?: string;
-  evidenceDocumentIds?: string[];
-  serviceReportDocumentId?: string;
-  holdReason?: string;
+  verificationNotes?: string | Absent;
+  verifiedAt?: string | Absent;
+  reworkReason?: string | Absent;
+  startedAt?: string | Absent;
+  completedAt?: string | Absent;
+  closedAt?: string | Absent;
+  createdAt?: string | Absent;
+  partsUsed?: WorkOrderPartUsage[] | Absent;
+  costAmount?: number | Absent;
+  costCurrency?: string | Absent;
+  linkedComplaintId?: string | Absent;
+  linkedEmergencyIncidentId?: string | Absent;
+  maintenancePlanId?: string | Absent;
+  maintenanceOccurrenceId?: string | Absent;
+  evidenceDocumentIds?: string[] | Absent;
+  serviceReportDocumentId?: string | Absent;
+  holdReason?: string | Absent;
   timeline: WorkOrderTimelineItem[];
 };
 
@@ -64,16 +109,19 @@ export type ServiceHistoryItem = {
   serviceDate: string;
   assetId: string;
   assetName: string;
-  vendorId: string;
-  vendorName: string;
+  vendorId?: string | Absent;
+  vendorName?: string | Absent;
   workOrderNumber: string;
   serviceType: WorkOrderType;
   status: WorkOrderStatus;
-  costPlaceholder: string;
+  costPlaceholder?: string | Absent;
+  costAmount?: number | Absent;
+  costCurrency?: string | Absent;
   technician: string;
   findings: string;
   nextAction: string;
-  reportPlaceholder: string;
+  reportPlaceholder?: string | Absent;
+  serviceReportDocumentId?: string | Absent;
 };
 
 export type FacilityIncident = {

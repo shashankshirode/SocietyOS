@@ -25,7 +25,6 @@ const TRANSITIONS: Readonly<Record<FacilityBookingStatus, readonly FacilityBooki
   NO_SHOW: ['REFUND_PENDING'],
   FAILED: ['PAYMENT_PENDING', 'CANCELLED_BY_RESIDENT'],
   RESCHEDULED: ['CONFIRMED', 'CANCELLED_BY_RESIDENT'],
-  PARTIALLY_REFUNDED: [],
 };
 
 const ACTION_TO_TRANSITION: Readonly<Record<FacilityBookingAction, readonly FacilityBookingStatus[]>> = {

@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useResidentTheme } from '../../../../ui/foundation/residentTheme';
-import { ResidentPageHeader } from '../../../../ui/patterns/ResidentPageHeader';
-import { AppButton } from '../../../../shared/components/AppButton';
-import { StatusPill, type StatusTone } from '../../../../ui/components/StatusPill';
-import { SafeText } from '../../../../shared/components/SafeText';
-import { AppTextArea } from '../../../../shared/forms/AppTextArea';
-import { useMessages as useGeneratedUiMessages } from '../../../../messages/useMessages';
-import { useAppTheme } from '../../../../shared/theme/useAppTheme';
-import { styles, createTextColorStyle, createViewBackgroundColorStyle } from '../styles/screens/VisitorApprovalScreen.styles';
+import { ResidentPageHeader } from '../../../ui/patterns/ResidentPageHeader';
+import { AppButton } from '../../../shared/components/AppButton';
+import { StatusPill, type StatusTone } from '../../../ui/components/StatusPill';
+import { SafeText } from '../../../shared/components/SafeText';
+import { AppTextArea } from '../../../shared/forms/AppTextArea';
+import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
+import { useAppTheme } from '../../../shared/theme/useAppTheme';
+import { styles, createTextColorStyle } from '../styles/screens/VisitorApprovalScreen.styles';
 import { useVisitorApprovalRequests } from '../data/useVisitorApprovals';
 import { visitorApprovalService } from '../services/visitorApprovalService';
 
@@ -21,7 +20,7 @@ interface VisitorApprovalScreenProps {
 export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScreenProps) {
   const { requestId } = route.params;
   const localizedUiText = useGeneratedUiMessages().uiLiterals;
-  const theme = useResidentTheme();
+  const theme = useAppTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [request, setRequest] = useState<any>(null);
@@ -29,15 +28,14 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
   const [showDenialReason, setShowDenialReason] = useState(false);
   const [denialReason, setDenialReason] = useState('');
 
-  const { data: requests, refetch } = useVisitorApprovalRequests();
+  const { refetch } = useVisitorApprovalRequests();
 
-  useEffect(() => {
-    if (requestId) {
-      loadRequest();
+  const loadRequest = useCallback(async () => {
+    if (!requestId) {
+      setError('Approval request ID is required');
+      setIsLoading(false);
+      return;
     }
-  }, [requestId]);
-
-  const loadRequest = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -47,12 +45,21 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
         return;
       }
       setRequest(req);
-    } catch (e) {
+    } catch {
       setError('Failed to load approval request');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [requestId]);
+
+  useEffect(() => {
+    if (requestId) {
+      loadRequest();
+    } else {
+      setIsLoading(false);
+      setError('Approval request ID is required');
+    }
+  }, [requestId, loadRequest]);
 
   const handleApprove = async () => {
     if (!request) return;
@@ -107,12 +114,6 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
 
   const handleEscalate = async (type: 'SECURITY' | 'SUPERVISOR' | 'COMMITTEE') => {
     if (!request) return;
-    const reasonMap = {
-      SECURITY: 'Escalated to security for review',
-      SUPERVISOR: 'Escalated to supervisor for review',
-      COMMITTEE: 'Escalated to committee for review',
-    };
-    
     try {
       const updated = await visitorApprovalService.escalateRequest(
         request.id,
@@ -130,7 +131,7 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBack onBack={navigation.goBack} />
+        <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBackButton onBackPress={navigation.goBack} />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -141,7 +142,7 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
   if (error || !request) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBack onBack={navigation.goBack} />
+        <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBackButton onBackPress={navigation.goBack} />
         <View style={styles.errorContainer}>
           <SafeText variant="body" style={createTextColorStyle(theme.colors.danger)}>
             {error || 'Request not found'}
@@ -151,14 +152,6 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
       </SafeAreaView>
     );
   }
-
-  const statusColors: Record<string, string> = {
-    PENDING: theme.colors.warning,
-    APPROVED: theme.colors.success,
-    DENIED: theme.colors.danger,
-    ESCALATED: theme.colors.info,
-    EXPIRED: theme.colors.muted,
-  };
 
   const getStatusTone = (status: string): StatusTone => {
     switch (status) {
@@ -173,7 +166,7 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBack onBack={navigation.goBack} />
+      <ResidentPageHeader title={localizedUiText.m_visitor_approval} showBackButton onBackPress={navigation.goBack} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, styles.requestCard]}>
@@ -186,7 +179,7 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
             </View>
             <StatusPill
               label={request.status}
-              type={getStatusTone(request.status)}
+              tone={getStatusTone(request.status)}
               small
             />
           </View>
@@ -299,7 +292,7 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
 
         {request.status === 'EXPIRED' && (
           <View style={[styles.card, styles.expiredCard]}>
-            <SafeText variant="body" style={styles.expiredText} textAlign="center">
+            <SafeText variant="body" style={styles.expiredText} align="center">
               {localizedUiText.m_request_expired}
             </SafeText>
           </View>
@@ -316,11 +309,10 @@ export function VisitorApprovalScreen({ route, navigation }: VisitorApprovalScre
               {localizedUiText.m_enter_denial_reason}
             </SafeText>
             <AppTextArea
+              label={localizedUiText.m_denial_reason}
               value={denialReason}
               onChangeText={setDenialReason}
               placeholder={localizedUiText.m_denial_reason_placeholder}
-              style={styles.modalTextArea}
-              minHeight={100}
             />
             <View style={styles.modalButtons}>
               <AppButton
@@ -354,6 +346,3 @@ function formatDateTime(iso: string): string {
     return iso;
   }
 }
-
-const { format } = require('date-fns');
-const { Alert } = require('react-native');

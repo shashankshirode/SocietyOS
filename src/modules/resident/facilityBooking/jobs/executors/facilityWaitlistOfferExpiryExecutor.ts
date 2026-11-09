@@ -1,5 +1,5 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../../../../../core/jobs/job.types';
-import type { JobPorts as JobPortsInterface } from '../../../../../core/jobs/job.ports';
+import type { JobExecution, JobResult } from '../../../../../core/jobs/job.types';
+import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../core/jobs/job.ports';
 import type { VaultClock } from '../../../../../core/identity/personaRegistry';
 
 interface FacilityBookingPorts extends JobPortsInterface {
@@ -80,7 +80,7 @@ export class FacilityWaitlistOfferExpiryExecutor implements JobExecutor {
         });
 
         const nextEntry = await this.promoteNext(entry.facilityId, entry.slotId, vault);
-        if (nextPromoted) {
+        if (nextEntry) {
           (details.promoted as string[]).push(nextEntry.id);
         }
 

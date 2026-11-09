@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { KeyboardTypeOptions, Text, TextInput, View, ViewStyle, type TextInputProps } from "react-native";
+import { type TextInputInstance, KeyboardTypeOptions, Text, TextInput, View, ViewStyle, type TextInputProps } from "react-native";
 import { Spacing } from "../theme/spacing";
 import { useAppTheme } from "../theme/useAppTheme";
 import { styles, createTextColorStyle, createTextColorStyle2, createTextInputColorStyle, createTextInputMinHeightStyle, createTextInputColorStyle2, createTextColorStyle3, createTextColorStyle4, createViewBorderColorBackgroundColorShadowColorSpread4Style } from "./styles/FormField.styles";
@@ -29,12 +29,12 @@ interface FormFieldProps {
     onBlur?: TextInputProps['onBlur'];
     testID?: string;
 }
-export const FormField = forwardRef<TextInput, FormFieldProps>(function FormField({ label, value, onChangeText, placeholder, error, helperText, keyboardType = 'default', multiline = false, required = false, maxLength, editable = true, style, numberOfLines = 1, secureTextEntry = false, autoCapitalize = 'sentences', leftIcon, rightAction, returnKeyType, blurOnSubmit, onSubmitEditing, onFocus, onBlur, testID }: FormFieldProps, forwardedRef) {
+export const FormField = forwardRef<TextInputInstance, FormFieldProps>(function FormField({ label, value, onChangeText, placeholder, error, helperText, keyboardType = 'default', multiline = false, required = false, maxLength, editable = true, style, numberOfLines = 1, secureTextEntry = false, autoCapitalize = 'sentences', leftIcon, rightAction, returnKeyType, blurOnSubmit, onSubmitEditing, onFocus, onBlur, testID }: FormFieldProps, forwardedRef) {
     const { colors, shadows } = useAppTheme();
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<TextInputInstance>(null);
     const [contentHeight, setContentHeight] = useState(0);
     const ensureVisible = useKeyboardAwareField(inputRef);
-    useImperativeHandle(forwardedRef, () => inputRef.current as TextInput);
+    useImperativeHandle(forwardedRef, () => inputRef.current as TextInputInstance);
     const minimumHeight = numberOfLines * 22 + Spacing.lg * 2;
     const multilineHeight = Math.min(Math.max(minimumHeight, contentHeight), 176);
     return (<View style={[styles.container, style]}>

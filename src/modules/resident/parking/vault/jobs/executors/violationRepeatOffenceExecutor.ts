@@ -1,11 +1,11 @@
-import type { JobExecutor, JobExecution, JobResult, JobPorts } from '../../../../../../core/jobs/job.types';
-import type { JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
-import type { VaultClock } from '../../../../../../core/identity/personaRegistry';
+import type { JobExecution, JobResult } from '../../../../../../core/jobs/job.types';
+import type { JobExecutor, JobPorts, JobPorts as JobPortsInterface } from '../../../../../../core/jobs/job.ports';
+import type { ParkingVaultClock } from '../../domain/types/primitives';
 import type { ParkingViolationRecord } from '../../domain/types/parking';
 
-interface ParkingBookingPorts extends JobPortsInterface {
+interface ParkingBookingPorts extends Omit<JobPortsInterface, 'vault'> {
   vault: {
-    clock: VaultClock;
+    clock: ParkingVaultClock;
     violations: {
       listBySociety: (societyId: string) => readonly ParkingViolationRecord[];
       findRepeatOffences: (societyId: string, vehicleNumber: string, timeWindow: string) => number;
@@ -35,7 +35,7 @@ interface ParkingBookingPorts extends JobPortsInterface {
 
 export class ViolationRepeatOffenceExecutor implements JobExecutor {
   async execute(execution: JobExecution, ports: JobPorts): Promise<JobResult> {
-    const vault = (ports as ParkingBookingPorts).vault;
+    const vault = (ports as unknown as ParkingBookingPorts).vault;
     if (!vault) {
       return { success: false, processedCount: 0, succeededCount: 0, failedCount: 0, details: { error: 'Vault not available' } };
     }
@@ -69,12 +69,12 @@ export class ViolationRepeatOffenceExecutor implements JobExecutor {
             (latest, v) => (new Date(v.createdAt) > new Date(latest.createdAt) ? v : latest),
             first,
           );
-          if (latestViolation.status !== 'ESCALATED') {
-            const updated: ParkingViolationRecord = { ...latestViolation, status: 'ESCALATED', updatedAt: now };
+          if (!latestViolation.isRepeatOffence) {
+            const updated: ParkingViolationRecord = { ...latestViolation, isRepeatOffence: true, updatedAt: now };
             vault.violations.update(updated);
             await vault.notifications.send({
-              residenceId: latestViolation.residenceId,
-              userId: latestViolation.userId,
+              residenceId: latestViolation.scope.owningEntityId,
+              userId: latestViolation.trace.correlationId,
               title: 'Repeat Parking Offence',
               body: `Vehicle ${vehicleNumber} has ${confirmedViolations.length} confirmed violations. Escalated for review.`,
               data: { violationId: latestViolation.id, vehicleNumber },
@@ -83,8 +83,8 @@ export class ViolationRepeatOffenceExecutor implements JobExecutor {
               action: 'VIOLATION_ESCALATED_REPEAT_OFFENCE',
               entityType: 'PARKING_VIOLATION',
               entityId: latestViolation.id,
-              societyId: latestViolation.societyId,
-              residenceId: latestViolation.residenceId,
+              societyId: latestViolation.scope.societyId,
+              residenceId: latestViolation.scope.owningEntityId,
               metadata: { vehicleNumber, confirmedCount: confirmedViolations.length },
             });
             succeededCount++;

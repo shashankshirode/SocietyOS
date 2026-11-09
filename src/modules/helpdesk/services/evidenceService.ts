@@ -64,7 +64,7 @@ export class EvidenceService {
   async uploadEvidence(input: UploadEvidenceInput): Promise<UploadResult> {
     const idempotencyResult = await gateIdempotencyService.checkIdempotency(input.idempotencyKey, '');
     if (idempotencyResult.exists) {
-      return { success: true, evidence: idempotencyResult.record?.evidence };
+      return { success: true, evidence: (idempotencyResult.record as any)?.evidence };
     }
 
     const complaints = mockStore.getState().complaints || [];
@@ -96,17 +96,18 @@ export class EvidenceService {
       isResolutionEvidence: input.isResolutionEvidence,
       metadata: {},
       societyId: '',
-      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     mockStore.getState().complaintEvidence = [...(mockStore.getState().complaintEvidence || []), evidence];
 
     const complaintIndex = mockStore.getState().complaints?.findIndex(c => c.id === input.complaintId);
-    if (complaintIndex !== -1) {
+    if (complaintIndex !== undefined && complaintIndex !== -1) {
       const complaint = mockStore.getState().complaints[complaintIndex];
-      complaint.evidenceIds = [...(complaint.evidenceIds || []), evidence.id];
-      complaint.updatedAt = new Date().toISOString();
+      if (complaint) {
+        complaint.evidenceIds = [...(complaint.evidenceIds || []), evidence.id];
+        complaint.updatedAt = new Date().toISOString();
+      }
     }
 
     mockStore.notify();
@@ -130,22 +131,29 @@ export class EvidenceService {
   }
 
   async deleteEvidence(evidenceId: string, deletedByUserId: string, deletedByDisplayName: string): Promise<DeleteEvidenceResult> {
-    const evidenceIndex = mockStore.getState().complaintEvidence?.findIndex(e => e.id === evidenceId);
+    const evidenceList = mockStore.getState().complaintEvidence || [];
+    const evidenceIndex = evidenceList.findIndex(e => e.id === evidenceId);
     if (evidenceIndex === -1) {
       return { success: false, errorCode: 'EVIDENCE_NOT_FOUND', errorMessage: 'Evidence not found' };
     }
 
-    const evidence = mockStore.getState().complaintEvidence[evidenceIndex];
+    const evidence = evidenceList[evidenceIndex];
+    if (!evidence) {
+      return { success: false, errorCode: 'EVIDENCE_NOT_FOUND', errorMessage: 'Evidence not found' };
+    }
     const complaints = mockStore.getState().complaints || [];
     const complaintIndex = complaints.findIndex(c => c.id === evidence.complaintId);
 
     if (complaintIndex !== -1) {
       const complaint = complaints[complaintIndex];
-      complaint.evidenceIds = complaint.evidenceIds?.filter(id => id !== evidenceId) || [];
-      complaint.updatedAt = new Date().toISOString();
+      if (complaint) {
+        complaint.evidenceIds = complaint.evidenceIds?.filter(id => id !== evidenceId) || [];
+        complaint.updatedAt = new Date().toISOString();
+      }
     }
 
-    mockStore.getState().complaintEvidence?.splice(evidenceIndex, 1);
+    evidenceList.splice(evidenceIndex, 1);
+    mockStore.getState().complaintEvidence = evidenceList;
     mockStore.notify();
 
     await createAuditEntry({

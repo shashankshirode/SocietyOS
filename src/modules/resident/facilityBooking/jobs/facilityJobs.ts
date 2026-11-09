@@ -1,9 +1,10 @@
-import { createJobScheduler } from '../../../../../core/jobs/job.scheduler';
+import { createJobScheduler } from '../../../../core/jobs/job.scheduler';
 import { createFacilityHoldExpiryExecutor } from './executors/facilityHoldExpiryExecutor';
 import { createFacilityNoShowExecutor } from './executors/facilityNoShowExecutor';
 import { createFacilityWaitlistOfferExpiryExecutor } from './executors/facilityWaitlistOfferExpiryExecutor';
 import { createFacilityWaitlistPromotionExecutor } from './executors/facilityWaitlistPromotionExecutor';
-import type { JobDefinition, JobPorts, JobType } from '../../../../../core/jobs/job.types';
+import type { JobDefinition, JobType } from '../../../../core/jobs/job.types';
+import type { JobPorts } from '../../../../core/jobs/job.ports';
 
 export const FACILITY_JOB_TYPES: JobType[] = [
   'FACILITY_HOLD_EXPIRY',

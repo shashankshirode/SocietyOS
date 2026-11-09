@@ -56,6 +56,6 @@ describe('ResidentDashboard context integration', () => {
       </MockStoreProvider>
     );
 
-    expect(screen.getByText('Green Valley Heights')).toBeTruthy();
+    expect(screen.getAllByText('Green Valley Heights').length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -187,6 +187,12 @@ export interface ResolveSyncErrorInput {
   resolvedBy: string;
 }
 
+export interface ResolveDuplicatePunchInput {
+  action: 'KEEP_EXISTING' | 'KEEP_NEWER' | 'IGNORE';
+  resolutionNote?: string;
+  resolvedBy?: string;
+}
+
 export interface AttendanceSettings extends ResidentScopedEntity {
   id?: string;
   shiftGracePeriodMinutes: number;

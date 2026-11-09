@@ -2,8 +2,45 @@
 
 
 
-import type { StaffDocument, StaffAssignment, StaffVerificationRecord } from './workforcePhase11.types';
 import type { ResidentScopedEntity } from './residentScope.types';
+
+export interface StaffDocument extends ResidentScopedEntity {
+  id: string;
+  staffId: string;
+  type: string;
+  name: string;
+  fileUrl?: string;
+  expiryDate?: string;
+  status: 'VALID' | 'EXPIRED' | 'PENDING' | 'REJECTED';
+  uploadedAt: string;
+  verifiedAt?: string;
+  verifiedBy?: string;
+  notes?: string;
+}
+
+export interface StaffAssignment extends ResidentScopedEntity {
+  id: string;
+  staffId: string;
+  type: 'DEPARTMENT' | 'LOCATION' | 'GATE' | 'FACILITY' | 'SHIFT' | 'VENDOR_CONTEXT';
+  referenceId: string;
+  referenceName: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  isPrimary: boolean;
+  notes?: string;
+}
+
+export interface StaffVerificationRecord extends ResidentScopedEntity {
+  id: string;
+  staffId: string;
+  status: 'NOT_STARTED' | 'SUBMITTED' | 'UNDER_REVIEW' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
+  submittedAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
+  documentsVerified: string[];
+  notes?: string;
+}
 
 export type StaffWorkforceCategory =
   | 'SECURITY_GUARD'
@@ -313,5 +350,14 @@ export interface StaffMember extends ResidentScopedEntity {
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
+  isActive?: boolean;
+  status?: StaffEmploymentStatus | string;
+  designation?: string;
+  role?: string;
+  skills?: string[];
+  categories?: string[];
+  assignedTower?: string;
+  primaryCategory?: string;
+  userId?: string;
 }
 

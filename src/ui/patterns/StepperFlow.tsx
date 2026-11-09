@@ -50,6 +50,14 @@ export function StepperFlow({ steps, title, onComplete, onCancel, completeLabel 
     const nextAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: nextScale.value }],
     }));
+    const handleNextPressIn = useCallback(() => {
+        // eslint-disable-next-line react-hooks/immutability
+        nextScale.value = withSpring(0.96);
+    }, [nextScale]);
+    const handleNextPressOut = useCallback(() => {
+        // eslint-disable-next-line react-hooks/immutability
+        nextScale.value = withSpring(1);
+    }, [nextScale]);
     const goNext = useCallback(() => {
         if (isLast) {
             onComplete?.();
@@ -99,7 +107,7 @@ export function StepperFlow({ steps, title, onComplete, onCancel, completeLabel 
           </SafeText>
         </Pressable>
         <Animated.View style={[nextAnimatedStyle, styles.animatedViewFlex]}>
-          <Pressable onPress={goNext} onPressIn={() => { nextScale.value = withSpring(0.96); }} onPressOut={() => { nextScale.value = withSpring(1); }} style={[styles.footerBtn, styles.nextBtn, createPressableBackgroundColorStyle(colors.primary)]}>
+          <Pressable onPress={goNext} onPressIn={handleNextPressIn} onPressOut={handleNextPressOut} style={[styles.footerBtn, styles.nextBtn, createPressableBackgroundColorStyle(colors.primary)]}>
             <SafeText variant="body" style={styles.safeTextColorFontWeight}>
               {isLast ? completeLabel : localizedUiText.m_31fbef162594}
             </SafeText>

@@ -9,7 +9,7 @@ class DocumentVerificationService {
     private documents: Map<string, DocumentMetadata> = new Map();
     private accessLogs: DocumentAccessLog[] = [];
     private resubmissionRequests: Map<string, ResubmissionRequest> = new Map();
-    private listeners: Array<(case_: VerificationCase) => void> = [];
+    private listeners: ((case_: VerificationCase) => void)[] = [];
     constructor() {
         Object.values(DOCUMENT_CATEGORY_CHECKLISTS).forEach(c => this.checklists.set(c.id, c));
         this.loadFromStorage();

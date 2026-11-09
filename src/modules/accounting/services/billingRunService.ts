@@ -121,7 +121,7 @@ export class BillingRunService {
     async createBillingRun(input: GenerateBillsInput, initiatedBy: string, societyId: string): Promise<BillingRun> {
         const correlationId = generateCorrelationId();
         const now = new Date().toISOString();
-        const existingRuns = mockStore.getState().billingRuns as BillingRun[];
+        const existingRuns = mockStore.getState().billingRuns ?? [];
         const activeDuplicate = existingRuns.find((r) => r.societyId === societyId &&
             r.billingPeriodStart === input.billingPeriodStart &&
             r.billingPeriodEnd === input.billingPeriodEnd &&
@@ -307,7 +307,7 @@ export class BillingRunService {
             cycle,
             ...existingCycles.filter((c) => c.id !== cycle.id),
         ];
-        const existingDrafts = (mockStore.getState().draftBills ?? []) as DraftBill[];
+        const existingDrafts = mockStore.getState().draftBills ?? [];
         mockStore.getState().draftBills = [
             ...draftBills,
             ...existingDrafts.filter((db) => db.billingCycleId !== run.id),
@@ -315,7 +315,7 @@ export class BillingRunService {
         return updatedRun;
     }
     async getBillingRun(runId: string): Promise<BillingRun | null> {
-        const runs = (mockStore.getState().billingRuns ?? []) as BillingRun[];
+        const runs = mockStore.getState().billingRuns ?? [];
         return runs.find((r) => r.id === runId) ?? null;
     }
     async getBillingRuns(filters?: {
@@ -324,7 +324,7 @@ export class BillingRunService {
         dateFrom?: string;
         dateTo?: string;
     }): Promise<BillingRun[]> {
-        let runs = (mockStore.getState().billingRuns ?? []) as BillingRun[];
+        let runs = mockStore.getState().billingRuns ?? [];
         if (filters?.societyId)
             runs = runs.filter((r) => r.societyId === filters.societyId);
         if (filters?.status)

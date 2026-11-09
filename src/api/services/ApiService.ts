@@ -13,7 +13,7 @@ class ApiService {
     private accessToken: string | null = null;
     private refreshToken: string | null = null;
     private userId: string | null = null;
-    private authListeners: Array<(isAuthenticated: boolean) => void> = [];
+    private authListeners: ((isAuthenticated: boolean) => void)[] = [];
     constructor(client?: UniversalApiClient) {
         this.client = client || createApiClientFromEnv();
         if (typeof window !== 'undefined') {
@@ -30,10 +30,10 @@ class ApiService {
             const error = new Error(response.error?.message || 'Request failed') as Error & {
                 code?: string | Absent;
                 status?: number | Absent;
-                fieldErrors?: Array<{
+                fieldErrors?: {
                     field: string;
                     message: string;
-                }> | Absent;
+                }[] | Absent;
             };
             if (response.error?.code !== undefined)
                 error.code = response.error.code;

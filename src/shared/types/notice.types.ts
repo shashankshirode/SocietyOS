@@ -13,7 +13,7 @@ export type NoticeCategory =
   | 'FESTIVAL_EVENT'
   | 'EMERGENCY';
 
-export type NoticePriority = 'LOW' | 'NORMAL' | 'IMPORTANT' | 'URGENT';
+export type NoticePriority = 'LOW' | 'NORMAL' | 'IMPORTANT' | 'URGENT' | 'HIGH' | 'EMERGENCY';
 
 export type NoticeStatus = 'UNREAD' | 'READ' | 'PINNED' | 'EXPIRED';
 

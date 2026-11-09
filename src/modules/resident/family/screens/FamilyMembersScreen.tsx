@@ -72,7 +72,7 @@ export function FamilyMembersScreen({ navigation, route }: Props) {
 
             <View style={styles.badgesCol}>
               <StatusBadge label={item.appAccessStatus} type={getAccessBadgeType(item.appAccessStatus)} style={styles.badge}/>
-              <StatusBadge label={item.verificationStatus} type={getKycStatusBadgeType(item.verificationStatus)} style={StyleSheet.flatten([styles.badge, styles.statusBadgeMarginTop])}/>
+              <StatusBadge label={item.verificationStatus} type={getKycStatusBadgeType(item.verificationStatus)} style={StyleSheet.flatten([styles.badge, styles.statusBadgeMarginTop]) ?? {}}/>
             </View>
           </View>
         </AppCard>

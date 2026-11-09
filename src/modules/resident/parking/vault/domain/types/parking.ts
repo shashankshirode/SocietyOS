@@ -1,6 +1,8 @@
 import type { Absent } from '../../../../../../shared/types/absence.types';
 import type { Revision, TraceContext, ParkingVaultScope } from './primitives';
 
+export type { Revision, TraceContext, ParkingVaultScope };
+
 export type ParkingSlotType =
   | 'COVERED'
   | 'OPEN'
@@ -39,7 +41,9 @@ export type AllocationStatus =
   | 'ENDED'
   | 'SUPERSEDED'
   | 'EXPIRED'
-  | 'REVOKED';
+  | 'REVOKED'
+  | 'REJECTED'
+  | 'CANCELLED';
 
 export type ParkingSlotRecord = {
   readonly id: string;
@@ -252,7 +256,6 @@ export type ParkingIncidentRecord = {
   readonly assignedTeam: string | Absent;
   readonly assignedTo: string | Absent;
   readonly evidenceLabel: string | Absent;
-  readonly resolutionNotes: string | Absent;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly resolvedAt: string | Absent;

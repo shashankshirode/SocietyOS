@@ -119,12 +119,12 @@ export class ProcurementService {
       purchaseRequestId: string;
       vendorId: string;
       vendorName: string;
-      lines: Array<{
+      lines: {
         itemId: string;
         itemName: string;
         quantity: number;
         unitPrice: number;
-      }>;
+      }[];
       deliveryDate: string;
       deliveryLocation: string;
       terms: string;
@@ -204,12 +204,12 @@ export class ProcurementService {
 
   public revisePurchaseOrder(
     poId: string,
-    updatedLines: Array<{
+    updatedLines: {
       itemId: string;
       itemName: string;
       quantity: number;
       unitPrice: number;
-    }>,
+    }[],
     actor: FacilityOperationsActor
   ): PurchaseOrder {
     if (!actor.hasPermission('CREATE_PURCHASE_ORDER')) {
@@ -302,13 +302,13 @@ export class ProcurementService {
   public receiveGoods(
     input: {
       poId: string;
-      lines: Array<{
+      lines: {
         poLineId: string;
         deliveredQuantity: number;
         acceptedQuantity: number;
         rejectedQuantity: number;
         rejectionReason?: string;
-      }>;
+      }[];
       documentVaultId?: string;
       clientOperationId?: string;
     },
@@ -427,11 +427,11 @@ export class ProcurementService {
   public createReturnToVendor(
     input: {
       goodsReceiptId: string;
-      lines: Array<{
+      lines: {
         itemId: string;
         quantity: number;
         reason: string;
-      }>;
+      }[];
       clientOperationId?: string;
     },
     actor: FacilityOperationsActor

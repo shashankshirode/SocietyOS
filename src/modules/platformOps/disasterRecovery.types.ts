@@ -58,12 +58,12 @@ export type BackupResult = {
   manifest: {
     version: string;
     database: string;
-    tables: Array<{
+    tables: {
       name: string;
       rowCount: number;
       sizeBytes: number;
       checksum: string;
-    }>;
+    }[];
   };
   error?: string;
 };
@@ -90,14 +90,14 @@ export type RestorePlan = {
     referentialIntegrity: boolean;
     financialIdempotencyCheck: boolean;
   };
-  steps: Array<{
+  steps: {
     order: number;
     name: string;
     description: string;
     automated: boolean;
     estimatedDurationMs: number;
     rollbackAction?: string;
-  }>;
+  }[];
   status: RestoreStatus;
   createdAt: string;
   createdBy: string;
@@ -131,13 +131,13 @@ export type RecoveryIncident = {
   resolvedAt?: string;
   resolvedBy?: string;
   postMortem?: string;
-  timeline: Array<{
+  timeline: {
     timestamp: string;
     phase: RecoveryPhase;
     action: string;
     actor: string;
     details?: JsonObject;
-  }>;
+  }[];
 };
 
 export type ValidationCheck = {
@@ -158,12 +158,12 @@ export type DisasterRecoveryConfig = {
   autoFailover: boolean;
   notificationChannels: string[];
   runbookUrl: string;
-  contactList: Array<{
+  contactList: {
     name: string;
     role: string;
     phone: string;
     email: string;
-  }>;
+  }[];
 };
 
 export const DEFAULT_DR_CONFIG: DisasterRecoveryConfig = {

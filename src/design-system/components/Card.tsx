@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { type ViewInstance, View, StyleSheet, type StyleProp, ViewStyle, TouchableOpacity } from 'react-native';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { glassStyles, colors, getColors } from '../tokens/premium-colors';
 import { radius } from '../tokens/premium-radius';
@@ -30,7 +30,7 @@ const glassMap = {
     glassDark: 'strong',
     glassLight: 'subtle',
 } as const;
-export const Card = forwardRef<View, CardProps>(({ children, variant = 'elevated', padding = 'md', onPress, style, testID }, ref) => {
+export const Card = forwardRef<ViewInstance, CardProps>(({ children, variant = 'elevated', padding = 'md', onPress, style, testID }, ref) => {
     const { dark } = useAppTheme();
     const tc = getColors(dark ? 'dark' : 'light');
     const mode = dark ? 'dark' : 'light';
@@ -38,7 +38,7 @@ export const Card = forwardRef<View, CardProps>(({ children, variant = 'elevated
     const isGlass = variant.startsWith('glass');
     const glassKey = isGlass ? (glassMap[variant as keyof typeof glassMap] ?? 'regular') : null;
     const glassStyle = glassKey ? glassStyles[mode][glassKey] : null;
-    const baseStyles: ViewStyle = StyleSheet.flatten([
+    const baseStyles: StyleProp<ViewStyle> = StyleSheet.flatten([
         styles.base,
         !isGlass && styles[variant as 'elevated' | 'outlined' | 'filled'],
         !isGlass && variant === 'elevated' && { backgroundColor: tc.surface.elevated },
@@ -49,7 +49,7 @@ export const Card = forwardRef<View, CardProps>(({ children, variant = 'elevated
         style,
     ]);
     if (onPress) {
-        return (<TouchableOpacity ref={ref as any} onPress={onPress} activeOpacity={0.85} style={baseStyles} testID={testID}>
+        return (<TouchableOpacity ref={ref} onPress={onPress} activeOpacity={0.85} style={baseStyles} testID={testID}>
           {children}
         </TouchableOpacity>);
     }

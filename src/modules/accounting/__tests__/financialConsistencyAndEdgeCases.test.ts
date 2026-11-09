@@ -14,12 +14,13 @@ describe('Phase 7: End-to-End Consistency, Concurrency, Occupancy & Rare Scenari
                 id: unitId,
                 unitNumber: 'A-101',
                 wing: 'A Wing',
-                unitType: '2BHK',
+                type: '2BHK',
                 areaSqFt: 1000,
                 carpetAreaSqFt: 850,
                 builtupAreaSqFt: 1000,
                 societyId,
-                isActive: true,
+                occupancyStatus: 'OWNER_OCCUPIED',
+                status: 'ACTIVE',
             },
         ];
         const rule: BillingRule = {
@@ -98,9 +99,10 @@ describe('Phase 7: End-to-End Consistency, Concurrency, Occupancy & Rare Scenari
         expect(ledger[0]!.amount).toBe(0);
         balance = await outstandingService.getOutstandingBalance(unitId);
         expect(balance.totalOutstanding).toBe(0);
-        const receipts = mockStore.getState().receipts.filter((r) => r.unitId === unitId);
+        const receipts = (mockStore.getState().receipts ?? []).filter((r) => r.unitId === unitId);
         expect(receipts).toHaveLength(2);
-        expect(receipts[0]!.amount + receipts[1]!.amount).toBe(4000);
+        const totalReceiptAmount = receipts.reduce((sum, receipt) => sum + (receipt.amount ?? 0), 0);
+        expect(totalReceiptAmount).toBe(4000);
     });
     test('Rare Case K & 19: Rate change after billing run snapshot does NOT rewrite historical invoice', async () => {
         const run = await billingRunService.createBillingRun({

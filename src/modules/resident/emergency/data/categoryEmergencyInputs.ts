@@ -1,5 +1,4 @@
-import type { EmergencyType, EmergencySeverity } from '../../../../shared/types/emergency.types';
-import type { CreateEmergencyIncidentInput } from '../../../../shared/types/emergency.types';
+import type { EmergencyType, EmergencySeverity , CreateEmergencyIncidentInput } from '../../../../shared/types/emergency.types';
 
 export interface MedicalEmergencyInput {
   personNeedingHelp: string;

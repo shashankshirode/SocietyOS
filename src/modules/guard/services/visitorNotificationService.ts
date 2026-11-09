@@ -1,6 +1,5 @@
 import { auditService, createAuditEntry } from '../../../core/audit';
-import type { Visitor, VisitorStatus, VisitorType, VisitorInvitation, VisitorApprovalRequest } from '../../../shared/types/visitorPhase8.types';
-import type { GateEvent, GateEventType } from '../../../shared/types/visitorPhase8.types';
+import type { Visitor, VisitorStatus, VisitorType, VisitorInvitation, VisitorApprovalRequest , GateEvent, GateEventType } from '../../../shared/types/visitorPhase8.types';
 
 export interface VisitorNotificationPayload {
   type: VisitorNotificationType;
@@ -105,7 +104,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_PRE_APPROVED',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name, date: visitor.expectedDate, time: visitor.expectedTime }),
       body: interpolate(template.body, { visitorName: visitor.name, date: visitor.expectedDate, time: visitor.expectedTime }),
@@ -128,7 +127,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_ARRIVED',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name, gateName }),
       body: interpolate(template.body, { visitorName: visitor.name, gateName }),
@@ -151,7 +150,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_CHECKED_IN',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name, gateName }),
       body: interpolate(template.body, { visitorName: visitor.name, gateName }),
@@ -173,7 +172,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_CHECKED_OUT',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name }),
       body: interpolate(template.body, { visitorName: visitor.name }),
@@ -271,7 +270,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_EXPIRED',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name }),
       body: interpolate(template.body, { visitorName: visitor.name }),
@@ -294,7 +293,7 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_REVOKED',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name }),
       body: interpolate(template.body, { visitorName: visitor.name }),
@@ -361,11 +360,15 @@ export const visitorNotificationService = {
     await this.sendNotification({
       type: 'VISITOR_OVERDUE',
       societyId,
-      unitId: visitor.unitId,
+      ...(visitor.unitId ? { unitId: visitor.unitId } : {}),
       recipientUserIds: residentUserIds,
       title: interpolate(template.title, { visitorName: visitor.name }),
       body: interpolate(template.body, { visitorName: visitor.name }),
-      data: { visitorId: visitor.id, visitorName: visitor.name, expectedExitAt: visitor.expectedExitAtIso },
+      data: {
+        visitorId: visitor.id,
+        visitorName: visitor.name,
+        ...(visitor.expectedExitAtIso ? { expectedExitAt: visitor.expectedExitAtIso } : {}),
+      },
       priority: 'high',
       actionUrl: `/visitors/${visitor.id}`,
       correlationId,
@@ -404,7 +407,7 @@ export const visitorNotificationService = {
       entityId: payload.correlationId,
       newState: { type: payload.type, recipients: payload.recipientUserIds.length, priority: payload.priority },
       idempotencyKey: payload.correlationId,
-      source: 'SYSTEM',
+      source: 'SYSTEM_JOB',
       outcome: 'SUCCESS',
     });
 

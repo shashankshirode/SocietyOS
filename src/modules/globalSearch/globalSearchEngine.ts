@@ -11,6 +11,11 @@ import {
   DEFAULT_SEARCH_INDEX_CONFIGS,
   PRIVACY_FILTERS,
 } from './globalSearch.types';
+import { apiClient } from '../../core/api/apiClient';
+import { apiEndpoints } from '../../core/api/apiEndpoints';
+import { createIdempotencyKey } from '../../core/api/idempotency';
+import { auditService, createAuditEntry } from '../../core/audit';
+import type { JsonObject } from '../../core/api/api.types';
 
 export type {
   SearchQuery,
@@ -21,11 +26,6 @@ export type {
   SearchFacet,
   SearchPermission,
 } from './globalSearch.types';
-import { apiClient } from '../../core/api/apiClient';
-import { apiEndpoints } from '../../core/api/apiEndpoints';
-import { createIdempotencyKey } from '../../core/api/idempotency';
-import { auditService, createAuditEntry } from '../../core/audit';
-import type { JsonObject } from '../../core/api/api.types';
 
 interface IndexedDocument {
   id: string;
@@ -41,7 +41,7 @@ class GlobalSearchEngine {
   private indexes: Map<SearchEntityType, IndexedDocument[]> = new Map();
   private indexConfigs: Map<SearchEntityType, SearchIndexConfig> = new Map();
   private privacyFilters: PrivacyFilter[] = PRIVACY_FILTERS;
-  private listeners: Array<(response: SearchResponse) => void> = [];
+  private listeners: ((response: SearchResponse) => void)[] = [];
   private isIndexing = false;
 
   constructor() {

@@ -1,5 +1,6 @@
 import type { ResidentHomeRole } from '../../homeContext/data/residentHomeContext.types';
-import type { ResidenceDocumentType, ResidenceDocumentMimeType } from '../../../features/residenceAccess/models/residenceAccess.types';
+import type { ResidenceDocumentType, ResidenceDocumentMimeType } from '../../../../features/residenceAccess/models/residenceAccess.types';
+export type { ResidenceDocumentType, ResidenceDocumentMimeType };
 import type { SupportedCallingCode } from './membership.types';
 
 export type RegistrationStatus =
@@ -89,23 +90,23 @@ export interface RegistrationDocument {
   readonly mimeType: ResidenceDocumentMimeType;
   readonly status: DocumentUploadStatus;
   readonly uploadedAt: string;
-  readonly submittedAt?: string;
-  readonly verifiedAt?: string;
-  readonly verifiedBy?: string;
+  readonly submittedAt?: string | undefined;
+  readonly verifiedAt?: string | undefined;
+  readonly verifiedBy?: string | undefined;
   readonly checksum: string;
   readonly version: number;
-  readonly previousVersionId?: string;
+  readonly previousVersionId?: string | undefined;
   readonly storageReference: string;
-  readonly rejectionReason?: DocumentRejectionReason;
+  readonly rejectionReason?: DocumentRejectionReason | undefined;
 }
 
 export interface RegistrationProfile {
   readonly fullName: string;
-  readonly preferredName?: string;
+  readonly preferredName?: string | undefined;
   readonly email: string;
-  readonly dateOfBirth?: string;
-  readonly emergencyContact?: string;
-  readonly avatarUri?: string;
+  readonly dateOfBirth?: string | undefined;
+  readonly emergencyContact?: string | undefined;
+  readonly avatarUri?: string | undefined;
 }
 
 export interface NormalizedContact {
@@ -121,21 +122,21 @@ export interface RegistrationInvitation {
   readonly societyName: string;
   readonly unitId: string;
   readonly unitNumber: string;
-  readonly towerName?: string;
-  readonly wingName?: string;
-  readonly floorNumber?: number;
+  readonly towerName?: string | undefined;
+  readonly wingName?: string | undefined;
+  readonly floorNumber?: number | undefined;
   readonly claimedRelationship: ClaimedRelationshipType;
-  readonly familyRelationshipSubType?: FamilyRelationshipSubType;
+  readonly familyRelationshipSubType?: FamilyRelationshipSubType | undefined;
   readonly recipientMobile: string;
   readonly recipientEmail: string;
   readonly token: string;
   readonly status: InvitationStatus;
   readonly expiresAt: string;
   readonly createdAt: string;
-  readonly acceptedAt?: string;
-  readonly revokedAt?: string;
-  readonly revokedBy?: string;
-  readonly revocationReason?: string;
+  readonly acceptedAt?: string | undefined;
+  readonly revokedAt?: string | undefined;
+  readonly revokedBy?: string | undefined;
+  readonly revocationReason?: string | undefined;
 }
 
 export interface ResidentRegistration {
@@ -145,28 +146,28 @@ export interface ResidentRegistration {
   readonly societyName: string;
   readonly unitId: string;
   readonly unitNumber: string;
-  readonly towerName?: string;
-  readonly wingName?: string;
-  readonly floorNumber?: number;
+  readonly towerName?: string | undefined;
+  readonly wingName?: string | undefined;
+  readonly floorNumber?: number | undefined;
   readonly claimedRelationship: ClaimedRelationshipType;
-  readonly familyRelationshipSubType?: FamilyRelationshipSubType;
+  readonly familyRelationshipSubType?: FamilyRelationshipSubType | undefined;
   readonly entryMode: RegistrationEntryMode;
   readonly profile: RegistrationProfile;
   readonly verifiedContact: NormalizedContact;
   readonly status: RegistrationStatus;
   readonly verificationStatus: VerificationStatus;
-  readonly verificationChannel?: VerificationChannel;
-  readonly verificationCompletedAt?: string;
-  readonly invitedAt?: string;
+  readonly verificationChannel?: VerificationChannel | undefined;
+  readonly verificationCompletedAt?: string | undefined;
+  readonly invitedAt?: string | undefined;
   readonly registeredAt: string;
-  readonly identityVerifiedAt?: string;
-  readonly documentsSubmittedAt?: string;
-  readonly submittedForReviewAt?: string;
-  readonly reviewedAt?: string;
-  readonly approvedAt?: string;
-  readonly rejectedAt?: string;
-  readonly rejectionReason?: ResidentRejectionReason;
-  readonly activatedAt?: string;
+  readonly identityVerifiedAt?: string | undefined;
+  readonly documentsSubmittedAt?: string | undefined;
+  readonly submittedForReviewAt?: string | undefined;
+  readonly reviewedAt?: string | undefined;
+  readonly approvedAt?: string | undefined;
+  readonly rejectedAt?: string | undefined;
+  readonly rejectionReason?: ResidentRejectionReason | undefined;
+  readonly activatedAt?: string | undefined;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly dataVersion: number;
@@ -175,7 +176,7 @@ export interface ResidentRegistration {
 export interface ResidentRejectionReason {
   readonly code: ResidentRejectionReasonCode;
   readonly residentVisibleReason: string;
-  readonly internalAdminNote?: string;
+  readonly internalAdminNote?: string | undefined;
 }
 
 export type ResidentRejectionReasonCode =
@@ -197,15 +198,15 @@ export type ResidentRejectionReasonCode =
   | 'OTHER';
 
 export interface ResidentRegistrationDetail extends ResidentRegistration {
-  readonly invitation?: RegistrationInvitation;
+  readonly invitation?: RegistrationInvitation | undefined;
   readonly documents: readonly RegistrationDocument[];
   readonly requirements: readonly RegistrationDocumentRequirement[];
   readonly unit: {
     readonly id: string;
     readonly unitNumber: string;
-    readonly towerName?: string;
-    readonly wingName?: string;
-    readonly floorNumber?: number;
+    readonly towerName?: string | undefined;
+    readonly wingName?: string | undefined;
+    readonly floorNumber?: number | undefined;
     readonly occupancyStatus: string;
   };
   readonly timeline: readonly RegistrationTimelineEvent[];

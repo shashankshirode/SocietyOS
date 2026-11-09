@@ -13,6 +13,8 @@ import type { ManualEntryScreenProps } from "../../../app/navigation/navigation.
 import { styles } from "../styles/screens/ManualEntryScreen.styles";
 import { useMessages as useGeneratedUiMessages } from "../../../messages/useMessages";
 import { getActiveUiLiteral } from "../../../shared/localization/activeUiLiteral";
+import { visitorLifecycleStore } from "../../resident/visitors/data/visitorLifecycle.store";
+import { walkInApprovalService } from "../services/walkInApprovalService";
 type VisitorType = 'GUEST' | 'DELIVERY' | 'CAB' | 'VENDOR' | 'MATERIAL';
 export function ManualEntryScreen({ navigation }: ManualEntryScreenProps) {
     const localizedUiText = useGeneratedUiMessages().uiLiterals;
@@ -30,7 +32,7 @@ export function ManualEntryScreen({ navigation }: ManualEntryScreenProps) {
         minute: '2-digit',
         hour12: true,
     });
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const nextErrors: Record<string, string> = {};
         if (!name.trim())
             nextErrors.name = getActiveUiLiteral("m_31d5ed5abfa4");
@@ -53,6 +55,44 @@ export function ManualEntryScreen({ navigation }: ManualEntryScreenProps) {
             return;
         }
         setErrors({});
+
+        await walkInApprovalService.createWalkInApprovalRequest({
+            visitorName: name.trim(),
+            visitorPhone: mobile.trim(),
+            visitorCategory: type.toLowerCase() as any,
+            flatNumber: flat.trim(),
+            unitId: 'unit-active',
+            gateId: 'Gate 01',
+            gateName: 'Gate 01',
+            guardId: 'grd-01',
+            guardName: 'Officer Gate 1',
+            societyId: 'soc_green_glades',
+            purpose: purpose.trim() || 'Walk-in Visit',
+            ...(vehicle.trim() ? { vehicleRegistration: vehicle.trim().toUpperCase() } : {}),
+        });
+
+        const pass = visitorLifecycleStore.createPass({
+            name: name.trim(),
+            phone: mobile.trim(),
+            type,
+            purpose: purpose.trim() || 'Walk-in Visit',
+            expectedDate: new Date().toISOString().split('T')[0] || 'Today',
+            expectedTimeFrom: 'Now',
+            expectedTimeTo: new Date(Date.now() + 4 * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            durationHours: 4,
+            isRecurring: false,
+            hasVehicle: !!vehicle.trim(),
+            ...(vehicle.trim() ? { vehicleNumber: vehicle.trim().toUpperCase() } : {}),
+            flatNumber: flat.trim(),
+            tower: `Tower ${flat.trim()[0] || 'A'}`,
+        });
+
+        visitorLifecycleStore.allowEntry(pass.id, {
+            gateName: 'Gate 01',
+            guardName: 'Officer Gate 1',
+            ...(vehicle.trim() ? { vehicleNumber: vehicle.trim().toUpperCase() } : {}),
+        });
+
         setIsSuccess(true);
     };
     const handleDone = () => {

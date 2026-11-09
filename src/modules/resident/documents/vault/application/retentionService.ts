@@ -3,13 +3,13 @@ import type { VaultClock, VaultActor, DocumentVaultErrorCode } from '../domain/t
 import { violation, denied, allowedWith } from '../domain/types/primitives';
 import type { DocumentRecord } from '../domain/types/document.types';
 import type { LegalHold, RetentionAssessment, RetentionBasis, DispositionOutcome, RetentionJobOutcome, TraceableRetentionRecord } from '../domain/types/retention.types';
-import type { LegalHoldStore, AuditSink, ObjectStorePort, VaultPorts } from './application/ports';
+import type { LegalHoldStore, AuditSink, ObjectStorePort, VaultPorts } from './ports';
 import {
   canTransitionRetention,
   activeHolds,
-  assessRetention,
+  assessRetention as assessRetentionDomain,
   retentionGate,
-  applyDisposition,
+  applyDisposition as applyDispositionDomain,
   isTerminalRetention,
 } from '../domain/stateMachines/retentionStateMachine';
 import { evaluateActionPermission, evaluateTenantBoundary } from '../domain/guards/authorizationGuard';
@@ -40,7 +40,7 @@ export interface RetentionService {
     document: DocumentRecord,
     assessment: RetentionAssessment,
     requestedDisposition: 'ARCHIVE' | 'ANONYMISE' | 'PURGE',
-  ): { ok: true; value: DispositionOutcome; warnings: readonly string[] } | { ok: false; code: DocumentVaultErrorCode; message: string };
+  ): Promise<{ ok: true; value: DispositionOutcome; warnings: readonly string[] } | { ok: false; code: DocumentVaultErrorCode; message: string }>;
 
   processRetentionJob(
     actor: VaultActor,
@@ -50,13 +50,13 @@ export interface RetentionService {
     retainUntil: string | Absent,
     erasureRequest: { subjectUserId: string; requestedBy: string } | Absent,
     idempotencyKey: string,
-  ): { ok: true; value: RetentionJobOutcome; warnings: readonly string[] } | { ok: false; code: DocumentVaultErrorCode; message: string };
+  ): Promise<{ ok: true; value: RetentionJobOutcome; warnings: readonly string[] } | { ok: false; code: DocumentVaultErrorCode; message: string }>;
 
   getLegalHolds(documentId: string): readonly LegalHold[];
   getRetentionHistory(documentId: string): readonly TraceableRetentionRecord[];
 }
 
-function fail(code: DocumentVaultErrorCode, message: string) {
+function fail(code: DocumentVaultErrorCode, message: string): { ok: false; code: DocumentVaultErrorCode; message: string } {
   return { ok: false, code, message };
 }
 
@@ -150,7 +150,7 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
       document.id,
     );
 
-    const assessment = assessRetention({
+    const assessment = assessRetentionDomain({
       documentId: document.id,
       retainUntil,
       policyId,
@@ -173,7 +173,7 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
     const gate = retentionGate(assessment, requestedDisposition);
     if (gate) return fail(gate.code, gate.detail ?? 'Disposition blocked.');
 
-    const nextState = applyDisposition(document.retentionLifecycle, assessment);
+    const nextState = applyDispositionDomain(document.retentionLifecycle, assessment);
 
     let objectDeleted = false;
     if (requestedDisposition === 'PURGE' && document.currentVersionId) {
@@ -212,7 +212,7 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
       entityId: document.id,
       previousState: { state: document.retentionLifecycle },
       newState: { state: nextState, disposition: requestedDisposition, objectDeleted },
-      metadata: { source: 'MOBILE', assessment },
+      metadata: { source: 'MOBILE', assessment: assessment as unknown as import('../../../../../../core/api/api.types').JsonObject },
       outcome: 'SUCCESS',
     });
 
@@ -220,7 +220,7 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
   };
 
   const processRetentionJob: RetentionService['processRetentionJob'] = async (actor, document, policyId, policyVersion, retainUntil, erasureRequest, idempotencyKey) => {
-    const assessment = assessRetention({
+    const assessment = assessRetentionDomain({
       documentId: document.id,
       retainUntil,
       policyId,
@@ -233,16 +233,16 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
       evaluatedAt: ports.clock.now(),
     });
 
-    let disposition: 'ARCHIVE' | 'ANONYMISE' | 'PURGE' = 'RETAIN' as any;
+    let disposition: 'ARCHIVE' | 'ANONYMISE' | 'PURGE' = 'PURGE';
     if (assessment.disposition !== 'RETAIN') {
       disposition = assessment.disposition;
     }
 
     let outcome: DispositionOutcome;
-    if (disposition !== 'RETAIN') {
+    if (assessment.disposition !== 'RETAIN') {
       const gate = retentionGate(assessment, disposition);
       if (!gate) {
-        const nextState = applyDisposition(document.retentionLifecycle, assessment);
+        const nextState = applyDispositionDomain(document.retentionLifecycle, assessment);
         let objectDeleted = false;
         if (disposition === 'PURGE' && document.currentVersionId) {
           const version = (ports as any).versions?.read?.(document.currentVersionId);
@@ -293,7 +293,7 @@ export function createRetentionService(ports: Pick<VaultPorts, 'legalHolds' | 'o
       previousState: { state: document.retentionLifecycle },
       newState: { outcome },
       metadata: { source: 'SYSTEM_JOB', idempotencyKey },
-      outcome: outcome.applied ? 'SUCCESS' : 'BLOCKED',
+      outcome: outcome.applied ? 'SUCCESS' : 'FAILURE',
     });
 
     return { ok: true, value: jobOutcome, warnings: [] };

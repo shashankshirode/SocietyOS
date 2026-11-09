@@ -2,9 +2,8 @@ import type { Absent } from '../../../../../shared/types/absence.types';
 import type { VaultClock, VaultActor, DocumentVaultErrorCode } from '../domain/types/primitives';
 import { violation, denied, allowedWith } from '../domain/types/primitives';
 import type { DocumentRecord } from '../domain/types/document.types';
-import type { VerificationCase, VerificationCaseState, VerificationDecision, VerificationChecklist } from '../domain/types/verification.types';
-import type { SignatureEnvelope, SignatureEnvelopeState, SignatureMethod, SignatureSigner } from '../domain/types/verification.types';
-import type { VerificationCaseStore, SignatureEnvelopeStore, AuditSink, NotificationPort, VaultPorts } from './application/ports';
+import type { VerificationCase, VerificationCaseState, VerificationDecision, VerificationChecklist , SignatureEnvelope, SignatureEnvelopeState, SignatureMethod, SignatureSigner } from '../domain/types/verification.types';
+import type { VerificationCaseStore, SignatureEnvelopeStore, AuditSink, NotificationPort, VaultPorts } from './ports';
 import {
   canTransitionVerification,
   canTransitionSignature,
@@ -122,7 +121,7 @@ export interface VerificationService {
   getEnvelopeByDocument(documentId: string): SignatureEnvelope | Absent;
 }
 
-function fail(code: DocumentVaultErrorCode, message: string) {
+function fail(code: DocumentVaultErrorCode, message: string): { ok: false; code: DocumentVaultErrorCode; message: string } {
   return { ok: false, code, message };
 }
 
@@ -243,7 +242,7 @@ export function createVerificationService(ports: Pick<VaultPorts, 'verificationC
       entityType: 'VERIFICATION_CASE',
       entityId: caseId,
       previousState: { state: vcase.state, completedItems: vcase.checklist.items.filter((i) => i.state === 'COMPLETED').map((i) => i.id) },
-      newState: { state: 'IN_REVIEW', completedItems: completedItemIds },
+      newState: { state: 'IN_REVIEW', completedItems: [...completedItemIds] },
       metadata: { source: 'MOBILE' },
       outcome: 'SUCCESS',
     });
@@ -305,7 +304,7 @@ export function createVerificationService(ports: Pick<VaultPorts, 'verificationC
     const updatedChecklist = vcase.checklist;
     const decisions = appendDecision(vcase, decision, actor.userId, now(), reason, updatedChecklist);
     const resubmission = decision === 'REQUEST_RESUBMISSION'
-      ? { requestedAt: now(), deadline, attempt: (vcase.resubmission?.attempt ?? 0) + 1, exhausted: false }
+      ? { requestedAt: now(), deadline: new Date(Date.now() + 7 * 86400000).toISOString(), attempt: (vcase.resubmission?.attempt ?? 0) + 1, exhausted: false }
       : vcase.resubmission;
 
     const updated = advanceCase(vcase, targetState, {
@@ -331,7 +330,7 @@ export function createVerificationService(ports: Pick<VaultPorts, 'verificationC
       entityId: caseId,
       previousState: { state: vcase.state },
       newState: { state: targetState, decision, reason },
-      metadata: { source: 'MOBILE', checklistSnapshot: updatedChecklist },
+      metadata: { source: 'MOBILE', checklistSnapshot: updatedChecklist as unknown as import('../../../../../../core/api/api.types').JsonObject },
       outcome: 'SUCCESS',
     });
 
@@ -520,6 +519,8 @@ export function createVerificationService(ports: Pick<VaultPorts, 'verificationC
       sealedAt: undefined,
       revision: { revision: 1, revisionToken: `rev-${envelopeId}-1` },
       trace: vcase.trace,
+      expectedSigners,
+      expectedSignersCount: expectedSigners.length,
     };
 
     if (!ports.signatureEnvelopes.insert(envelope)) return fail('CONCURRENT_WRITE', 'Envelope already exists.');
@@ -557,7 +558,8 @@ export function createVerificationService(ports: Pick<VaultPorts, 'verificationC
       return fail('SIGNATURE_ALREADY_EXISTS', 'Signer has already signed this envelope.');
     }
 
-    const nextState = nextSignatureState(envelope.state, envelope.signers.length + 1, expectedSigners.length);
+    const expectedCount = envelope.expectedSigners?.length ?? envelope.expectedSignersCount ?? 1;
+    const nextState = nextSignatureState(envelope.state, envelope.signers.length + 1, expectedCount);
     const transition = canTransitionSignature(envelope.state, nextState);
     if (!transition.allowed) return fail('ILLEGAL_TRANSITION', transition.violation?.detail ?? 'Illegal transition.');
 

@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { useAppTheme } from '../../../../shared/theme/useAppTheme';
 
 export const styles = StyleSheet.create({
   safeArea: {
@@ -106,8 +105,8 @@ export const styles = StyleSheet.create({
   },
   filterValue: {
     fontSize: 13,
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: '600',
+    color: '#111827',
   },
   listContent: {
     padding: 16,
@@ -115,14 +114,14 @@ export const styles = StyleSheet.create({
   },
   complaintCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 2,
     elevation: 2,
   },
   cardHeader: {
@@ -134,11 +133,8 @@ export const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-  },
-  headerRight: {
+    gap: 12,
     flex: 1,
-    alignItems: 'flex-end',
   },
   statusBadge: {
     width: 32,
@@ -148,7 +144,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerText: {
-    gap: 2,
+    flex: 1,
   },
   ticketTitle: {
     fontSize: 15,
@@ -156,19 +152,25 @@ export const styles = StyleSheet.create({
     color: '#111827',
   },
   ticketTitleSub: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7280',
+    marginTop: 2,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   slaBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   slaBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
@@ -177,20 +179,24 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     marginBottom: 12,
+    flexWrap: 'wrap',
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   metaText: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: 13,
+    color: '#4B5563',
   },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   statusRow: {
     flexDirection: 'row',
@@ -264,4 +270,8 @@ export const createTextColorStyle = (color: string) => ({
 
 export const createViewBackgroundColorStyle = (color: string) => ({
   backgroundColor: color,
+});
+
+export const createDynamicBgColor = (color: string, opacityHex = '20') => ({
+  backgroundColor: `${color}${opacityHex}`,
 });

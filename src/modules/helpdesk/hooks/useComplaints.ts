@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { complaintService } from '../services/complaintService';
+import { evidenceService } from '../services/evidenceService';
 import type { Complaint, ComplaintSearchFilters, ComplaintListItem, ComplaintDashboardMetrics, ComplaintStatus, ComplaintPriority, ComplaintCategory } from '../../../shared/types/complaintPhase6';
 import type { Absent } from '../../../shared/types/absence.types';
 import { useAuth } from '../../../core/auth/AuthProvider';
@@ -26,7 +27,7 @@ export function useComplaints(filters: ComplaintSearchFilters = { societyId: '' 
     setError(null);
     try {
       const result = await complaintService.getComplaints(effectiveFilters);
-      setData(result.items);
+      setData(result.items as ComplaintListItem[]);
       setTotal(result.total);
       setHasMore(effectiveFilters.page! * (filters.pageSize || 20) < result.total);
     } catch (e) {
@@ -44,7 +45,7 @@ export function useComplaints(filters: ComplaintSearchFilters = { societyId: '' 
     try {
       const nextPage = page + 1;
       const result = await complaintService.getComplaints({ ...effectiveFilters, page: nextPage });
-      setData(prev => [...prev, ...result.items]);
+      setData(prev => [...prev, ...(result.items as ComplaintListItem[])]);
       setPage(nextPage);
       setHasMore(nextPage * (filters.pageSize || 20) < result.total);
     } catch (e) {
@@ -138,9 +139,14 @@ export function useComplaintDashboard() {
   return { data, isLoading, error, refetch: fetch };
 }
 
+function useCurrentUser() {
+  const { session } = useAuth();
+  return session?.user ?? null;
+}
+
 export function useCreateComplaint() {
   const { currentSociety } = useSociety();
-  const { user } = useAuth();
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -165,16 +171,16 @@ export function useCreateComplaint() {
           title: payload.title,
           description: payload.description,
           priority: payload.priority,
-          location: payload.location,
-          isPrivate: payload.isPrivate,
+          ...(payload.location ? { location: payload.location } : {}),
+          ...(payload.isPrivate !== undefined ? { isPrivate: payload.isPrivate } : {}),
         },
         reporterUserId: user.id,
         reporterDisplayName: user.name,
         reporterRole: user.role || 'RESIDENT_OWNER',
-        unitId: currentSociety.unitId || '',
-        unitNumber: currentSociety.flatNumber || '',
-        tower: currentSociety.tower,
-        floor: currentSociety.floor,
+        unitId: (currentSociety as any)?.unitId || '',
+        unitNumber: (currentSociety as any)?.flatNumber || '',
+        ...((currentSociety as any)?.tower ? { tower: (currentSociety as any).tower } : {}),
+        ...((currentSociety as any)?.floor !== undefined ? { floor: (currentSociety as any).floor } : {}),
         societyId: currentSociety.id,
         isPrivate: payload.isPrivate || false,
       });
@@ -192,6 +198,7 @@ export function useCreateComplaint() {
 }
 
 export function useTransitionComplaintStatus() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -204,7 +211,6 @@ export function useTransitionComplaintStatus() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       const result = await complaintService.transitionStatus(
@@ -225,12 +231,13 @@ export function useTransitionComplaintStatus() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useResolveComplaint() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -245,7 +252,6 @@ export function useResolveComplaint() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await complaintService.resolveComplaint({
@@ -265,12 +271,13 @@ export function useResolveComplaint() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useReopenComplaint() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -284,7 +291,6 @@ export function useReopenComplaint() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await complaintService.reopenComplaint({
@@ -292,8 +298,8 @@ export function useReopenComplaint() {
         reopenedByUserId: user.id,
         reopenedByDisplayName: user.name,
         reason: input.reason,
-        description: input.description,
-        evidenceIds: input.evidenceIds,
+        ...(input.description ? { description: input.description } : {}),
+        ...(input.evidenceIds ? { evidenceIds: input.evidenceIds } : {}),
         slaPolicy: input.slaPolicy,
       });
     } catch (e) {
@@ -303,12 +309,13 @@ export function useReopenComplaint() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useConfirmResolution() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -316,7 +323,6 @@ export function useConfirmResolution() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await complaintService.confirmResolution({
@@ -331,12 +337,13 @@ export function useConfirmResolution() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useCancelComplaint() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -344,7 +351,6 @@ export function useCancelComplaint() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await complaintService.cancelComplaint({
@@ -352,7 +358,7 @@ export function useCancelComplaint() {
         cancelledByUserId: user.id,
         cancelledByDisplayName: user.name,
         reason,
-        description,
+        ...(description ? { description } : {}),
       });
     } catch (e) {
       const err = e instanceof Error ? e : new Error('Unknown error');
@@ -361,12 +367,13 @@ export function useCancelComplaint() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useAddComplaintComment() {
+  const user = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -378,7 +385,6 @@ export function useAddComplaintComment() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
 
       return await complaintService.addComment({
@@ -396,12 +402,13 @@ export function useAddComplaintComment() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [user]);
 
   return { execute, isSubmitting, error };
 }
 
 export function useComplaintEvidence() {
+  const user = useCurrentUser();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<Error | null>(null);
@@ -420,10 +427,7 @@ export function useComplaintEvidence() {
     setUploadProgress(0);
     setError(null);
     try {
-      const { user } = useAuth();
       if (!user) throw new Error('User not authenticated');
-
-      const idempotencyKey = `evidence-${input.complaintId}-${input.documentId}-${Date.now()}`;
 
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => Math.min(prev + 10, 90));
@@ -434,7 +438,6 @@ export function useComplaintEvidence() {
         uploadedByUserId: user.id,
         uploadedByDisplayName: user.name,
         documentId: input.documentId,
-        idempotencyKey,
       });
 
       clearInterval(progressInterval);
@@ -447,13 +450,12 @@ export function useComplaintEvidence() {
     } finally {
       setIsUploading(false);
     }
-  }, []);
+  }, [user]);
 
   const deleteEvidence = useCallback(async (evidenceId: string) => {
-    const { user } = useAuth();
     if (!user) throw new Error('User not authenticated');
     return evidenceService.deleteEvidence(evidenceId, user.id, user.name);
-  }, []);
+  }, [user]);
 
   return { uploadEvidence, deleteEvidence, isUploading, uploadProgress, error };
 }

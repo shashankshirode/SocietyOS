@@ -1,5 +1,5 @@
 import type { Visitor } from '../../shared/types/visitor.types';
-import type { VisitorPass } from '../../shared/types/visitorPhase5';
+import type { VisitorPass, GateEntry, GateExit } from '../../shared/types/visitorPhase5';
 import type { Complaint } from '../../shared/types/complaint.types';
 import type { Notice } from '../../shared/types/notice.types';
 import type { Bill } from '../../shared/types/bill.types';
@@ -53,6 +53,7 @@ import type {
   UnknownVisitorPolicy,
 } from '../../shared/types/visitorPhase8.types';
 import type {
+  ComplaintAssignment,
   ComplaintComment,
   ComplaintEvidence,
   ComplaintFeedback,
@@ -62,20 +63,40 @@ import type {
   ParentIncident,
   SlaPolicy,
   ComplaintEscalation,
+  CorrelationCandidate,
 } from '../../shared/types/complaintPhase10.types';
 import type {
   MoveOutRequest,
   ClearanceSnapshot,
 } from '../../shared/types/moveOut.types';
 import type {
+  ResidentRegistration,
+  RegistrationDocument,
+  RegistrationDocumentRequirement,
+  RegistrationInvitation,
+  RegistrationTimelineEvent,
+} from '../../modules/resident/auth/data/registration.types';
+import type {
+  ResidentRegistration as AdminResidentRegistration,
+  ResidentInvitation,
+  ResidentDocument,
+} from '../../modules/societyAdmin/data/residentRegistration.types';
+import type {
   Invoice,
   InvoiceLine,
   Receipt,
   PaymentTransaction,
+  PaymentAllocation,
+  ReceiptAllocation,
+  Refund,
   BankReconciliationRecord,
   BillingRule,
-  BillingCycle,
-} from '../../shared/types/financialPhase9.types';
+  BillingRun,
+  Adjustment,
+  InvoicePenalty,
+  PaymentAttempt,
+} from '../../shared/types/financial.types';
+import type { BillingCycle, ChequeRecord, ManualPaymentRecord, DraftBill } from '../../shared/types/accounting.types';
 
 export interface GateLog {
   id: string;
@@ -105,8 +126,10 @@ export interface MockStoreState {
   bills: Bill[];
   documents: DocumentInfo[];
   nocs: NocRequest[];
+  nocRequests?: NocRequest[];
   staff: StaffMember[];
   residents: AdminResident[];
+  adminResidents?: AdminResident[];
   residentsNew: ResidentProfileInfo[];
   societyHierarchy: SocietyHierarchyNode;
   societyUnits: UnitDetailInfo[];
@@ -118,8 +141,7 @@ export interface MockStoreState {
   ledgerEntries: LedgerEntry[];
   advanceBalances: Record<string, number>;
 
-  // Dynamic store collections
-  adjustments?: JsonObject[];
+  adjustments?: Adjustment[];
   adminInvitations?: JsonObject[];
   advanceRecoveries?: AdvanceRecovery[];
   attendanceCorrections?: AttendanceCorrectionRequest[];
@@ -128,16 +150,16 @@ export interface MockStoreState {
   bankReconciliationRecords?: BankReconciliationRecord[];
   billingCycles?: BillingCycle[];
   billingRules?: BillingRule[];
-  billingRuns?: JsonObject[];
+  billingRuns?: BillingRun[];
   biometricDevicePunches?: JsonObject[];
   biometricDevices?: BiometricDevice[];
   biometricMappings?: BiometricMapping[];
   biometricSyncErrors?: BiometricSyncError[];
   biometricSyncJobs?: BiometricSyncJob[];
   calendars?: JsonObject[];
-  cheques?: JsonObject[];
+  cheques?: (ChequeRecord | JsonObject)[];
   clearanceSnapshots?: ClearanceSnapshot[];
-  complaintAssignments?: JsonObject[];
+  complaintAssignments?: ComplaintAssignment[];
   complaintCancellations?: JsonObject[];
   complaintComments?: ComplaintComment[];
   complaintEscalations?: ComplaintEscalation[];
@@ -147,48 +169,50 @@ export interface MockStoreState {
   complaintReopens?: JsonObject[];
   complaintResolutions?: ComplaintResolution[];
   complaintStatusHistory?: ComplaintStatusHistoryItem[];
-  correlationCandidates?: JsonObject[];
+  correlationCandidates?: CorrelationCandidate[];
   dailyAttendanceSummaries?: DailyAttendanceSummary[];
   documentAccessLogs?: JsonObject[];
   documentVersions?: JsonObject[];
-  draftBills?: JsonObject[];
+  draftBills?: DraftBill[];
   duplicatePunches?: DuplicatePunchCandidate[];
-  gateEntries?: JsonObject[];
+  gateEntries?: (GateEntry | JsonObject)[];
   gateEvents?: GateEvent[];
-  gateExits?: JsonObject[];
+  gateExits?: (GateExit | JsonObject)[];
   gates?: JsonObject[];
   guards?: JsonObject[];
   idempotencyRecords?: JsonObject[];
   invoiceLines?: InvoiceLine[];
-  invoicePenalties?: JsonObject[];
+  invoicePenalties?: InvoicePenalty[];
   invoices?: Invoice[];
   leaveRecords?: LeaveRecord[];
+  manualPayments?: ManualPaymentRecord[];
   missingCheckouts?: MissingCheckoutRecord[];
   monthlyAttendance?: MonthlyAttendanceRecord[];
   moveOutRequests?: MoveOutRequest[];
   nocCertificates?: NocCertificate[];
   overtimeRecords?: OvertimeRecord[];
   parentIncidents?: ParentIncident[];
-  paymentAllocations?: JsonObject[];
-  paymentAttempts?: JsonObject[];
+  paymentAllocations?: PaymentAllocation[];
+  paymentAttempts?: PaymentAttempt[];
   paymentTransactions?: PaymentTransaction[];
   payrollAdjustments?: PayrollAdjustment[];
   payrollPeriods?: PayrollPeriod[];
   payrollRecords?: PayrollRecord[];
   payslips?: Payslip[];
   receipts?: Receipt[];
-  refunds?: JsonObject[];
-  registrationDocuments?: JsonObject[];
-  registrationInvitations?: JsonObject[];
-  registrationRequirements?: JsonObject[];
-  registrationTimeline?: JsonObject[];
+  receiptAllocations?: ReceiptAllocation[];
+  refunds?: Refund[];
+  registrationDocuments?: RegistrationDocument[];
+  registrationInvitations?: RegistrationInvitation[];
+  registrationRequirements?: RegistrationDocumentRequirement[];
+  registrationTimeline?: RegistrationTimelineEvent[];
   residences?: JsonObject[];
-  residentDocuments?: JsonObject[];
-  residentInvitations?: JsonObject[];
+  residentDocuments?: ResidentDocument[];
+  residentInvitations?: (ResidentInvitation | JsonObject)[];
   residentMemberships?: JsonObject[];
   residentPermissions?: JsonObject[];
   residentProfiles?: JsonObject[];
-  residentRegistrations?: JsonObject[];
+  residentRegistrations?: (ResidentRegistration | AdminResidentRegistration)[];
   rosters?: RosterDefinition[];
   salaryStructures?: SalaryStructure[];
   shiftAssignments?: ShiftAssignment[];

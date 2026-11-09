@@ -6,7 +6,7 @@ import { Spacing } from "../theme/spacing";
 import { Typography } from "../theme/typography";
 import { societyTouch } from "../theme/societyTheme";
 import { useReducedMotion } from "../motion/useReducedMotion";
-import { styles, createViewOpacityStyle } from "./styles/AppButton.styles";
+import { styles, createViewOpacityStyle, createButtonDisabledStyle, createButtonDisabledTextStyle } from "./styles/AppButton.styles";
 import { useMessages as useGeneratedUiMessages } from "../../messages/useMessages";
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -73,7 +73,7 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
             buttonBgStyles[variant],
             fullWidth && styles.fullWidth,
             isDisabled && styles.disabled,
-            isDisabled && { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+            isDisabled && createButtonDisabledStyle(colors.surfaceMuted, colors.border),
             style,
         ]} accessibilityRole="button" accessibilityState={{ disabled: isDisabled, busy: loading }} accessibilityLabel={accessibilityLabel ?? `${title}${loading ? localizedUiText.m_d25310778d62 : ''}`} testID={testID}>
       <View style={styles.containerWrap}>
@@ -82,7 +82,7 @@ export function AppButton({ title, onPress, variant = 'primary', size = 'md', di
           </View>)}
         <View style={[styles.contentRow, createViewOpacityStyle(loading ? 0 : 1)]}>
           {iconLeft && <View style={styles.iconContainer}>{iconLeft}</View>}
-          <Text style={[styles.text, sizeTextStyles[resolvedSize], buttonTextStyles[variant], isDisabled && { color: colors.textDisabled }]}>
+          <Text style={[styles.text, sizeTextStyles[resolvedSize], buttonTextStyles[variant], isDisabled && createButtonDisabledTextStyle(colors.textDisabled)]}>
             {loading ? '' : title}
           </Text>
           {iconRight && <View style={styles.iconContainer}>{iconRight}</View>}

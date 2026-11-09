@@ -1,11 +1,9 @@
 import { mockStore } from '../../../core/mockStore/mockStore';
-import type { Visitor, VisitorStatus, VisitorPassStatus, VisitorType, VisitorCategory, ApprovalSource, EntrySource, VehicleType, EmergencyType, GateEvent, GateEventType, EntrySource, ApprovalSource, VehicleType, } from '../../../shared/types/visitorPhase8.types';
+import type { Visitor, VisitorStatus, VisitorPassStatus, VisitorType, VisitorCategory, ApprovalSource, EntrySource, VehicleType, EmergencyType, GateEvent, GateEventType } from '../../../shared/types/visitorPhase8.types';
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-import { format } from 'date-fns';
+import { repositorySuccess, type RepositoryResult } from '../../../core/repositories/repository.types';
 const withMockDelay = <T>(data: T, ms = 500): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), ms));
 function generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -24,14 +22,14 @@ export const emergencyBypassService = {
         emergencyContactName?: string;
         emergencyContactPhone?: string;
     }, guardId: string, guardName: string, societyId: string): Promise<{
-        visitor: any;
-        gateEvent: any;
+        visitor: Visitor;
+        gateEvent: GateEvent;
     } | null> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 try {
                     const now = new Date().toISOString();
-                    const visitor = {
+                    const visitor: Visitor = {
                         id: `vis-${Date.now()}`,
                         name: payload.visitorName,
                         phone: payload.visitorPhone || '',
@@ -43,11 +41,10 @@ export const emergencyBypassService = {
                         expectedEntryAtIso: now,
                         expectedExitAtIso: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
                         actualEntryAtIso: now,
-                        actualExitAtIso: undefined,
                         flatNumber: payload.flatNumber,
                         societyName: '',
                         purpose: payload.emergencyDescription,
-                        vehicleNumber: payload.vehicleRegistration,
+                        ...(payload.vehicleRegistration ? { vehicleNumber: payload.vehicleRegistration } : {}),
                         otp: 'EMRGNCY',
                         qrCode: `qr-emergency-${Date.now()}`,
                         qrCodeData: `emergency-${Date.now()}`,
@@ -56,71 +53,36 @@ export const emergencyBypassService = {
                         createdByUserId: guardId,
                         createdByDisplayName: guardName,
                         visitorCategory: 'emergency',
-                        exitTracking: undefined,
-                        cancellationReason: undefined,
-                        cancellationNotes: undefined,
-                        cancelledAt: undefined,
-                        cancelledBy: undefined,
-                        approvalSource: 'EMERGENCY' as any,
-                        approvalStatus: 'EMERGENCY_BYPASS' as any,
+                        approvalSource: 'EMERGENCY',
+                        approvalStatus: 'EMERGENCY_BYPASS',
                         validityWindowMinutes: 240,
                         validityStartAtIso: now,
                         validityEndAtIso: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
                         description: payload.emergencyDescription,
-                        invitedByResidentId: undefined,
-                        invitedByResidentName: undefined,
-                        preApprovalId: undefined,
-                        deliveryBrand: undefined,
-                        deliveryTrackingId: undefined,
-                        cabCompany: undefined,
-                        cabDriverName: undefined,
-                        vendorCompany: undefined,
-                        vendorContactPerson: undefined,
-                        vendorServiceType: undefined,
-                        materialDescription: undefined,
-                        materialQuantity: undefined,
-                        materialWeightKg: undefined,
-                        emergencyType: payload.emergencyType,
+                        ...(payload.emergencyType ? { emergencyType: payload.emergencyType } : {}),
                         emergencyDescription: payload.emergencyDescription,
-                        emergencyContactName: payload.emergencyContactName,
-                        emergencyContactPhone: payload.emergencyContactPhone,
+                        ...(payload.emergencyContactName ? { emergencyContactName: payload.emergencyContactName } : {}),
+                        ...(payload.emergencyContactPhone ? { emergencyContactPhone: payload.emergencyContactPhone } : {}),
                         gateId: payload.gateId,
                         gateName: '',
                         checkInAtIso: now,
                         checkInGateId: payload.gateId,
                         checkInGateName: '',
-                        checkOutAtIso: undefined,
-                        checkOutGateId: undefined,
-                        checkOutGateName: undefined,
-                        deniedAtIso: undefined,
-                        deniedBy: undefined,
-                        deniedReason: undefined,
-                        escalatedAtIso: undefined,
-                        escalatedBy: undefined,
-                        escalationReason: undefined,
-                        escalationStatus: undefined,
-                        revokedAtIso: undefined,
-                        revokedBy: undefined,
-                        revocationReason: undefined,
                         watchlistWarning: false,
-                        watchlistId: undefined,
-                        watchlistReason: undefined,
                         previousVisitCount: 0,
-                        lastVisitAtIso: undefined,
                         tags: ['emergency'],
                         metadata: { emergencyType: payload.emergencyType, bypassedBy: guardId },
                         societyId,
                     };
-                    mockStore.getState().visitors?.push(visitor);
-                    const gateEvent = {
+                    const gateEvent: GateEvent = {
                         id: `gate-event-${Date.now()}`,
-                        eventType: 'EMERGENCY_BYPASS' as any,
+                        eventType: 'EMERGENCY_BYPASS',
                         gateId: payload.gateId,
                         gateName: '',
                         gateCode: '',
                         visitorId: visitor.id,
                         visitorName: payload.visitorName,
-                        visitorPhone: payload.visitorPhone,
+                        ...(payload.visitorPhone ? { visitorPhone: payload.visitorPhone } : {}),
                         visitorType: payload.visitorType,
                         visitorPassId: visitor.id,
                         visitorPassCode: 'EMRGNCY',
@@ -132,31 +94,20 @@ export const emergencyBypassService = {
                         guardId: guardId,
                         guardName: guardName,
                         guardRole: 'GUARD',
-                        entrySource: 'MANUAL' as any,
-                        approvalSource: 'EMERGENCY' as any,
-                        vehicleId: payload.vehicleRegistration,
-                        vehicleRegistration: payload.vehicleRegistration,
-                        vehicleType: payload.vehicleType,
-                        vehicleColor: undefined,
+                        entrySource: 'MANUAL',
+                        approvalSource: 'EMERGENCY',
+                        ...(payload.vehicleRegistration ? { vehicleId: payload.vehicleRegistration, vehicleRegistration: payload.vehicleRegistration } : {}),
+                        ...(payload.vehicleType ? { vehicleType: payload.vehicleType } : {}),
                         eventStatus: 'SUCCESS',
-                        approvalSource: 'EMERGENCY' as any,
-                        approvalStatus: 'EMERGENCY_BYPASS' as any,
-                        denialReason: undefined,
+                        approvalStatus: 'EMERGENCY_BYPASS',
                         escalationTriggered: false,
-                        escalationType: undefined,
                         watchlistMatch: false,
-                        watchlistId: undefined,
-                        watchlistReason: undefined,
                         emergencyBypassUsed: true,
                         emergencyType: payload.emergencyType,
                         emergencyDescription: payload.emergencyDescription,
-                        emergencyContactName: payload.emergencyContactName,
-                        emergencyContactPhone: payload.emergencyContactPhone,
+                        ...(payload.emergencyContactName ? { emergencyContactName: payload.emergencyContactName } : {}),
+                        ...(payload.emergencyContactPhone ? { emergencyContactPhone: payload.emergencyContactPhone } : {}),
                         idempotencyKey: generateId('idem'),
-                        deviceId: undefined,
-                        deviceInfo: undefined,
-                        appVersion: undefined,
-                        networkType: undefined,
                         syncStatus: 'SYNCED',
                         createdAt: now,
                         createdBy: guardId,

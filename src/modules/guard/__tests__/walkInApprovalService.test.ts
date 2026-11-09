@@ -1,5 +1,5 @@
 import { walkInApprovalService } from '../services/walkInApprovalService';
-import type { VisitorApprovalRequest, VisitorApprovalStatus, VisitorEscalationStatus, VisitorCategory } from '../../../../shared/types/visitorPhase5';
+import type { VisitorApprovalRequest, VisitorApprovalStatus, VisitorEscalationStatus, VisitorCategory } from '../../../shared/types/visitorPhase5';
 import { unifiedVisitorStateMachine } from '../services/unifiedVisitorStateMachine';
 describe('Walk-In Approval Service', () => {
     beforeEach(() => {

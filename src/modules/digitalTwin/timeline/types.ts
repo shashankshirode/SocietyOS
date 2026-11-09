@@ -138,18 +138,18 @@ export interface TimelineAggregation {
     eventsBySource: Record<string, number>;
     eventsBySeverity: Record<string, number>;
     eventsByEntityType: Record<string, number>;
-    topEntitiesByEventCount: Array<{ entityId: string; entityType: string; count: number }>;
-    topSourcesByEventCount: Array<{ source: string; count: number }>;
+    topEntitiesByEventCount: { entityId: string; entityType: string; count: number }[];
+    topSourcesByEventCount: { source: string; count: number }[];
     peakHour?: { hour: number; count: number };
     averageEventsPerHour: number;
   };
-  anomalies: Array<{
+  anomalies: {
     timestamp: string;
     eventType: string;
     count: number;
     expectedCount: number;
     deviation: number;
-  }>;
+  }[];
 }
 
 export interface TimelineProjection {
@@ -178,17 +178,17 @@ export interface TimelineReconstructionResult {
   entityId: string;
   entityType: 'NODE' | 'RELATIONSHIP' | 'STATE';
   timeline: TimelineEvent[];
-  reconstructedStates: Array<{
+  reconstructedStates: {
     asOf: string;
     state: any;
     projectionVersion: number;
     confidence: number;
-  }>;
-  gaps: Array<{
+  }[];
+  gaps: {
     fromTimestamp: string;
     toTimestamp: string;
     reason: 'NO_EVENTS' | 'SOURCE_UNAVAILABLE' | 'PROJECTION_GAP' | 'DATA_LOSS';
-  }>;
+  }[];
   confidence: number;
   dataFreshness: string;
   projectionVersion: number;
@@ -212,7 +212,7 @@ export interface TimelineSubscription {
 export interface TimelineAnomalyDetection {
   societyId: string;
   period: 'HOUR' | 'DAY' | 'WEEK' | 'MONTH';
-  anomalies: Array<{
+  anomalies: {
     anomalyId: string;
     detectedAt: string;
     anomalyType: 'SPIKE' | 'DROP' | 'PATTERN_BREAK' | 'NEW_PATTERN' | 'SEASONAL_DEVIATION' | 'CORRELATION_BREAK';
@@ -225,7 +225,7 @@ export interface TimelineAnomalyDetection {
     confidence: number;
     evidence: string[];
     suggestedAction?: string;
-  }>;
+  }[];
   baselinePeriod: { from: string; to: string };
   analysisPeriod: { from: string; to: string };
 }

@@ -3,9 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   Pressable,
 } from 'react-native';
+import { AppModal } from '../../../../ui/modal/AppModal';
 import Svg, { Path } from 'react-native-svg';
 import { PrimaryCTA } from './PrimaryCTA';
 import { SecondaryCTA } from './SecondaryCTA';
@@ -32,11 +32,9 @@ export function DuplicateAccountModal({
   onUseAnotherNumber,
 }: DuplicateAccountModalProps) {
   return (
-    <Modal
+    <AppModal
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onUseAnotherNumber}
+      onClose={onUseAnotherNumber}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
@@ -83,7 +81,7 @@ export function DuplicateAccountModal({
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

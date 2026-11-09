@@ -101,6 +101,83 @@ export const nocMockSource = {
     async moveOutClearance(moveOutRequestId: string): Promise<RepositoryResult<ClearanceChecklistItem[]>> {
         await withMockDelay();
         return repositorySuccess(mockMoveOutChecklist);
+    },
+    async approveNocRequest(requestId: string): Promise<RepositoryResult<{ noc: NocRequest; certificate: NocCertificate }>> {
+        await withMockDelay();
+        const noc = mockStore.getState().nocs.find((n) => n.id === requestId);
+        if (!noc) {
+            return {
+                ok: false,
+                error: {
+                    code: 'NOC_NOT_FOUND',
+                    message: 'Requested NOC not found.'
+                }
+            };
+        }
+        noc.status = 'APPROVED';
+        noc.timeline.push({
+            title: 'Approved & Certificate Issued',
+            status: 'COMPLETED',
+            actor: 'Society Admin'
+        });
+        const certificate: NocCertificate = {
+            id: `cert-${Date.now()}`,
+            certificateNumber: `NOC-CERT-${Math.floor(1000 + Math.random() * 9000)}`,
+            nocType: noc.nocType,
+            issuedDate: new Date().toISOString().split('T')[0],
+            validUntil: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            issuedTo: noc.residentName,
+            flatNumber: noc.flatNumber,
+            status: 'VALID',
+            purpose: noc.reason,
+            digitalSignature: `SIG-SOC-${Math.random().toString(36).slice(2, 10).toUpperCase()}`
+        };
+        mockStore.updateNoc(noc.id, {
+            status: 'APPROVED',
+            timeline: noc.timeline
+        });
+        mockStore.addDocument({
+            id: `doc-noc-${Date.now()}`,
+            title: `Society NOC Certificate - ${noc.nocType}`,
+            category: 'SOCIETY_NOC',
+            flatNumber: noc.flatNumber,
+            status: 'VERIFIED',
+            uploadedDate: new Date().toISOString().split('T')[0],
+            uploadedBy: 'Society Administration',
+            fileType: 'pdf',
+            fileSize: '450 KB',
+            sensitivity: 'ALL_RESIDENTS',
+            isSocietyDoc: true,
+            homeContextId: noc.homeContextId,
+            societyId: noc.societyId,
+            unitId: noc.unitId,
+            dataScopeKey: noc.dataScopeKey
+        });
+        return repositorySuccess({ noc, certificate });
+    },
+    async rejectNocRequest(requestId: string, reason: string): Promise<RepositoryResult<NocRequest>> {
+        await withMockDelay();
+        const noc = mockStore.getState().nocs.find((n) => n.id === requestId);
+        if (!noc) {
+            return {
+                ok: false,
+                error: {
+                    code: 'NOC_NOT_FOUND',
+                    message: 'Requested NOC not found.'
+                }
+            };
+        }
+        noc.status = 'REJECTED';
+        noc.timeline.push({
+            title: `Rejected: ${reason}`,
+            status: 'COMPLETED',
+            actor: 'Society Admin'
+        });
+        mockStore.updateNoc(noc.id, {
+            status: 'REJECTED',
+            timeline: noc.timeline
+        });
+        return repositorySuccess(noc);
     }
 };
 export default nocMockSource;

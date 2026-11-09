@@ -1,35 +1,117 @@
 import type { ResidentScopedEntity } from './residentScope.types';
 import type { JsonObject } from '../../core/api/api.types';
 import type { Absent } from './absence.types';
-import type { VisitorExitTracking } from './visitor.types';
+
+export type VisitorExitStatus =
+  | 'notEntered'
+  | 'inside'
+  | 'exitMarked'
+  | 'expectedExitDue'
+  | 'overdue'
+  | 'residentConfirmedLeft'
+  | 'residentConfirmedStillInside'
+  | 'extended'
+  | 'escalatedToSecurity'
+  | 'resolved';
+
+export type VisitorExitAlertStatus =
+  | 'notRequired'
+  | 'scheduled'
+  | 'due'
+  | 'sent'
+  | 'snoozed'
+  | 'acknowledged'
+  | 'escalated'
+  | 'resolved';
+
+export type VisitorExitLog = {
+  id: string;
+  titleKey: string;
+  descriptionKey: string;
+  occurredAtIso: string;
+  status: VisitorExitStatus | VisitorExitAlertStatus;
+};
+
+export type VisitorExitTimelineEvent = {
+  id: string;
+  titleKey: string;
+  descriptionKey: string;
+  occurredAtIso: string;
+  status: VisitorExitStatus | VisitorExitAlertStatus;
+};
+
+export type VisitorExitTracking = {
+  expectedEntryAtIso: string;
+  actualEntryAtIso?: string;
+  expectedExitAtIso: string;
+  actualExitAtIso?: string;
+  gracePeriodMinutes: number;
+  exitStatus?: VisitorExitStatus;
+  alertStatus?: VisitorExitAlertStatus;
+  currentStatus?: VisitorExitStatus;
+  alertDueAtIso?: string;
+  extendedExpectedExitAtIso?: string;
+  escalationReason?: string;
+  residentResponse?: string;
+  residentResponseAtIso?: string;
+  extensionReason?: string;
+  history?: VisitorExitLog[];
+  timeline?: VisitorExitTimelineEvent[];
+};
 
 export type VisitorType =
   | 'GUEST'
+  | 'guest'
   | 'DELIVERY'
+  | 'delivery'
   | 'CAB'
+  | 'cab'
   | 'VENDOR'
+  | 'vendor'
   | 'SERVICE_PROVIDER'
+  | 'serviceProvider'
   | 'DOMESTIC_HELP'
+  | 'domesticHelp'
   | 'STAFF'
+  | 'staff'
   | 'COURIER'
+  | 'courier'
   | 'MATERIAL_MOVEMENT'
+  | 'materialMovement'
   | 'EMERGENCY'
-  | 'OTHER';
+  | 'emergency'
+  | 'OTHER'
+  | 'other';
 
 export type VisitorCategory =
   | 'guest'
+  | 'GUEST'
   | 'cab'
+  | 'CAB'
   | 'delivery'
+  | 'DELIVERY'
   | 'parcel'
+  | 'PARCEL'
   | 'domesticHelp'
+  | 'DOMESTIC_HELP'
   | 'serviceProvider'
+  | 'SERVICE_PROVIDER'
   | 'repairTechnician'
+  | 'REPAIR_TECHNICIAN'
   | 'renovationWorker'
+  | 'RENOVATION_WORKER'
   | 'paintingWorker'
+  | 'PAINTING_WORKER'
   | 'contractor'
+  | 'CONTRACTOR'
   | 'vendor'
+  | 'VENDOR'
   | 'staff'
-  | 'other';
+  | 'STAFF'
+  | 'emergency'
+  | 'EMERGENCY'
+  | 'other'
+  | 'OTHER';
 
 export type VisitorStatus =
   | 'DRAFT'
@@ -180,85 +262,100 @@ export interface Visitor extends ResidentScopedEntity {
   id: string;
   name: string;
   phone: string;
-  email?: string;
+  email?: string | Absent;
   type: VisitorType;
-  category?: VisitorCategory;
+  category?: VisitorCategory | Absent;
   status: VisitorStatus;
   expectedDate: string;
   expectedTime: string;
-  expectedEntryAtIso?: string;
-  expectedExitAtIso?: string;
-  actualEntryAtIso?: string;
-  actualExitAtIso?: string;
+  expectedEntryAtIso?: string | Absent;
+  expectedExitAtIso?: string | Absent;
+  actualEntryAtIso?: string | Absent;
+  actualExitAtIso?: string | Absent;
+  actualEntryTime?: string | Absent;
+  actualExitTime?: string | Absent;
   flatNumber: string;
   societyName: string;
   purpose: string;
-  vehicleNumber?: string;
-  vehicleType?: VehicleType;
-  vehicleColor?: string;
-  vehicleMake?: string;
-  vehicleModel?: string;
+  vehicleNumber?: string | Absent;
+  vehicleType?: VehicleType | Absent;
+  vehicleColor?: string | Absent;
+  vehicleMake?: string | Absent;
+  vehicleModel?: string | Absent;
   otp: string;
-  qrCode?: string;
-  qrCodeData?: string;
-  qrCodeExpiryAtIso?: string;
+  qrCode?: string | Absent;
+  qrCodeData?: string | Absent;
+  qrCodeExpiryAtIso?: string | Absent;
   createdAt: string;
-  createdByUserId?: string;
-  createdByDisplayName?: string;
-  visitorCategory?: VisitorCategory;
-  exitTracking?: VisitorExitTracking;
-  cancellationReason?: string;
-  cancellationNotes?: string;
-  cancelledAt?: string;
-  cancelledBy?: string;
-  approvalSource?: ApprovalSource;
-  approvalStatus?: VisitorPassStatus;
-  validityWindowMinutes?: number;
-  validityStartAtIso?: string;
-  validityEndAtIso?: string;
-  description?: string;
-  invitedByResidentId?: string;
-  invitedByResidentName?: string;
-  preApprovalId?: string;
-  deliveryBrand?: string;
-  deliveryTrackingId?: string;
-  cabCompany?: string;
-  cabDriverName?: string;
-  vendorCompany?: string;
-  vendorContactPerson?: string;
-  vendorServiceType?: string;
-  materialDescription?: string;
-  materialQuantity?: string;
-  materialWeightKg?: number;
-  emergencyType?: EmergencyType;
-  emergencyDescription?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  gateId?: string;
-  gateName?: string;
-  checkInAtIso?: string;
-  checkInGateId?: string;
-  checkInGateName?: string;
-  checkOutAtIso?: string;
-  checkOutGateId?: string;
-  checkOutGateName?: string;
-  deniedAtIso?: string;
-  deniedBy?: string;
-  deniedReason?: string;
-  escalatedAtIso?: string;
-  escalatedBy?: string;
-  escalationReason?: string;
-  escalationStatus?: VisitorEscalationStatus;
-  revokedAtIso?: string;
-  revokedBy?: string;
-  revocationReason?: string;
-  watchlistWarning?: boolean;
-  watchlistId?: string;
-  watchlistReason?: string;
-  previousVisitCount?: number;
-  lastVisitAtIso?: string;
-  tags?: string[];
-  metadata?: Record<string, unknown>;
+  updatedAt?: string | Absent;
+  expiredAtIso?: string | Absent;
+  createdByUserId?: string | Absent;
+  createdByDisplayName?: string | Absent;
+  visitorCategory?: VisitorCategory | Absent;
+  exitTracking?: VisitorExitTracking | Absent;
+  cancellationReason?: string | Absent;
+  cancellationNotes?: string | Absent;
+  cancelledAt?: string | Absent;
+  cancelledBy?: string | Absent;
+  approvalSource?: ApprovalSource | Absent;
+  approvalStatus?: VisitorPassStatus | Absent;
+  approvedAtIso?: string | Absent;
+  approvedBy?: string | Absent;
+  validityWindowMinutes?: number | Absent;
+  validityStartAtIso?: string | Absent;
+  validityEndAtIso?: string | Absent;
+  description?: string | Absent;
+  invitedByResidentId?: string | Absent;
+  invitedByResidentName?: string | Absent;
+  preApprovalId?: string | Absent;
+  passId?: string | Absent;
+  personId?: string | Absent;
+  entryGateId?: string | Absent;
+  entryGateName?: string | Absent;
+  exitGateId?: string | Absent;
+  exitGateName?: string | Absent;
+  dataVersion?: number | Absent;
+  actualEntryAt?: string | Absent;
+  actualExitAt?: string | Absent;
+  deliveryBrand?: string | Absent;
+  deliveryTrackingId?: string | Absent;
+  cabCompany?: string | Absent;
+  cabDriverName?: string | Absent;
+  vendorCompany?: string | Absent;
+  vendorContactPerson?: string | Absent;
+  vendorServiceType?: string | Absent;
+  materialDescription?: string | Absent;
+  materialQuantity?: string | Absent;
+  materialWeightKg?: number | Absent;
+  emergencyType?: EmergencyType | Absent;
+  emergencyDescription?: string | Absent;
+  emergencyContactName?: string | Absent;
+  emergencyContactPhone?: string | Absent;
+  gateId?: string | Absent;
+  gateName?: string | Absent;
+  checkInAtIso?: string | Absent;
+  checkInGateId?: string | Absent;
+  checkInGateName?: string | Absent;
+  checkOutAtIso?: string | Absent;
+  checkOutGateId?: string | Absent;
+  checkOutGateName?: string | Absent;
+  deniedAtIso?: string | Absent;
+  deniedBy?: string | Absent;
+  deniedReason?: string | Absent;
+  escalatedAtIso?: string | Absent;
+  escalatedBy?: string | Absent;
+  escalationReason?: string | Absent;
+  escalationStatus?: VisitorEscalationStatus | Absent;
+  revokedAtIso?: string | Absent;
+  revokedBy?: string | Absent;
+  revocationReason?: string | Absent;
+  watchlistWarning?: boolean | Absent;
+  watchlistId?: string | Absent;
+  watchlistReason?: string | Absent;
+  previousVisitCount?: number | Absent;
+  lastVisitAtIso?: string | Absent;
+  tags?: string[] | Absent;
+  metadata?: Record<string, unknown> | Absent;
 }
 
 export interface CreateVisitorPayload extends Record<string, unknown> {
@@ -305,47 +402,51 @@ export interface CreateVisitorPayload extends Record<string, unknown> {
 export interface VisitorInvitation extends ResidentScopedEntity {
   id: string;
   preApprovalId: string;
-  visitorId?: string;
+  visitorId?: string | Absent;
   residentId: string;
   residentName: string;
   residentUnitId: string;
   residentUnitNumber: string;
   visitorName: string;
   visitorPhone: string;
-  visitorEmail?: string;
+  visitorEmail?: string | Absent;
   visitorType: VisitorType;
-  visitorCategory?: VisitorCategory;
+  visitorCategory?: VisitorCategory | Absent;
   status: VisitorInvitationStatus;
   validityStartAtIso: string;
   validityEndAtIso: string;
   validityWindowMinutes: number;
-  otp?: string;
-  qrCode?: string;
-  qrCodeData?: string;
-  qrCodeExpiryAtIso?: string;
-  vehicleNumber?: string;
-  vehicleType?: VehicleType;
+  otp?: string | Absent;
+  qrCode?: string | Absent;
+  qrCodeData?: string | Absent;
+  qrCodeExpiryAtIso?: string | Absent;
+  vehicleNumber?: string | Absent;
+  vehicleType?: VehicleType | Absent;
   purpose: string;
-  deliveryBrand?: string;
-  deliveryTrackingId?: string;
-  cabCompany?: string;
-  cabDriverName?: string;
-  vendorCompany?: string;
-  vendorContactPerson?: string;
-  vendorServiceType?: string;
-  materialDescription?: string;
-  materialQuantity?: string;
-  materialWeightKg?: number;
+  deliveryBrand?: string | Absent;
+  deliveryTrackingId?: string | Absent;
+  cabCompany?: string | Absent;
+  cabDriverName?: string | Absent;
+  vendorCompany?: string | Absent;
+  vendorContactPerson?: string | Absent;
+  vendorServiceType?: string | Absent;
+  materialDescription?: string | Absent;
+  materialQuantity?: string | Absent;
+  materialWeightKg?: number | Absent;
+  emergencyType?: EmergencyType | Absent;
+  emergencyDescription?: string | Absent;
+  emergencyContactName?: string | Absent;
+  emergencyContactPhone?: string | Absent;
   createdAt: string;
   createdBy: string;
-  sentAtIso?: string;
-  acceptedAtIso?: string;
-  revokedAtIso?: string;
-  revokedBy?: string;
-  revocationReason?: string;
-  usedAtIso?: string;
-  statusChangedAtIso?: string;
-  metadata?: Record<string, unknown>;
+  sentAtIso?: string | Absent;
+  acceptedAtIso?: string | Absent;
+  revokedAtIso?: string | Absent;
+  revokedBy?: string | Absent;
+  revocationReason?: string | Absent;
+  usedAtIso?: string | Absent;
+  statusChangedAtIso?: string | Absent;
+  metadata?: Record<string, unknown> | Absent;
 }
 
 export interface CreateVisitorInvitationPayload extends Record<string, unknown> {
@@ -375,10 +476,12 @@ export interface CreateVisitorInvitationPayload extends Record<string, unknown> 
 
 export interface VisitorApprovalRequest extends ResidentScopedEntity {
   id: string;
+  requestId?: string | Absent;
   visitorId: string;
   visitorName: string;
   visitorPhone: string;
   visitorType: VisitorType;
+  visitorCategory?: string | Absent;
   flatNumber: string;
   unitId: string;
   gateId: string;
@@ -388,17 +491,19 @@ export interface VisitorApprovalRequest extends ResidentScopedEntity {
   requestType: 'WALK_IN' | 'PRE_APPROVAL_EXPIRED' | 'PASS_EXPIRED' | 'UNKNOWN_VISITOR' | 'EMERGENCY';
   status: VisitorApprovalStatus;
   requestedAtIso: string;
-  respondedAtIso?: string;
-  respondedBy?: string;
-  respondedByRole?: string;
-  decision?: 'APPROVE' | 'DENY';
-  denialReason?: string;
-  escalationReason?: string;
-  escalationStatus?: VisitorEscalationStatus;
-  escalatedAtIso?: string;
-  escalatedBy?: string;
+  respondedAtIso?: string | Absent;
+  respondedBy?: string | Absent;
+  respondedByRole?: string | Absent;
+  decision?: ('APPROVE' | 'DENY') | Absent;
+  denialReason?: string | Absent;
+  escalationReason?: string | Absent;
+  escalationStatus?: VisitorEscalationStatus | Absent;
+  escalatedAtIso?: string | Absent;
+  escalatedBy?: string | Absent;
   expiresAtIso: string;
-  metadata?: Record<string, unknown>;
+  statusChangedAtIso?: string | Absent;
+  metadata?: Record<string, unknown> | Absent;
+  dataVersion?: number | Absent;
 }
 
 export interface ResidentApprovalActionPayload extends Record<string, unknown> {
@@ -506,48 +611,48 @@ export interface GateEvent extends ResidentScopedEntity {
   gateId: string;
   gateName: string;
   gateCode: string;
-  visitorId?: string;
-  visitorName?: string;
-  visitorPhone?: string;
-  visitorType?: VisitorType;
-  visitorPassId?: string;
-  visitorPassCode?: string;
-  unitId?: string;
-  unitNumber?: string;
-  flatNumber?: string;
+  visitorId?: string | Absent;
+  visitorName?: string | Absent;
+  visitorPhone?: string | Absent;
+  visitorType?: VisitorType | Absent;
+  visitorPassId?: string | Absent;
+  visitorPassCode?: string | Absent;
+  unitId?: string | Absent;
+  unitNumber?: string | Absent;
+  flatNumber?: string | Absent;
   eventTimestamp: string;
-  deviceTimestamp?: string;
+  deviceTimestamp?: string | Absent;
   guardId: string;
   guardName: string;
   guardRole: string;
   entrySource: EntrySource;
-  approvalSource?: ApprovalSource;
-  vehicleId?: string;
-  vehicleRegistration?: string;
-  vehicleType?: VehicleType;
-  vehicleColor?: string;
+  approvalSource?: ApprovalSource | Absent;
+  vehicleId?: string | Absent;
+  vehicleRegistration?: string | Absent;
+  vehicleType?: VehicleType | Absent;
+  vehicleColor?: string | Absent;
   eventStatus: 'SUCCESS' | 'FAILED' | 'PARTIAL' | 'PENDING';
-  approvalStatus?: VisitorPassStatus;
-  denialReason?: string;
-  escalationTriggered?: boolean;
-  escalationType?: string;
-  watchlistMatch?: boolean;
-  watchlistId?: string;
-  watchlistReason?: string;
-  emergencyBypassUsed?: boolean;
-  emergencyType?: EmergencyType;
-  emergencyDescription?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  idempotencyKey?: string;
-  deviceId?: string;
-  deviceInfo?: string;
-  appVersion?: string;
-  networkType?: string;
-  syncStatus?: 'SYNCED' | 'PENDING_SYNC' | 'SYNC_FAILED' | 'CONFLICT';
+  approvalStatus?: VisitorPassStatus | Absent;
+  denialReason?: string | Absent;
+  escalationTriggered?: boolean | Absent;
+  escalationType?: string | Absent;
+  watchlistMatch?: boolean | Absent;
+  watchlistId?: string | Absent;
+  watchlistReason?: string | Absent;
+  emergencyBypassUsed?: boolean | Absent;
+  emergencyType?: EmergencyType | Absent;
+  emergencyDescription?: string | Absent;
+  emergencyContactName?: string | Absent;
+  emergencyContactPhone?: string | Absent;
+  idempotencyKey?: string | Absent;
+  deviceId?: string | Absent;
+  deviceInfo?: string | Absent;
+  appVersion?: string | Absent;
+  networkType?: string | Absent;
+  syncStatus?: 'SYNCED' | 'PENDING_SYNC' | 'SYNC_FAILED' | 'CONFLICT' | Absent;
   createdAt: string;
   createdBy: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> | Absent;
 }
 
 export interface CreateGateEventPayload extends Record<string, unknown> {
@@ -651,6 +756,12 @@ export interface CurrentVisitorPresence extends ResidentScopedEntity {
   lastMovementAtIso?: string;
 }
 
+export type VisitorPassValidationStatus =
+  | VisitorPassStatus
+  | 'VALID'
+  | 'INVALID'
+  | 'WATCHLIST_MATCH';
+
 export interface VisitorPassValidationResult {
   isValid: boolean;
   pass?: VisitorPass;
@@ -660,41 +771,41 @@ export interface VisitorPassValidationResult {
   watchlistReason?: string;
   requiresApproval?: boolean;
   approvalRequestId?: string;
-  status: VisitorPassStatus;
+  status: VisitorPassValidationStatus;
   message?: string;
 }
 
 export interface VisitorPass extends ResidentScopedEntity {
   id: string;
   visitorName: string;
-  visitorPhone?: string;
+  visitorPhone?: string | Absent;
   visitorType: VisitorType;
   visitingFlat: string;
   residentName: string;
-  residentPhone?: string;
+  residentPhone?: string | Absent;
   expectedTime: string;
   expectedDate: string;
   validityWindow: string;
   otp: string;
-  qrCode?: string;
-  qrCodeData?: string;
-  qrCodeExpiryAtIso?: string;
+  qrCode?: string | Absent;
+  qrCodeData?: string | Absent;
+  qrCodeExpiryAtIso?: string | Absent;
   approvalStatus: VisitorPassStatus;
   approvalSource: ApprovalSource;
-  vehicleNumber?: string;
-  vehicleType?: VehicleType;
-  purpose?: string;
-  peopleCount?: number;
-  specialInstructions?: string;
-  watchlistWarning?: boolean;
-  watchlistId?: string;
-  watchlistReason?: string
-  previousVisitCount?: number;
-  actualEntryTime?: string;
-  actualExitTime?: string;
-  validityStartAtIso?: string;
-  validityEndAtIso?: string;
-  validityWindowMinutes?: number;
+  vehicleNumber?: string | Absent;
+  vehicleType?: VehicleType | Absent;
+  purpose?: string | Absent;
+  peopleCount?: number | Absent;
+  specialInstructions?: string | Absent;
+  watchlistWarning?: boolean | Absent;
+  watchlistId?: string | Absent;
+  watchlistReason?: string | Absent;
+  previousVisitCount?: number | Absent;
+  actualEntryTime?: string | Absent;
+  actualExitTime?: string | Absent;
+  validityStartAtIso?: string | Absent;
+  validityEndAtIso?: string | Absent;
+  validityWindowMinutes?: number | Absent;
 }
 
 export interface VisitorPassValidationContext {
@@ -769,32 +880,58 @@ export const VISITOR_STATUS_LABELS: Record<VisitorStatus, string> = {
 
 export const VISITOR_TYPE_LABELS: Record<VisitorType, string> = {
   GUEST: 'Guest',
+  guest: 'Guest',
   DELIVERY: 'Delivery',
+  delivery: 'Delivery',
   CAB: 'Cab',
+  cab: 'Cab',
   VENDOR: 'Vendor',
+  vendor: 'Vendor',
   SERVICE_PROVIDER: 'Service Provider',
+  serviceProvider: 'Service Provider',
   DOMESTIC_HELP: 'Domestic Help',
+  domesticHelp: 'Domestic Help',
   STAFF: 'Staff',
+  staff: 'Staff',
   COURIER: 'Courier',
+  courier: 'Courier',
   MATERIAL_MOVEMENT: 'Material Movement',
+  materialMovement: 'Material Movement',
   EMERGENCY: 'Emergency',
+  emergency: 'Emergency',
   OTHER: 'Other',
+  other: 'Other',
 };
 
 export const VISITOR_CATEGORY_LABELS: Record<VisitorCategory, string> = {
   guest: 'Guest',
+  GUEST: 'Guest',
   cab: 'Cab',
+  CAB: 'Cab',
   delivery: 'Delivery',
+  DELIVERY: 'Delivery',
   parcel: 'Parcel',
+  PARCEL: 'Parcel',
   domesticHelp: 'Domestic Help',
+  DOMESTIC_HELP: 'Domestic Help',
   serviceProvider: 'Service Provider',
+  SERVICE_PROVIDER: 'Service Provider',
   repairTechnician: 'Repair Technician',
+  REPAIR_TECHNICIAN: 'Repair Technician',
   renovationWorker: 'Renovation Worker',
+  RENOVATION_WORKER: 'Renovation Worker',
   paintingWorker: 'Painting Worker',
+  PAINTING_WORKER: 'Painting Worker',
   contractor: 'Contractor',
+  CONTRACTOR: 'Contractor',
   vendor: 'Vendor',
+  VENDOR: 'Vendor',
   staff: 'Staff',
+  STAFF: 'Staff',
+  emergency: 'Emergency',
+  EMERGENCY: 'Emergency',
   other: 'Other',
+  OTHER: 'Other',
 };
 
 export const VISITOR_STATUS_TRANSITIONS: Record<VisitorStatus, VisitorStatus[]> = {
@@ -889,15 +1026,20 @@ export interface UnknownVisitorPolicy {
   societyId: string;
   visitorType: VisitorType | 'ALL';
   defaultAction: UnknownVisitorPolicyAction;
-  timeoutSeconds: number;
-  actionOnTimeout: UnknownVisitorPolicyAction;
-  requireHostPreApproval: boolean;
-  requirePhotoAtGate: boolean;
-  requireGovtId: boolean;
-  escalationRole: string;
-  allowGuardOverride: boolean;
-  isActive: boolean;
+  timeoutSeconds?: number | Absent;
+  actionOnTimeout?: UnknownVisitorPolicyAction | Absent;
+  requireHostPreApproval?: boolean | Absent;
+  requirePhotoAtGate?: boolean | Absent;
+  requireGovtId?: boolean | Absent;
+  escalationRole?: string | Absent;
+  allowGuardOverride?: boolean | Absent;
+  isActive?: boolean | Absent;
   createdAt: string;
-  updatedAt: string;
-  createdBy: string;
+  updatedAt?: string | Absent;
+  createdBy?: string | Absent;
+  waitTimeoutMinutes?: number | Absent;
+  escalationTargets?: ('SECURITY' | 'SUPERVISOR' | 'COMMITTEE')[] | Absent;
+  alternateApproverRoles?: string[] | Absent;
+  notifyOnAttempt?: boolean | Absent;
+  autoDenyAfterTimeout?: boolean | Absent;
 }

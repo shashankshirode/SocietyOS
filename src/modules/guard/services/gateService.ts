@@ -3,8 +3,7 @@ import type { Gate, CreateGatePayload, GateEvent, CreateGateEventPayload, GateEv
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
+import { repositorySuccess, type RepositoryResult } from '../../../core/repositories/repository.types';
 import { currentVisitorPresenceService } from './currentVisitorPresenceService';
 import { gateIdempotencyService } from './gateIdempotencyService';
 import { visitorStateMachine } from './visitorStateMachine';
@@ -91,7 +90,10 @@ export const gateService = {
                     return;
                 }
                 const updated = { ...gates[index], ...updates, updatedAt: new Date().toISOString() };
-                mockStore.getState().gates[index] = updated;
+                const state = mockStore.getState();
+                if (state.gates) {
+                    state.gates[index] = updated;
+                }
                 mockStore.notify();
                 resolve(updated);
             }, 400);
@@ -106,7 +108,10 @@ export const gateService = {
                     resolve(false);
                     return;
                 }
-                mockStore.getState().gates.splice(index, 1);
+                const state = mockStore.getState();
+                if (state.gates) {
+                    state.gates.splice(index, 1);
+                }
                 mockStore.notify();
                 resolve(true);
             }, 400);
@@ -158,8 +163,7 @@ export const gateService = {
                         vehicleRegistration: payload.vehicleRegistration,
                         vehicleType: payload.vehicleType,
                         vehicleColor: payload.vehicleColor,
-                        eventStatus: 'SUCCESS',
-                        approvalSource: payload.approvalSource,
+                        eventStatus: 'SUCCESS' as const,
                         approvalStatus: undefined,
                         denialReason: undefined,
                         escalationTriggered: false,
@@ -332,7 +336,6 @@ export const gateService = {
                     isVisitorVehicle: payload.isVisitorVehicle,
                     isResidentVehicle: payload.isResidentVehicle,
                     residentId: payload.residentId,
-                    parkingSlotId: payload.parkingSlotId,
                     createdAt: now,
                     updatedAt: now,
                     createdBy: 'current-user',
@@ -360,7 +363,10 @@ export const gateService = {
                     ...updates,
                     updatedAt: new Date().toISOString(),
                 };
-                mockStore.getState().visitorVehicles[index] = updated;
+                const state = mockStore.getState();
+                if (state.visitorVehicles) {
+                    state.visitorVehicles[index] = updated;
+                }
                 mockStore.notify();
                 resolve(updated);
             }, 300);
@@ -551,8 +557,7 @@ export const gateMockSource = {
             vehicleRegistration: payload.vehicleRegistration,
             vehicleType: payload.vehicleType,
             vehicleColor: payload.vehicleColor,
-            eventStatus: 'SUCCESS',
-            approvalSource: payload.approvalSource,
+            eventStatus: 'SUCCESS' as const,
             approvalStatus: undefined,
             denialReason: undefined,
             escalationTriggered: false,
@@ -653,7 +658,6 @@ export const gateMockSource = {
             isVisitorVehicle: payload.isVisitorVehicle,
             isResidentVehicle: payload.isResidentVehicle,
             residentId: payload.residentId,
-            parkingSlotId: payload.parkingSlotId,
             createdAt: now,
             updatedAt: now,
             createdBy: 'current-user',

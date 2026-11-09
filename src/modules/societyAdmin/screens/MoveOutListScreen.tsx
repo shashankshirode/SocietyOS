@@ -16,7 +16,7 @@ import { styles, createTextColorStyle, createViewBackgroundColorStyle } from '..
 import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
 import { AppText } from '../../../shared/components/AppText';
-import { format } from 'date-fns';
+import { formatDate } from '../../../shared/utils/formatters';
 
 const statusOrder: MoveOutStatus[] = [
   'DRAFT',
@@ -100,7 +100,7 @@ export function MoveOutListScreen({ navigation }: {
           </View>
           <View style={styles.detailRow}>
             <AppText variant="caption" style={styles.detailLbl}>{localizedUiText.m_225e2abb60c4}</AppText>
-            <AppText variant="caption" style={styles.detailVal}>{format(new Date(item.requestedExitDate), 'MMM d, yyyy')}</AppText>
+            <AppText variant="caption" style={styles.detailVal}>{formatDate(item.requestedExitDate)}</AppText>
           </View>
           <View style={styles.detailRow}>
             <AppText variant="caption" style={styles.detailLbl}>Person Type</AppText>

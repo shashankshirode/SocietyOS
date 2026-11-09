@@ -5,7 +5,7 @@ import type {
   DocumentReplaceInput,
   SecureDownloadUrl,
   DuplicateCheckResult,
-} from '../types/documentVault.types';
+} from '../../../../shared/types/documentVault.types';
 import type { Absent } from '../../../../shared/types/absence.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
 
@@ -51,16 +51,22 @@ class MockDocumentStorageService implements StorageService {
 
   private initializeMockStorage(): void {
     const existingDocs = mockStore.getState().documents || [];
-    existingDocs.forEach(doc => {
-      const storageRef = `${MOCK_STORAGE_PREFIX}${doc.id}/v${doc.currentVersionNumber}`;
-      const mockFile = new File(['mock content'], doc.fileName, { type: doc.mimeType });
+    existingDocs.forEach((doc, index) => {
+      const versionNum = 1;
+      const storageRef = `${MOCK_STORAGE_PREFIX}${doc.id}/v${versionNum}`;
+      const fileName = `${doc.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.${doc.fileType.toLowerCase()}`;
+      const mimeType = doc.fileType.toLowerCase() === 'pdf' ? 'application/pdf' : 'application/octet-stream';
+      const parsedSize = parseInt(doc.fileSize, 10) || 1024;
+      const lastModified = doc.uploadedDate || new Date().toISOString();
+      const checksum = `chk_${doc.id}_${index}`;
+      const mockFile = new File(['mock content'], fileName, { type: mimeType });
       this.storage.set(storageRef, {
         file: mockFile,
         metadata: {
-          size: doc.fileSize,
-          mimeType: doc.mimeType,
-          lastModified: doc.updatedAt,
-          checksum: doc.checksum,
+          size: parsedSize,
+          mimeType,
+          lastModified,
+          checksum,
         },
       });
     });
@@ -176,15 +182,17 @@ class MockDocumentStorageService implements StorageService {
   }
 
   async checkDuplicate(checksum: string, societyId: string): Promise<DuplicateCheckResult> {
-    const documents = mockStore.getState().documents || [];
-    const existing = documents.find(doc => doc.checksum === checksum && doc.societyId === societyId);
-
-    if (existing) {
-      return {
-        isDuplicate: true,
-        existingDocumentId: existing.id,
-        existingVersionId: existing.currentVersionId,
-      };
+    for (const [ref, entry] of this.storage.entries()) {
+      if (entry.metadata.checksum === checksum) {
+        const parts = ref.replace(MOCK_STORAGE_PREFIX, '').split('/');
+        const docId = parts[0] || 'unknown';
+        const versionId = parts[1] || 'v1';
+        return {
+          isDuplicate: true,
+          existingDocumentId: docId,
+          existingVersionId: versionId,
+        };
+      }
     }
 
     return { isDuplicate: false };

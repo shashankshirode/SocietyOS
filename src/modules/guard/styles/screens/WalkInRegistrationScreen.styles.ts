@@ -136,18 +136,6 @@ export const styles = StyleSheet.create({
     color: Colors.info,
     flex: 1,
   },
-  stepContent: {
-    gap: Spacing.lg,
-  },
-  stepTitle: {
-    color: Colors.textPrimary,
-  },
-  stepSubtitle: {
-    color: Colors.textSecondary,
-  },
-  formFields: {
-    gap: Spacing.md,
-  },
   confirmCard: {
     padding: Spacing.md,
     backgroundColor: Colors.surfaceMuted,

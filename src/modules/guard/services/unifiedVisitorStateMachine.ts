@@ -16,6 +16,7 @@ import type {
   WatchlistEntry,
 } from '../../../shared/types/visitorPhase5';
 import { auditService, createAuditEntry } from '../../../core/audit';
+import type { AuditActorType } from '../../../core/audit/audit.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 
 export interface StateTransitionContext {
@@ -70,7 +71,7 @@ export class UnifiedVisitorStateMachine {
     return VISITOR_INVITATION_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
   }
 
-  validateTransition<T>(
+  validateTransition<T extends string | number | symbol>(
     currentStatus: T,
     newStatus: T,
     transitions: Record<T, T[]>,
@@ -196,9 +197,15 @@ export class UnifiedVisitorStateMachine {
     toStatus: string,
     action: string
   ): void {
+    const actorType: AuditActorType =
+      context.actorType === 'SOCIETY_ADMIN' ? 'ADMIN' :
+      context.actorType === 'SECURITY_SUPERVISOR' ? 'GUARD' :
+      context.actorType === 'SYSTEM_POLICY' ? 'SYSTEM' :
+      context.actorType;
+
     createAuditEntry({
       actorUserId: context.actorUserId,
-      actorType: context.actorType,
+      actorType,
       societyId: context.societyId,
       action,
       entityType: entityType === 'VISITOR' ? 'Visitor' :

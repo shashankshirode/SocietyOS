@@ -108,8 +108,10 @@ describe('Phase 7: Cheque Lifecycle, Compensating Reversals, Adjustments & Refun
         expect(refund1.amount).toBe(3000);
         expect(refund1.originalPaymentTransactionId).toBe(txnId);
         expect(refund1.status).toBe('COMPLETED');
-        const txnAfter1 = mockStore.getState().paymentTransactions.find((t) => t.id === txnId);
+        const txnAfter1 = (mockStore.getState().paymentTransactions ?? []).find((t) => t.id === txnId);
         expect(txnAfter1?.status).toBe('PARTIALLY_REFUNDED');
+        const txnAfter1Guarded = txnAfter1 ?? { status: 'UNKNOWN' } as { status: string };
+        expect(txnAfter1Guarded.status).toBe('PARTIALLY_REFUNDED');
         await expect(paymentService.processRefund({
             paymentTransactionId: txnId,
             amount: 6000,
@@ -123,7 +125,7 @@ describe('Phase 7: Cheque Lifecycle, Compensating Reversals, Adjustments & Refun
             approvedBy: 'Secretary',
         });
         expect(refund2.amount).toBe(5000);
-        const txnAfter2 = mockStore.getState().paymentTransactions.find((t) => t.id === txnId);
+        const txnAfter2 = (mockStore.getState().paymentTransactions ?? []).find((t) => t.id === txnId);
         expect(txnAfter2?.status).toBe('REFUNDED');
         const ledger = mockStore.getState().ledgerEntries.filter((e) => e.unitId === unitId);
         expect(ledger[0]!.amount).toBe(8000);

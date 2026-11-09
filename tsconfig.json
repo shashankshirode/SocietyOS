@@ -7,6 +7,16 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true
-  }
+    "noUncheckedIndexedAccess": true,
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    ".expo"
+  ]
 }

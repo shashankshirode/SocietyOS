@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import { View, Pressable } from "react-native";
 import Animated, { FadeInUp, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { SafeText } from "../../shared/components/SafeText";
@@ -33,8 +34,16 @@ function ActionTile({ action, index, tint, tintSoft }: {
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: scale.value }]
     }));
+    const handlePressIn = useCallback(() => {
+        // eslint-disable-next-line react-hooks/immutability
+        scale.value = withSpring(0.96);
+    }, [scale]);
+    const handlePressOut = useCallback(() => {
+        // eslint-disable-next-line react-hooks/immutability
+        scale.value = withSpring(1);
+    }, [scale]);
     return (<Animated.View entering={FadeInUp.delay(index * 60).duration(350).springify()} style={[animatedStyle, styles.tileWrapper]}>
-      <Pressable onPressIn={() => { scale.value = withSpring(0.96); }} onPressOut={() => { scale.value = withSpring(1); }} onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={[styles.tile, createPressableBackgroundColorBorderColorStyle(colors.surface, colors.border)]}>
+      <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={[styles.tile, createPressableBackgroundColorBorderColorStyle(colors.surface, colors.border)]}>
         <View style={styles.tileIconRow}>
           <AppIconBubble name={action.icon} size={40} iconSize={20} color={accentColor} backgroundColor={softColor}/>
           {action.badge && (<View style={[styles.badgeTag, createViewBackgroundColorStyle(accentColor)]}>

@@ -1,7 +1,6 @@
-import { AutomationActionAttempt, AutomationActionStatus, AutomationDeadLetter } from '../types';
+import { AutomationActionAttempt, AutomationActionStatus, AutomationDeadLetter, AutomationExecution } from '../types';
 import { actionDispatcher } from './actionDispatcher';
-import { executionService } from './executionService';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 interface RetryPolicy {
   maxRetries: number;
@@ -28,9 +27,10 @@ const DEFAULT_RETRY_POLICY: RetryPolicy = {
 
 const deadLetters: Map<string, AutomationDeadLetter> = new Map();
 const retryQueues: Map<string, NodeJS.Timeout> = new Map();
+let executionLookup: ((id: string) => AutomationExecution | undefined) | null = null;
 
 function generateId(): string {
-  return uuidv4();
+  return Crypto.randomUUID();
 }
 
 function getNow(): string {
@@ -46,6 +46,10 @@ function calculateDelay(attempt: number, policy: RetryPolicy): number {
 }
 
 export const retryService = {
+  setExecutionLookup(lookup: (id: string) => AutomationExecution | undefined): void {
+    executionLookup = lookup;
+  },
+
   async retryAction(
     attempt: AutomationActionAttempt,
     context: {
@@ -132,7 +136,7 @@ export const retryService = {
     deadLetter.retriedAt = getNow();
     deadLetters.set(deadLetterId, deadLetter);
 
-    const execution = executionService.getExecution(deadLetter.executionId);
+    const execution = executionLookup ? executionLookup(deadLetter.executionId) : undefined;
     if (!execution) {
       deadLetter.status = 'RESOLVED';
       deadLetter.resolution = 'Execution not found';

@@ -474,14 +474,6 @@ export interface DriftDetails {
   confidence: number;
 }
 
-export interface ForecastWarning {
-  warningCode: string;
-  message: string;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  affectedPeriod?: { from: string; to: string };
-  recommendation?: string;
-}
-
 export interface ForecastModel {
   modelId: string;
   name: string;
@@ -637,17 +629,6 @@ export interface ForecastDriftEvaluation {
   details: DriftDetails;
 }
 
-export interface DriftDetails {
-  driftType: 'CONCEPT_DRIFT' | 'DATA_DRIFT' | 'FEATURE_DRIFT' | 'TARGET_DRIFT' | 'CONCEPT_SHIFT';
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  detectedAt: string;
-  driftMagnitude: number;
-  affectedFeatures: string[];
-  affectedPeriods: string[];
-  suggestedAction: 'MONITOR' | 'RETRAIN' | 'SUSPEND' | 'INVESTIGATE';
-  confidence: number;
-}
-
 export interface ForecastAlert {
   alertId: string;
   forecastId: string;
@@ -776,13 +757,13 @@ export interface DriftMetrics {
   overallDriftScore: number;
   trend: 'IMPROVING' | 'STABLE' | 'DEGRADING';
   lastDriftDetectedAt?: string;
-  driftHistory: Array<{
+  driftHistory: {
     detectedAt: string;
     driftType: string;
     magnitude: number;
     resolved: boolean;
     resolvedAt?: string;
-  }>;
+  }[];
 }
 
 export interface ForecastDataQualityReport {
@@ -900,7 +881,7 @@ export interface ForecastImportResult {
   status: 'SUCCESS' | 'PARTIAL' | 'FAILED';
   importedCount: number;
   failedCount: number;
-  errors: Array<{ row: number; field: string; error: string }>;
+  errors: { row: number; field: string; error: string }[];
   warnings: string[];
   processedAt: string;
 }
@@ -940,7 +921,7 @@ export interface ForecastModelEnsemble {
   ensembleId: string;
   name: string;
   description: string;
-  memberModels: Array<{ modelId: string; weight: number; role: 'PRIMARY' | 'SECONDARY' | 'BACKUP' }>;
+  memberModels: { modelId: string; weight: number; role: 'PRIMARY' | 'SECONDARY' | 'BACKUP' }[];
   combinationMethod: 'AVERAGING' | 'WEIGHTED_AVERAGE' | 'STACKING' | 'BLENDING' | 'VOTING' | 'STACKING';
   metaLearner?: string;
   aggregationWeights?: Record<string, number>;

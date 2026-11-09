@@ -1,7 +1,6 @@
 import type { Absent } from '../../../shared/types/absence.types';
 import type { AuditLogEntry } from '../../../core/audit/audit.types';
-import type { CommunicationClock } from '../domain/types';
-import type {
+import type { CommunicationClock ,
   ChannelMembershipRecord,
   ChannelRecord,
   ChannelUnreadSummary,
@@ -9,29 +8,22 @@ import type {
   MessageReadReceipt,
   MessageRecord,
   QueuedMessageIntent,
-} from '../domain/types';
-import type {
   ContactRequestPair,
   ContactRequestRecord,
   ResidentBlock,
   ResidentDirectoryEntry,
   ResidentPrivacySettings,
-} from '../domain/types';
-import type {
   ModerationAccessGrant,
   ModerationAuditEntry,
   ModerationCase,
   ModerationEvidence,
-} from '../domain/types';
-import type {
   NoticeAcknowledgement,
   NoticeAcknowledgementReport,
   NoticeAudienceSnapshot,
   NoticeDeliveryAttempt,
   NoticeRecipientRecord,
   NoticeRecord,
-  NoticeRevisionRecord,
-} from '../domain/types';
+  NoticeRevisionRecord} from '../domain/types';
 
 export type DirectoryEntryStore = {
   readonly insert: (entry: ResidentDirectoryEntry) => boolean;

@@ -1,11 +1,9 @@
 import { mockStore } from '../../../core/mockStore/mockStore';
-import type { Visitor, VisitorStatus, VisitorPassStatus, VisitorType, VisitorCategory, ApprovalSource, EntrySource, VehicleType, EmergencyType, GateEvent, GateEventType, EntrySource, ApprovalSource, VehicleType, } from '../../../shared/types/visitorPhase8.types';
+import type { Visitor, VisitorStatus, VisitorPassStatus, VisitorType, VisitorCategory, ApprovalSource, EntrySource, VehicleType, EmergencyType, GateEvent, GateEventType } from '../../../shared/types/visitorPhase8.types';
 import type { Absent } from '../../../shared/types/absence.types';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
-import { mockStore } from '../../../core/mockStore/mockStore';
-import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-import { format } from 'date-fns';
+import { repositorySuccess, type RepositoryResult } from '../../../core/repositories/repository.types';
 const withMockDelay = <T>(data: T, ms = 500): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(data), ms));
 function generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -23,13 +21,13 @@ export const visitorExitService = {
                     reject(new Error('Visitor not found'));
                     return;
                 }
-                const visitor = visitors[index];
+                const visitor = visitors[index]!;
                 if (visitor.status !== 'CHECKED_IN') {
                     reject(new Error(`Cannot check out visitor with status: ${visitor.status}`));
                     return;
                 }
                 const now = new Date().toISOString();
-                const updated = {
+                const updated: Visitor = {
                     ...visitor,
                     status: 'CHECKED_OUT' as const,
                     actualExitAtIso: now,
@@ -38,7 +36,18 @@ export const visitorExitService = {
                     checkOutGateName: gateName,
                     updatedAt: now,
                 };
-                mockStore.getState().visitors[index] = updated;
+                mockStore.updateVisitor(visitor.id, updated);
+                mockStore.addGateLog({
+                    id: `gate-log-${Date.now()}`,
+                    visitorId: visitor.id,
+                    visitorName: visitor.name,
+                    entryTime: visitor.actualEntryTime || now,
+                    exitTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    guardName: guardName || 'Security Guard',
+                    gateNumber: gateName || gateId || 'Gate 1',
+                    flatNumber: visitor.flatNumber,
+                    visitorType: visitor.type,
+                });
                 const gateEvent = {
                     id: `gate-event-${Date.now()}`,
                     eventType: 'CHECK_OUT' as const,
@@ -61,48 +70,38 @@ export const visitorExitService = {
                     guardRole: 'GUARD',
                     entrySource: 'MANUAL' as const,
                     approvalSource: 'PRE_APPROVED' as const,
-                    vehicleId: vehicleRegistration,
-                    vehicleRegistration: vehicleRegistration,
-                    vehicleType: undefined,
-                    vehicleColor: undefined,
-                    eventStatus: 'SUCCESS',
-                    approvalSource: 'PRE_APPROVED' as const,
                     approvalStatus: 'CHECKED_OUT' as const,
-                    denialReason: undefined,
+                    ...(vehicleRegistration ? { vehicleId: vehicleRegistration, vehicleRegistration } : {}),
+                    eventStatus: 'SUCCESS',
                     escalationTriggered: false,
-                    escalationType: undefined,
                     watchlistMatch: false,
-                    watchlistId: undefined,
-                    watchlistReason: undefined,
                     emergencyBypassUsed: false,
-                    emergencyType: undefined,
-                    emergencyDescription: undefined,
-                    emergencyContactName: undefined,
-                    emergencyContactPhone: undefined,
                     idempotencyKey: generateId('idem'),
-                    deviceId: undefined,
-                    deviceInfo: undefined,
-                    appVersion: undefined,
-                    networkType: undefined,
                     syncStatus: 'SYNCED',
                     createdAt: now,
                     createdBy: 'guard-id',
                     metadata: {},
                     societyId: '',
                 };
-                mockStore.getState().visitors[index] = updated;
-                mockStore.getState().gateEvents?.push(gateEvent);
+                const vList = mockStore.getState().visitors;
+                if (vList && vList[index]) {
+                    vList[index] = updated;
+                }
+                const gEvents = mockStore.getState().gateEvents;
+                if (gEvents) {
+                    gEvents.push(gateEvent as any);
+                }
                 mockStore.notify();
                 createAuditEntry({
                     actorUserId: 'SYSTEM',
                     actorType: 'SYSTEM',
                     societyId: '',
                     action: 'VISITOR_EXIT_NOTIFICATION',
-                    entityType: 'VISITOR_EXIT',
+                    entityType: 'GateEvent',
                     entityId: visitor.id,
                     newState: { visitorName: visitor.name, exitTime: now },
                     idempotencyKey: `exit_notif_${visitor.id}`,
-                    source: 'SYSTEM',
+                    source: 'GATE_DEVICE',
                     outcome: 'SUCCESS',
                 });
                 resolve({ visitor: updated, gateEvent });
@@ -119,9 +118,9 @@ export const visitorExitService = {
     async getExitHistory(visitorId: string): Promise<any[]> {
         return new Promise((resolve) => {
             setTimeout(() => {
-                const events = mockStore.getState().gateEvents || [];
-                const events = events.filter((e) => e.visitorId === visitorId && e.eventType === 'CHECK_OUT');
-                resolve(events);
+                const allEvents = mockStore.getState().gateEvents || [];
+                const filtered = allEvents.filter((e) => e.visitorId === visitorId && e.eventType === 'CHECK_OUT');
+                resolve(filtered);
             }, 300);
         });
     },
@@ -145,7 +144,7 @@ export const visitorExitService = {
                     expectedExitAtIso: v.expectedExitAtIso,
                     actualExitAtIso: v.actualExitAtIso,
                     vehicleRegistration: v.vehicleNumber,
-                    vehicleType: v.vehicleNumber ? 'CAR' as any : undefined,
+                    ...(v.vehicleNumber ? { vehicleType: 'CAR' as const } : {}),
                     isInside: true,
                     durationMinutes: v.actualEntryAtIso ? Math.floor((Date.now() - new Date(v.actualEntryAtIso).getTime()) / 60000) : 0,
                     isOverdue: v.expectedExitAtIso ? new Date(v.expectedExitAtIso) < new Date() : false,
@@ -158,13 +157,6 @@ export const visitorExitService = {
         });
     },
     async notifyResidentOfEntry(visitorId: string, entryTime: string): Promise<void> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 200);
-        });
-    },
-    async notifyResidentOfExit(visitorId: string, exitTime: string): Promise<void> {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve();
@@ -186,10 +178,6 @@ export const visitorExitService = {
                 const overdue = visitors.filter((v) => v.societyId === societyId &&
                     v.status === 'CHECKED_IN' &&
                     v.expectedExitAtIso &&
-                    new Date(v.expectedExitAtIso) < now);
-                const overdue = visitors.filter((v) => v.societyId === societyId &&
-                    v.status === 'CHECKED_IN' &&
-                    v.expectedExitAtIso &&
                     new Date(v.expectedExitAtIso) < now).map((v) => ({
                     visitorId: v.id,
                     visitorName: v.name,
@@ -203,19 +191,12 @@ export const visitorExitService = {
                     expectedExitAtIso: v.expectedExitAtIso,
                     overdueMinutes: v.expectedExitAtIso ? Math.floor((Date.now() - new Date(v.expectedExitAtIso).getTime()) / 60000) : 0,
                     vehicleRegistration: v.vehicleNumber,
-                    vehicleType: v.vehicleNumber ? 'CAR' as any : undefined,
+                    ...(v.vehicleNumber ? { vehicleType: 'CAR' as const } : {}),
                     isExtended: v.exitTracking?.exitStatus === 'extended',
                     escalationStatus: v.escalationStatus,
                 }));
                 resolve(overdue);
             }, 300);
-        });
-    },
-    async notifyResidentOfOverdue(visitorId: string): Promise<void> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 200);
         });
     },
 };

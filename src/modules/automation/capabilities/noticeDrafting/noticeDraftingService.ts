@@ -5,8 +5,7 @@ import {
   DEFAULT_NOTICE_TEMPLATES,
   validateNoticeDraft,
 } from './noticeDrafting.types';
-import { aiOrchestrationService } from '../../../aiServices/core/services';
-import { promptTemplateService } from '../../../aiServices/core/services';
+import { aiOrchestrationService , promptTemplateService } from '../../../aiServices/core/services';
 
 export const noticeDraftingService = {
   async createDraft(
@@ -106,8 +105,8 @@ export const noticeDraftingService = {
 
   buildFactualReferences(
     facts: Record<string, unknown>,
-    aiReferences: Array<{ field: string; value: unknown; source: string }>
-  ): Array<{ field: string; value: unknown; source: string }> {
+    aiReferences: { field: string; value: unknown; source: string }[]
+  ): { field: string; value: unknown; source: string }[] {
     const references = [...aiReferences];
     for (const [key, value] of Object.entries(facts)) {
       if (!references.some(r => r.field === key)) {

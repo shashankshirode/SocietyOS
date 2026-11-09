@@ -184,6 +184,20 @@ export interface ManualPaymentRecord {
   requiresApproval: boolean;
 }
 
+export interface ChequeRecord {
+  id: string;
+  unitId: string;
+  chequeNumber: string;
+  bankName: string;
+  amount: number;
+  status: 'RECEIVED' | 'DEPOSITED' | 'CLEARED' | 'BOUNCED' | 'CANCELLED';
+  receivedDate: string;
+  clearedDate?: string;
+  bounceDate?: string;
+  bounceReason?: string;
+  paymentTransactionId: string;
+}
+
 export interface AdminReceipt {
   id: string;
   receiptNumber: string;

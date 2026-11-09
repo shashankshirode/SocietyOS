@@ -1,83 +1,77 @@
 import type { ResidentScopedEntity } from './residentScope.types';
+import type { JsonObject } from '../../core/api/api.types';
+import type {
+  Visitor as VisitorPhase8,
+  VisitorType as VisitorTypePhase8,
+  VisitorStatus as VisitorStatusPhase8,
+  VisitorExitStatus,
+  VisitorExitAlertStatus,
+  VisitorExitLog,
+  VisitorExitTimelineEvent,
+  VisitorExitTracking,
+} from './visitorPhase8.types';
 
+export type {
+  VisitorExitStatus,
+  VisitorExitAlertStatus,
+  VisitorExitLog,
+  VisitorExitTimelineEvent,
+  VisitorExitTracking,
+};
 
-
-export type VisitorType = 'GUEST' | 'DELIVERY' | 'CAB' | 'VENDOR';
+export type VisitorType = VisitorTypePhase8;
 
 export type VisitorCategory =
   | 'guest'
+  | 'GUEST'
   | 'cab'
+  | 'CAB'
   | 'delivery'
+  | 'DELIVERY'
   | 'parcel'
+  | 'PARCEL'
   | 'domesticHelp'
+  | 'DOMESTIC_HELP'
   | 'serviceProvider'
+  | 'SERVICE_PROVIDER'
   | 'repairTechnician'
+  | 'REPAIR_TECHNICIAN'
   | 'renovationWorker'
+  | 'RENOVATION_WORKER'
   | 'paintingWorker'
+  | 'PAINTING_WORKER'
   | 'contractor'
+  | 'CONTRACTOR'
   | 'vendor'
+  | 'VENDOR'
   | 'staff'
-  | 'other';
+  | 'STAFF'
+  | 'emergency'
+  | 'EMERGENCY'
+  | 'other'
+  | 'OTHER';
 
-export type VisitorStatus =
-  | 'EXPECTED'
-  | 'WAITING_APPROVAL'
-  | 'APPROVED'
-  | 'COMPLETED'
-  | 'CHECKED_IN'
-  | 'CHECKED_OUT'
-  | 'REJECTED'
-  | 'EXPIRED'
-  | 'CANCELLED';
+export type VisitorStatus = VisitorStatusPhase8;
 
-export type VisitorExitStatus =
-  | 'notEntered'
-  | 'inside'
-  | 'exitMarked'
-  | 'expectedExitDue'
-  | 'overdue'
-  | 'residentConfirmedLeft'
-  | 'residentConfirmedStillInside'
-  | 'extended'
-  | 'escalatedToSecurity'
-  | 'resolved';
-
-export type VisitorExitAlertStatus =
-  | 'notRequired'
-  | 'scheduled'
-  | 'sent'
-  | 'acknowledged'
-  | 'snoozed'
-  | 'escalated'
-  | 'resolved';
+export const VisitorStatus = {
+  DRAFT: 'DRAFT',
+  EXPECTED: 'EXPECTED',
+  WAITING_APPROVAL: 'WAITING_APPROVAL',
+  APPROVED: 'APPROVED',
+  PRESENTED: 'PRESENTED',
+  CHECKED_IN: 'CHECKED_IN',
+  CHECKED_OUT: 'CHECKED_OUT',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+  DENIED: 'DENIED',
+  ESCALATED: 'ESCALATED',
+  REVOKED: 'REVOKED',
+  EMERGENCY_BYPASS: 'EMERGENCY_BYPASS',
+} as const;
 
 export type VisitorExitResidentResponse = 'left' | 'stillInside' | 'extended' | 'contactSecurity';
-
-export type VisitorExitTimelineEvent = {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  occurredAtIso: string;
-  status: VisitorExitStatus | VisitorExitAlertStatus;
-};
-
-export type VisitorExitTracking = {
-  expectedEntryAtIso: string;
-  actualEntryAtIso?: string;
-  expectedExitAtIso: string;
-  actualExitAtIso?: string;
-  gracePeriodMinutes: number;
-  exitStatus: VisitorExitStatus;
-  alertStatus: VisitorExitAlertStatus;
-  alertDueAtIso?: string;
-  lastAlertSentAtIso?: string;
-  residentResponseAtIso?: string;
-  residentResponse?: VisitorExitResidentResponse;
-  extensionReason?: string;
-  extendedExpectedExitAtIso?: string;
-  escalationReason?: string;
-  timeline: VisitorExitTimelineEvent[];
-};
 
 export type VisitorExitAlertPriority = 'normal' | 'high' | 'critical';
 
@@ -93,31 +87,7 @@ export type VisitorExitAlert = {
   status: VisitorExitAlertStatus;
 };
 
-export interface Visitor extends ResidentScopedEntity {
-  id: string;
-  name: string;
-  phone: string;
-  type: VisitorType;
-  status: VisitorStatus;
-  expectedDate: string;
-  expectedTime: string;
-  actualEntryTime?: string;
-  actualExitTime?: string;
-  flatNumber: string;
-  societyName: string;
-  purpose: string;
-  vehicleNumber?: string;
-  otp: string;
-  createdAt: string;
-  createdByUserId?: string;
-  createdByDisplayName?: string;
-  visitorCategory?: VisitorCategory;
-  exitTracking?: VisitorExitTracking;
-  cancellationReason?: string;
-  cancellationNotes?: string;
-  cancelledAt?: string;
-  cancelledBy?: string;
-}
+export type Visitor = VisitorPhase8;
 
 export interface CreateVisitorPayload extends JsonObject {
   name: string;
@@ -166,11 +136,11 @@ export enum VisitorPassCancellationReason {
 }
 
 export interface CancelVisitorPassRequest {
-  residenceId: string;
+  residenceId?: string;
   visitorPassId: string;
   reason: VisitorPassCancellationReason;
-  notes: string | null;
-  requestedAt: string;
+  notes?: string | null;
+  requestedAt?: string;
 }
 
 export interface CancelVisitorPassResult {

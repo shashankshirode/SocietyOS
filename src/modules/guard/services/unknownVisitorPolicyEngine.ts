@@ -7,33 +7,17 @@ import type {
   VisitorEscalationStatus,
   VisitorType,
   ApprovalSource,
+  UnknownVisitorPolicy,
+  UnknownVisitorPolicyAction,
 } from '../../../shared/types/visitorPhase8.types';
 import type { Absent } from '../../../shared/types/absence.types';
 import { repositorySuccess, withMockDelay, type RepositoryResult } from '../../../core/repositories/repository.types';
-
-const withMockDelay = <T>(data: T, ms = 500): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(data), ms));
 
 function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-export type UnknownVisitorPolicyAction = 'WAIT' | 'DENY' | 'ESCALATE' | 'REQUEST_ALTERNATE_APPROVAL';
-
-export type UnknownVisitorPolicy = {
-  id: string;
-  societyId: string;
-  visitorType: VisitorType | 'ALL';
-  defaultAction: UnknownVisitorPolicyAction;
-  waitTimeoutMinutes: number;
-  escalationTargets: ('SECURITY' | 'SUPERVISOR' | 'COMMITTEE')[];
-  alternateApproverRoles: string[];
-  notifyOnAttempt: boolean;
-  autoDenyAfterTimeout: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-};
+export type { UnknownVisitorPolicy, UnknownVisitorPolicyAction };
 
 export type UnknownVisitorContext = {
   visitorId?: string;
@@ -77,8 +61,11 @@ export const unknownVisitorPolicyEngine = {
   async getPolicy(societyId: string, visitorType?: VisitorType): Promise<UnknownVisitorPolicy | null> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const policies = mockStore.getState().unknownVisitorPolicies || [];
-        let policy = policies.find(p => p.societyId === societyId && (p.visitorType === visitorType || p.visitorType === 'ALL'));
+        const state = mockStore.getState();
+        if (!state.unknownVisitorPolicies) {
+          state.unknownVisitorPolicies = [];
+        }
+        let policy = state.unknownVisitorPolicies.find(p => p.societyId === societyId && (p.visitorType === visitorType || p.visitorType === 'ALL'));
         if (!policy) {
           policy = {
             id: generateId('policy'),
@@ -88,7 +75,7 @@ export const unknownVisitorPolicyEngine = {
             updatedAt: new Date().toISOString(),
             createdBy: 'SYSTEM',
           };
-          mockStore.getState().unknownVisitorPolicies?.push(policy);
+          state.unknownVisitorPolicies.push(policy);
         }
         resolve(policy);
       }, 200);
@@ -102,8 +89,11 @@ export const unknownVisitorPolicyEngine = {
   ): Promise<UnknownVisitorPolicy> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const policies = mockStore.getState().unknownVisitorPolicies || [];
-        let policy = policies.find(p => p.societyId === societyId && p.visitorType === payload.visitorType);
+        const state = mockStore.getState();
+        if (!state.unknownVisitorPolicies) {
+          state.unknownVisitorPolicies = [];
+        }
+        let policy = state.unknownVisitorPolicies.find(p => p.societyId === societyId && p.visitorType === payload.visitorType);
         const now = new Date().toISOString();
         
         if (policy) {
@@ -122,7 +112,7 @@ export const unknownVisitorPolicyEngine = {
             updatedAt: now,
             createdBy,
           };
-          mockStore.getState().unknownVisitorPolicies?.push(policy);
+          state.unknownVisitorPolicies.push(policy);
         }
         
         mockStore.notify();
@@ -161,16 +151,21 @@ export const unknownVisitorPolicyEngine = {
           reason = `No pre-approval found - applying default policy: ${policy.defaultAction}`;
         }
 
-        const waitTimeoutMs = policy.waitTimeoutMinutes * 60 * 1000;
+        const waitMinutes = policy.waitTimeoutMinutes ?? 5;
+        const waitTimeoutMs = waitMinutes * 60 * 1000;
+        const escalationTargets = (policy.escalationTargets as ('SECURITY' | 'SUPERVISOR' | 'COMMITTEE')[]) ?? ['SECURITY'];
+        const alternateApproverRoles = policy.alternateApproverRoles ?? ['SECURITY_SUPERVISOR', 'SOCIETY_ADMIN'];
+        const notifyOnAttempt = policy.notifyOnAttempt ?? true;
+        const autoDenyAfterTimeout = policy.autoDenyAfterTimeout ?? true;
 
         resolve({
           action,
           policyId: policy.id,
           waitTimeoutMs,
-          escalationTargets: policy.escalationTargets,
-          alternateApproverRoles: policy.alternateApproverRoles,
-          notifyOnAttempt: policy.notifyOnAttempt,
-          autoDenyAfterTimeout: policy.autoDenyAfterTimeout,
+          escalationTargets,
+          alternateApproverRoles,
+          notifyOnAttempt,
+          autoDenyAfterTimeout,
           reason,
         });
       }, 300);
@@ -192,6 +187,10 @@ export const unknownVisitorPolicyEngine = {
         }
 
         const request = requests[index];
+        if (!request) {
+          reject(new Error('Approval request not found'));
+          return;
+        }
         
         if (request.status !== 'PENDING') {
           resolve({ request: null, actionTaken: 'NONE' });
@@ -204,8 +203,10 @@ export const unknownVisitorPolicyEngine = {
 
         let actionTaken: 'AUTO_DENIED' | 'ESCALATED' | 'NONE' = 'NONE';
         const now = new Date().toISOString();
+        const autoDeny = policy.autoDenyAfterTimeout ?? true;
+        const targets = (policy.escalationTargets as ('SECURITY' | 'SUPERVISOR' | 'COMMITTEE')[]) ?? [];
 
-        if (policy.autoDenyAfterTimeout) {
+        if (autoDeny) {
           requests[index] = {
             ...request,
             status: 'DENIED',
@@ -217,12 +218,12 @@ export const unknownVisitorPolicyEngine = {
             statusChangedAtIso: now,
           };
           actionTaken = 'AUTO_DENIED';
-        } else if (policy.escalationTargets.length > 0) {
+        } else if (targets.length > 0) {
           requests[index] = {
             ...request,
             status: 'ESCALATED',
-            escalationStatus: policy.escalationTargets[0] === 'SECURITY' ? 'ESCALATED_TO_SECURITY' : 
-              policy.escalationTargets[0] === 'SUPERVISOR' ? 'ESCALATED_TO_SUPERVISOR' : 'ESCALATED_TO_COMMITTEE',
+            escalationStatus: targets[0] === 'SECURITY' ? 'ESCALATED_TO_SECURITY' : 
+              targets[0] === 'SUPERVISOR' ? 'ESCALATED_TO_SUPERVISOR' : 'ESCALATED_TO_COMMITTEE',
             escalationReason: 'Resident did not respond within allowed time - escalated per policy',
             escalatedAtIso: now,
             escalatedBy: 'SYSTEM_TIMEOUT',
@@ -234,20 +235,22 @@ export const unknownVisitorPolicyEngine = {
         mockStore.getState().visitorApprovalRequests = requests;
         mockStore.notify();
 
+        const updatedRequest = requests[index];
+
         createAuditEntry({
           actorUserId: 'SYSTEM_TIMEOUT',
           actorType: 'SYSTEM',
-          societyId: request.societyId,
+          societyId: request.societyId ?? '',
           action: actionTaken === 'AUTO_DENIED' ? 'VISITOR_AUTO_DENIED_TIMEOUT' : 'VISITOR_ESCALATED_TIMEOUT',
           entityType: 'VISITOR_APPROVAL_REQUEST',
           entityId: approvalRequestId,
-          newState: { status: requests[index].status, actionTaken },
+          newState: { status: updatedRequest?.status, actionTaken },
           idempotencyKey: `timeout_${approvalRequestId}`,
-          source: 'SYSTEM',
+          source: 'SYSTEM_JOB',
           outcome: 'SUCCESS',
         });
 
-        resolve({ request: requests[index], actionTaken });
+        resolve({ request: updatedRequest ?? null, actionTaken });
       }, 500);
     });
   },

@@ -180,7 +180,7 @@ export const documentSearchService = {
     return result;
   },
 
-  buildSourceReferences(docs: DocumentChunk[]): Array<{
+  buildSourceReferences(docs: DocumentChunk[]): {
     type: 'SOURCE_DOCUMENT' | 'REPORT_METRIC' | 'HISTORICAL_DATA' | 'ENTITY_REFERENCE';
     entityId: string;
     entityType: string;
@@ -190,7 +190,7 @@ export const documentSearchService = {
     asOf: string;
     excerpt?: string;
     relevanceScore: number;
-  }> {
+  }[] {
     return docs.map((doc, index) => ({
       type: 'SOURCE_DOCUMENT' as const,
       entityId: doc.documentId,

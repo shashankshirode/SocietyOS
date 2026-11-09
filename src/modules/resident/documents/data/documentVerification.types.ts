@@ -77,10 +77,10 @@ export type DocumentMetadata = {
         type: 'RESIDENT' | 'UNIT' | 'SOCIETY' | 'STAFF' | 'VENDOR' | 'ASSET';
         id: string;
     };
-    acl: Array<{
+    acl: {
         role: string;
         permissions: ('READ' | 'WRITE' | 'VERIFY' | 'SIGN' | 'DELETE')[];
-    }>;
+    }[];
     retentionPolicy?: {
         retainUntil: string;
         autoDelete: boolean;
@@ -88,12 +88,12 @@ export type DocumentMetadata = {
     tags?: string[] | Absent;
     status: DocumentStatus;
     currentVerificationCaseId?: string | Absent;
-    verificationHistory: Array<{
+    verificationHistory: {
         caseId: string;
         status: VerificationStatus;
         decidedAt: string;
         decidedBy: string;
-    }>;
+    }[];
 };
 export type DocumentAccessLog = {
     id: string;

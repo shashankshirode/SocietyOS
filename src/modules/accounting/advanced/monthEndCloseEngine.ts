@@ -15,7 +15,7 @@ const DEFAULT_CLOSE_TASKS: Omit<MonthEndCloseTask, 'id' | 'societyId' | 'period'
 ];
 class MonthEndCloseEngine {
     private periods: Map<string, MonthEndClosePeriod> = new Map();
-    private listeners: Array<(period: MonthEndClosePeriod) => void> = [];
+    private listeners: ((period: MonthEndClosePeriod) => void)[] = [];
     constructor() {
         this.loadFromStorage();
     }

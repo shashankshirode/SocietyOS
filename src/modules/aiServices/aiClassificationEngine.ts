@@ -11,6 +11,10 @@ import {
   SLA_HOURS,
   ClassificationCategory,
 } from './aiClassification.types';
+import { createIdempotencyKey } from '../../core/api/idempotency';
+import { auditService, createAuditEntry } from '../../core/audit';
+import { apiClient } from '../../core/api/apiClient';
+import { apiEndpoints } from '../../core/api/apiEndpoints';
 
 export type {
   AIModelConfig,
@@ -20,16 +24,12 @@ export type {
   AIAnalysisJob,
   HumanReview,
 } from './aiClassification.types';
-import { createIdempotencyKey } from '../../core/api/idempotency';
-import { auditService, createAuditEntry } from '../../core/audit';
-import { apiClient } from '../../core/api/apiClient';
-import { apiEndpoints } from '../../core/api/apiEndpoints';
 
 class AIClassificationEngine {
   private models: Map<string, AIModelConfig> = new Map();
   private jobs: Map<string, AIAnalysisJob> = new Map();
   private reviews: Map<string, HumanReview> = new Map();
-  private listeners: Array<(job: AIAnalysisJob) => void> = [];
+  private listeners: ((job: AIAnalysisJob) => void)[] = [];
 
   constructor() {
     DEFAULT_AI_MODELS.forEach(m => this.models.set(m.id, m));

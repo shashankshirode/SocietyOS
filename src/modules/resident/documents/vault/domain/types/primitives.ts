@@ -30,6 +30,8 @@ export type VaultActor = {
   readonly societyId: string;
   readonly sessionId: string;
   readonly authenticatedAt: string;
+  readonly residenceId?: string;
+  readonly unitId?: string;
 };
 
 export type VaultScope = {
@@ -49,7 +51,7 @@ export type IdempotencyKey = {
 
 export type TraceContext = {
   readonly correlationId: string;
-  readonly causationId: string | Absent;
+  readonly causationId?: string | Absent;
 };
 
 export type DocumentVaultErrorCode =

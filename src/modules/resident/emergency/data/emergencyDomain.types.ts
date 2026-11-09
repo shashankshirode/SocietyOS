@@ -1,5 +1,4 @@
-import type { EmergencyIncident, EmergencyTimelineEvent, EmergencyStatus, EmergencyType, EmergencySeverity, EmergencyTimelineEventType } from '../../../../shared/types/emergency.types';
-import type { EmergencyContact } from '../../../../shared/types/emergency.types';
+import type { EmergencyIncident, EmergencyTimelineEvent, EmergencyStatus, EmergencyType, EmergencySeverity, EmergencyTimelineEventType , EmergencyContact } from '../../../../shared/types/emergency.types';
 import type { EmergencyVolunteer, VolunteerAlert } from '../../../../shared/types/volunteer.types';
 import type { EmergencyBroadcast, SafetyInstruction, SafetyDrillRecord, PostIncidentReview } from '../../../../shared/types/safety.types';
 import type { SeniorCareProfile, SeniorDailyCheckIn, SeniorInactivityAlert } from '../../../../shared/types/seniorCare.types';

@@ -26,7 +26,7 @@ export function StatusPill({ label, tone = 'neutral', small = false, style, test
             small && styles.pillSmall,
             createViewBackgroundColorStyle(palette.bg),
             style,
-        ]} testID={testID}>
+        ]} testID={testID} accessibilityRole="text" accessibilityLabel={`Status: ${label}`}>
       <SafeText variant="tiny" style={[
             styles.text,
             small && styles.textSmall,

@@ -6,6 +6,7 @@ import { ResponsivePageHeader } from '../../../shared/layouts/ResponsivePageHead
 import { AppButton } from '../../../shared/components/AppButton';
 import { AppCard } from '../../../shared/cards/AppCard';
 import { AppIcon } from '../../../shared/icons/AppIcon';
+import type { AppIconName } from '../../../shared/icons/icon.types';
 import { SectionHeader } from '../../../shared/components/SectionHeader';
 import { LoadingState } from '../../../shared/feedback/LoadingState';
 import { ErrorState } from '../../../shared/feedback/ErrorState';
@@ -25,7 +26,7 @@ type Props = {
   route: RouteProp<SuperAdminStackParamList, 'PROPERTY_HIERARCHY'>;
 };
 
-const LEVEL_ICONS: Record<PropertyHierarchyLevel, string> = {
+const LEVEL_ICONS: Record<PropertyHierarchyLevel, AppIconName> = {
   SOCIETY: 'business',
   PHASE: 'layers',
   TOWER: 'home',
@@ -46,7 +47,7 @@ const LEVEL_LABELS: Record<PropertyHierarchyLevel, string> = {
 };
 
 export function PropertyHierarchyScreen({ navigation, route }: Props) {
-  const { societyId } = route.params;
+  const societyId = route.params?.societyId ?? '';
   const localizedUiText = useGeneratedUiMessages().uiLiterals;
   const { colors } = useAppTheme();
   const [activeTab, setActiveTab] = useState<PropertyHierarchyLevel>('PHASE');
@@ -77,7 +78,9 @@ export function PropertyHierarchyScreen({ navigation, route }: Props) {
             }
           }}
         >
-          <AppIcon name={icon} size={20} color={isActive ? colors.primary : colors.textSecondary} style={{ marginRight: 8 }} />
+          <View style={{ marginRight: 8 }}>
+            <AppIcon name={icon} size={20} color={isActive ? colors.primary : colors.textSecondary} />
+          </View>
           <Text style={{ flex: 1, color: isActive ? colors.primary : colors.textPrimary, fontWeight: isActive ? '600' : '400' }}>
             {node.name}
           </Text>

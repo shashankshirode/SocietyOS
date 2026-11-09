@@ -12,9 +12,9 @@ import {
   FONT_FAMILY_SERIF,
 } from '../../../../../shared/theme/typography';
 
-const AVATAR_IMAGE = require('../../../../../../assets/images/shashank-avatar.png');
-
 import type { OnboardingProfile } from '../../hooks/useResidentOnboarding';
+
+const AVATAR_IMAGE = require('../../../../../../assets/images/shashank-avatar.png');
 
 interface AboutYouStepProps {
   draft?: ResidentOnboardingDraft;

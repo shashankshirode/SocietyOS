@@ -12,12 +12,18 @@ import type {
   SubmitDocumentsRequest,
   DocumentRequirement,
   ResidentRegistrationStatus,
+  ResidentRelationshipType,
 } from '../data/residentRegistration.types';
 import type { Unit } from '../../societySetup/data/societyProperty.types';
 import type { Absent } from '../../../shared/types/absence.types';
 
 const withMockDelay = <T>(data: T, ms = 400): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(data), ms));
+  process.env.NODE_ENV === 'test'
+    ? Promise.resolve(data)
+    : new Promise((resolve) => setTimeout(() => resolve(data), ms));
+
+const getDelay = (defaultMs: number): number =>
+  process.env.NODE_ENV === 'test' ? 0 : defaultMs;
 
 function generateId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -25,6 +31,18 @@ function generateId(prefix: string): string {
 
 function getMockUnits(): Unit[] {
   return mockStore.getState().societyUnits as Unit[];
+}
+
+function getRegistrations(): ResidentRegistration[] {
+  return ((mockStore.getState().residentRegistrations || []) as any[]) as ResidentRegistration[];
+}
+
+function getInvitations(): ResidentInvitation[] {
+  return ((mockStore.getState().residentInvitations || []) as any[]) as ResidentInvitation[];
+}
+
+function getDocuments(): ResidentDocument[] {
+  return ((mockStore.getState().residentDocuments || []) as any[]) as ResidentDocument[];
 }
 
 function getRequiredDocuments(relationshipType: string): DocumentRequirement[] {
@@ -91,7 +109,7 @@ export const residentRegistrationService = {
   ): Promise<DuplicateDetectionResult> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getRegistrations();
         const existingMobile = registrations.find(
           (r) => r.societyId === societyId && r.mobile === mobile && r.id !== excludeRegistrationId
         );
@@ -121,7 +139,7 @@ export const residentRegistrationService = {
         }
 
         resolve({ hasDuplicate: false, message: 'No duplicate found' });
-      }, 300);
+      }, getDelay(300));
     });
   },
 
@@ -130,13 +148,11 @@ export const residentRegistrationService = {
   ): Promise<ResidentRegistration> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const duplicate = mockStore
-          .getState()
-          .residentRegistrations?.find(
-            (r) =>
-              r.societyId === request.societyId &&
-              (r.mobile === request.mobile || r.email === request.email)
-          );
+        const duplicate = getRegistrations().find(
+          (r) =>
+            r.societyId === request.societyId &&
+            (r.mobile === request.mobile || r.email === request.email)
+        );
         if (duplicate) {
           reject(new Error('Duplicate mobile or email found'));
           return;
@@ -167,19 +183,20 @@ export const residentRegistrationService = {
           createdBy: request.createdBy,
           createdAt: now,
           updatedAt: now,
-        };
+          dataVersion: 1,
+        } as ResidentRegistration;
 
-        mockStore.getState().residentRegistrations?.push(registration);
+        (mockStore.getState().residentRegistrations as any[])?.push(registration);
         mockStore.notify();
         resolve(registration);
-      }, 400);
+      }, getDelay(400));
     });
   },
 
   async getRegistrations(filters: ResidentRegistrationFilters): Promise<ResidentRegistration[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        let registrations = mockStore.getState().residentRegistrations || [];
+        let registrations = getRegistrations();
         registrations = registrations.filter((r) => r.societyId === filters.societyId);
 
         if (filters.status) {
@@ -203,34 +220,34 @@ export const residentRegistrationService = {
         }
 
         resolve(registrations.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-      }, 300);
+      }, getDelay(300));
     });
   },
 
   async getRegistrationById(id: string): Promise<ResidentRegistration | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getRegistrations();
         const registration = registrations.find((r) => r.id === id);
         resolve(registration);
-      }, 300);
+      }, getDelay(300));
     });
   },
 
   async getRegistrationDetail(id: string): Promise<ResidentRegistrationDetail | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getRegistrations();
         const registration = registrations.find((r) => r.id === id);
         if (!registration) {
           resolve(undefined);
           return;
         }
 
-        const documents = (mockStore.getState().residentDocuments || []).filter(
+        const documents = getDocuments().filter(
           (d) => d.registrationId === id
         );
-        const invitation = (mockStore.getState().residentInvitations || []).find(
+        const invitation = getInvitations().find(
           (i) => i.registrationId === id
         );
 
@@ -248,16 +265,22 @@ export const residentRegistrationService = {
           },
         };
         resolve(detail);
-      }, 300);
+      }, getDelay(300));
     });
   },
 
   async updateRegistration(request: UpdateResidentRegistrationRequest): Promise<ResidentRegistration> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getRegistrations();
         const index = registrations.findIndex((r) => r.id === request.id);
         if (index === -1) {
+          reject(new Error('Registration not found'));
+          return;
+        }
+
+        const current = registrations[index];
+        if (!current) {
           reject(new Error('Registration not found'));
           return;
         }
@@ -265,7 +288,7 @@ export const residentRegistrationService = {
         const duplicate = registrations.find(
           (r) =>
             r.id !== request.id &&
-            r.societyId === registrations[index].societyId &&
+            r.societyId === current.societyId &&
             ((request.mobile && r.mobile === request.mobile) || (request.email && r.email === request.email))
         );
         if (duplicate) {
@@ -273,11 +296,12 @@ export const residentRegistrationService = {
           return;
         }
 
-        const updated = { ...registrations[index], ...request, updatedAt: new Date().toISOString() };
-        mockStore.getState().residentRegistrations[index] = updated;
+        const nextVersion = ((current as unknown as { dataVersion?: number }).dataVersion || 1) + 1;
+        const updated = { ...current, ...request, updatedAt: new Date().toISOString(), dataVersion: nextVersion } as ResidentRegistration;
+        (mockStore.getState().residentRegistrations as any[])[index] = updated;
         mockStore.notify();
         resolve(updated);
-      }, 400);
+      }, getDelay(400));
     });
   },
 
@@ -288,7 +312,7 @@ export const residentRegistrationService = {
   ): Promise<ResidentRegistration> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const registrations = mockStore.getState().residentRegistrations || [];
+        const registrations = getRegistrations();
         const index = registrations.findIndex((r) => r.id === id);
         if (index === -1) {
           reject(new Error('Registration not found'));
@@ -296,13 +320,18 @@ export const residentRegistrationService = {
         }
 
         const current = registrations[index];
+        if (!current) {
+          reject(new Error('Registration not found'));
+          return;
+        }
         if (!canTransition(current.status, newStatus)) {
           reject(new Error(`Invalid status transition from ${current.status} to ${newStatus}`));
           return;
         }
 
         const now = new Date().toISOString();
-        const updates: Partial<ResidentRegistration> = { status: newStatus, updatedAt: now, ...additionalData };
+        const nextVersion = ((current as unknown as { dataVersion?: number }).dataVersion || 1) + 1;
+        const updates: Record<string, any> = { status: newStatus, updatedAt: now, dataVersion: nextVersion, ...additionalData };
 
         if (newStatus === 'REGISTERED') updates.registeredAt = now;
         if (newStatus === 'IDENTITY_VERIFIED') {
@@ -315,11 +344,11 @@ export const residentRegistrationService = {
         if (newStatus === 'REJECTED') updates.rejectedAt = now;
         if (newStatus === 'ACTIVE') updates.activatedAt = now;
 
-        const updated = { ...current, ...updates };
-        mockStore.getState().residentRegistrations[index] = updated;
+        const updated = { ...current, ...updates } as ResidentRegistration;
+        (mockStore.getState().residentRegistrations as any[])[index] = updated;
         mockStore.notify();
         resolve(updated);
-      }, 400);
+      }, getDelay(400));
     });
   },
 
@@ -343,27 +372,27 @@ export const residentRegistrationService = {
           createdAt: new Date().toISOString(),
         };
 
-        mockStore.getState().residentInvitations?.push(invitation);
+        (mockStore.getState().residentInvitations as any[])?.push(invitation);
         mockStore.notify();
         resolve(invitation);
-      }, 400);
+      }, getDelay(400));
     });
   },
 
   async getInvitationByToken(token: string): Promise<ResidentInvitation | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const invitations = mockStore.getState().residentInvitations || [];
+        const invitations = getInvitations();
         const invitation = invitations.find((i) => i.token === token);
         resolve(invitation);
-      }, 300);
+      }, getDelay(300));
     });
   },
 
   async acceptInvitation(token: string): Promise<ResidentInvitation | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const invitations = mockStore.getState().residentInvitations || [];
+        const invitations = getInvitations();
         const index = invitations.findIndex((i) => i.token === token);
         if (index === -1) {
           resolve(undefined);
@@ -371,7 +400,7 @@ export const residentRegistrationService = {
         }
 
         const invitation = invitations[index];
-        if (invitation.status !== 'PENDING') {
+        if (!invitation || invitation.status !== 'PENDING') {
           resolve(undefined);
           return;
         }
@@ -381,11 +410,11 @@ export const residentRegistrationService = {
           return;
         }
 
-        const updated = { ...invitation, status: 'ACCEPTED' as const, acceptedAt: new Date().toISOString() };
-        mockStore.getState().residentInvitations[index] = updated;
+        const updated: ResidentInvitation = { ...invitation, status: 'ACCEPTED', acceptedAt: new Date().toISOString() };
+        (mockStore.getState().residentInvitations as any[])[index] = updated;
         mockStore.notify();
         resolve(updated);
-      }, 400);
+      }, getDelay(400));
     });
   },
 
@@ -410,21 +439,21 @@ export const residentRegistrationService = {
           url: d.url,
         }));
 
-        mockStore.getState().residentDocuments?.push(...documents);
+        (mockStore.getState().residentDocuments as any[])?.push(...documents);
         mockStore.notify();
         resolve(documents);
-      }, 500);
+      }, getDelay(500));
     });
   },
 
   async getDocuments(registrationId: string): Promise<ResidentDocument[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const documents = (mockStore.getState().residentDocuments || []).filter(
+        const documents = getDocuments().filter(
           (d) => d.registrationId === registrationId
         );
         resolve(documents);
-      }, 300);
+      }, getDelay(300));
     });
   },
 

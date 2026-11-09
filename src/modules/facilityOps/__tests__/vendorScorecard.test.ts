@@ -1,17 +1,15 @@
 import { VendorScorecardService } from '../services/vendorScorecardService';
 import { VendorService } from '../services/vendorService';
 import { WorkOrderService } from '../services/workOrderService';
-import { FacilityOperationsActor } from '../data/facilityOpsActor.types';
+import { createActorFromSession } from '../data/facilityOpsActor';
 
 describe('VendorScorecardService', () => {
-  const actor: FacilityOperationsActor = {
-    actorId: 'user-ops-1',
-    actorName: 'Ops Admin',
-    actorRole: 'FACILITY_MANAGER',
+  const actor = createActorFromSession({
+    userId: 'user-ops-1',
+    name: 'Ops Admin',
+    role: 'FACILITY_MANAGER',
     societyId: 'soc-123',
-    permissions: ['VIEW_VENDORS', 'REGISTER_VENDOR', 'CREATE_VENDOR', 'MANAGE_VENDORS', 'CREATE_WORK_ORDER', 'ASSIGN_WORK_ORDER', 'COMPLETE_WORK_ORDER', 'VERIFY_WORK_ORDER'],
-    hasPermission: () => true,
-  };
+  });
 
   const timeWindow = {
     from: '2026-01-01',
@@ -30,6 +28,7 @@ describe('VendorScorecardService', () => {
       category: 'LIFT_MAINTENANCE',
       mobileNumber: '+919876543210',
       contactPerson: 'Suresh',
+      officeAddress: '123 Main St',
     }, actor);
 
     const scorecardService = VendorScorecardService.getInstance();
@@ -52,6 +51,7 @@ describe('VendorScorecardService', () => {
       category: 'FIRE_SAFETY',
       mobileNumber: '+919876543211',
       contactPerson: 'Karan',
+      officeAddress: '456 Fire Lane',
     }, actor);
 
     const workOrderService = WorkOrderService.getInstance();
@@ -77,7 +77,7 @@ describe('VendorScorecardService', () => {
 
       workOrderService.submitCompletion({
         workOrderId: wo.id,
-        actualWorkPerformed: 'Completed valve inspection',
+        technicianNotes: 'Completed valve inspection',
         evidenceDocumentIds: ['doc-fire-1'],
         serviceReportDocumentId: 'doc-report-1',
       }, actor);

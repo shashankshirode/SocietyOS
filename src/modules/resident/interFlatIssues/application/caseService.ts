@@ -1,12 +1,11 @@
 import type { Absent } from '../../../../shared/types/absence.types';
 import type { AuditLogEntry } from '../../../../core/audit/audit.types';
-import type { DisputeCase, DisputeClaim, DisputeClosureRecord, DisputeParty, DisputePartyRole, DisputePropertyTag, DisputeResponse, DisputeResponsePosition, DisputeSeverity, DisputeCategory, } from '../domain/types/case.types';
+import type { DisputeCase, DisputeClaim, DisputeClosureRecord, DisputeParty, DisputePartyRole, DisputePropertyTag, DisputeResponse, DisputeResponsePosition, DisputeSeverity, DisputeCategory,  DisputeCaseStatus } from '../domain/types/case.types';
 import { findPartyByUserId } from '../domain/types/case.types';
 import type { CaseAuditEntry, TimelineEvent, TimelineEventType } from '../domain/types/timeline.types';
 import { containsDirectContactDetail, isNeutralSummary, nextSequence } from '../domain/types/timeline.types';
 import type { EvidenceRecord, EvidenceSubmission } from '../domain/types/evidence.types';
 import type { Inspection } from '../domain/types/inspection.types';
-import type { DisputeCaseStatus } from '../domain/types/case.types';
 import type { DisputeRetentionRecord } from '../domain/types/retention.types';
 import type { DisputeActor, DisputeDecision, DisputeErrorCode, DisputeOutcome, DisputeTraceContext, DisputeViolation, } from '../domain/types';
 import { fail, nextRevision, succeed, warning } from '../domain/types';

@@ -1,5 +1,5 @@
 import React, { forwardRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, NativeSyntheticEvent, TextInputFocusEventData, type TextInputProps, } from 'react-native';
+import { type TextInputInstance, View, Text, TextInput, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, type TextInputProps } from 'react-native';
 import { HapticFeedback } from '../../shared/utils/haptics';
 import { useAppTheme } from '../../shared/theme/useAppTheme';
 import { getColors } from '../tokens/premium-colors';
@@ -28,7 +28,7 @@ const typeKeyboardMap: Record<InputType, InputProps['keyboardType']> = {
     'decimal-pad': 'decimal-pad',
     numeric: 'numeric',
 };
-export const Input = forwardRef<TextInput, InputProps>(({ label, placeholder, error, helperText, leftIcon, rightIcon, type = 'text', secureTextEntry = false, style, testID, onFocus, onBlur, onChangeText, value, ...props }, ref) => {
+export const Input = forwardRef<TextInputInstance, InputProps>(({ label, placeholder, error, helperText, leftIcon, rightIcon, type = 'text', secureTextEntry = false, style, testID, onFocus, onBlur, onChangeText, value, ...props }, ref) => {
     const { dark } = useAppTheme();
     const tc = getColors(dark ? 'dark' : 'light');
     const [focused, setFocused] = useState(false);

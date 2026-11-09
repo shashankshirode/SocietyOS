@@ -194,19 +194,19 @@ describe('Facility Booking State Machine', () => {
 
   describe('transition', () => {
     it('returns correct target for Pay action', () => {
-      expect(transition('PAYMENT_PENDING', 'Pay')).toBe('CONFIRMED');
+      expect(transition('PAYMENT_PENDING', FacilityBookingAction.Pay)).toBe('CONFIRMED');
     });
 
     it('returns correct target for Cancel action', () => {
-      expect(transition('CONFIRMED', 'Cancel')).toBe('CANCELLED_BY_RESIDENT');
+      expect(transition('CONFIRMED', FacilityBookingAction.Cancel)).toBe('CANCELLED_BY_RESIDENT');
     });
 
     it('returns correct target for CheckIn action', () => {
-      expect(transition('CONFIRMED', 'CheckIn')).toBe('CHECKED_IN');
+      expect(transition('CONFIRMED', FacilityBookingAction.CheckIn)).toBe('CHECKED_IN');
     });
 
     it('returns current state for invalid action', () => {
-      expect(transition('CONFIRMED', 'View')).toBe('CONFIRMED');
+      expect(transition('CONFIRMED', FacilityBookingAction.View)).toBe('CONFIRMED');
     });
   });
 
@@ -215,7 +215,7 @@ describe('Facility Booking State Machine', () => {
       const result = createTransition(
         'CONFIRMED',
         'CHECKED_IN',
-        'CheckIn',
+        FacilityBookingAction.CheckIn,
         'user-123',
         'Resident checked in',
       );
@@ -223,7 +223,7 @@ describe('Facility Booking State Machine', () => {
       expect(result).not.toBeNull();
       expect(result!.from).toBe('CONFIRMED');
       expect(result!.to).toBe('CHECKED_IN');
-      expect(result!.action).toBe('CheckIn');
+      expect(result!.action).toBe('CHECK_IN');
       expect(result!.actorId).toBe('user-123');
       expect(result!.reason).toBe('Resident checked in');
     });

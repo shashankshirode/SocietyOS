@@ -8,6 +8,15 @@ import type { Bill, PaymentMethod } from '../../shared/types/bill.types';
 import type { GatePass } from '../../shared/types/gate.types';
 import type { InterFlatIssueType } from '../../shared/types/interFlat.types';
 import type { Absent } from "../../shared/types/absence.types";
+
+export type NavigationOnlyScreenProps = {
+    navigation: {
+        navigate: (screen: string, params?: Record<string, unknown>) => void;
+        goBack: () => void;
+        replace?: (screen: string, params?: Record<string, unknown>) => void;
+        setOptions?: (options: Record<string, unknown>) => void;
+    };
+};
 export type RootStackParamList = {
     AppModeSelector: Absent;
     ResidentApp: Absent;
@@ -23,6 +32,9 @@ export type AppModeStackParamList = {
 };
 export type ProfileStackParamList = {
     ProfileHome: Absent;
+    DigitalHomePassport: {
+        unitId?: string;
+    } | Absent;
     Settings: Absent;
     RoleAccount: {
         kind: 'admin' | 'treasurer' | 'facility';
@@ -32,6 +44,7 @@ export type ProfileStackParamList = {
     Language: Absent;
     Accessibility: Absent;
     Privacy: Absent;
+    DateTime: Absent;
 };
 export type SuperAdminStackParamList = {
     SuperAdminHome: Absent;
@@ -127,7 +140,10 @@ export type SuperAdminStackParamList = {
     };
     SOCIETY_SETUP_SUMMARY: Absent;
     SOCIETY_HIERARCHY: Absent;
-    TOWER_WING_FLOOR_SETUP: Absent;
+    TOWER_WING_FLOOR_SETUP: {
+        phaseId?: string;
+        towerId?: string;
+    } | Absent;
     UNIT_MASTER: Absent;
     UNIT_DETAIL: {
         id: string;
@@ -358,6 +374,10 @@ export type SuperAdminStackParamList = {
 };
 export type HomeStackParamList = {
     ResidentHome: Absent;
+    NotificationInbox: Absent;
+    DigitalHomePassport: {
+        unitId?: string;
+    } | Absent;
     CreateVisitorFromHome: Absent;
     CreateComplaintFromHome: Absent;
     ComplaintDetailFromHome: {
@@ -766,6 +786,9 @@ export type GuardStackParamList = {
     ShiftHandover: Absent;
     GuardMore: Absent;
     GuardVehicleLookup: Absent;
+    GuardCurrentVisitors: Absent;
+    DeliveryEntry: Absent;
+    CabEntry: Absent;
     GuardChatInbox: Absent;
     GuardChatConversation: {
         interactionId: string;
@@ -851,6 +874,7 @@ export type PreviousResidentDocumentsScreenProps = NativeStackScreenProps<HomeSt
 export type MoveInRequestScreenProps = NativeStackScreenProps<HomeStackParamList, 'MoveInRequest'>;
 export type UnitAccessStatusScreenProps = NativeStackScreenProps<HomeStackParamList, 'UnitAccessStatus'>;
 export type OwnershipTenancySummaryScreenProps = NativeStackScreenProps<HomeStackParamList, 'OwnershipTenancySummary'>;
+export type DigitalHomePassportScreenProps = NativeStackScreenProps<HomeStackParamList, 'DigitalHomePassport'> | NativeStackScreenProps<ProfileStackParamList, 'DigitalHomePassport'>;
 export type ParkingHomeScreenProps = NativeStackScreenProps<ParkingStackParamList, 'ParkingHome'>;
 export type MyVehiclesScreenProps = NativeStackScreenProps<ParkingStackParamList, 'MyVehicles'>;
 export type VehicleDetailScreenProps = NativeStackScreenProps<ParkingStackParamList, 'VehicleDetail'>;

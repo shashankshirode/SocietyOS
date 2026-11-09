@@ -7,22 +7,17 @@ import type {
   CommunicationClock,
   CommunicationDecision,
   CommunicationViolation,
-} from '../types';
-import { allowedWith, denied, violation } from '../types';
-import type {
+
   ChannelRecord,
   ChannelMembershipRecord,
   ContactRequestRecord,
   MessageRecord,
-} from '../types';
-import type {
   ModerationAccessGrant,
   ModerationCase,
   ResidentBlock,
   ResidentDirectoryEntry,
-  ResidentPrivacySettings,
-} from '../types';
-import type { NoticeRecord } from '../types';
+  ResidentPrivacySettings, NoticeRecord } from '../types';
+import { allowedWith, denied, violation } from '../types';
 
 const ACTION_PERMISSIONS: readonly ActionPermissionRule[] = [
   { action: 'DIRECTORY_SEARCH', permissions: ['RESIDENT_DIRECTORY_VIEW'], anyOf: true },

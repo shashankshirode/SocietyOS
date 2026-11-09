@@ -17,7 +17,17 @@ export function VehicleRegistrationScreen({ navigation }: NavigationOnlyScreenPr
     const { submit, isSubmitting } = useVehicleRegistration();
     const [success, setSuccess] = useState(false);
     const handleAction = async () => {
-        await submit({ id: 'mock-action-trigger' });
+        await submit({
+            societyId: 'soc-1',
+            unitId: 'unit-1',
+            vehicleType: 'CAR',
+            vehicleNumber: 'MH-02-AB-1234',
+            makeModel: 'Honda City',
+            color: 'White',
+            fuelType: 'PETROL',
+            ownerName: 'Resident',
+            linkedResidentName: 'Resident',
+        });
         setSuccess(true);
     };
     return (<ScreenContainer>

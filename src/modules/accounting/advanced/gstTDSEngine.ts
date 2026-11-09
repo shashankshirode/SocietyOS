@@ -13,7 +13,7 @@ import { auditService, createAuditEntry } from '../../../core/audit';
 class GSTTDSEngine {
   private gstReturns: Map<string, GSTReturn> = new Map();
   private tdsReturns: Map<string, TDSReturn> = new Map();
-  private listeners: Array<(returns: (GSTReturn | TDSReturn)[]) => void> = [];
+  private listeners: ((returns: (GSTReturn | TDSReturn)[]) => void)[] = [];
 
   constructor() {
     this.loadFromStorage();

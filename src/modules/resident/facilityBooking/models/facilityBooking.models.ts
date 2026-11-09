@@ -254,6 +254,8 @@ export interface FacilityBooking {
   readonly facilityName: string;
   readonly facilityLocation: string;
   readonly residentName: string;
+  readonly bookedBy?: string;
+  readonly unitNumber?: string;
   readonly contactNumber: string;
   readonly startsAt: string;
   readonly endsAt: string;

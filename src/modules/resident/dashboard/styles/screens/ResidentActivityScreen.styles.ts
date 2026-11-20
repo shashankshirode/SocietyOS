@@ -18,6 +18,10 @@ export const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -110,6 +114,9 @@ export const styles = StyleSheet.create({
   filterCountText: {
     fontSize: 11,
     fontWeight: '700',
+  },
+  actionSection: {
+    paddingHorizontal: 16,
   },
   actionCard: {
     borderRadius: 18,
@@ -312,5 +319,24 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 19,
     maxWidth: 280,
+  },
+  emptyStateContainer: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  listFooter: {
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  footerEndText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  footerLoader: {
+    marginBottom: 8,
+  },
+  footerLoadingText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

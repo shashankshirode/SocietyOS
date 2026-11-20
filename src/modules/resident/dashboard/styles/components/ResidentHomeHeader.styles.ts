@@ -109,28 +109,30 @@ export const createAvatarButtonStyle = (backgroundColor: string, borderColor: st
 });
 
 export const createGreetingTextStyle = (color: string): TextStyle => ({
-  fontSize: 22,
+  fontSize: 24,
   fontWeight: '400',
   color,
   letterSpacing: -0.3,
+  lineHeight: 32,
 });
 
 export const createResidentNameTextStyle = (color: string): TextStyle => ({
   fontSize: 24,
-  fontWeight: '800',
+  fontWeight: '700',
   color,
   letterSpacing: -0.4,
+  lineHeight: 32,
 });
 
 export const createStatusAuraTextStyle = (color: string): TextStyle => ({
   fontSize: 13,
   fontWeight: '500',
   color,
+  lineHeight: 18,
 });
 
 export const styles = StyleSheet.create({
   root: {
-    paddingHorizontal: 20,
     paddingBottom: 16,
   },
   topBar: {
@@ -139,6 +141,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     gap: 12,
+  },
+  topBarWrapper: {
+    paddingHorizontal: 20,
   },
   residenceSelector: {
     flexDirection: 'row',
@@ -183,7 +188,9 @@ export const styles = StyleSheet.create({
     color: '#334155',
   },
   greetingBlock: {
-    marginTop: 4,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 24,
   },
   greetingTitleRow: {
     flexDirection: 'row',
@@ -194,8 +201,8 @@ export const styles = StyleSheet.create({
   statusAuraRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
+    gap: 8,
+    marginTop: 8,
   },
   auraDot: {
     width: 7,

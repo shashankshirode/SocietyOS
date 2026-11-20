@@ -106,7 +106,8 @@ export const ResidentHomeHeader = memo(function ResidentHomeHeader({
 
   return (
     <View style={[styles.root, createHeaderContainerStyle(topInset)]}>
-      <View style={styles.topBar}>
+      <View style={styles.topBarWrapper}>
+        <View style={styles.topBar}>
         <Pressable
           style={styles.residenceSelector}
           accessibilityRole="button"
@@ -164,6 +165,7 @@ export const ResidentHomeHeader = memo(function ResidentHomeHeader({
             />
           </Pressable>
         </View>
+      </View>
       </View>
 
       <ResidentHomeGreeting

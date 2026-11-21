@@ -2,18 +2,10 @@ import * as React from 'react';
 import { getCurrentSession, subscribeToSession } from '../auth/sessionStore';
 import { getPermissionsForRoles, hasPermissions } from './permissionMatrix';
 import type { MockSecurityUser, Permission, PermissionCheck } from './permission.types';
-import { residentHomeContextStore } from '../../modules/resident/homeContext/state/residentHomeContext.store';
-import { mapContextRoleToAppRole } from '../../modules/resident/homeContext/utils/residentHomeContextPermissions';
-import type { Absent } from "../../shared/types/absence.types";
-const mockCurrentUser: MockSecurityUser = {
-    id: 'resident-001',
-    displayName: 'Mock Resident Owner',
-    roles: ['RESIDENT_OWNER'],
-    activeRole: 'RESIDENT_OWNER',
-};
+import { absentValue, type Absent } from "../../shared/types/absence.types";
+
 export function useCurrentSecurityUser(): MockSecurityUser | Absent {
     const session = React.useSyncExternalStore(subscribeToSession, getCurrentSession, getCurrentSession);
-    const activeHome = React.useSyncExternalStore(residentHomeContextStore.subscribe, residentHomeContextStore.getActiveContext, residentHomeContextStore.getActiveContext);
     if (!session) {
         return absentValue;
     }

@@ -1,9 +1,11 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import { getCurrentSession, restoreCurrentSession, setCurrentSession, clearCurrentSession, subscribeToSession } from './sessionStore';
+import { getCurrentSession, restoreCurrentSession, setCurrentSession, subscribeToSession } from './sessionStore';
 import { logoutCurrentSession } from './logout';
 import type { AuthSession } from './authSession.types';
 import type { AppRole } from '../permissions/permission.types';
 import { getMockSessionSeedForRole } from './mockSession';
+import { runtimePolicy } from '../config/runtimePolicy';
+import { getAuthGateway } from './authGateway';
 
 type AuthStatus = 'loading' | 'unauthenticated' | 'authenticated';
 
@@ -54,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [updateSession]);
 
   const login = useCallback(async (role: AppRole, credentials?: { societyId?: string; unitId?: string }) => {
+    runtimePolicy.assertDemoAllowed('Mock role login');
     setStatus('loading');
     const mockSession = getMockSessionSeedForRole(role);
     if (credentials?.societyId) {
@@ -66,67 +69,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const requestOtp = useCallback(async (mobileNumber: string) => {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-    if (cleanNumber.length !== 10) {
-      return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
-    }
-
-    if (cleanNumber === '9999999999' || cleanNumber === '0000000000') {
-      return { success: false, error: 'Your account has been suspended by the society administration.' };
-    }
-
-    const challengeId = `otp-challenge-${Date.now()}`;
-    return {
-      success: true,
-      challengeId,
-      retryAfterSeconds: 30,
-      demoOtp: '123456',
-    };
+    const gateway = getAuthGateway();
+    return await gateway.requestOtp({ mobileNumber });
   }, []);
 
   const loginWithPhone = useCallback(async (mobileNumber: string, otp: string) => {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-    if (cleanNumber.length !== 10) {
-      return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+    const gateway = getAuthGateway();
+    const result = await gateway.verifyOtp({ mobileNumber, otp });
+    if (result.success && result.session) {
+      await setCurrentSession(result.session);
     }
-
-    if (otp !== '123456') {
-      return { success: false, error: 'Invalid verification code. Please enter the valid 6-digit code (Demo: 123456).' };
-    }
-
-    const { lookupIdentityByPhone } = await import('../identity/identityResolver');
-    const lookup = lookupIdentityByPhone(cleanNumber);
-
-    if (lookup.status === 'SUSPENDED') {
-      return { success: false, error: lookup.message };
-    }
-
-    if (lookup.status === 'NEW_USER') {
-      return { success: true, isNewUser: true };
-    }
-
-    const { identity } = lookup;
-    const sessionObj: AuthSession = {
-      userId: identity.user.id,
-      name: identity.person.preferredName || `${identity.person.firstName} ${identity.person.lastName}`,
-      role: identity.activeRole,
-      personaKey: identity.personaKey || 'rohan',
-      societyId: identity.membership?.societyId,
-      societyName: identity.membership?.societyName,
-      unitId: identity.unitRelationship?.unitId,
-      unitLabel: identity.unitRelationship?.unitNumber,
-      isHouseholdAdmin: identity.isHouseholdAdmin,
-      isMockSession: true,
-      token: `mock-token-${identity.user.id}`,
-    };
-
-    await setCurrentSession(sessionObj);
-    return { success: true, isNewUser: false, session: sessionObj };
+    return result;
   }, []);
 
   const registerNewUser = useCallback(async (mobileNumber: string, fullName: string, email?: string) => {
     if (!fullName.trim()) {
       return { success: false, error: 'Please enter your full name.' };
+    }
+
+    if (runtimePolicy.isProduction()) {
+      return {
+        success: false,
+        error: 'Production resident self-registration requires an active backend service.',
+      };
     }
 
     const { registerNewUserAccount } = await import('../identity/identityResolver');
@@ -162,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [updateSession]);
 
   const setMockSession = useCallback(async (role: AppRole) => {
+    runtimePolicy.assertDemoAllowed('setMockSession');
     setStatus('loading');
     const mockSession = getMockSessionSeedForRole(role);
     await setCurrentSession(mockSession);

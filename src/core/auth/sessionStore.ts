@@ -1,22 +1,31 @@
 import type { AuthSession, AuthSessionSnapshot } from './authSession.types';
 import { clearTokens, setAccessToken } from './tokenStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import type { AppRole } from '../permissions/permission.types';
 import { includeWhenPresent } from "../../shared/utils/presentProperty";
 import type { Absent } from "../../shared/types/absence.types";
+import { secureStorage } from '../security/secureStorage';
+import { runtimePolicy } from '../config/runtimePolicy';
+import { getAuthGateway } from './authGateway';
+
 type SessionListener = () => void;
+type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
+
 let currentSession: AuthSession | null = null;
 const listeners = new Set<SessionListener>();
 const AUTH_SESSION_STORAGE_KEY = 'societyos.auth.session';
+const SECURE_REFRESH_TOKEN_KEY = 'societyos.auth.refreshToken';
+
 const appRoles: readonly AppRole[] = [
     'RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY', 'SECURITY_GUARD', 'SECURITY_SUPERVISOR',
     'FACILITY_MANAGER', 'COMMITTEE_MEMBER', 'SECRETARY', 'CHAIRPERSON', 'TREASURER', 'SOCIETY_ADMIN',
     'SUPER_ADMIN', 'ELECTION_OFFICER', 'AUDITOR', 'VENDOR_USER', 'STAFF_USER',
 ];
+
 function optionalString(value: JsonValue | Absent): string | Absent {
     return typeof value === 'string' ? value : undefined;
 }
+
 function parseStoredSession(raw: string): AuthSession | null {
     const value: JsonValue = JSON.parse(raw);
     if (!value || Array.isArray(value) || typeof value !== 'object')
@@ -46,58 +55,48 @@ function parseStoredSession(raw: string): AuthSession | null {
         isMockSession: value.isMockSession
     };
 }
+
 function emitSessionChange() {
     listeners.forEach((listener) => listener());
 }
+
 export function getCurrentSession(): AuthSession | null {
     return currentSession;
 }
+
 export function getSessionSnapshot(): AuthSessionSnapshot {
     return {
         session: currentSession,
         status: currentSession ? 'signedIn' : 'signedOut'
     };
 }
+
 export function subscribeToSession(listener: SessionListener): () => void {
     listeners.add(listener);
     return () => {
         listeners.delete(listener);
     };
 }
-const SECURE_REFRESH_TOKEN_KEY = 'societyos.auth.refreshToken';
 
-async function setSecureRefreshToken(token: string): Promise<void> {
-    try {
-        if (typeof SecureStore.setItemAsync === 'function') {
-            await SecureStore.setItemAsync(SECURE_REFRESH_TOKEN_KEY, token);
-        }
-    } catch {
-        // Fallback
-    }
+async function setSecureRefreshToken(token: string): Promise<boolean> {
+    const result = await secureStorage.setItem(SECURE_REFRESH_TOKEN_KEY, token);
+    return result.success;
 }
 
 async function getSecureRefreshToken(): Promise<string | null> {
-    try {
-        if (typeof SecureStore.getItemAsync === 'function') {
-            return await SecureStore.getItemAsync(SECURE_REFRESH_TOKEN_KEY);
-        }
-    } catch {
-        // Fallback
-    }
-    return null;
+    const result = await secureStorage.getItem(SECURE_REFRESH_TOKEN_KEY);
+    return result.value ?? null;
 }
 
 async function removeSecureRefreshToken(): Promise<void> {
-    try {
-        if (typeof SecureStore.deleteItemAsync === 'function') {
-            await SecureStore.deleteItemAsync(SECURE_REFRESH_TOKEN_KEY);
-        }
-    } catch {
-        // Fallback
-    }
+    await secureStorage.deleteItem(SECURE_REFRESH_TOKEN_KEY);
 }
 
 export async function setCurrentSession(session: AuthSession): Promise<void> {
+    if (runtimePolicy.isProduction() && session.isMockSession) {
+        throw new Error('[SecurityPolicy] Mock sessions are strictly forbidden in production release builds.');
+    }
+
     currentSession = session;
     const { token, refreshToken, ...untrustedMetadata } = session;
     await AsyncStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(untrustedMetadata));
@@ -109,6 +108,7 @@ export async function setCurrentSession(session: AuthSession): Promise<void> {
     }
     emitSessionChange();
 }
+
 export async function clearCurrentSession(): Promise<void> {
     currentSession = null;
     await AsyncStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
@@ -116,9 +116,19 @@ export async function clearCurrentSession(): Promise<void> {
     await clearTokens();
     emitSessionChange();
 }
+
 export async function restoreCurrentSession(): Promise<AuthSession | null> {
-    if (currentSession)
+    if (currentSession) {
+        if (currentSession.expiresAt && Date.parse(currentSession.expiresAt) <= Date.now()) {
+            await clearCurrentSession();
+            return null;
+        }
+        if (runtimePolicy.isProduction() && currentSession.isMockSession) {
+            await clearCurrentSession();
+            return null;
+        }
         return currentSession;
+    }
     const raw = await AsyncStorage.getItem(AUTH_SESSION_STORAGE_KEY);
     if (!raw)
         return null;
@@ -128,6 +138,34 @@ export async function restoreCurrentSession(): Promise<AuthSession | null> {
             await AsyncStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
             return null;
         }
+
+        // Production policy: Mock sessions can never be restored in production
+        if (runtimePolicy.isProduction()) {
+            if (restored.isMockSession) {
+                await clearCurrentSession();
+                return null;
+            }
+            const secureRefreshToken = await getSecureRefreshToken();
+            if (!secureRefreshToken) {
+                await clearCurrentSession();
+                return null;
+            }
+            try {
+                const gateway = getAuthGateway();
+                const identityResult = await gateway.getCurrentIdentity();
+                if (!identityResult.success || !identityResult.identity) {
+                    await clearCurrentSession();
+                    return null;
+                }
+                currentSession = identityResult.identity;
+                emitSessionChange();
+                return currentSession;
+            } catch {
+                await clearCurrentSession();
+                return null;
+            }
+        }
+
         if (restored.expiresAt && Date.parse(restored.expiresAt) <= Date.now()) {
             await clearCurrentSession();
             return null;
@@ -145,8 +183,10 @@ export async function restoreCurrentSession(): Promise<AuthSession | null> {
         return null;
     }
 }
+
 export async function clearSensitiveCachedData(): Promise<void> {
     await clearCurrentSession();
+    secureStorage.clearWebDemoStorage();
     try {
         await AsyncStorage.multiRemove([
             AUTH_SESSION_STORAGE_KEY,
@@ -158,5 +198,5 @@ export async function clearSensitiveCachedData(): Promise<void> {
         // Fallback
     }
 }
-export const clearSensitiveCachedDataPlaceholder = clearSensitiveCachedData;
 
+export const clearSensitiveCachedDataPlaceholder = clearSensitiveCachedData;

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, TextInput, Keyboard, StyleSheet, Pressable } from 'react-native';
 import { useAuth } from '../AuthProvider';
+import { runtimePolicy } from '../../config/runtimePolicy';
 import { AppButton } from '../../../shared/components/AppButton';
 import { AppCard } from '../../../shared/cards/AppCard';
 import { ScreenScaffold } from '../../../shared/layout/ScreenScaffold';
@@ -188,6 +189,13 @@ export function UnifiedLoginScreen() {
           <AppText variant="bodyMedium" style={{ marginTop: 8, color: colors.textSecondary, textAlign: 'center' }}>
             Residential Community Management Platform
           </AppText>
+          {runtimePolicy.isDemoAllowed() && (
+            <View testID="demo-mode-badge" style={[styles.helperBadge, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B', alignSelf: 'center', marginTop: 8 }]}>
+              <AppText variant="caption" style={{ color: '#B45309', fontWeight: '700' }}>
+                DEMO BUILD • MOCK IDENTITY ACTIVE
+              </AppText>
+            </View>
+          )}
         </Box>
 
         {stage === 'ENTER_PHONE' && (
@@ -246,16 +254,18 @@ export function UnifiedLoginScreen() {
                 Verification code sent to +91 {mobileNumber}
               </AppText>
 
-              <View style={[styles.helperBadge, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
-                <AppText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
-                  Demo Verification Code: 123456
-                </AppText>
-              </View>
+              {runtimePolicy.isDemoAllowed() && (
+                <View testID="demo-otp-badge" style={[styles.helperBadge, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}30` }]}>
+                  <AppText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+                    Demo Verification Code: 123456
+                  </AppText>
+                </View>
+              )}
 
               <View style={styles.inputContainer}>
                 <TextInput
                   style={[styles.otpInput, { borderColor: colors.border, backgroundColor: colors.background, color: colors.textPrimary }]}
-                  placeholder="123456"
+                  placeholder={runtimePolicy.isDemoAllowed() ? '123456' : '••••••'}
                   placeholderTextColor={colors.textSecondary}
                   value={otp}
                   onChangeText={(val) => {
@@ -339,107 +349,109 @@ export function UnifiedLoginScreen() {
           </AppCard>
         )}
 
-        {/* Developer Personas / Test Switcher */}
-        <AppCard style={{ padding: 16, backgroundColor: `${colors.border}15` }}>
-          <Pressable onPress={() => setShowDevPersonas(!showDevPersonas)}>
-            <Box flexDirection="row" justifyContent="space-between" alignItems="center">
-              <AppText variant="caption" style={{ color: colors.textSecondary, fontWeight: '700' }}>
-                DEVELOPER PERSONAS (QUICK DEMO)
-              </AppText>
-              <AppText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
-                {showDevPersonas ? 'Hide ▲' : 'Show ▼'}
-              </AppText>
-            </Box>
-          </Pressable>
+        {/* Developer Personas / Test Switcher (Demo Builds Only) */}
+        {runtimePolicy.isDemoAllowed() && (
+          <AppCard testID="developer-personas-card" style={{ padding: 16, backgroundColor: `${colors.border}15` }}>
+            <Pressable onPress={() => setShowDevPersonas(!showDevPersonas)}>
+              <Box flexDirection="row" justifyContent="space-between" alignItems="center">
+                <AppText variant="caption" style={{ color: colors.textSecondary, fontWeight: '700' }}>
+                  DEVELOPER PERSONAS (QUICK DEMO)
+                </AppText>
+                <AppText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+                  {showDevPersonas ? 'Hide ▲' : 'Show ▼'}
+                </AppText>
+              </Box>
+            </Pressable>
 
-          {showDevPersonas && (
-            <Stack gap="sm" style={{ marginTop: 12 }}>
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border }]}
-                onPress={() => {
-                  setMobileNumber('9876543210');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Rohan Sharma</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Resident Owner • 9876543210</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
-              </Pressable>
+            {showDevPersonas && (
+              <Stack gap="sm" style={{ marginTop: 12 }}>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMobileNumber('9876543210');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Rohan Sharma</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Resident Owner • 9876543210</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
+                </Pressable>
 
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border }]}
-                onPress={() => {
-                  setMobileNumber('9876543213');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Priya Mehta</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Resident Tenant • 9876543213</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
-              </Pressable>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMobileNumber('9876543213');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Priya Mehta</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Resident Tenant • 9876543213</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
+                </Pressable>
 
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border }]}
-                onPress={() => {
-                  setMobileNumber('9876543217');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Suresh Patil</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Society Admin • 9876543217</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
-              </Pressable>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMobileNumber('9876543217');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Suresh Patil</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Society Admin • 9876543217</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
+                </Pressable>
 
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border }]}
-                onPress={() => {
-                  setMobileNumber('9876543214');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Vikram Singh</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Security Guard • 9876543214</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
-              </Pressable>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMobileNumber('9876543214');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.textPrimary }}>Vikram Singh</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Security Guard • 9876543214</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: colors.primary }}>Use Phone →</AppText>
+                </Pressable>
 
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border }]}
-                onPress={() => {
-                  setMobileNumber('9999999999');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: '#EF4444' }}>Suspended User Test</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Blocked Account • 9999999999</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: '#EF4444' }}>Test Block →</AppText>
-              </Pressable>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border }]}
+                  onPress={() => {
+                    setMobileNumber('9999999999');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: '#EF4444' }}>Suspended User Test</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Blocked Account • 9999999999</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: '#EF4444' }}>Test Block →</AppText>
+                </Pressable>
 
-              <Pressable
-                style={[styles.devPersonaRow, { borderColor: colors.border, borderBottomWidth: 0 }]}
-                onPress={() => {
-                  setMobileNumber('9811122233');
-                  setStage('ENTER_PHONE');
-                }}
-              >
-                <Box>
-                  <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.primary }}>New Resident Registration</AppText>
-                  <AppText variant="caption" style={{ color: colors.textSecondary }}>Unregistered • 9811122233</AppText>
-                </Box>
-                <AppText variant="caption" style={{ color: colors.primary }}>Register →</AppText>
-              </Pressable>
-            </Stack>
-          )}
-        </AppCard>
+                <Pressable
+                  style={[styles.devPersonaRow, { borderColor: colors.border, borderBottomWidth: 0 }]}
+                  onPress={() => {
+                    setMobileNumber('9811122233');
+                    setStage('ENTER_PHONE');
+                  }}
+                >
+                  <Box>
+                    <AppText variant="bodySmall" style={{ fontWeight: '600', color: colors.primary }}>New Resident Registration</AppText>
+                    <AppText variant="caption" style={{ color: colors.textSecondary }}>Unregistered • 9811122233</AppText>
+                  </Box>
+                  <AppText variant="caption" style={{ color: colors.primary }}>Register →</AppText>
+                </Pressable>
+              </Stack>
+            )}
+          </AppCard>
+        )}
       </Stack>
     </ScreenScaffold>
   );

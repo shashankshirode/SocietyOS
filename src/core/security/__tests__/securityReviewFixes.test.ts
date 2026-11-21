@@ -24,13 +24,7 @@ describe('Security & Engineering Review Fix Verification', () => {
     });
 
     it('AUTHZ-002: Does not grant blanket access to SUPER_ADMIN on resident-scoped actions', () => {
-      const superAdminContext = {
-        user: { id: 'sa-001', name: 'Super Admin', phone: '9999999999' },
-        society: { id: 'soc-001', name: 'Test Society' },
-        activeRole: 'SUPER_ADMIN' as const,
-        membership: { status: 'ACTIVE' as const, societyId: 'soc-001' },
-        isHouseholdAdmin: false,
-      };
+      const superAdminContext = MOCK_PERSONAS.superadmin;
       // SUPER_ADMIN attempting to cancel an arbitrary resident's personal pass without ownership
       const res = evaluateCapability(superAdminContext, 'VISITOR_CANCEL_OWN', {
         resourceCreatorUserId: 'resident-user-123',
@@ -73,7 +67,7 @@ describe('Security & Engineering Review Fix Verification', () => {
       const res = await billRepository.recordManualPayment({
         unitId: 'unit-1',
         amount: 1000,
-        paymentMethod: 'CASH',
+        paymentMethod: 'CASH_CHEQUE',
       });
       expect(res.ok).toBe(false);
       if (!res.ok) {

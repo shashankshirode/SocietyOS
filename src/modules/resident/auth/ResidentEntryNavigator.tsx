@@ -29,7 +29,7 @@ export function ResidentEntryNavigator() {
   const checkActiveResidence = useCallback(async () => {
     if (checkInFlight.current) return;
     if (!session?.societyId || !session.unitId) {
-      setActiveAccessState('ALLOWED');
+      setActiveAccessState('BLOCKED');
       return;
     }
     checkInFlight.current = true;
@@ -41,14 +41,14 @@ export function ResidentEntryNavigator() {
         roleFilter: 'ALL',
       });
       if (!page.ok) {
-        setActiveAccessState('ALLOWED');
+        setActiveAccessState('BLOCKED');
         return;
       }
       const match = page.data.items.find((item) =>
         item.residence.societyId === session.societyId && item.residence.unitId === session.unitId,
       );
       if (!match) {
-        setActiveAccessState('ALLOWED');
+        setActiveAccessState('BLOCKED');
         return;
       }
       const refreshed = await residenceAccessRepository.refreshResidence(
@@ -58,7 +58,7 @@ export function ResidentEntryNavigator() {
       if (refreshed.ok) {
         setActiveAccessState(refreshed.data.eligibility.canEnterResidence ? 'ALLOWED' : 'BLOCKED');
       } else {
-        setActiveAccessState('ALLOWED');
+        setActiveAccessState('BLOCKED');
       }
     } finally {
       checkInFlight.current = false;

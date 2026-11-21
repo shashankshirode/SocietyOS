@@ -37,7 +37,7 @@ export const centralDataSourceConfig: CentralDataSourceConfigType = {
   moduleOverrides: Object.fromEntries(
     Object.entries(dataSourceConfig.moduleOverrides).map(([k, v]) => [
       k,
-      v === 'api' ? 'api' : 'mock',
+      v === 'api' ? 'api' : v === 'mock' ? 'mock' : (dataSourceConfig.globalMode === 'api' ? 'api' : 'mock'),
     ])
   ) as Partial<Record<ModuleDataSourceKey, AppDataSourceMode>>,
   apiBaseUrl: apiConfig.baseUrl,

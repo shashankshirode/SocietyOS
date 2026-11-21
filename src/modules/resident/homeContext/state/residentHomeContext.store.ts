@@ -1,8 +1,12 @@
 import type { ActiveResidentHomeContext, ResidentHomeContext } from '../data/residentHomeContext.types';
 import { createResidenceDataScopeKey } from '../../../../shared/data/scope/createResidenceDataScopeKey';
 import { mockResidentHomeContexts } from '../data/residentHomeContext.mockData';
+import { getCurrentSession } from '../../../../core/auth/sessionStore';
 import { includeWhenPresent } from "../../../../shared/utils/presentProperty";
-const residentId = 'resident-001';
+function getActiveResidentId(): string {
+    const session = getCurrentSession();
+    return session?.userId || 'resident-001';
+}
 export function isSelectableResidentHomeContext(context: ResidentHomeContext): boolean {
     const effectiveFrom = context.effectiveFrom ? new Date(context.effectiveFrom) : null;
     const hasStarted = !effectiveFrom ||
@@ -13,7 +17,7 @@ export function isSelectableResidentHomeContext(context: ResidentHomeContext): b
 }
 export const zeroHomeFallbackContext: ActiveResidentHomeContext = {
     homeContextId: 'ctx-zero-home',
-    residentId,
+    residentId: getActiveResidentId(),
     societyId: 'soc-none',
     societyName: 'No Home Linked',
     societyAreaId: 'area-none',
@@ -61,9 +65,10 @@ export function getPrimaryActiveResidentHomeContext(): ResidentHomeContext {
 }
 
 export function mapContextToActive(ctx: ResidentHomeContext): ActiveResidentHomeContext {
+    const currentResidentId = getActiveResidentId();
     return {
         homeContextId: ctx.homeContextId,
-        residentId,
+        residentId: currentResidentId,
         societyId: ctx.societyId,
         societyName: ctx.societyName,
         societyAreaId: ctx.societyAreaId,
@@ -86,7 +91,7 @@ export function mapContextToActive(ctx: ResidentHomeContext): ActiveResidentHome
         pendingCount: ctx.pendingCount,
         ...includeWhenPresent("effectiveFrom", ctx.effectiveFrom),
         dataScopeKey: createResidenceDataScopeKey({
-            residentId,
+            residentId: currentResidentId,
             societyId: ctx.societyId,
             unitId: ctx.unitId,
             residentRole: ctx.residentRole

@@ -134,10 +134,16 @@ export class UniversalApiClient {
         }
     }
     private getCacheKey(config: RequestConfig): string {
-        const { method, url, params, data } = config;
+        const { method, url, params, data, headers } = config;
+        const tenantScope = [
+            headers?.['X-Society-Id'] ?? '',
+            headers?.['X-Unit-Id'] ?? '',
+            headers?.['X-Actor-Role'] ?? '',
+            headers?.['Authorization'] ? 'auth' : 'anon'
+        ].join(':');
         const paramStr = params ? JSON.stringify(params) : '';
         const dataStr = data ? JSON.stringify(data) : '';
-        return `${method}:${url}:${paramStr}:${dataStr}`;
+        return `${tenantScope}:${method}:${url}:${paramStr}:${dataStr}`;
     }
     private getFromCache(key: string): JsonObject | null {
         const entry = this.cache.get(key);
@@ -194,7 +200,12 @@ export class UniversalApiClient {
     private async request<T>(config: RequestConfig): Promise<ApiResponse<T>> {
         const finalConfig = await this.applyRequestInterceptors(config);
         const cacheKey = this.getCacheKey(finalConfig);
-        if (finalConfig.method === 'GET' && finalConfig.cache !== false) {
+        const cacheControl = finalConfig.headers?.['Cache-Control'] ?? '';
+        const isCacheEligible = finalConfig.method === 'GET' &&
+            finalConfig.cache !== false &&
+            !cacheControl.includes('no-store') &&
+            !cacheControl.includes('private');
+        if (isCacheEligible) {
             const cached = this.getFromCache(cacheKey);
             if (cached) {
                 return cached as unknown as ApiResponse<T>;
@@ -239,7 +250,7 @@ export class UniversalApiClient {
                     throw error;
                 }
                 const processedResponse = await this.applyResponseInterceptors(responseData as unknown as ApiResponse<JsonObject>);
-                if (finalConfig.method === 'GET' && finalConfig.cache !== false) {
+                if (isCacheEligible) {
                     this.setCache(cacheKey, processedResponse as unknown as JsonObject, finalConfig.cacheTtl ?? this.config.cacheConfig.defaultTtl);
                 }
                 return processedResponse as unknown as ApiResponse<T>;
@@ -249,7 +260,9 @@ export class UniversalApiClient {
                 if (lastError.isCancelled || lastError.name === 'AbortError') {
                     throw lastError;
                 }
+                const isIdempotent = finalConfig.method === 'GET' || finalConfig.method === 'HEAD' || Boolean(finalConfig.idempotencyKey);
                 const shouldRetry = attempt < this.config.retryConfig.maxRetries &&
+                    isIdempotent &&
                     (this.config.retryConfig.retryCondition ? this.config.retryConfig.retryCondition(lastError) : false);
                 if (!shouldRetry) {
                     break;
@@ -369,9 +382,12 @@ export function createApiClient(config: ApiClientConfig): UniversalApiClient {
     return new UniversalApiClient(config);
 }
 export function createApiClientFromEnv(): UniversalApiClient {
-    const baseUrl = typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_BASE_URL
-        ? process.env.EXPO_PUBLIC_API_BASE_URL
-        : 'http://localhost:3000/api/v1';
+    const isProd = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+    const envUrl = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_API_BASE_URL : undefined;
+    if (isProd && (!envUrl || !envUrl.startsWith('https://'))) {
+        throw new Error('Insecure HTTP API base URL is forbidden in production release builds.');
+    }
+    const baseUrl = envUrl || 'http://localhost:3000/api/v1';
     return new UniversalApiClient({ baseUrl });
 }
 

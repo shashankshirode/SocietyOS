@@ -1,4 +1,5 @@
 import { getAccessToken } from '../auth/tokenStore';
+import { getCurrentSession } from '../auth/sessionStore';
 import { apiConfig } from './apiConfig';
 import {
   ApiClientError,
@@ -34,8 +35,16 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
     return url.toString();
 }
 async function buildHeaders(options: RequestOptions): Promise<Record<string, string>> {
+    const session = getCurrentSession();
+    const sessionContext: RequestContext = session ? {
+        societyId: session.societyId,
+        unitId: session.unitId,
+        actorUserId: session.userId,
+        roles: [session.role],
+        activeRole: session.role,
+    } : (options.context || (process.env.NODE_ENV === 'test' ? getMockRequestContext() : {}));
     const context = {
-        ...getMockRequestContext(),
+        ...sessionContext,
         ...options.context
     };
     const token = await getAccessToken();

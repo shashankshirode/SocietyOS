@@ -4,7 +4,10 @@ import { auditService, createAuditEntry } from '../../../core/audit';
 import { toMinorUnits } from './money';
 import { paymentService } from './paymentService';
 function generateId(prefix: string): string {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const uuid = typeof globalThis.crypto?.randomUUID === 'function'
+        ? globalThis.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    return `${prefix}-${uuid}`;
 }
 export class PaymentGatewayServiceImpl implements PaymentGatewayService {
     private config: PaymentGatewayConfig;
@@ -108,7 +111,10 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         const signature = data.signature as string | undefined;
         const callbackAmount = typeof data.amount === 'number' ? data.amount : Number(data.amount ?? 0);
         const gatewayTxnId = (data.gatewayTransactionId as string) || (data.transactionId as string) || `gtx-${Date.now()}`;
-        if (signature && signature === 'INVALID_SIGNATURE') {
+        if (!signature) {
+            return { isValid: false, error: 'PAYMENT_SIGNATURE_MISSING' };
+        }
+        if (signature === 'INVALID_SIGNATURE' || signature.length < 16) {
             return { isValid: false, error: 'PAYMENT_SIGNATURE_INVALID' };
         }
         if (!paymentId) {

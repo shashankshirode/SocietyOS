@@ -13,7 +13,10 @@ export type RequestContext = {
 };
 
 export function createCorrelationId(prefix = 'corr'): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const uuid = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}_${uuid}`;
 }
 
 export function getMockRequestContext(): RequestContext {

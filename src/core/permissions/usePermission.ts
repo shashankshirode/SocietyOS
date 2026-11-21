@@ -15,12 +15,7 @@ export function useCurrentSecurityUser(): MockSecurityUser | Absent {
     const session = React.useSyncExternalStore(subscribeToSession, getCurrentSession, getCurrentSession);
     const activeHome = React.useSyncExternalStore(residentHomeContextStore.subscribe, residentHomeContextStore.getActiveContext, residentHomeContextStore.getActiveContext);
     if (!session) {
-        const activeRole = mapContextRoleToAppRole(activeHome.residentRole);
-        return {
-            ...mockCurrentUser,
-            roles: [activeRole],
-            activeRole,
-        };
+        return absentValue;
     }
     return {
         id: session.userId,

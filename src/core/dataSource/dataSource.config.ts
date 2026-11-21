@@ -6,11 +6,13 @@ function isDataSourceMode(value: string | Absent): value is DataSourceMode {
     return value === 'mock' || value === 'api' || value === 'hybrid';
 }
 const envMode = process.env.EXPO_PUBLIC_DATA_SOURCE_MODE;
+const isProduction = process.env.NODE_ENV === 'production' || envMode === 'api';
+
 export const dataSourceConfig: DataSourceConfig = {
     globalMode: isDataSourceMode(envMode) ? envMode : DEFAULT_DATA_SOURCE_MODE,
     moduleOverrides: moduleDataSourceOverrides,
-    allowApiFallbackToMock: true,
-    enableMockLatency: true,
+    allowApiFallbackToMock: false,
+    enableMockLatency: !isProduction,
     enableMockErrors: false,
 };
 

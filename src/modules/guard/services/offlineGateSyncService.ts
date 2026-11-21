@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getCurrentSession } from '../../../core/auth/sessionStore';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { auditService, createAuditEntry } from '../../../core/audit';
 import type {
@@ -13,6 +15,7 @@ import type {
 import type { OfflineQueueItem, OfflineSyncStatus, ConflictType, ConflictResolution } from '../data/offlineSync.types';
 
 export interface OfflineGateEvent {
+  societyId?: string;
   id: string;
   localId: string;
   idempotencyKey: string;
@@ -87,17 +90,18 @@ class OfflineGateSyncService {
   private lastSyncedAt: string | null = null;
 
   constructor() {
-    this.deviceId = `device_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
-    this.loadFromStorage();
+    const uuid = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+    this.deviceId = `device_${uuid}`;
+    void this.loadFromStorage();
   }
 
-  private loadFromStorage(): void {
+  private async loadFromStorage(): Promise<void> {
     try {
-      const stored = localStorage.getItem('offline_gate_queue');
+      const stored = await AsyncStorage.getItem('offline_gate_queue');
       if (stored) {
         this.queue = JSON.parse(stored);
       }
-      const lastSync = localStorage.getItem('offline_gate_last_synced');
+      const lastSync = await AsyncStorage.getItem('offline_gate_last_synced');
       if (lastSync) {
         this.lastSyncedAt = lastSync;
       }
@@ -106,11 +110,11 @@ class OfflineGateSyncService {
     }
   }
 
-  private saveToStorage(): void {
+  private async saveToStorage(): Promise<void> {
     try {
-      localStorage.setItem('offline_gate_queue', JSON.stringify(this.queue));
+      await AsyncStorage.setItem('offline_gate_queue', JSON.stringify(this.queue));
       if (this.lastSyncedAt) {
-        localStorage.setItem('offline_gate_last_synced', this.lastSyncedAt);
+        await AsyncStorage.setItem('offline_gate_last_synced', this.lastSyncedAt);
       }
     } catch (error) {
       console.error('[OfflineGateSyncService] Failed to save to storage:', error);
@@ -134,8 +138,11 @@ class OfflineGateSyncService {
     >
   ): Promise<string> {
     const now = new Date();
-    const localId = `off_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+    const uuidLocal = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+    const uuidEvt = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+    const localId = `off_${uuidLocal}`;
     const idempotencyKey = createIdempotencyKey(`gate_${event.eventType.toLowerCase()}`);
+    const societyId = event.societyId ?? getCurrentSession()?.societyId ?? 'unknown';
 
     const existingDuplicate = this.queue.find(
       (item) =>
@@ -144,10 +151,10 @@ class OfflineGateSyncService {
     );
 
     if (existingDuplicate) {
-      createAuditEntry({
+      auditService.log(createAuditEntry({
         actorUserId: event.guardId,
         actorType: 'GUARD',
-        societyId: event.visitorPassId ? 'unknown' : 'unknown',
+        societyId,
         action: 'GATE_EVENT_DUPLICATE_PREVENTED',
         entityType: 'GATE_EVENT',
         entityId: existingDuplicate.id,
@@ -155,14 +162,15 @@ class OfflineGateSyncService {
         idempotencyKey,
         source: 'GATE_DEVICE',
         outcome: 'SUCCESS',
-      });
+      }));
       return existingDuplicate.id;
     }
 
     const item: OfflineGateEvent = {
-      id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`,
+      id: `evt_${uuidEvt}`,
       localId,
       ...event,
+      societyId,
       deviceTimestamp: now.toISOString(),
       createdAt: now.toISOString(),
       retryCount: 0,
@@ -172,13 +180,13 @@ class OfflineGateSyncService {
     };
 
     this.queue.push(item);
-    this.saveToStorage();
+    void this.saveToStorage();
     this.notifyListeners(item);
 
-    createAuditEntry({
+    auditService.log(createAuditEntry({
       actorUserId: event.guardId,
       actorType: 'GUARD',
-      societyId: event.visitorPassId ? 'unknown' : 'unknown',
+      societyId,
       action: 'GATE_EVENT_CAPTURE',
       entityType: 'GATE_EVENT',
       entityId: item.id,
@@ -186,7 +194,7 @@ class OfflineGateSyncService {
       idempotencyKey,
       source: 'GATE_DEVICE',
       outcome: 'SUCCESS',
-    });
+    }));
 
     return item.id;
   }

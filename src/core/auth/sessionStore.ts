@@ -1,6 +1,7 @@
 import type { AuthSession, AuthSessionSnapshot } from './authSession.types';
-import { setAccessToken } from './tokenStore';
+import { clearTokens, setAccessToken } from './tokenStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import type { AppRole } from '../permissions/permission.types';
 import { includeWhenPresent } from "../../shared/utils/presentProperty";
 import type { Absent } from "../../shared/types/absence.types";
@@ -63,17 +64,56 @@ export function subscribeToSession(listener: SessionListener): () => void {
         listeners.delete(listener);
     };
 }
+const SECURE_REFRESH_TOKEN_KEY = 'societyos.auth.refreshToken';
+
+async function setSecureRefreshToken(token: string): Promise<void> {
+    try {
+        if (typeof SecureStore.setItemAsync === 'function') {
+            await SecureStore.setItemAsync(SECURE_REFRESH_TOKEN_KEY, token);
+        }
+    } catch {
+        // Fallback
+    }
+}
+
+async function getSecureRefreshToken(): Promise<string | null> {
+    try {
+        if (typeof SecureStore.getItemAsync === 'function') {
+            return await SecureStore.getItemAsync(SECURE_REFRESH_TOKEN_KEY);
+        }
+    } catch {
+        // Fallback
+    }
+    return null;
+}
+
+async function removeSecureRefreshToken(): Promise<void> {
+    try {
+        if (typeof SecureStore.deleteItemAsync === 'function') {
+            await SecureStore.deleteItemAsync(SECURE_REFRESH_TOKEN_KEY);
+        }
+    } catch {
+        // Fallback
+    }
+}
+
 export async function setCurrentSession(session: AuthSession): Promise<void> {
     currentSession = session;
-    await AsyncStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
-    if (session.token) {
-        await setAccessToken(session.token);
+    const { token, refreshToken, ...untrustedMetadata } = session;
+    await AsyncStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(untrustedMetadata));
+    if (token) {
+        await setAccessToken(token);
+    }
+    if (refreshToken) {
+        await setSecureRefreshToken(refreshToken);
     }
     emitSessionChange();
 }
 export async function clearCurrentSession(): Promise<void> {
     currentSession = null;
     await AsyncStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    await removeSecureRefreshToken();
+    await clearTokens();
     emitSessionChange();
 }
 export async function restoreCurrentSession(): Promise<AuthSession | null> {
@@ -89,21 +129,34 @@ export async function restoreCurrentSession(): Promise<AuthSession | null> {
             return null;
         }
         if (restored.expiresAt && Date.parse(restored.expiresAt) <= Date.now()) {
-            await AsyncStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+            await clearCurrentSession();
             return null;
         }
-        currentSession = restored;
-        if (restored.token)
-            await setAccessToken(restored.token);
+        const secureRefreshToken = await getSecureRefreshToken();
+        currentSession = {
+            ...restored,
+            ...(secureRefreshToken ? { refreshToken: secureRefreshToken } : {})
+        };
         emitSessionChange();
-        return restored;
+        return currentSession;
     }
     catch {
         await AsyncStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
         return null;
     }
 }
-export async function clearSensitiveCachedDataPlaceholder(): Promise<void> {
-    return undefined;
+export async function clearSensitiveCachedData(): Promise<void> {
+    await clearCurrentSession();
+    try {
+        await AsyncStorage.multiRemove([
+            AUTH_SESSION_STORAGE_KEY,
+            'api_cache',
+            'offline_gate_queue',
+            'offline_gate_last_synced',
+        ]);
+    } catch {
+        // Fallback
+    }
 }
+export const clearSensitiveCachedDataPlaceholder = clearSensitiveCachedData;
 

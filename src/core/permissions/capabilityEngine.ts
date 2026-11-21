@@ -20,9 +20,6 @@ export function evaluateCapability(context: ActiveContext, action: CapabilityAct
         };
     }
     const { activeRole, unitRelationship, isHouseholdAdmin } = context;
-    if (activeRole === 'SUPER_ADMIN') {
-        return { status: 'ALLOWED' };
-    }
     if (unitRelationship) {
         if (unitRelationship.status !== 'ACTIVE') {
             return {
@@ -67,6 +64,42 @@ export function evaluateCapability(context: ActiveContext, action: CapabilityAct
             }
             return { status: 'DENIED', reason: 'Only security personnel can validate visitor passes at gate.' };
         }
+        case 'GATE_OVERRIDE_EXCEPTION': {
+            if (['SECURITY_SUPERVISOR', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Security Supervisor or Society Admin can override gate exceptions.' };
+        }
+        case 'BILL_VIEW': {
+            if (['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY', 'TREASURER', 'SOCIETY_ADMIN', 'AUDITOR'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Not authorized to view maintenance bills.' };
+        }
+        case 'BILL_PAY': {
+            if (['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only resident accounts can pay maintenance bills.' };
+        }
+        case 'BILL_GENERATE': {
+            if (['TREASURER', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Treasurer or Society Admin can generate bills.' };
+        }
+        case 'LEDGER_ADJUST_MANUAL': {
+            if (['TREASURER', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Treasurer can make ledger adjustments.' };
+        }
+        case 'FACILITY_BOOK_FREE': {
+            if (['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only residents may book facilities.' };
+        }
         case 'FACILITY_BOOK_PAID': {
             if (!['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY', 'SOCIETY_ADMIN'].includes(activeRole)) {
                 return { status: 'DENIED', reason: 'Only residents may book facilities.' };
@@ -79,6 +112,42 @@ export function evaluateCapability(context: ActiveContext, action: CapabilityAct
             }
             return { status: 'ALLOWED' };
         }
+        case 'FACILITY_SET_CLOSURE': {
+            if (['FACILITY_MANAGER', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Facility Manager or Society Admin can set facility closures.' };
+        }
+        case 'COMPLAINT_CREATE': {
+            if (['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only residents can raise complaints.' };
+        }
+        case 'COMPLAINT_ASSIGN': {
+            if (['FACILITY_MANAGER', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Facility Manager or Society Admin can assign complaints.' };
+        }
+        case 'COMPLAINT_RESOLVE': {
+            if (['FACILITY_MANAGER', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Facility Manager or Society Admin can resolve complaints.' };
+        }
+        case 'HOUSEHOLD_INVITE_MEMBER': {
+            if (isHouseholdAdmin) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only household admin can invite household members.' };
+        }
+        case 'HOUSEHOLD_SET_PERMISSIONS': {
+            if (isHouseholdAdmin) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only household admin can manage household permissions.' };
+        }
         case 'SOS_TRIGGER': {
             return { status: 'ALLOWED' };
         }
@@ -88,17 +157,11 @@ export function evaluateCapability(context: ActiveContext, action: CapabilityAct
             }
             return { status: 'DENIED', reason: 'Only authorized emergency responders can acknowledge SOS.' };
         }
-        case 'BILL_PAY': {
-            if (['RESIDENT_OWNER', 'RESIDENT_TENANT', 'RESIDENT_FAMILY'].includes(activeRole)) {
+        case 'SOS_CONFIG_SOCIETY': {
+            if (activeRole === 'SOCIETY_ADMIN') {
                 return { status: 'ALLOWED' };
             }
-            return { status: 'DENIED', reason: 'Only resident accounts can pay maintenance bills.' };
-        }
-        case 'LEDGER_ADJUST_MANUAL': {
-            if (['TREASURER', 'SOCIETY_ADMIN'].includes(activeRole)) {
-                return { status: 'ALLOWED' };
-            }
-            return { status: 'DENIED', reason: 'Only Treasurer can make ledger adjustments.' };
+            return { status: 'DENIED', reason: 'Only Society Admin can configure SOS settings.' };
         }
         case 'NOTICE_PUBLISH': {
             if (['SECRETARY', 'CHAIRPERSON', 'SOCIETY_ADMIN'].includes(activeRole)) {
@@ -106,8 +169,35 @@ export function evaluateCapability(context: ActiveContext, action: CapabilityAct
             }
             return { status: 'DENIED', reason: 'Only Committee Secretary or Society Admin can publish notices.' };
         }
-        default:
+        case 'NOTICE_ACKNOWLEDGE': {
             return { status: 'ALLOWED' };
+        }
+        case 'NOC_REQUEST': {
+            if (['RESIDENT_OWNER', 'RESIDENT_TENANT'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only resident owners or tenants may request NOCs.' };
+        }
+        case 'NOC_APPROVE_CLEARANCE': {
+            if (['COMMITTEE_MEMBER', 'SECRETARY', 'CHAIRPERSON', 'SOCIETY_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only authorized committee members can approve NOC clearances.' };
+        }
+        case 'GOVERNANCE_VOTE': {
+            if (activeRole === 'RESIDENT_OWNER') {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only Resident Owners may vote on society governance matters.' };
+        }
+        case 'AUDIT_LOG_VIEW': {
+            if (['AUDITOR', 'SOCIETY_ADMIN', 'SUPER_ADMIN'].includes(activeRole)) {
+                return { status: 'ALLOWED' };
+            }
+            return { status: 'DENIED', reason: 'Only authorized auditor or admin roles can view audit logs.' };
+        }
+        default:
+            return { status: 'DENIED', reason: 'Capability is not explicitly authorized.' };
     }
 }
 

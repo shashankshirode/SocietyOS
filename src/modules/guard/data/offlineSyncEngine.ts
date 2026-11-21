@@ -1,4 +1,5 @@
 import { OfflineQueueItem, OfflineSyncStatus, ConflictType, ConflictResolution, ConflictStrategy, SyncBatchRequest, SyncBatchResponse, ConflictResolutionRequest, CONFLICT_STRATEGIES, DEFAULT_MAX_RETRIES, SYNC_BATCH_SIZE, CONFLICT_REVIEW_TTL_MS, } from './offlineSync.types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createIdempotencyKey } from '../../../core/api/idempotency';
 import { apiClient } from '../../../core/api/apiClient';
 import { apiEndpoints } from '../../../core/api/apiEndpoints';
@@ -18,17 +19,19 @@ class OfflineSyncEngine {
     private lastSyncedAt: string | null = null;
     private schemaVersion = 1;
     constructor() {
-        this.deviceId = `device_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
-        this.devicePublicKey = `pub_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
-        this.loadFromStorage();
+        const uuid1 = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const uuid2 = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        this.deviceId = `device_${uuid1}`;
+        this.devicePublicKey = `pub_${uuid2}`;
+        void this.loadFromStorage();
     }
-    private loadFromStorage(): void {
+    private async loadFromStorage(): Promise<void> {
         try {
-            const stored = localStorage.getItem('offline_gate_queue');
+            const stored = await AsyncStorage.getItem('offline_gate_queue');
             if (stored) {
                 this.queue = JSON.parse(stored);
             }
-            const lastSync = localStorage.getItem('offline_gate_last_synced');
+            const lastSync = await AsyncStorage.getItem('offline_gate_last_synced');
             if (lastSync) {
                 this.lastSyncedAt = lastSync;
             }
@@ -37,11 +40,11 @@ class OfflineSyncEngine {
             console.error('[OfflineSyncEngine] Failed to load from storage:', error);
         }
     }
-    private saveToStorage(): void {
+    private async saveToStorage(): Promise<void> {
         try {
-            localStorage.setItem('offline_gate_queue', JSON.stringify(this.queue));
+            await AsyncStorage.setItem('offline_gate_queue', JSON.stringify(this.queue));
             if (this.lastSyncedAt) {
-                localStorage.setItem('offline_gate_last_synced', this.lastSyncedAt);
+                await AsyncStorage.setItem('offline_gate_last_synced', this.lastSyncedAt);
             }
         }
         catch (error) {
@@ -50,10 +53,12 @@ class OfflineSyncEngine {
     }
     async captureEntry(entry: Omit<OfflineQueueItem, 'id' | 'clientId' | 'createdAt' | 'createdAtLocal' | 'deviceTimezone' | 'retryCount' | 'maxRetries' | 'syncStatus' | 'idempotencyKey' | 'conflict' | 'errorMessage' | 'syncedAt' | 'serverResponse'>): Promise<string> {
         const now = new Date();
-        const clientId = `entry_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const uuidEntry = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const uuidOff = typeof globalThis.crypto?.randomUUID === 'function' ? globalThis.crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const clientId = `entry_${uuidEntry}`;
         const idempotencyKey = createIdempotencyKey('gate_entry');
         const item: OfflineQueueItem = {
-            id: `off_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`,
+            id: `off_${uuidOff}`,
             clientId,
             ...entry,
             createdAt: now.toISOString(),

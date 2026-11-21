@@ -1,5 +1,6 @@
 import { createRepository } from '../../../../core/dataSource/repositoryFactory';
-import { repositorySuccess } from '../../../../core/repositories/repository.types';
+import { repositoryFailure, repositorySuccess } from '../../../../core/repositories/repository.types';
+import { mockStore } from '../../../../core/mockStore/mockStore';
 import type { Bill, PaymentMethod } from '../../../../shared/types/bill.types';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import { billApiSource } from './billing.apiSource';
@@ -65,13 +66,13 @@ export const billRepository = {
     return repositorySuccess([]);
   },
   async generateMonthlyBills(_params?: GenerateMonthlyBillsInput) {
-    return repositorySuccess({ id: 'cycle-preview-123', status: 'DRAFT' });
+    return repositoryFailure({ code: 'UNSUPPORTED_OPERATION', message: 'Generating monthly bills requires backend ledger authority.' });
   },
   async listDraftBills(_params?: BillingListInput) {
     return repositorySuccess([]);
   },
   async publishBillingCycle(_params?: PublishBillingCycleInput) {
-    return repositorySuccess({ publishedCount: 15 });
+    return repositoryFailure({ code: 'UNSUPPORTED_OPERATION', message: 'Publishing billing cycle requires backend ledger confirmation.' });
   },
   async listResidentBills(context: ResidentRepositoryRequestContext) {
     return billRepository.list(context);
@@ -80,6 +81,11 @@ export const billRepository = {
     return residentRepository.mockPayment(context, params);
   },
   async getReceiptById(id: string) {
+    const bills = mockStore.getState().bills;
+    const bill = bills.find((b) => b.id === id || b.billNumber === id);
+    if (!bill && !id.startsWith('REC-')) {
+      return repositoryFailure({ code: 'NOT_FOUND', message: 'Receipt record not found in ledger.' });
+    }
     return repositorySuccess({ id, receiptNumber: `REC-${id}` });
   },
   async getFlatLedger(context: ResidentRepositoryRequestContext) {
@@ -89,10 +95,10 @@ export const billRepository = {
     return repositorySuccess([]);
   },
   async recordManualPayment(_params?: ManualPaymentInput) {
-    return repositorySuccess({ ok: true });
+    return repositoryFailure({ code: 'UNSUPPORTED_OPERATION', message: 'Manual payment recording requires backend reconciliation.' });
   },
   async createBillingCorrectionRequest(_params?: BillingCorrectionInput) {
-    return repositorySuccess({ ok: true });
+    return repositoryFailure({ code: 'UNSUPPORTED_OPERATION', message: 'Billing correction requires committee treasurer approval.' });
   },
 };
 

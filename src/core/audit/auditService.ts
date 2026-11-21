@@ -41,7 +41,10 @@ class AuditService {
         this.config = { ...this.config, ...config };
     }
     log(entry: Omit<AuditLogEntry, 'id' | 'timestamp'>): string {
-        const id = `audit_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const uuid = typeof globalThis.crypto?.randomUUID === 'function'
+            ? globalThis.crypto.randomUUID()
+            : `${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        const id = `audit_${uuid}`;
         const timestamp = new Date().toISOString();
         const fullEntry: AuditLogEntry = {
             id,
@@ -95,19 +98,15 @@ class AuditService {
         }
     }
     private async persist(entry: AuditLogEntry): Promise<void> {
-        try {
-            await this.client.post('/api/audit/logs', entry);
-        }
-        catch (error) {
-            console.error('[AuditService] Failed to persist audit log:', error);
+        const response = await this.client.post('/api/audit/logs', entry);
+        if (!response.success) {
+            throw new Error(response.error?.message ?? 'Failed to persist audit log');
         }
     }
     private async persistBatch(entries: AuditLogEntry[]): Promise<void> {
-        try {
-            await this.client.post('/api/audit/logs/batch', { entries });
-        }
-        catch (error) {
-            console.error('[AuditService] Failed to persist audit batch:', error);
+        const response = await this.client.post('/api/audit/logs/batch', { entries });
+        if (!response.success) {
+            throw new Error(response.error?.message ?? 'Failed to persist audit batch');
         }
     }
     async query(query: AuditQuery): Promise<AuditLogResult> {

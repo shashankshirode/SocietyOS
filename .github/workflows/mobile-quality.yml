@@ -2,13 +2,24 @@ name: Mobile Quality
 
 on:
   pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - 'contracts/**'
+      - '.github/workflows/mobile-quality.yml'
   push:
     branches:
       - main
+    paths:
+      - 'apps/mobile/**'
+      - 'contracts/**'
+      - '.github/workflows/mobile-quality.yml'
 
 jobs:
   quality:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/mobile
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,15 +29,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
+      - name: TypeScript verification
         run: npm run typecheck
 
-      - name: Lint
+      - name: ESLint verification
         run: npm run lint
 
-      - name: Test
+      - name: Jest test suite
         run: npm run test -- --runInBand --forceExit
+
+      - name: Verify resident routes
+        run: npm run verify:resident-routes

@@ -1,56 +1,74 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
-node_modules/
+# Dependencies
+**/node_modules/
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# Expo / Bundler
+**/.expo/
+**/dist/
+**/web-build/
+**/expo-env.d.ts
 
-# Native
-.kotlin/
+# Native builds & keys
+**/.kotlin/
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+**/ios/
+**/android/
 
 # Metro
 .metro-health-check*
 
-# debug
+# Package managers
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# OS
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-# generated native folders
-/ios
-/android
-
-# Environment files (production secrets)
+# Local environment & secrets
 .env
 .env.*
 !.env.example
+**/apps/mobile/.env
+**/apps/mobile/.env.*
+!**/apps/mobile/.env.example
+**/apps/api/.env
+**/apps/api/.env.*
+!**/apps/api/.env.example
 
-# Generated coverage reports
-coverage/
+# TypeScript
+*.tsbuildinfo
+
+# Coverage & test artifacts
+**/coverage/
 *.lcov
 coverage-final.json
 
-# Build artifacts
-dist/
-build/
-*.tsbuildinfo
+# Backend build targets (Maven / Gradle)
+**/target/
+**/build/
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+**/logs/

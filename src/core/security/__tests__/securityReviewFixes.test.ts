@@ -52,6 +52,16 @@ describe('Security & Engineering Review Fix Verification', () => {
       expect(result.isValid).toBe(false);
       expect(result.error).toBe('PAYMENT_SIGNATURE_INVALID');
     });
+
+    it('FIN-001c: Rejects callback with long well-formed forged signature', async () => {
+      const result = await paymentGatewayService.handleCallback({
+        paymentId: 'pay-123',
+        amount: 500,
+        signature: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      });
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('PAYMENT_SIGNATURE_INVALID');
+    });
   });
 
   describe('SEC-06: Billing Repository Financial Truthfulness', () => {
@@ -72,6 +82,14 @@ describe('Security & Engineering Review Fix Verification', () => {
       expect(res.ok).toBe(false);
       if (!res.ok) {
         expect(res.error.code).toBe('UNSUPPORTED_OPERATION');
+      }
+    });
+
+    it('FIN-002: Rejects non-existent receipt IDs with NOT_FOUND instead of fabricating synthetic REC-*', async () => {
+      const res = await billRepository.getReceiptById('REC-arbitrary-fake-123');
+      expect(res.ok).toBe(false);
+      if (!res.ok) {
+        expect(res.error.code).toBe('NOT_FOUND');
       }
     });
   });

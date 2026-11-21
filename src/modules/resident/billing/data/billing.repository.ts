@@ -2,6 +2,7 @@ import { createRepository } from '../../../../core/dataSource/repositoryFactory'
 import { repositoryFailure, repositorySuccess } from '../../../../core/repositories/repository.types';
 import { mockStore } from '../../../../core/mockStore/mockStore';
 import type { Bill, PaymentMethod } from '../../../../shared/types/bill.types';
+import type { Receipt } from '../../../../shared/types/financial.types';
 import type { ResidentRepositoryRequestContext } from '../../homeContext/data/residentHomeContext.types';
 import { billApiSource } from './billing.apiSource';
 import { billMockSource } from './billing.mockSource';
@@ -81,12 +82,76 @@ export const billRepository = {
     return residentRepository.mockPayment(context, params);
   },
   async getReceiptById(id: string) {
-    const bills = mockStore.getState().bills;
-    const bill = bills.find((b) => b.id === id || b.billNumber === id);
-    if (!bill && !id.startsWith('REC-')) {
+    if (!id || typeof id !== 'string') {
       return repositoryFailure({ code: 'NOT_FOUND', message: 'Receipt record not found in ledger.' });
     }
-    return repositorySuccess({ id, receiptNumber: `REC-${id}` });
+    // 1. Check authoritative receipts in mockStore
+    const receipts = (mockStore.getState().receipts ?? []) as Receipt[];
+    const directReceipt = receipts.find(
+      (r) => r.id === id || r.receiptNumber === id || r.paymentTransactionId === id
+    );
+    if (directReceipt) {
+      return repositorySuccess({
+        id: directReceipt.id,
+        receiptNumber: directReceipt.receiptNumber,
+        paymentTransactionId: directReceipt.paymentTransactionId,
+        invoiceId: directReceipt.invoiceId,
+        unitId: directReceipt.unitId,
+        payerName: directReceipt.payerName,
+        amount: directReceipt.amount,
+        currency: directReceipt.currency,
+        paymentMode: directReceipt.paymentMode,
+        paymentDate: directReceipt.paymentDate,
+        paymentReference: directReceipt.paymentReference,
+        status: directReceipt.status,
+        generatedAt: directReceipt.generatedAt,
+      });
+    }
+
+    // 2. Check recorded payments on bills
+    const bills = mockStore.getState().bills ?? [];
+    for (const b of bills) {
+      const matchPayment = (b.payments ?? []).find(
+        (p) => p.receiptNumber === id || p.transactionId === id || p.id === id
+      );
+      if (matchPayment && matchPayment.receiptNumber) {
+        return repositorySuccess({
+          id: matchPayment.receiptNumber,
+          receiptNumber: matchPayment.receiptNumber,
+          paymentTransactionId: matchPayment.transactionId ?? '',
+          invoiceId: b.id,
+          unitId: b.unitId,
+          payerName: 'Resident',
+          amount: matchPayment.amountPaid,
+          currency: 'INR',
+          paymentMode: matchPayment.paymentMethod,
+          paymentDate: matchPayment.paymentDate,
+          paymentReference: matchPayment.transactionId ?? '',
+          status: 'GENERATED',
+          generatedAt: matchPayment.paymentDate,
+        });
+      }
+      if (b.receiptNumber === id) {
+        return repositorySuccess({
+          id: b.receiptNumber,
+          receiptNumber: b.receiptNumber,
+          paymentTransactionId: b.transactionId ?? '',
+          invoiceId: b.id,
+          unitId: b.unitId,
+          payerName: 'Resident',
+          amount: b.paidAmount ?? b.amount,
+          currency: 'INR',
+          paymentMode: 'UPI',
+          paymentDate: b.paidDate ?? new Date().toISOString(),
+          paymentReference: b.transactionId ?? '',
+          status: 'GENERATED',
+          generatedAt: b.paidDate ?? new Date().toISOString(),
+        });
+      }
+    }
+
+    // Fail closed: Never manufacture synthetic REC-* without an authoritative record
+    return repositoryFailure({ code: 'NOT_FOUND', message: 'Receipt record not found in ledger.' });
   },
   async getFlatLedger(context: ResidentRepositoryRequestContext) {
     return residentRepository.getLedgerEntriesPage(context, { cursor: null, pageSize: 50 });

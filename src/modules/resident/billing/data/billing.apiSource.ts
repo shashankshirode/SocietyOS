@@ -1,6 +1,7 @@
 import { apiClient } from '../../../../core/api/apiClient';
 import { apiEndpoints } from '../../../../core/api/apiEndpoints';
 import { createIdempotencyKey } from '../../../../core/api/idempotency';
+import { runtimePolicy } from '../../../../core/config/runtimePolicy';
 import { repositoryErrorFromUnknown, repositoryFailure, repositorySuccess, type RepositoryResult, } from '../../../../core/repositories/repository.types';
 import type { Bill } from '../../../../shared/types/bill.types';
 import type { BillDto, MockPaymentConfirmation, ResidentBillListPageDto } from './bill.dto';
@@ -83,6 +84,12 @@ const residentBillingApiRepository: ResidentBillingRepository = {
         }
     },
     async mockPayment(context, input) {
+        if (runtimePolicy.isProduction()) {
+            return repositoryFailure({
+                code: 'UNSUPPORTED_OPERATION',
+                message: 'Mock payment is strictly prohibited in production mode. Real payments require server-mediated gateway order creation.',
+            });
+        }
         try {
             const raw = await apiClient.post<unknown>(apiEndpoints.billing.residentMockPayment, input, {
                 context: requestContext(context),

@@ -91,11 +91,11 @@ export class FacilityQrCheckInService {
       return { success: false, errorCode: 'INVALID_STATUS', errorMessage: 'Booking is not in a check-in eligible state.' };
     }
 
-    if (booking.checkInStatus === 'CHECKED_IN' || booking.checkInStatus === 'IN_USE') {
+    if (booking.status === 'CHECKED_IN' || booking.status === 'IN_USE') {
       return { success: false, errorCode: 'ALREADY_CHECKED_IN', errorMessage: 'Already checked in.' };
     }
 
-    if (booking.checkInStatus === 'EXPIRED' || booking.checkInStatus === 'CANCELLED') {
+    if (booking.status === 'EXPIRED' || booking.status === 'CANCELLED_BY_RESIDENT' || booking.status === 'CANCELLED_BY_SOCIETY') {
       return { success: false, errorCode: 'INVALID_STATUS', errorMessage: 'Check-in not available for this booking.' };
     }
 

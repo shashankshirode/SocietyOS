@@ -34,10 +34,10 @@ export function PendingApprovalsScreen({ navigation }: {
         return approvals.filter((item) => {
             const matchesCategory =
                 selectedCategory === 'ALL' ||
-                (selectedCategory === 'RESIDENTS' && (item.type === 'TENANT_ONBOARDING' || item.type === 'MOVE_OUT' || item.type === 'STAFF_PASS')) ||
-                (selectedCategory === 'NOCS' && (item.type === 'RENOVATION' || item.summary.toLowerCase().includes('noc'))) ||
-                (selectedCategory === 'FACILITIES' && item.type === 'AMENITY_SPECIAL') ||
-                (selectedCategory === 'VEHICLES' && item.type === 'VEHICLE_ADDITION');
+                (selectedCategory === 'RESIDENTS' && (item.type === 'TENANT_ONBOARDING' || item.type === 'MOVE_OUT' || item.type === 'MOVE_IN')) ||
+                (selectedCategory === 'NOCS' && (item.type === 'NOC' || item.summary.toLowerCase().includes('noc'))) ||
+                (selectedCategory === 'FACILITIES' && item.type === 'FACILITY_BOOKING') ||
+                (selectedCategory === 'VEHICLES' && item.type === 'DOCUMENT_VERIFICATION');
 
             if (!matchesCategory) {
                 return false;

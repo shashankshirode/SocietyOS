@@ -109,16 +109,17 @@ export class LocalFallbackProvider implements AiProviderPort {
       .sort((a, b) => b[1] - a[1])
       .filter(([, score]) => score > 0);
 
-    const primaryCategory = sortedCategories.length > 0 ? (sortedCategories[0][0] as string) : 'OTHER';
+    const firstCategory = sortedCategories[0];
+    const primaryCategory = firstCategory ? (firstCategory[0] as string) : 'OTHER';
     const confidence = Math.min(0.5 + (scores[primaryCategory] ?? 0) * 0.15, 0.95);
 
     const classifications: AiClassificationCandidate[] = sortedCategories.slice(0, 3).map(([category, score]) => ({
       category,
       confidence: Math.min(0.3 + score * 0.1, 0.9),
-      reasoning: `Keywords matched: ${this.categoryKeywords[category].filter(k => text.includes(k.toLowerCase())).join(', ')}`,
+      reasoning: `Keywords matched: ${this.categoryKeywords[category]?.filter(k => text.includes(k.toLowerCase())).join(', ') ?? ''}`,
       suggestedPriority: this.priorityRules[category] || 'NORMAL',
       suggestedSlaHours: this.slaHours[category] || 24,
-      tags: this.categoryKeywords[category].filter(k => text.includes(k.toLowerCase())),
+      tags: this.categoryKeywords[category]?.filter(k => text.includes(k.toLowerCase())) ?? [],
       evidenceReferences: [],
       warnings: [],
     }));

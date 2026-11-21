@@ -311,7 +311,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>{localizedUiText.m_225e2abb60c4}</AppText>
-              <AppText variant="body" style={styles.infoValue}>{formatDate(request.requestedExitDate)}</AppText>
+              <AppText variant="body" style={styles.infoValue}>{formatDate(request.requestedExitDate || '')}</AppText>
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>{localizedUiText.m_5704b7c3727f}</AppText>
@@ -343,7 +343,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             </View>
             <View style={styles.infoItem}>
               <AppText variant="caption" style={styles.infoLabel}>Requested</AppText>
-              <AppText variant="body" style={styles.infoValue}>{formatDateTime(request.requestedAt)}</AppText>
+              <AppText variant="body" style={styles.infoValue}>{formatDateTime(request.requestedAt || '')}</AppText>
             </View>
             {request.approvedAt && (
               <View style={styles.infoItem}>
@@ -549,6 +549,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             <AppText variant="h3" style={styles.modalTitle}>Reject Move-Out Request</AppText>
             <AppText variant="body" style={styles.modalText}>Please provide a reason for rejection.</AppText>
             <AppTextArea
+              label="Rejection Reason"
               value={rejectReason}
               onChangeText={setRejectReason}
               placeholder="Enter rejection reason..."
@@ -578,6 +579,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             <AppText variant="h3" style={styles.modalTitle}>Cancel Move-Out Request</AppText>
             <AppText variant="body" style={styles.modalText}>Please provide a reason for cancellation.</AppText>
             <AppTextArea
+              label="Cancellation Reason"
               value={cancelReason}
               onChangeText={setCancelReason}
               placeholder="Enter cancellation reason..."
@@ -607,6 +609,7 @@ export function MoveOutDetailScreen({ route, navigation }: MoveOutDetailScreenPr
             <AppText variant="h3" style={styles.modalTitle}>Override Clearance</AppText>
             <AppText variant="body" style={styles.modalText}>Override <strong>{overrideItem.title}</strong>. Please provide a reason.</AppText>
             <AppTextArea
+              label="Override Reason"
               value={overrideReason}
               onChangeText={setOverrideReason}
               placeholder="Enter override reason..."

@@ -188,7 +188,7 @@ export const adminMockSource = {
         requestedByRole: n.applicantType || 'OWNER',
         unitNumber: n.unitNumber || 'A-1204',
         wing: 'Main Wing',
-        ...(n.createdAt ? { createdAt: n.createdAt } : {}),
+        createdAt: n.createdAt || new Date().toISOString(),
         priority: 'HIGH',
         status: 'PENDING',
         summary: `${n.category} NOC application for ${n.purpose || 'Society Clearance'}`,
@@ -200,13 +200,13 @@ export const adminMockSource = {
       .facilityBookings.filter((b) => b.status === 'PENDING')
       .map((b) => ({
         id: b.id,
-        approvalNumber: `BK-${b.id.slice(-4)}`,
+        approvalNumber: b.bookingNumber || `BK-${b.id.slice(-4)}`,
         type: 'FACILITY_BOOKING',
-        requestedBy: b.bookedBy || 'Resident',
+        requestedBy: b.residentName || 'Resident',
         requestedByRole: 'RESIDENT',
-        unitNumber: b.unitNumber || 'Unit A-1204',
+        unitNumber: b.flatNumber || 'Unit A-1204',
         wing: 'Tower A',
-        createdAt: b.createdAt || new Date().toISOString(),
+        createdAt: b.date || new Date().toISOString(),
         priority: 'MEDIUM',
         status: 'PENDING',
         summary: `Amenity reservation request for ${b.facilityName || 'Clubhouse'}`,
@@ -257,7 +257,7 @@ export const adminMockSource = {
     const vehicle = mockStore.getState().vehicles.find((v) => v.id === approvalId);
     if (vehicle) {
       mockStore.updateVehicle(approvalId, {
-        status: 'ACTIVE',
+        verificationStatus: 'VERIFIED',
       });
     }
 
@@ -332,7 +332,7 @@ export const adminMockSource = {
     const vehicle = mockStore.getState().vehicles.find((v) => v.id === approvalId);
     if (vehicle) {
       mockStore.updateVehicle(approvalId, {
-        status: 'REJECTED',
+        verificationStatus: 'REJECTED',
       });
     }
 

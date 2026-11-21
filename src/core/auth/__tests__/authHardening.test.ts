@@ -225,16 +225,14 @@ describe('Phase 1A: Auth Hardening & Demo/Production Boundaries', () => {
     it('web production strictly refuses to store refresh tokens in browser storage', async () => {
       const originalOS = Platform.OS;
       try {
-        // @ts-expect-error override readonly for test
-        Platform.OS = 'web';
+        (Platform as { OS: string }).OS = 'web';
         runtimePolicy.setEnvironmentOverride('production');
 
         const result = await secureStorage.setItem('test-key', 'secret-token');
         expect(result.success).toBe(false);
         expect(result.error).toContain('PERSISTENCE_NOT_SUPPORTED_ON_WEB_PRODUCTION');
       } finally {
-        // @ts-expect-error restore
-        Platform.OS = originalOS;
+        (Platform as { OS: string }).OS = originalOS;
       }
     });
 

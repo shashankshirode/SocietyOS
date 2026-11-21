@@ -232,7 +232,7 @@ describe('Facility Booking State Machine', () => {
       const result = createTransition(
         'CONFIRMED',
         'DRAFT',
-        'View',
+        FacilityBookingAction.View,
         'user-123',
       );
 

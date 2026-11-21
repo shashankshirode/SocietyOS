@@ -78,8 +78,14 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
       const res = await paymentGatewayService.createPayment({
         invoiceId: 'inv-phase1b-001',
         amount: 5000,
+        currency: 'INR',
         paymentMode: 'UPI',
         payerName: 'Resident',
+        payerPhone: '9876543210',
+        unitId: 'unit-101',
+        unitNumber: 'A-101',
+        description: 'Test payment',
+        callbackUrl: 'https://societyos.app/callback',
         idempotencyKey: 'idemp-prod-1',
       });
       expect(res.success).toBe(false);
@@ -97,6 +103,7 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
         paymentTransactionId: 'txn-123',
         amount: 1000,
         reason: 'Duplicate payment',
+        idempotencyKey: 'idemp-refund-prod-1',
       });
       expect(res.success).toBe(false);
       expect(res.error).toContain('BACKEND_REQUIRED');
@@ -129,6 +136,7 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
             paymentMode: 'CASH',
             paymentDate: '2026-11-21',
             referenceNumber: 'REF123',
+            confirmationChecked: true,
           },
           'Treasurer',
           societyId
@@ -198,8 +206,14 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
       const res = await paymentGatewayService.createPayment({
         invoiceId: 'inv-phase1b-001',
         amount: 5000,
+        currency: 'INR',
         paymentMode: 'UPI',
         payerName: 'Resident',
+        payerPhone: '9876543210',
+        unitId: 'unit-101',
+        unitNumber: 'A-101',
+        description: 'Test payment',
+        callbackUrl: 'https://societyos.app/callback',
         idempotencyKey: 'idemp-rzp-1',
       });
       expect(res.success).toBe(false);
@@ -228,7 +242,11 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
         currency: 'INR',
         paymentMode: 'UPI',
         payerName: 'Resident',
+        payerPhone: '9876543210',
         unitId,
+        unitNumber: 'A-101',
+        description: 'Test payment',
+        callbackUrl: 'https://societyos.app/callback',
         idempotencyKey: 'idemp-attempt-phase1b',
       });
       attemptId = attemptResp.paymentId!;
@@ -429,6 +447,7 @@ describe('Phase 1B: Payments & Financial Truthfulness Hardening', () => {
         paymentTransactionId: settled.paymentId!,
         amount: 5000,
         reason: 'Refunded by admin',
+        idempotencyKey: 'idemp-refund-post-1',
       });
 
       // Attempt callback after refund

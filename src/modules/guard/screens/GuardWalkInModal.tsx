@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, TextInput, ActivityIndicator, Alert, } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, TextInput, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { FONT_FAMILY_INTER, FONT_FAMILY_INTER_MEDIUM, FONT_FAMILY_INTER_BOLD, FONT_FAMILY_SERIF, } from '../../../shared/theme/typography';
 import { visitorPassService } from '../services/visitorPassService';
@@ -85,12 +85,15 @@ export function GuardWalkInModal({ visible, onClose, onEntryAdmitted, }: GuardWa
     if (!visible)
         return null;
     return (<Modal visible={visible} transparent animationType="slide">
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.overlay}>
+        <View style={styles.overlay}>
         <View style={styles.sheetContainer}>
           <View style={styles.pill}/>
 
           
-          {state === 'FORM' && (<View style={styles.contentWrap}>
+          {state === 'FORM' && (
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              <View style={styles.contentWrap}>
               <Text style={styles.title}>Walk-in Visitor Registration</Text>
               <Text style={styles.sub}>
                 Record unannounced visitor details and request instant resident approval.
@@ -149,7 +152,9 @@ export function GuardWalkInModal({ visible, onClose, onEntryAdmitted, }: GuardWa
                   </Text>
                 </Pressable>
               </View>
-            </View>)}
+            </View>
+            </ScrollView>
+          )}
 
           
           {state === 'WAITING' && (<View style={styles.centerWrap}>
@@ -199,6 +204,7 @@ export function GuardWalkInModal({ visible, onClose, onEntryAdmitted, }: GuardWa
             </View>)}
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>);
 }
 const styles = StyleSheet.create({

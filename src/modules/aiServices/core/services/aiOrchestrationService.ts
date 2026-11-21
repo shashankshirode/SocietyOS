@@ -273,7 +273,7 @@ export const aiOrchestrationService = {
 
   selectModelForCapability(capability: string): any {
     const availableModels = Array.from(models.values()).filter(m =>
-      m.enabled && m.capabilities.includes(capability) && new Date(m.effectiveFrom) <= new Date()
+      m.enabled && m.capabilities.includes(capability as AiCapability) && new Date(m.effectiveFrom) <= new Date()
     );
     if (availableModels.length === 0) return null;
     return availableModels.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];

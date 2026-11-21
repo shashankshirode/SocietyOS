@@ -108,7 +108,7 @@ export function FacilityFoundationScreen({ route, navigation }: Props) {
                 operatingHours: { start: operatingHoursStart, end: operatingHoursEnd },
                 createdAt: new Date().toISOString(),
             };
-            const updatedFacilities = [...(society.facilities || []), newFacility];
+            const updatedFacilities = [...(society?.facilities || []), newFacility];
             await SocietyService.updateSociety({ id: societyId!, facilities: updatedFacilities });
             setFacilities(updatedFacilities);
             setShowCreateForm(false);
@@ -147,7 +147,7 @@ export function FacilityFoundationScreen({ route, navigation }: Props) {
                     onPress: async () => {
                         try {
                             const society = await SocietyService.getSociety(societyId!);
-                            const updatedFacilities = (society.facilities || []).filter((f: any) => f.id !== facilityId);
+                            const updatedFacilities = (society?.facilities || []).filter((f: any) => f.id !== facilityId);
                             await SocietyService.updateSociety({ id: societyId!, facilities: updatedFacilities });
                             setFacilities(updatedFacilities);
                             Alert.alert('Success', 'Facility deleted');
@@ -245,11 +245,11 @@ export function FacilityFoundationScreen({ route, navigation }: Props) {
                             <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
                                 <AppCard style={{ flex: 1, padding: 12 }}>
                                     <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Operating Hours Start</Text>
-                                    <FormField value={operatingHoursStart} onChangeText={setOperatingHoursStart} placeholder="06:00" />
+                                    <FormField label="Operating Hours Start" value={operatingHoursStart} onChangeText={setOperatingHoursStart} placeholder="06:00" />
                                 </AppCard>
                                 <AppCard style={{ flex: 1, padding: 12 }}>
                                     <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Operating Hours End</Text>
-                                    <FormField value={operatingHoursEnd} onChangeText={setOperatingHoursEnd} placeholder="22:00" />
+                                    <FormField label="Operating Hours End" value={operatingHoursEnd} onChangeText={setOperatingHoursEnd} placeholder="22:00" />
                                 </AppCard>
                             </View>
                             <View style={{ marginTop: 12 }}>

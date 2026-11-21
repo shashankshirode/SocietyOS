@@ -1187,7 +1187,7 @@ export function useVaultRetention() {
         authenticatedAt: new Date().toISOString(),
       };
 
-      const result = service.retention.applyDisposition(actor, document, input.assessment, input.requestedDisposition);
+      const result = await service.retention.applyDisposition(actor, document, input.assessment, input.requestedDisposition);
       if (!result.ok) throw new Error(result.message);
       return result.value;
     } catch (e) {
@@ -1222,7 +1222,7 @@ export function useVaultRetention() {
         authenticatedAt: new Date().toISOString(),
       };
 
-      const result = service.retention.processRetentionJob(actor, document, input.policyId, input.policyVersion, input.retainUntil, input.erasureRequest, input.idempotencyKey);
+      const result = await service.retention.processRetentionJob(actor, document, input.policyId, input.policyVersion, input.retainUntil, input.erasureRequest, input.idempotencyKey);
       if (!result.ok) throw new Error(result.message);
       return result.value;
     } catch (e) {

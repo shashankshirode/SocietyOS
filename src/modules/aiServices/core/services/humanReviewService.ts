@@ -30,7 +30,7 @@ export const humanReviewService = {
       id: generateId(),
       requestId: command.requestId,
       responseId: command.responseId,
-      capability: command.capability ?? 'COMPLAINT_TRIAGE',
+      capability: command.capability ?? 'COMPLAINT_CLASSIFICATION',
       reviewerId: command.reviewerId,
       reviewerRole: command.reviewerRole,
       reviewedAt: getNow(),

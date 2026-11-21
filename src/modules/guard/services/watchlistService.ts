@@ -70,7 +70,7 @@ export const watchlistService = {
           societyId,
         };
 
-        mockStore.getState().watchlistEntries?.push(entry);
+        mockStore.getState().watchlistEntries?.push(entry as any);
         mockStore.notify();
 
         createAuditEntry({
@@ -102,7 +102,10 @@ export const watchlistService = {
         }
 
         const updated = { ...entries[index], ...updates };
-        mockStore.getState().watchlistEntries[index] = updated;
+        const entryList = mockStore.getState().watchlistEntries;
+        if (entryList && entryList[index]) {
+          entryList[index] = updated;
+        }
         mockStore.notify();
         resolve(updated);
       }, 400);
@@ -129,13 +132,16 @@ export const watchlistService = {
           statusChangedAtIso: now,
         };
 
-        mockStore.getState().watchlistEntries[index] = updated;
+        const entryList = mockStore.getState().watchlistEntries;
+        if (entryList && entryList[index]) {
+          entryList[index] = updated as any;
+        }
         mockStore.notify();
 
         createAuditEntry({
           actorUserId: revokedBy,
-          actorType: 'SECURITY_SUPERVISOR',
-          societyId: updated.societyId,
+          actorType: 'GUARD',
+          societyId: updated.societyId ?? '',
           action: 'WATCHLIST_ENTRY_REVOKED',
           entityType: 'WATCHLIST_ENTRY',
           entityId: entryId,
@@ -151,7 +157,7 @@ export const watchlistService = {
     });
   },
 
-  async checkWatchlist(visitorPhone: string, visitorId?: string, societyId: string): Promise<{
+  async checkWatchlist(visitorPhone: string, visitorId: string | undefined, societyId: string): Promise<{
     match: boolean;
     entry?: any;
     autoDeny: boolean;

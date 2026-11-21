@@ -1,5 +1,5 @@
 import type { Absent } from '../../../../../shared/types/absence.types';
-import type {
+import {
   FacilityBookingStatus,
   FacilityBookingAction,
 } from '../../models/facilityBooking.enums';
@@ -28,17 +28,17 @@ const TRANSITIONS: Readonly<Record<FacilityBookingStatus, readonly FacilityBooki
 };
 
 const ACTION_TO_TRANSITION: Readonly<Record<FacilityBookingAction, readonly FacilityBookingStatus[]>> = {
-  Continue: ['DRAFT', 'SLOT_HELD'],
-  View: [],
-  Pay: ['CONFIRMED'],
-  Reschedule: ['CONFIRMED'],
-  Cancel: ['CANCELLED_BY_RESIDENT', 'CANCELLED_BY_SOCIETY'],
-  CheckIn: ['CHECKED_IN'],
-  ViewQr: [],
-  JoinWaitlist: ['WAITLISTED'],
-  LeaveWaitlist: ['WAITLISTED'],
-  BookAgain: ['DRAFT'],
-  AddToCalendar: [],
+  [FacilityBookingAction.Continue]: ['DRAFT', 'SLOT_HELD'],
+  [FacilityBookingAction.View]: [],
+  [FacilityBookingAction.Pay]: ['CONFIRMED'],
+  [FacilityBookingAction.Reschedule]: ['CONFIRMED'],
+  [FacilityBookingAction.Cancel]: ['CANCELLED_BY_RESIDENT', 'CANCELLED_BY_SOCIETY'],
+  [FacilityBookingAction.CheckIn]: ['CHECKED_IN'],
+  [FacilityBookingAction.ViewQr]: [],
+  [FacilityBookingAction.JoinWaitlist]: ['WAITLISTED'],
+  [FacilityBookingAction.LeaveWaitlist]: ['WAITLISTED'],
+  [FacilityBookingAction.BookAgain]: ['DRAFT'],
+  [FacilityBookingAction.AddToCalendar]: [],
 };
 
 export function canTransition(
@@ -109,8 +109,9 @@ export function transition(
   const allowedTargets = ACTION_TO_TRANSITION[action] ?? [];
   const validTransitions = TRANSITIONS[currentStatus] ?? [];
   const intersection = validTransitions.filter((s) => allowedTargets.includes(s));
-  if (intersection.length > 0) {
-    return intersection[0];
+  const first = intersection[0];
+  if (first) {
+    return first;
   }
   return currentStatus;
 }
@@ -121,7 +122,7 @@ export interface StateTransition {
   action: FacilityBookingAction;
   timestamp: string;
   actorId: string;
-  reason?: string;
+  reason?: string | undefined;
 }
 
 export function createTransition(
@@ -141,6 +142,6 @@ export function createTransition(
     action,
     timestamp: new Date().toISOString(),
     actorId,
-    reason,
+    ...(reason !== undefined ? { reason } : {}),
   };
 }

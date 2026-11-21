@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, KeyboardAvoidingView, Modal, Pressable, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
+import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme } from "../../shared/theme/useAppTheme";
 import { modalTokens } from "./modalTokens";
@@ -103,7 +103,7 @@ export function AppModal({ visible, onClose, onDismiss, children, centered = fal
         outputRange: [0.98, 1],
     });
     return (<Modal visible transparent animationType="none" onRequestClose={requestClose} statusBarTranslucent testID={testID}>
-      <KeyboardAvoidingView behavior={keyboardConfig.behavior} keyboardVerticalOffset={keyboardConfig.keyboardVerticalOffset} style={styles.flex}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? keyboardConfig.keyboardVerticalOffset : 0} style={styles.flex}>
         <Animated.View style={[
             styles.overlay,
             createAnimatedViewBackgroundColorOpacityStyle(colors.overlay, backdropOpacity),

@@ -369,7 +369,8 @@ export const staffAttendanceApiSource = {
             success: boolean;
         }>(apiEndpoints.staffAttendance.resolveDuplicatePunch(duplicateId), {
             action: input.action,
-            notes: input.notes
+            ...includeWhenPresent("resolutionNote", input.resolutionNote),
+            ...includeWhenPresent("resolvedBy", input.resolvedBy),
         });
     },
     getMissingCheckout: async (params?: Record<string, string>): Promise<MissingCheckoutRecord[]> => {

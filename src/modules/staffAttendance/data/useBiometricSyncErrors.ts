@@ -23,7 +23,7 @@ export function useBiometricSyncErrors(syncJobId: string) {
 
   const resolve = async (errorId: string, note: string) => {
     try {
-      await staffAttendanceRepository.resolveSyncError(errorId, { resolutionNote: note, action: 'RESOLVE' });
+      await staffAttendanceRepository.resolveSyncError(errorId, { resolutionNote: note, action: 'RESOLVE', resolvedBy: 'admin' });
       void fetch();
     } catch (e) {
       throw e instanceof Error ? e : new Error('Failed to resolve error');
@@ -32,7 +32,7 @@ export function useBiometricSyncErrors(syncJobId: string) {
 
   const ignore = async (errorId: string, note: string) => {
     try {
-      await staffAttendanceRepository.ignoreSyncError(errorId, { resolutionNote: note, action: 'IGNORE' });
+      await staffAttendanceRepository.ignoreSyncError(errorId, { resolutionNote: note, action: 'IGNORE', resolvedBy: 'admin' });
       void fetch();
     } catch (e) {
       throw e instanceof Error ? e : new Error('Failed to ignore error');

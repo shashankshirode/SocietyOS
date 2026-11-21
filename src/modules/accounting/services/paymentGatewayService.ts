@@ -212,7 +212,7 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
             if (
                 alreadySettled.status === 'REFUNDED' ||
                 alreadySettled.status === 'PARTIALLY_REFUNDED' ||
-                refunds.some((r) => r.originalPaymentTransactionId === alreadySettled.id || r.paymentTransactionId === alreadySettled.id)
+                refunds.some((r) => r.originalPaymentTransactionId === alreadySettled.id)
             ) {
                 return { isValid: false, error: 'PAYMENT_ALREADY_REFUNDED' };
             }

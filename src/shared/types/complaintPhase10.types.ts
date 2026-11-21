@@ -678,6 +678,7 @@ export const COMPLAINT_STATUS_TRANSITIONS: Record<ComplaintStatus, ComplaintStat
 };
 
 export const COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
+  OPEN: 'Open',
   CREATED: 'Created',
   CLASSIFIED: 'Classified',
   PENDING_ASSIGNMENT: 'Pending Assignment',
@@ -685,6 +686,7 @@ export const COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
   ACKNOWLEDGED: 'Acknowledged',
   IN_PROGRESS: 'In Progress',
   WAITING: 'Waiting',
+  WAITING_FOR_RESIDENT: 'Waiting for Resident',
   HOLD: 'On Hold',
   RESOLVED: 'Resolved',
   CONFIRMED: 'Confirmed',
@@ -786,6 +788,7 @@ export function isComplaintStatusResolvable(status: ComplaintStatus): boolean {
 
 export function getComplaintStatusOrder(status: ComplaintStatus): number {
   const order: Record<ComplaintStatus, number> = {
+    OPEN: 1,
     CREATED: 1,
     CLASSIFIED: 2,
     PENDING_ASSIGNMENT: 3,
@@ -793,6 +796,7 @@ export function getComplaintStatusOrder(status: ComplaintStatus): number {
     ACKNOWLEDGED: 5,
     IN_PROGRESS: 6,
     WAITING: 7,
+    WAITING_FOR_RESIDENT: 7,
     HOLD: 8,
     RESOLVED: 9,
     CONFIRMED: 10,

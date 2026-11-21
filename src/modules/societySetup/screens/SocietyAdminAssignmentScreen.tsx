@@ -77,7 +77,7 @@ export function SocietyAdminAssignmentScreen({ route, navigation }: Props) {
                 status: 'PENDING_INVITE',
                 invitedAt: new Date().toISOString(),
             };
-            const updatedAdmins = [...(society.admins || []), newAdmin];
+            const updatedAdmins = [...(society?.admins || []), newAdmin];
             await SocietyService.updateSociety({ id: societyId!, admins: updatedAdmins });
             setAdmins(updatedAdmins);
             setShowInviteForm(false);

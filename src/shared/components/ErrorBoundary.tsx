@@ -26,7 +26,7 @@ function DefaultErrorFallback({
   onReset,
 }: {
   error: Error | null;
-  diagnosticId?: string;
+  diagnosticId?: string | undefined;
   onReset: () => void;
 }) {
   return (

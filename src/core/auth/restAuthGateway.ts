@@ -10,25 +10,19 @@ import type {
 import { apiClient } from '../api/apiClient';
 import { apiEndpoints } from '../api/apiEndpoints';
 import { createIdempotencyKey } from '../api/idempotency';
+import type { JsonObject } from '../api/api.types';
 
 export class RestAuthGateway implements AuthGateway {
   public async requestOtp(req: AuthOtpRequest): Promise<AuthOtpRequestResult> {
     try {
       const response = await apiClient.post<AuthOtpRequestResult>(
         apiEndpoints.auth.requestOtp,
-        req,
+        req as unknown as JsonObject,
         {
           idempotencyKey: createIdempotencyKey(`otp-req-${req.mobileNumber}`),
         }
       );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return {
-        success: false,
-        error: response.error?.message ?? 'Failed to request OTP from authentication server.',
-        errorCode: response.error?.code ?? 'BACKEND_UNAVAILABLE',
-      };
+      return response;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Authentication service is unreachable.';
       return {
@@ -43,19 +37,12 @@ export class RestAuthGateway implements AuthGateway {
     try {
       const response = await apiClient.post<AuthVerificationResult>(
         apiEndpoints.auth.verifyOtp,
-        req,
+        req as unknown as JsonObject,
         {
           idempotencyKey: createIdempotencyKey(`otp-verify-${req.mobileNumber}-${Date.now()}`),
         }
       );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return {
-        success: false,
-        error: response.error?.message ?? 'Failed to verify OTP with authentication server.',
-        errorCode: response.error?.code ?? 'BACKEND_UNAVAILABLE',
-      };
+      return response;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Authentication service is unreachable.';
       return {
@@ -69,20 +56,13 @@ export class RestAuthGateway implements AuthGateway {
   public async refreshSession(refreshToken: string): Promise<RefreshSessionResult> {
     try {
       const response = await apiClient.post<RefreshSessionResult>(
-        apiEndpoints.auth.refreshSession,
-        { refreshToken },
+        apiEndpoints.auth.refreshToken,
+        { refreshToken } as JsonObject,
         {
           idempotencyKey: createIdempotencyKey(`session-refresh-${Date.now()}`),
         }
       );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return {
-        success: false,
-        error: response.error?.message ?? 'Failed to refresh authentication session.',
-        errorCode: response.error?.code ?? 'SESSION_REFRESH_FAILED',
-      };
+      return response;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Session refresh service is unreachable.';
       return {
@@ -98,14 +78,7 @@ export class RestAuthGateway implements AuthGateway {
       const response = await apiClient.get<CurrentIdentityResult>(
         apiEndpoints.auth.me
       );
-      if (response.success && response.data) {
-        return response.data;
-      }
-      return {
-        success: false,
-        error: response.error?.message ?? 'Failed to fetch authoritative user identity.',
-        errorCode: response.error?.code ?? 'IDENTITY_LOOKUP_FAILED',
-      };
+      return response;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Identity service is unreachable.';
       return {

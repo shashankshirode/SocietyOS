@@ -6,6 +6,8 @@ import {
   ScrollView,
   TextInput,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -113,10 +115,16 @@ export function CreateComplaintScreen({
         onBackPress={() => navigation.goBack()}
       />
 
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, createScrollPadding(insets.bottom)]}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, createScrollPadding(insets.bottom)]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        >
         <Text style={styles.sectionTitle}>Category</Text>
         <View style={styles.categoryGrid}>
           {CATEGORIES.map((cat) => {
@@ -318,7 +326,8 @@ export function CreateComplaintScreen({
             {isSubmitting ? 'Submitting...' : 'Submit Complaint'}
           </Text>
         </Pressable>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }

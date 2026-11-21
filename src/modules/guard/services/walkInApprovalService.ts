@@ -273,7 +273,7 @@ export class WalkInApprovalService {
       createAuditEntry({
         actorUserId: input.residentId,
         actorType: 'RESIDENT',
-        societyId: request.societyId,
+        societyId: request.societyId || '',
         action: 'VISITOR_APPROVED',
         entityType: 'VisitorApprovalRequest',
         entityId: request.requestId || request.id,
@@ -286,7 +286,7 @@ export class WalkInApprovalService {
       createAuditEntry({
         actorUserId: input.residentId,
         actorType: 'RESIDENT',
-        societyId: request.societyId,
+        societyId: request.societyId || '',
         action: 'VISITOR_DENIED',
         entityType: 'VisitorApprovalRequest',
         entityId: request.requestId || request.id,
@@ -297,7 +297,7 @@ export class WalkInApprovalService {
       });
     }
 
-    return { success: true, request: updatedRequest, passId };
+    return { success: true, request: updatedRequest, ...(passId ? { passId } : {}) };
   }
 
   async escalateRequest(input: EscalationInput): Promise<WalkInApprovalResult> {
@@ -334,7 +334,7 @@ export class WalkInApprovalService {
     createAuditEntry({
       actorUserId: input.escalatedBy,
       actorType: 'RESIDENT',
-      societyId: request.societyId,
+      societyId: request.societyId || '',
       action: 'VISITOR_APPROVAL_ESCALATED',
       entityType: 'VisitorApprovalRequest',
       entityId: request.requestId || request.id,
@@ -379,14 +379,14 @@ export class WalkInApprovalService {
 
       createAuditEntry({
         actorUserId: 'SYSTEM_POLICY',
-        actorType: 'SYSTEM_POLICY',
-        societyId: request.societyId,
+        actorType: 'SYSTEM',
+        societyId: request.societyId || '',
         action: 'VISITOR_AUTO_DENIED_TIMEOUT',
         entityType: 'VisitorApprovalRequest',
         entityId: request.requestId || request.id,
         newState: { status: 'DENIED', denialReason: 'Approval request timed out' },
         idempotencyKey: `timeout-${request.requestId || request.id}`,
-        source: 'SYSTEM',
+        source: 'SYSTEM_JOB',
         outcome: 'SUCCESS',
       });
     }

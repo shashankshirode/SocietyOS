@@ -65,7 +65,7 @@ export function useAdminCreateMoveOutRequest() {
     unitId: string;
     residentId: string;
     occupancyRelationshipId: string;
-    personType: 'OWNER' | 'TENANT' | 'FAMILY_MEMBER';
+    personType: 'OWNER' | 'TENANT';
     requestedExitDate: string;
     reason: string;
     newAddress?: string;

@@ -499,6 +499,18 @@ class MockStore {
   }
 
   
+  addAdminInvitation(invitation: any) {
+    this.state.adminInvitations = [invitation, ...(this.state.adminInvitations || [])];
+    this.notify();
+  }
+
+  updateAdminInvitation(id: string, updates: any) {
+    this.state.adminInvitations = (this.state.adminInvitations || []).map((inv: any) =>
+      inv.id === id ? { ...inv, ...updates } : inv
+    );
+    this.notify();
+  }
+
   addVisitor(visitor: VisitorStoreInput) {
     this.state.visitors = [normalizeVisitorInput(visitor), ...this.state.visitors];
     this.notify();

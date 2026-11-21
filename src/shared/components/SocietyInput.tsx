@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -6,10 +6,12 @@ import {
   TextInputProps,
   View,
   ViewStyle,
+  type TextInputInstance,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeText } from './SafeText';
 import { useAppTheme } from '../theme/useAppTheme';
+import { useKeyboardFocus } from '../keyboard/KeyboardFocusContext';
 
 interface SocietyInputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
@@ -33,6 +35,8 @@ export function SocietyInput({
 }: SocietyInputProps) {
   const { colors } = useAppTheme();
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInputInstance>(null);
+  const focusCoordinator = useKeyboardFocus();
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -59,14 +63,19 @@ export function SocietyInput({
 
         <TextInput
           {...inputProps}
+          ref={inputRef}
           style={[styles.textInput, { color: colors.textPrimary }]}
           placeholderTextColor={colors.textMuted}
+          cursorColor={colors.primary}
+          selectionColor={colors.primary}
           onFocus={(e) => {
             setIsFocused(true);
+            focusCoordinator.registerFocusedInput(inputRef.current);
             inputProps.onFocus?.(e);
           }}
           onBlur={(e) => {
             setIsFocused(false);
+            focusCoordinator.unregisterFocusedInput(inputRef.current);
             inputProps.onBlur?.(e);
           }}
         />

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Modal, StyleSheet, View, Animated, useWindowDimensions, BackHandler, Pressable, type ViewStyle } from "react-native";
+import { Modal, StyleSheet, View, Animated, useWindowDimensions, BackHandler, Pressable, KeyboardAvoidingView, Platform, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme } from "../../shared/theme/useAppTheme";
 import { useReducedMotion } from "../motion/useReducedMotion";
@@ -118,7 +118,8 @@ export function AppBottomSheet({ visible, onClose, children, header, testID, she
     if (!shouldRender)
         return null;
     return (<Modal transparent visible={true} animationType="none" onRequestClose={preventDismiss ? undefined : onClose} statusBarTranslucent>
-      <View style={styles.container} accessibilityViewIsModal>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+        <View style={styles.container} accessibilityViewIsModal>
         
         <Animated.View style={[
             styles.backdrop,
@@ -142,7 +143,8 @@ export function AppBottomSheet({ visible, onClose, children, header, testID, she
 
           {children}
         </Animated.View>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>);
 }
 export default AppBottomSheet;

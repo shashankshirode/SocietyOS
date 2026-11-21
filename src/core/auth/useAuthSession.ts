@@ -9,6 +9,7 @@ import {
   setCurrentSession,
   subscribeToSession,
 } from './sessionStore';
+import { runtimePolicy } from '../config/runtimePolicy';
 
 export function useAuthSession() {
   const session = React.useSyncExternalStore(
@@ -18,12 +19,14 @@ export function useAuthSession() {
   );
 
   const startMockSessionForPersona = React.useCallback(async (personaKey: string) => {
+    runtimePolicy.assertDemoAllowed('startMockSessionForPersona');
     const mockSession = createMockSessionForPersona(personaKey as any);
     await setCurrentSession(mockSession);
     return mockSession;
   }, []);
 
   const startMockSessionForRoute = React.useCallback(async (routeName: keyof RootStackParamList) => {
+    runtimePolicy.assertDemoAllowed('startMockSessionForRoute');
     const mockSession = createMockSessionForRoute(routeName);
     if (mockSession) {
       await setCurrentSession(mockSession);
@@ -32,6 +35,7 @@ export function useAuthSession() {
   }, []);
 
   const startMockSessionForRole = React.useCallback(async (role: AppRole): Promise<AuthSession> => {
+    runtimePolicy.assertDemoAllowed('startMockSessionForRole');
     const mockSession = getMockSessionSeedForRole(role);
     await setCurrentSession(mockSession);
     return mockSession;

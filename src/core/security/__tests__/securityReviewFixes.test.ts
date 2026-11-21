@@ -24,13 +24,7 @@ describe('Security & Engineering Review Fix Verification', () => {
     });
 
     it('AUTHZ-002: Does not grant blanket access to SUPER_ADMIN on resident-scoped actions', () => {
-      const superAdminContext = {
-        user: { id: 'sa-001', name: 'Super Admin', phone: '9999999999' },
-        society: { id: 'soc-001', name: 'Test Society' },
-        activeRole: 'SUPER_ADMIN' as const,
-        membership: { status: 'ACTIVE' as const, societyId: 'soc-001' },
-        isHouseholdAdmin: false,
-      };
+      const superAdminContext = MOCK_PERSONAS.superadmin;
       // SUPER_ADMIN attempting to cancel an arbitrary resident's personal pass without ownership
       const res = evaluateCapability(superAdminContext, 'VISITOR_CANCEL_OWN', {
         resourceCreatorUserId: 'resident-user-123',
@@ -58,6 +52,16 @@ describe('Security & Engineering Review Fix Verification', () => {
       expect(result.isValid).toBe(false);
       expect(result.error).toBe('PAYMENT_SIGNATURE_INVALID');
     });
+
+    it('FIN-001c: Rejects callback with long well-formed forged signature', async () => {
+      const result = await paymentGatewayService.handleCallback({
+        paymentId: 'pay-123',
+        amount: 500,
+        signature: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      });
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('PAYMENT_SIGNATURE_INVALID');
+    });
   });
 
   describe('SEC-06: Billing Repository Financial Truthfulness', () => {
@@ -73,11 +77,19 @@ describe('Security & Engineering Review Fix Verification', () => {
       const res = await billRepository.recordManualPayment({
         unitId: 'unit-1',
         amount: 1000,
-        paymentMethod: 'CASH',
+        paymentMethod: 'CASH_CHEQUE',
       });
       expect(res.ok).toBe(false);
       if (!res.ok) {
         expect(res.error.code).toBe('UNSUPPORTED_OPERATION');
+      }
+    });
+
+    it('FIN-002: Rejects non-existent receipt IDs with NOT_FOUND instead of fabricating synthetic REC-*', async () => {
+      const res = await billRepository.getReceiptById('REC-arbitrary-fake-123');
+      expect(res.ok).toBe(false);
+      if (!res.ok) {
+        expect(res.error.code).toBe('NOT_FOUND');
       }
     });
   });

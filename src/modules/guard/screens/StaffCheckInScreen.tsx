@@ -33,8 +33,8 @@ export function StaffCheckInScreen({ navigation }: StaffCheckInScreenProps) {
             return staffList;
         const q = searchQuery.toLowerCase();
         return staffList.filter((s) => s.name.toLowerCase().includes(q) ||
-            s.staffType.toLowerCase().includes(q) ||
-            s.idBadgeNumber.toLowerCase().includes(q));
+            (s.staffType || '').toLowerCase().includes(q) ||
+            (s.idBadgeNumber || '').toLowerCase().includes(q));
     }, [searchQuery, staffList]);
     const handleToggleCheck = async (memberId: string) => {
         const member = staffList.find((s) => s.id === memberId);
@@ -95,13 +95,13 @@ export function StaffCheckInScreen({ navigation }: StaffCheckInScreenProps) {
               </Text>
             </View>
           </View>
-          <StatusBadge label={item.verificationStatus} type={getStaffVerificationBadgeType(item.verificationStatus)}/>
+          <StatusBadge label={item.verificationStatus || 'PENDING'} type={getStaffVerificationBadgeType(item.verificationStatus || 'PENDING')}/>
         </View>
 
         
         <View style={styles.flatsRow}>
           <Ionicons name="business-outline" size={14} color={Colors.textSecondary}/>
-          <Text style={styles.flatsText}>{localizedUiText.m_3dbffb0238ae + " "}{item.linkedFlats.join(', ')}</Text>
+          <Text style={styles.flatsText}>{localizedUiText.m_3dbffb0238ae + " "}{(item.linkedFlats || []).join(', ')}</Text>
         </View>
 
         
@@ -109,7 +109,7 @@ export function StaffCheckInScreen({ navigation }: StaffCheckInScreenProps) {
         {isExpired && !isOverridden && (<WarningBanner message={localizedUiText.m_39f7a5821ace} type="warning" style={styles.bannerMargin}/>)}
 
         
-        {item.lastCheckIn ? (<Text style={styles.checkInTimeText}>{localizedUiText.m_74954f0ed41c}{item.lastCheckIn} ({item.attendanceStatus.replace('_', ' ')})
+        {item.lastCheckIn ? (<Text style={styles.checkInTimeText}>{localizedUiText.m_74954f0ed41c}{item.lastCheckIn} ({(item.attendanceStatus || '').replace('_', ' ')})
           </Text>) : null}
 
         

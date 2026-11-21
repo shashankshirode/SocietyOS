@@ -6,7 +6,7 @@ export class AdminService {
   static async getAdminInvitations(societyId: string): Promise<SocietyAdminInvitation[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const invitations = mockStore.getState().adminInvitations?.filter((inv) => inv.societyId === societyId) || [];
+        const invitations = ((mockStore.getState().adminInvitations || []) as unknown as SocietyAdminInvitation[]).filter((inv) => inv.societyId === societyId);
         resolve(invitations);
       }, 300);
     });
@@ -38,7 +38,7 @@ export class AdminService {
   static async acceptAdminInvitation(token: string): Promise<SocietyAdminInvitation | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const invitations = mockStore.getState().adminInvitations || [];
+        const invitations = (mockStore.getState().adminInvitations || []) as unknown as SocietyAdminInvitation[];
         const invitation = invitations.find((inv) => inv.token === token);
         if (!invitation) {
           resolve(undefined);
@@ -62,7 +62,7 @@ export class AdminService {
   static async getAdminInvitationByToken(token: string): Promise<SocietyAdminInvitation | Absent> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const invitations = mockStore.getState().adminInvitations || [];
+        const invitations = (mockStore.getState().adminInvitations || []) as unknown as SocietyAdminInvitation[];
         const invitation = invitations.find((inv) => inv.token === token);
         resolve(invitation);
       }, 300);

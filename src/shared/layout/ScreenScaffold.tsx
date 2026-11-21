@@ -1,9 +1,10 @@
 import React from "react";
-import { KeyboardAvoidingView, ScrollView, View, ViewStyle, useWindowDimensions } from "react-native";
+import { KeyboardAvoidingView, Platform, View, ViewStyle, useWindowDimensions } from "react-native";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 import { useAppTheme } from "../theme/useAppTheme";
-import { getPlatformKeyboardConfig } from "../platform/platformKeyboard";
+import { KeyboardAwareScrollView } from "../keyboard/KeyboardAwareScrollView";
 import { styles, createSafeAreaViewBackgroundColorStyle } from "./styles/ScreenScaffold.styles";
+
 export interface ScreenScaffoldProps {
     children: React.ReactNode;
     scroll?: boolean;
@@ -13,40 +14,70 @@ export interface ScreenScaffoldProps {
     contentStyle?: ViewStyle;
     testID?: string;
 }
-export function ScreenScaffold({ children, scroll = false, keyboardAvoiding = false, edges = ['top', 'left', 'right'], style, contentStyle, testID, }: ScreenScaffoldProps) {
+
+export function ScreenScaffold({
+    children,
+    scroll = false,
+    keyboardAvoiding = false,
+    edges = ['top', 'left', 'right'],
+    style,
+    contentStyle,
+    testID,
+}: ScreenScaffoldProps) {
     const { semantic } = useAppTheme();
     const { width } = useWindowDimensions();
     const isTablet = width >= 768;
-    const keyboardConfig = getPlatformKeyboardConfig();
-    const content = scroll ? (<ScrollView style={styles.flex} contentContainerStyle={[
-            styles.scrollContent,
-            isTablet ? styles.tabletPadding : styles.phonePadding,
-            contentStyle,
-        ]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-      {children}
-    </ScrollView>) : (<View style={[
+
+    const content = scroll ? (
+        <KeyboardAwareScrollView
+            style={styles.flex}
+            contentContainerStyle={[
+                styles.scrollContent,
+                isTablet ? styles.tabletPadding : styles.phonePadding,
+                contentStyle,
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
+            {children}
+        </KeyboardAwareScrollView>
+    ) : (
+        <View style={[
             styles.flex,
             isTablet ? styles.tabletPadding : styles.phonePadding,
             contentStyle,
         ]}>
-      {children}
-    </View>);
-    const body = keyboardAvoiding ? (<KeyboardAvoidingView style={styles.flex} behavior={keyboardConfig.behavior} keyboardVerticalOffset={keyboardConfig.keyboardVerticalOffset}>
-      {content}
-    </KeyboardAvoidingView>) : (content);
-    return (<SafeAreaView testID={testID} edges={edges} style={[
+            {children}
+        </View>
+    );
+
+    const body = (!scroll && keyboardAvoiding) ? (
+        <KeyboardAvoidingView
+            style={styles.flex}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+            {content}
+        </KeyboardAvoidingView>
+    ) : (
+        content
+    );
+
+    return (
+        <SafeAreaView testID={testID} edges={edges} style={[
             styles.safeArea,
             createSafeAreaViewBackgroundColorStyle(semantic.surface.canvas),
             style,
         ]}>
-      <View style={styles.responsiveWrapper}>
-        <View style={[
-            styles.container,
-            isTablet && styles.tabletContainer,
-        ]}>
-          {body}
-        </View>
-      </View>
-    </SafeAreaView>);
+            <View style={styles.responsiveWrapper}>
+                <View style={[
+                    styles.container,
+                    isTablet && styles.tabletContainer,
+                ]}>
+                    {body}
+                </View>
+            </View>
+        </SafeAreaView>
+    );
 }
+
 export default ScreenScaffold;

@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   denialReasonText: {
-    color: Colors.dangerDark,
+    color: Colors.danger,
   },
   escalationCard: {
     borderWidth: 1,
@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
     borderColor: Colors.warning,
   },
   expiredText: {
-    color: Colors.warningDark,
+    color: Colors.warning,
   },
   errorContainer: {
     flex: 1,
@@ -144,7 +144,11 @@ export const styles = StyleSheet.create({
     minWidth: 200,
   },
   modalOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     padding: Layout.screenHorizontalPadding,

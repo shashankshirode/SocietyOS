@@ -314,12 +314,13 @@ describe('Society Admin Registration Service', () => {
         recipientEmail: 'john@example.com',
       });
       
-      invitation.expiresAt = new Date(Date.now() - 1000).toISOString();
+      expect(invitation).toBeDefined();
+      invitation!.expiresAt = new Date(Date.now() - 1000).toISOString();
       mockStore.getState().residentInvitations = mockStore.getState().residentInvitations.map((inv) =>
-        inv.id === invitation.id ? { ...inv, expiresAt: invitation.expiresAt } : inv
+        inv.id === invitation!.id ? { ...inv, expiresAt: invitation!.expiresAt } : inv
       );
       
-      const accepted = await residentRegistrationService.acceptInvitation(invitation.token);
+      const accepted = await residentRegistrationService.acceptInvitation(invitation!.token);
       expect(accepted).toBeUndefined();
     });
   });
@@ -368,7 +369,7 @@ describe('Society Admin Registration Service', () => {
       
       const pending = await residentRegistrationService.getRegistrations({ societyId: 'society-gv', status: 'INVITED' });
       expect(pending.length).toBe(1);
-      expect(pending[0].status).toBe('INVITED');
+      expect(pending[0]!.status).toBe('INVITED');
     });
 
     it('should filter by unitId', async () => {
@@ -382,7 +383,7 @@ describe('Society Admin Registration Service', () => {
       
       const unit1Regs = await residentRegistrationService.getRegistrations({ societyId: 'society-gv', unitId: 'unit-1' });
       expect(unit1Regs.length).toBe(1);
-      expect(unit1Regs[0].unitId).toBe('unit-1');
+      expect(unit1Regs[0]!.unitId).toBe('unit-1');
     });
   });
 
@@ -442,11 +443,12 @@ describe('Edge Cases', () => {
       recipientEmail: 'john@example.com',
     });
     
+    expect(invitation).toBeDefined();
     mockStore.getState().residentInvitations = mockStore.getState().residentInvitations.map((inv) =>
-      inv.id === invitation.id ? { ...inv, status: 'REVOKED' as const, revokedAt: new Date().toISOString() } : inv
+      inv.id === invitation!.id ? { ...inv, status: 'REVOKED' as const, revokedAt: new Date().toISOString() } : inv
     );
     
-    const accepted = await residentRegistrationService.acceptInvitation(invitation.token);
+    const accepted = await residentRegistrationService.acceptInvitation(invitation!.token);
     expect(accepted).toBeUndefined();
   });
 

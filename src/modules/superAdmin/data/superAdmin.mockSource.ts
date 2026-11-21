@@ -69,7 +69,7 @@ export const superAdminMockSource = {
         s.status = 'SUSPENDED_PLACEHOLDER';
         return ok({ ...s });
     },
-    createDemoSociety: async (name: string, type?: PlatformSocietyType): Promise<RepositoryResult<PlatformSociety>> => {
+    createDemoSociety: async (name: string, type?: PlatformSociety['type']): Promise<RepositoryResult<PlatformSociety>> => {
         await delay();
         const newSociety: PlatformSociety = {
             id: `soc-demo-${Date.now()}`,

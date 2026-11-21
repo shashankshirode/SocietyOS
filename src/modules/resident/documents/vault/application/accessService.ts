@@ -80,8 +80,8 @@ export interface AccessService {
   getAccessGrants(documentId: string): readonly AccessGrant[];
 }
 
-function fail(code: DocumentVaultErrorCode, message: string) {
-  return { ok: false, code, message };
+function fail(code: DocumentVaultErrorCode, message: string): { ok: false; code: DocumentVaultErrorCode; message: string } {
+  return { ok: false as const, code, message };
 }
 
 const accessRequests = new Map<string, AccessRequest>();

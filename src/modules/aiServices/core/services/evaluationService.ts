@@ -74,7 +74,6 @@ export const evaluationService = {
         modelId: this.getCurrentModelForCapability(capability) || 'unknown',
         modelVersion: 'current',
         templateVersion: 1,
-        evaluatedAt: getNow(),
         totalRequests,
         successfulRequests,
         failedRequests,

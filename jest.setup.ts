@@ -130,3 +130,19 @@ jest.mock('@react-navigation/native', () => {
     }),
   };
 });
+
+jest.mock('expo-secure-store', () => {
+  const store = new Map<string, string>();
+  return {
+    setItemAsync: jest.fn(async (key: string, value: string) => {
+      store.set(key, value);
+    }),
+    getItemAsync: jest.fn(async (key: string) => {
+      return store.get(key) ?? null;
+    }),
+    deleteItemAsync: jest.fn(async (key: string) => {
+      store.delete(key);
+    }),
+    isAvailableAsync: jest.fn(async () => true),
+  };
+});

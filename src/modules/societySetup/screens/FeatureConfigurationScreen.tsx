@@ -123,7 +123,7 @@ export function FeatureConfigurationScreen({ route, navigation }: Props) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await SocietyService.updateSociety({ id: societyId!, featureConfig: features });
+            await SocietyService.updateSociety({ id: societyId!, features: features as unknown as JsonObject });
             Alert.alert('Success', 'Feature configuration saved');
         } catch (err) {
             Alert.alert('Error', err instanceof Error ? err.message : 'Failed to save configuration');

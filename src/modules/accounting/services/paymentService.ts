@@ -3,6 +3,7 @@ import type { PaymentTransaction, PaymentAllocation, Receipt, ReceiptAllocation,
 import type { Bill, BillStatus } from '../../../shared/types/bill.types';
 import type { ManualPaymentInput, ManualPaymentRecord } from '../../../shared/types/accounting.types';
 import { auditService, createAuditEntry } from '../../../core/audit';
+import { runtimePolicy } from '../../../core/config/runtimePolicy';
 import { toMinorUnits, fromMinorUnits, addMoney, subtractMoney, } from './money';
 function generateId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -44,6 +45,7 @@ export class PaymentService {
         transaction: PaymentTransaction;
         receipt: Receipt;
     }> {
+        runtimePolicy.assertDemoAllowed('settleOnlinePayment');
         const invoices = (mockStore.getState().invoices ?? []) as Invoice[];
         const invoice = invoices.find((i) => i.id === params.invoiceId);
         if (!invoice) {
@@ -188,6 +190,7 @@ export class PaymentService {
         return { transaction: paymentTxn, receipt };
     }
     async recordManualPayment(input: ManualPaymentInput, recordedBy: string, societyId: string): Promise<ManualPaymentRecord> {
+        runtimePolicy.assertDemoAllowed('recordManualPayment');
         const now = new Date().toISOString();
         const paymentId = generateId('mpay');
         const paymentNumber = `PAY-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -397,6 +400,7 @@ export class PaymentService {
         reason: string;
         approvedBy: string;
     }): Promise<Refund> {
+        runtimePolicy.assertDemoAllowed('processRefund');
         const txns = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
         const txn = txns.find((t) => t.id === params.paymentTransactionId);
         if (!txn)

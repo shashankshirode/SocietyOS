@@ -116,5 +116,50 @@ export const gateApiSource = {
             return repositoryFailure(repositoryErrorFromUnknown(error as Error));
         }
     },
+    async verifyVisitorPass(params: { passCode: string; gateId: string; guardId: string }): Promise<RepositoryResult<boolean>> {
+        try {
+            await apiClient.post(apiEndpoints.gate.entries, params, { idempotencyKey: createIdempotencyKey('verify-pass') });
+            return repositorySuccess(true);
+        }
+        catch (error) {
+            return repositoryFailure(repositoryErrorFromUnknown(error as Error));
+        }
+    },
+    async recordExit(params: { passId: string; gateId: string; guardId: string }): Promise<RepositoryResult<boolean>> {
+        try {
+            await apiClient.post(apiEndpoints.gate.entries, params, { idempotencyKey: createIdempotencyKey('record-exit') });
+            return repositorySuccess(true);
+        }
+        catch (error) {
+            return repositoryFailure(repositoryErrorFromUnknown(error as Error));
+        }
+    },
+    async emergencyBypass(params: { type: string; location: string; description?: string; guardId: string; gateId: string }): Promise<RepositoryResult<boolean>> {
+        try {
+            await apiClient.post(apiEndpoints.gate.emergencyAlerts, params, { idempotencyKey: createIdempotencyKey('emergency-bypass') });
+            return repositorySuccess(true);
+        }
+        catch (error) {
+            return repositoryFailure(repositoryErrorFromUnknown(error as Error));
+        }
+    },
+    async createWalkInEntry(payload: { personName: string; flatNumber: string; entryType: string; guardId: string; gateId: string }): Promise<RepositoryResult<boolean>> {
+        try {
+            await apiClient.post(apiEndpoints.gate.manualEntries, payload, { idempotencyKey: createIdempotencyKey('walkin-entry') });
+            return repositorySuccess(true);
+        }
+        catch (error) {
+            return repositoryFailure(repositoryErrorFromUnknown(error as Error));
+        }
+    },
+    async watchlistCheck(params: { visitorPhone?: string; visitorId?: string }): Promise<RepositoryResult<boolean>> {
+        try {
+            await apiClient.get(apiEndpoints.gate.passSearch, { query: params as Record<string, string> });
+            return repositorySuccess(true);
+        }
+        catch (error) {
+            return repositoryFailure(repositoryErrorFromUnknown(error as Error));
+        }
+    },
 };
 

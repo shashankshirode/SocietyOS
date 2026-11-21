@@ -96,7 +96,7 @@ export class FacilityFinanceService {
         },
       });
 
-      return { success: true, paymentObligationId: result.paymentObligationId, paymentUrl: result.paymentUrl };
+      return { success: true, paymentObligationId: result.paymentObligationId, ...(result.paymentUrl ? { paymentUrl: result.paymentUrl } : {}) };
     } catch (error) {
       return { success: false, errorCode: 'PAYMENT_OBLIGATION_FAILED', errorMessage: error instanceof Error ? error.message : 'Failed to create payment obligation' };
     }
@@ -125,7 +125,7 @@ export class FacilityFinanceService {
         return { success: false, errorCode: 'PAYMENT_RECORDING_FAILED', errorMessage: 'Failed to record payment' };
       }
 
-      return { success: true, receiptNumber: result.receiptNumber };
+      return { success: true, ...(result.receiptNumber ? { receiptNumber: result.receiptNumber } : {}) };
     } catch (error) {
       return { success: false, errorCode: 'PAYMENT_PROCESSING_FAILED', errorMessage: error instanceof Error ? error.message : 'Payment processing failed' };
     }
@@ -203,7 +203,7 @@ export class FacilityFinanceService {
         amountInMinorUnits: input.amountInMinorUnits,
         currencyCode: input.currencyCode,
         description: input.description,
-        evidenceDocumentId: input.evidenceDocumentId,
+        ...(input.evidenceDocumentId ? { evidenceDocumentId: input.evidenceDocumentId } : {}),
       });
 
       return { success: true, chargeId: result.chargeId };

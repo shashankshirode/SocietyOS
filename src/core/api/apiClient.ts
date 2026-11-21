@@ -37,8 +37,8 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 async function buildHeaders(options: RequestOptions): Promise<Record<string, string>> {
     const session = getCurrentSession();
     const sessionContext: RequestContext = session ? {
-        societyId: session.societyId,
-        unitId: session.unitId,
+        ...(session.societyId ? { societyId: session.societyId } : {}),
+        ...(session.unitId ? { unitId: session.unitId } : {}),
         actorUserId: session.userId,
         roles: [session.role],
         activeRole: session.role,

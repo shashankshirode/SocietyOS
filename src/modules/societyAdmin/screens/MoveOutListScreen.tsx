@@ -12,6 +12,7 @@ import { useAdminMoveOutRequests } from '../data/useAdminMoveOutRequests';
 import { useSociety } from '../../../core/auth/SocietyProvider';
 import type { MoveOutRequest, MoveOutStatus } from '../../../shared/types/moveOut.types';
 import { MOVE_OUT_STATUS_LABELS } from '../../../shared/types/moveOut.types';
+import type { BadgeType } from '../../../shared/utils/statusPresentation';
 import { styles, createTextColorStyle, createViewBackgroundColorStyle } from '../styles/screens/MoveOutListScreen.styles';
 import { useMessages as useGeneratedUiMessages } from '../../../messages/useMessages';
 import { useAppTheme } from '../../../shared/theme/useAppTheme';
@@ -36,7 +37,7 @@ const statusOrder: MoveOutStatus[] = [
   'ARCHIVED',
 ];
 
-const statusColors: Record<MoveOutStatus, string> = {
+const statusColors: Record<MoveOutStatus, BadgeType> = {
   DRAFT: 'neutral',
   REQUESTED: 'info',
   CLEARANCE_CHECK: 'warning',
@@ -52,6 +53,13 @@ const statusColors: Record<MoveOutStatus, string> = {
   CANCELLED: 'neutral',
   FAILED: 'danger',
   ARCHIVED: 'neutral',
+  SIGNED: 'success',
+  ISSUED: 'success',
+  ACCESS_REVOKED: 'warning',
+  OCCUPANCY_CLOSED: 'neutral',
+  PENDING_CLEARANCE: 'warning',
+  CLEARED: 'success',
+  NOC_GENERATED: 'success',
 };
 
 export function MoveOutListScreen({ navigation }: {
@@ -72,12 +80,12 @@ export function MoveOutListScreen({ navigation }: {
   const filtered = requests.filter((r) => {
     const matchesSearch = r.requestNumber.toLowerCase().includes(search.toLowerCase()) ||
       r.reason.toLowerCase().includes(search.toLowerCase()) ||
-      r.unitId.toLowerCase().includes(search.toLowerCase());
+      (r.unitId || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus = selectedStatus === 'ALL' || r.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadgeType = (status: MoveOutStatus) => statusColors[status] || 'neutral';
+  const getStatusBadgeType = (status: MoveOutStatus): BadgeType => statusColors[status] || 'neutral';
 
   const renderRequestItem = ({ item, index }: { item: MoveOutRequest; index: number }) => (
     <Animated.View entering={FadeInLeft.delay(index * 30).duration(300)}>
@@ -100,7 +108,7 @@ export function MoveOutListScreen({ navigation }: {
           </View>
           <View style={styles.detailRow}>
             <AppText variant="caption" style={styles.detailLbl}>{localizedUiText.m_225e2abb60c4}</AppText>
-            <AppText variant="caption" style={styles.detailVal}>{formatDate(item.requestedExitDate)}</AppText>
+            <AppText variant="caption" style={styles.detailVal}>{formatDate(item.requestedExitDate || '')}</AppText>
           </View>
           <View style={styles.detailRow}>
             <AppText variant="caption" style={styles.detailLbl}>Person Type</AppText>
@@ -128,7 +136,7 @@ export function MoveOutListScreen({ navigation }: {
         <FilterChips
           options={statusOptions.map((s) => ({ label: s === 'ALL' ? 'All' : MOVE_OUT_STATUS_LABELS[s as MoveOutStatus], value: s }))}
           selected={selectedStatus}
-          onChange={setSelectedStatus}
+          onChange={(val) => setSelectedStatus(val as MoveOutStatus | 'ALL')}
         />
       </View>
 

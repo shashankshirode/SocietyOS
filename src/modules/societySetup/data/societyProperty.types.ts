@@ -59,6 +59,7 @@ export interface Society {
   notificationConfig?: JsonObject;
   features?: JsonObject;
   featureFlags?: JsonObject;
+  featureConfig?: Record<string, boolean>;
   createdAt: string;
   updatedAt: string;
   activatedAt?: string;

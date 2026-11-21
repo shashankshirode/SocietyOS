@@ -86,7 +86,7 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
         try {
             const society = await SocietyService.getSociety(societyId!);
             if (society?.notificationConfig) {
-                setConfig(society.notificationConfig);
+                setConfig(society.notificationConfig as unknown as NotificationConfig);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load notification config');
@@ -98,7 +98,7 @@ export function NotificationDefaultsScreen({ route, navigation }: Props) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await SocietyService.updateSociety({ id: societyId!, notificationConfig: config });
+            await SocietyService.updateSociety({ id: societyId!, notificationConfig: config as unknown as JsonObject });
             Alert.alert('Success', 'Notification defaults saved');
         } catch (err) {
             Alert.alert('Error', err instanceof Error ? err.message : 'Failed to save configuration');

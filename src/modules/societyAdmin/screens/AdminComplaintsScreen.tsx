@@ -60,7 +60,7 @@ export function AdminComplaintsScreen({
   const { session } = useAuthSession();
 
   const { data: complaints, isLoading, error, refetch } = useAdminComplaints({
-    societyId: session?.societyId,
+    societyId: session?.societyId || '',
   });
 
   const dashboard = useMemo(() => {
@@ -236,7 +236,7 @@ export function AdminComplaintsScreen({
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ResidentPageHeader title={localizedUiText.m_admin_complaints} showBack />
+        <ResidentPageHeader title={localizedUiText.m_admin_complaints} showBackButton />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -247,7 +247,7 @@ export function AdminComplaintsScreen({
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ResidentPageHeader title={localizedUiText.m_admin_complaints} showBack />
+        <ResidentPageHeader title={localizedUiText.m_admin_complaints} showBackButton />
         <View style={styles.errorContainer}>
           <SafeText variant="body" style={createTextColorStyle(theme.colors.danger)}>
             {error.message}
@@ -267,7 +267,7 @@ export function AdminComplaintsScreen({
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ResidentPageHeader
         title={localizedUiText.m_admin_complaints}
-        showBack
+        showBackButton
         subtitle={`${dashboard.totalOpen} open · ${dashboard.slaBreached} breached`}
       />
 

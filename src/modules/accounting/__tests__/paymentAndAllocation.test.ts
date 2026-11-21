@@ -1,4 +1,4 @@
-import { paymentGatewayService } from '../services/paymentGatewayService';
+import { paymentGatewayService, generateMockPaymentSignature } from '../services/paymentGatewayService';
 import { paymentService } from '../services/paymentService';
 import { invoiceService } from '../services/invoiceService';
 import { mockStore } from '../../../core/mockStore/mockStore';
@@ -87,13 +87,16 @@ describe('Phase 7: Payment Verification, Allocation & Receipt Invariants', () =>
         const amountMismatch = await paymentGatewayService.handleCallback({
             paymentId: attemptResponse.paymentId,
             amount: 8000,
+            signature: generateMockPaymentSignature(attemptResponse.paymentId!, 8000),
         });
         expect(amountMismatch.isValid).toBe(false);
         expect(amountMismatch.error).toContain('PAYMENT_AMOUNT_MISMATCH');
+        const validSig = generateMockPaymentSignature(attemptResponse.paymentId!, 10000);
         const validCallback = await paymentGatewayService.handleCallback({
             paymentId: attemptResponse.paymentId,
             amount: 10000,
             gatewayTransactionId: 'gw-txn-12345',
+            signature: validSig,
         });
         expect(validCallback.isValid).toBe(true);
         expect(validCallback.status).toBe('SETTLED');
@@ -109,6 +112,7 @@ describe('Phase 7: Payment Verification, Allocation & Receipt Invariants', () =>
             paymentId: attemptResponse.paymentId,
             amount: 10000,
             gatewayTransactionId: 'gw-txn-12345',
+            signature: validSig,
         });
         expect(duplicateCallback.isValid).toBe(true);
         expect(duplicateCallback.duplicate).toBe(true);

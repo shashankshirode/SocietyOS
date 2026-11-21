@@ -31,7 +31,9 @@ const RELATIONSHIP_ICONS: Record<string, string> = {
 };
 
 export function UnitOccupancyScreen({ navigation, route }: Props) {
-  const { societyId, unitId, unitNumber } = route.params;
+  const societyId = route.params?.societyId ?? '';
+  const unitId = route.params?.unitId ?? '';
+  const unitNumber = route.params?.unitNumber ?? '';
   const localizedUiText = useGeneratedUiMessages().uiLiterals;
   const { colors } = useAppTheme();
   const [activeTab, setActiveTab] = useState<'current' | 'history' | 'timeline'>('current');

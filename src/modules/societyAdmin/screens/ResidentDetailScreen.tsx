@@ -342,6 +342,7 @@ export function ResidentDetailScreen({ route, navigation }: ResidentDetailScreen
             <AppText variant="h3" style={styles.modalTitle}>Reject Registration</AppText>
             <AppText variant="body" style={styles.modalText}>Please provide a reason for rejection.</AppText>
             <AppTextArea
+              label="Rejection Reason"
               value={rejectReason}
               onChangeText={setRejectReason}
               placeholder="Enter rejection reason..."

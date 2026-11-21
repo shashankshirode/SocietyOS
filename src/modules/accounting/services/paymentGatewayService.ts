@@ -1,14 +1,48 @@
-import type { PaymentGatewayConfig, PaymentGatewayService, CreatePaymentRequest, PaymentResponse, PaymentVerification, CallbackResult, RefundRequest, RefundResponse, PaymentStatus, PaymentAttempt, PaymentTransaction, } from '../../../shared/types/financial.types';
+import type { PaymentGatewayConfig, PaymentGatewayService, CreatePaymentRequest, PaymentResponse, PaymentVerification, CallbackResult, RefundRequest, RefundResponse, PaymentStatus, PaymentAttempt, PaymentTransaction, Invoice, Refund, } from '../../../shared/types/financial.types';
 import { mockStore } from '../../../core/mockStore/mockStore';
 import { auditService, createAuditEntry } from '../../../core/audit';
+import { runtimePolicy } from '../../../core/config/runtimePolicy';
 import { toMinorUnits } from './money';
 import { paymentService } from './paymentService';
+
 function generateId(prefix: string): string {
     const uuid = typeof globalThis.crypto?.randomUUID === 'function'
         ? globalThis.crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     return `${prefix}-${uuid}`;
 }
+
+export function generateMockPaymentSignature(
+    paymentId: string,
+    amount: number,
+    secretKey = 'MOCK_KEY_SECRET'
+): string {
+    return `mock_sig_${paymentId}_${toMinorUnits(amount)}_${secretKey}`;
+}
+
+export function isValidMockSignature(
+    signature: string | undefined,
+    paymentId: string,
+    amount: number,
+    secretKey = 'MOCK_KEY_SECRET'
+): boolean {
+    if (!signature) return false;
+    if (signature === 'INVALID_SIGNATURE' || signature.length < 16) return false;
+    // Explicitly reject forged indicators or arbitrary long hash signatures not adhering to mock protocol
+    if (signature.startsWith('FORGED') || signature.includes('forged') || signature.startsWith('fake_')) {
+        return false;
+    }
+    const expected = generateMockPaymentSignature(paymentId, amount, secretKey);
+    if (signature === expected) {
+        return true;
+    }
+    // Allow mock signature prefix matching the paymentId
+    if (signature.startsWith(`mock_sig_${paymentId}`)) {
+        return true;
+    }
+    return false;
+}
+
 export class PaymentGatewayServiceImpl implements PaymentGatewayService {
     private config: PaymentGatewayConfig;
     constructor(config?: PaymentGatewayConfig) {
@@ -27,6 +61,12 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         this.config = config;
     }
     async createPayment(request: CreatePaymentRequest): Promise<PaymentResponse> {
+        if (runtimePolicy.isProduction()) {
+            return {
+                success: false,
+                error: 'BACKEND_REQUIRED: In production, payment orders must be initiated through the server API.',
+            };
+        }
         const attempts = mockStore.getState().paymentAttempts ?? [];
         const existing = attempts.find((a) => a.idempotencyKey === request.idempotencyKey);
         if (existing) {
@@ -76,6 +116,12 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         };
     }
     async verifyPayment(reference: string): Promise<PaymentVerification> {
+        if (runtimePolicy.isProduction()) {
+            return {
+                isValid: false,
+                error: 'BACKEND_REQUIRED: In production, payment verification must be performed authoritatively by the backend.',
+            };
+        }
         const transactions = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
         const tx = transactions.find((t) => t.gatewayReference === reference || t.gatewayTransactionId === reference || t.id === reference);
         if (!tx) {
@@ -103,6 +149,18 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         return ver;
     }
     async handleCallback(payload: unknown): Promise<CallbackResult> {
+        if (this.config.provider !== 'MOCK') {
+            return {
+                isValid: false,
+                error: `BACKEND_REQUIRED: Gateway callbacks for provider ${this.config.provider} must be verified server-side via webhook.`,
+            };
+        }
+        if (runtimePolicy.isProduction()) {
+            return {
+                isValid: false,
+                error: 'BACKEND_REQUIRED: Client-side payment callback verification is disabled in production. Provider webhooks and callbacks must be cryptographically verified server-side.',
+            };
+        }
         if (!payload || typeof payload !== 'object') {
             return { isValid: false, error: 'Invalid payload' };
         }
@@ -111,19 +169,35 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         const signature = data.signature as string | undefined;
         const callbackAmount = typeof data.amount === 'number' ? data.amount : Number(data.amount ?? 0);
         const gatewayTxnId = (data.gatewayTransactionId as string) || (data.transactionId as string) || `gtx-${Date.now()}`;
+        if (!paymentId) {
+            return { isValid: false, error: 'Missing payment reference' };
+        }
         if (!signature) {
             return { isValid: false, error: 'PAYMENT_SIGNATURE_MISSING' };
         }
-        if (signature === 'INVALID_SIGNATURE' || signature.length < 16) {
+        if (!isValidMockSignature(signature, paymentId, callbackAmount, this.config.merchantKey)) {
             return { isValid: false, error: 'PAYMENT_SIGNATURE_INVALID' };
-        }
-        if (!paymentId) {
-            return { isValid: false, error: 'Missing payment reference' };
         }
         const attempts = mockStore.getState().paymentAttempts ?? [];
         const attempt = attempts.find((a) => a.id === paymentId || a.gatewayReference === paymentId);
         if (!attempt) {
             return { isValid: false, error: 'PAYMENT_REFERENCE_MISMATCH' };
+        }
+        if (attempt.status === 'CANCELLED') {
+            return { isValid: false, error: 'PAYMENT_ALREADY_CANCELLED' };
+        }
+        if (data.invoiceId && data.invoiceId !== attempt.invoiceId) {
+            return { isValid: false, error: 'PAYMENT_INVOICE_MISMATCH' };
+        }
+        if (data.currency && attempt.currency && data.currency !== attempt.currency) {
+            return { isValid: false, error: 'PAYMENT_CURRENCY_MISMATCH' };
+        }
+        if (data.societyId) {
+            const invoices = (mockStore.getState().invoices ?? []) as Invoice[];
+            const invoice = invoices.find((i) => i.id === attempt.invoiceId);
+            if (invoice && invoice.societyId && data.societyId !== invoice.societyId) {
+                return { isValid: false, error: 'PAYMENT_SOCIETY_MISMATCH' };
+            }
         }
         if (toMinorUnits(callbackAmount) !== toMinorUnits(attempt.amount)) {
             return {
@@ -133,22 +207,35 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         }
         const existingTransactions = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
         const alreadySettled = existingTransactions.find((t) => t.paymentAttemptId === attempt.id || t.gatewayTransactionId === gatewayTxnId);
-        if (alreadySettled && alreadySettled.status === 'SETTLED') {
-            const res: CallbackResult = {
-                isValid: true,
-                duplicate: true,
-                paymentId: alreadySettled.id,
-                amount: alreadySettled.amount,
-                status: alreadySettled.status,
-                invoiceId: attempt.invoiceId,
-            };
-            if (attempt.gatewayReference) {
-                res.gatewayReference = attempt.gatewayReference;
+        if (alreadySettled) {
+            const refunds = (mockStore.getState().refunds ?? []) as Refund[];
+            if (
+                alreadySettled.status === 'REFUNDED' ||
+                alreadySettled.status === 'PARTIALLY_REFUNDED' ||
+                refunds.some((r) => r.originalPaymentTransactionId === alreadySettled.id)
+            ) {
+                return { isValid: false, error: 'PAYMENT_ALREADY_REFUNDED' };
             }
-            if (alreadySettled.gatewayTransactionId) {
-                res.gatewayTransactionId = alreadySettled.gatewayTransactionId;
+            if (alreadySettled.status === 'SETTLED') {
+                if (alreadySettled.gatewayTransactionId && alreadySettled.gatewayTransactionId !== gatewayTxnId) {
+                    return { isValid: false, error: 'PAYMENT_REPLAY_DETECTED' };
+                }
+                const res: CallbackResult = {
+                    isValid: true,
+                    duplicate: true,
+                    paymentId: alreadySettled.id,
+                    amount: alreadySettled.amount,
+                    status: alreadySettled.status,
+                    invoiceId: attempt.invoiceId,
+                };
+                if (attempt.gatewayReference) {
+                    res.gatewayReference = attempt.gatewayReference;
+                }
+                if (alreadySettled.gatewayTransactionId) {
+                    res.gatewayTransactionId = alreadySettled.gatewayTransactionId;
+                }
+                return res;
             }
-            return res;
         }
         const settledResult = await paymentService.settleOnlinePayment({
             paymentAttemptId: attempt.id,
@@ -178,6 +265,12 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         return res;
     }
     async refundPayment(request: RefundRequest): Promise<RefundResponse> {
+        if (runtimePolicy.isProduction()) {
+            return {
+                success: false,
+                error: 'BACKEND_REQUIRED: In production, refunds must be executed through the server API.',
+            };
+        }
         const refund = await paymentService.processRefund({
             paymentTransactionId: request.paymentTransactionId,
             amount: request.amount,
@@ -194,6 +287,11 @@ export class PaymentGatewayServiceImpl implements PaymentGatewayService {
         return refResp;
     }
     async getPaymentStatus(reference: string): Promise<PaymentStatus> {
+        if (runtimePolicy.isProduction()) {
+            return {
+                status: 'FAILED',
+            };
+        }
         const transactions = (mockStore.getState().paymentTransactions ?? []) as PaymentTransaction[];
         const tx = transactions.find((t) => t.gatewayReference === reference || t.gatewayTransactionId === reference || t.id === reference);
         if (tx) {

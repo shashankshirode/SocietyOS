@@ -185,6 +185,26 @@ export const gateMockSource = {
             timestamp: new Date().toISOString(),
             incidentNumber: `INC-${Date.now()}`
         });
+    },
+    async verifyVisitorPass(_params: { passCode: string; gateId: string; guardId: string }): Promise<RepositoryResult<boolean>> {
+        await withMockDelay();
+        return repositorySuccess(true);
+    },
+    async recordExit(_params: { passId: string; gateId: string; guardId: string }): Promise<RepositoryResult<boolean>> {
+        await withMockDelay();
+        return repositorySuccess(true);
+    },
+    async emergencyBypass(_params: { type: string; location: string; description?: string; guardId: string; gateId: string }): Promise<RepositoryResult<boolean>> {
+        await withMockDelay();
+        return repositorySuccess(true);
+    },
+    async createWalkInEntry(_payload: { personName: string; flatNumber: string; entryType: string; guardId: string; gateId: string }): Promise<RepositoryResult<boolean>> {
+        await withMockDelay();
+        return repositorySuccess(true);
+    },
+    async watchlistCheck(_params: { visitorPhone?: string; visitorId?: string }): Promise<RepositoryResult<boolean>> {
+        await withMockDelay();
+        return repositorySuccess(true);
     }
 };
 

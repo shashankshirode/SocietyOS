@@ -3,6 +3,7 @@ import type { Complaint } from '../../types/complaint.types';
 export function createComplaint(overrides: Partial<Complaint> = {}): Complaint {
   return {
     id: 'complaint-001',
+    unitId: 'unit-1204',
     title: 'Water leakage from upper flat toilet ceiling',
     description: 'Persistent seepage observed in the master bathroom ceiling, causing paint peeling and humidity.',
     category: 'WATER_LEAKAGE',

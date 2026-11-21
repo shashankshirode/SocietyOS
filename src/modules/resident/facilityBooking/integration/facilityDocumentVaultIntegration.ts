@@ -15,7 +15,7 @@ export interface DocumentVaultPorts {
     title: string;
     description?: string;
   }) => Promise<{ documentId: string; versionId: string }>;
-  readonly getDocuments: (input: { bookingId: string; category?: string }) => Promise<readonly { documentId: string; title: string; uploadedAt: string }[]>;
+  readonly getDocuments: (input: { bookingId: string; category?: string }) => Promise<readonly { documentId: string; versionId?: string; title: string; uploadedAt: string }[]>;
   readonly verifyDocument: (input: { documentId: string; verifiedBy: string; verifiedAt: string }) => Promise<{ success: boolean }>;
 }
 
@@ -52,7 +52,7 @@ export class FacilityDocumentVaultService {
         mimeType: input.mimeType,
         category: 'DAMAGE_EVIDENCE',
         title: input.title,
-        description: input.description,
+        ...(input.description ? { description: input.description } : {}),
       });
 
       return { success: true, documentId: result.documentId, versionId: result.versionId };
@@ -90,7 +90,7 @@ export class FacilityDocumentVaultService {
     const documents = await this.ports.getDocuments({ bookingId, category: 'DAMAGE_EVIDENCE' });
     return documents.map((d) => ({
       documentId: d.documentId,
-      versionId: d.versionId,
+      versionId: d.versionId || d.documentId,
       uploadedAt: d.uploadedAt,
       title: d.title,
       mimeType: 'application/pdf',
